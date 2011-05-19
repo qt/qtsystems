@@ -1,0 +1,69 @@
+#!/bin/sh
+
+relpath=`dirname $0`
+relpath=`(cd "$relpath"; /bin/pwd)`
+outpath=`/bin/pwd`
+
+PREFIX=`/bin/pwd`/install
+DEBUG=0
+TESTS=0
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+    -help)
+        echo "Configure options:"
+        echo
+        echo " The defaults (*) are usually acceptable. A plus (+) denotes a default value"
+        echo " that needs to be evaluated. If the evaluation succeeds, the feature is"
+        echo " included. Here is a short explanation of each option:"
+        echo
+        echo "    -prefix <dir> ...... This will install everything relative to <dir>"
+        echo "                         (default $PREFIX)"
+        echo " *  -release ........... Compile and link QtSystemKit with debugging turned off."
+        echo "    -debug ............. Compile and link QtSystemKit with debugging turned on."
+        echo "    -developer-build ... Compile and link QtSystemKit with developer options (including auto-tests exporting)."
+        echo
+        exit
+        ;;
+    -prefix)
+        shift
+        PREFIX=$1
+        ;;
+    -release)
+        DEBUG=0
+        ;;
+    -debug)
+        DEBUG=1
+        ;;
+    -developer-build)
+        TESTS=1
+        DEBUG=1
+        ;;
+    *)
+        echo >&2 "Invalid option: $1"
+        exit
+        ;;
+    esac
+    shift
+done
+
+CACHEFILE="$outpath/.qmake.cache"
+
+[ -f "$CACHEFILE" ] && rm -f "$CACHEFILE"
+
+cat >>"$CACHEFILE" <<EOF
+PREFIX = \$\$quote($PREFIX)
+
+SOURCE_TREE = \$\$quote($relpath)
+BUILD_TREE = \$\$quote($outpath)
+
+DEBUG=$DEBUG
+TESTS=$TESTS
+EOF
+
+qmake $relpath/qtsystemkit.pro
+
+echo
+echo "QtSystemKit is now configured for building. Just run 'make' to build."
+echo "Once everything is built, you can run 'make install' to install."
+echo
