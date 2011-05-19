@@ -55,6 +55,8 @@
 
 #include "qdeviceinfo.h"
 
+QT_BEGIN_NAMESPACE
+
 class QDeviceInfoPrivate
 {
 public:
@@ -75,5 +77,7 @@ private:
     QDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceInfo)
 };
+
+QT_END_NAMESPACE
 
 #endif // QDEVICEINFO_LINUX_P_H

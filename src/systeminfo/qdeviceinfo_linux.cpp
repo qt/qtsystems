@@ -50,6 +50,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+QT_BEGIN_NAMESPACE
+
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     : q_ptr(parent)
 {
@@ -266,3 +268,5 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 
     return QString();
 }
+
+QT_END_NAMESPACE
