@@ -16,12 +16,18 @@ DEFINES += QT_BUILD_SYSTEMINFO_LIB
 
 include(../src.pri)
 
-HEADERS += qdeviceinfo.h
+HEADERS += qdeviceinfo.h \
+           qdisplayinfo.h
 
-SOURCES += qdeviceinfo.cpp
+SOURCES += qdeviceinfo.cpp \
+           qdisplayinfo.cpp
 
 unix {
-    HEADERS += qdeviceinfo_linux_p.h
+    LIBS += -lXrandr
 
-    SOURCES += qdeviceinfo_linux.cpp
+    HEADERS += qdeviceinfo_linux_p.h \
+               qdisplayinfo_linux_p.h
+
+    SOURCES += qdeviceinfo_linux.cpp \
+               qdisplayinfo_linux.cpp
 }

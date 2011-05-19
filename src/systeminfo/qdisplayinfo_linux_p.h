@@ -50,30 +50,32 @@
 // We mean it.
 //
 
-#ifndef QDEVICEINFO_LINUX_P_H
-#define QDEVICEINFO_LINUX_P_H
+#ifndef QDISPLAYINFO_LINUX_P_H
+#define QDISPLAYINFO_LINUX_P_H
 
-#include "qdeviceinfo.h"
+#include "qdisplayinfo.h"
 
-class QDeviceInfoPrivate
+QT_BEGIN_NAMESPACE
+
+class QDisplayInfoPrivate
 {
 public:
-    QDeviceInfoPrivate(QDeviceInfo *parent);
+    QDisplayInfoPrivate(QDisplayInfo *parent);
 
-    bool hasFeature(QDeviceInfo::Feature feature);
-    QDeviceInfo::LockTypeFlags activatedLocks();
-    QDeviceInfo::LockTypeFlags enabledLocks();
-    QDeviceInfo::ThermalState thermalState();
-    QByteArray uniqueDeviceID();
-    QString imei();
-    QString manufacturer();
-    QString model();
-    QString productName();
-    QString version(QDeviceInfo::Version type);
+    int colorDepth(int screen);
+    int contrast(int screen);
+    int displayBrightness(int screen);
+    int dpiX(int screen);
+    int dpiY(int screen);
+    int physicalHeight(int screen);
+    int physicalWidth(int screen);
+    QDisplayInfo::BacklightState backlightState(int screen);
 
 private:
-    QDeviceInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QDeviceInfo)
+    QDisplayInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QDisplayInfo)
 };
 
-#endif // QDEVICEINFO_LINUX_P_H
+QT_END_NAMESPACE
+
+#endif // QDISPLAYINFO_LINUX_P_H

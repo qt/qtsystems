@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS += qdeviceinfo
+SUBDIRS += qdeviceinfo \
+           qdisplayinfo
