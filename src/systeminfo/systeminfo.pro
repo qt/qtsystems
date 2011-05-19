@@ -1,5 +1,6 @@
 load(qt_module)
 
+TEMPLATE = lib
 DESTDIR  = $$BUILD_TREE/lib
 
 TARGET = QtSystemInfo
@@ -14,3 +15,13 @@ MODULE_PRI = ../../modules/qt_systeminfo.pri
 DEFINES += QT_BUILD_SYSTEMINFO_LIB
 
 include(../src.pri)
+
+HEADERS += qdeviceinfo.h
+
+SOURCES += qdeviceinfo.cpp
+
+unix {
+    HEADERS += qdeviceinfo_linux_p.h
+
+    SOURCES += qdeviceinfo_linux.cpp
+}
