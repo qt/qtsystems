@@ -63,7 +63,7 @@ private slots:
 void tst_QDisplayInfo::tst_contrast()
 {
     QDisplayInfo displayInfo;
-    qDebug()<<QApplication::desktop()->screenGeometry();
+
     QVERIFY(-1 == displayInfo.contrast(-1));
     QVERIFY(-1 == displayInfo.contrast(QApplication::desktop()->screenCount()));
 }
