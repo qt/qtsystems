@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtDebug>
+
 #include "qdisplayinfo_linux_p.h"
 
 #include <QtCore/qdir.h>

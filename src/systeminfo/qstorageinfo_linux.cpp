@@ -42,7 +42,7 @@
 #include "qstorageinfo_linux_p.h"
 
 #include <QtCore/qfile.h>
-#include <QDebug>
+
 #include <errno.h>
 #include <mntent.h>
 #include <blkid/blkid.h>
