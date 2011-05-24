@@ -19,12 +19,14 @@ include(../src.pri)
 HEADERS += qdeviceinfo.h \
            qdisplayinfo.h \
            qstorageinfo.h \
-           qscreensaver.h
+           qscreensaver.h \
+           qbatteryinfo.h
 
 SOURCES += qdeviceinfo.cpp \
            qdisplayinfo.cpp \
            qstorageinfo.cpp \
-           qscreensaver.cpp
+           qscreensaver.cpp \
+           qbatteryinfo.cpp
 
 unix {
     LIBS += -lXrandr -lblkid
@@ -32,10 +34,12 @@ unix {
     HEADERS += qdeviceinfo_linux_p.h \
                qdisplayinfo_linux_p.h \
                qstorageinfo_linux_p.h \
-               qscreensaver_linux_p.h
+               qscreensaver_linux_p.h \
+               qbatteryinfo_linux_p.h
 
     SOURCES += qdeviceinfo_linux.cpp \
                qdisplayinfo_linux.cpp \
                qstorageinfo_linux.cpp \
-               qscreensaver_linux.cpp
+               qscreensaver_linux.cpp \
+               qbatteryinfo_linux.cpp
 }
