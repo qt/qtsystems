@@ -42,12 +42,14 @@
 #include "qstorageinfo_linux_p.h"
 
 #include <QtCore/qfile.h>
+#include <QtCore/qsocketnotifier.h>
 
 #include <errno.h>
 #include <mntent.h>
 #include <blkid/blkid.h>
 #include <fcntl.h>
 #include <linux/fs.h>
+#include <sys/inotify.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
@@ -55,8 +57,17 @@
 QT_BEGIN_NAMESPACE
 
 QStorageInfoPrivate::QStorageInfoPrivate(QStorageInfo *parent)
-    : q_ptr(parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , inotifyWatcher(-1)
+    , inotifyFileDescriptor(-1)
+    , notifier(0)
 {
+}
+
+QStorageInfoPrivate::~QStorageInfoPrivate()
+{
+    cleanupWatcher();
 }
 
 qlonglong QStorageInfoPrivate::availableDiskSpace(const QString &drive)
@@ -117,13 +128,11 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 
 QStringList QStorageInfoPrivate::allLogicalDrives()
 {
-    FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
-    mntent *entry = NULL;
-    QStringList drives;
-    while ((entry = getmntent(fsDescription)) != NULL)
-        drives << entry->mnt_dir;
-    endmntent(fsDescription);
-    return drives;
+    // No need to update the list if someone is listening to the signal, as it will be updated in that case
+    if (inotifyWatcher == -1)
+        updateLogicalDrives();
+
+    return logicalDrives;
 }
 
 QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
@@ -202,6 +211,91 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
 
     endmntent(fsDescription);
     return type;
+}
+
+void QStorageInfoPrivate::connectNotify(const char *signal)
+{
+    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0) {
+        updateLogicalDrives();
+        setupWatcher();
+    }
+}
+
+void QStorageInfoPrivate::disconnectNotify(const char *signal)
+{
+    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0)
+        cleanupWatcher();
+}
+
+void QStorageInfoPrivate::cleanupWatcher()
+{
+    if (notifier) {
+        delete notifier;
+        notifier = 0;
+    }
+
+    if (inotifyWatcher != -1) {
+        inotify_rm_watch(inotifyFileDescriptor, inotifyWatcher);
+        inotifyWatcher = -1;
+    }
+
+    if (inotifyFileDescriptor != -1) {
+        close(inotifyFileDescriptor);
+        inotifyFileDescriptor = -1;
+    }
+}
+
+void QStorageInfoPrivate::setupWatcher()
+{
+    if (inotifyFileDescriptor == -1
+        && (inotifyFileDescriptor = inotify_init()) == -1) {
+        return;
+    }
+
+    if (inotifyWatcher == -1
+        && (inotifyWatcher = inotify_add_watch(inotifyFileDescriptor, _PATH_MOUNTED, IN_MODIFY)) == -1) {
+        close(inotifyFileDescriptor);
+        return;
+    }
+
+    if (notifier == 0) {
+        notifier = new QSocketNotifier(inotifyFileDescriptor, QSocketNotifier::Read);
+        connect(notifier, SIGNAL(activated(int)), this, SLOT(onInotifyActivated()));
+    }
+}
+
+void QStorageInfoPrivate::updateLogicalDrives()
+{
+    FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
+    mntent *entry = NULL;
+    logicalDrives.clear();
+    while ((entry = getmntent(fsDescription)) != NULL)
+        logicalDrives << entry->mnt_dir;
+    endmntent(fsDescription);
+}
+
+void QStorageInfoPrivate::onInotifyActivated()
+{
+    inotify_event event;
+    if (read(inotifyFileDescriptor, (void *)&event, sizeof(event)) > 0
+        && event.wd == inotifyWatcher) {
+        // Have to do this, otherwise I can't get further notification
+        inotify_rm_watch(inotifyFileDescriptor, inotifyWatcher);
+        inotifyWatcher = inotify_add_watch(inotifyFileDescriptor, _PATH_MOUNTED, IN_MODIFY);
+
+        QStringList oldLogicalDrives = logicalDrives;
+        updateLogicalDrives();
+
+        foreach (const QString &drive, oldLogicalDrives) {
+            if (!logicalDrives.contains(drive))
+                Q_EMIT logicalDriveChanged(drive, false);
+        }
+
+        foreach (const QString &drive, logicalDrives) {
+            if (!oldLogicalDrives.contains(drive))
+                Q_EMIT logicalDriveChanged(drive, true);
+        }
+    }
 }
 
 QT_END_NAMESPACE

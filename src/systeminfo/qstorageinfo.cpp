@@ -102,7 +102,6 @@ QStorageInfo::QStorageInfo(QObject *parent)
 */
 QStorageInfo::~QStorageInfo()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -151,6 +150,26 @@ QString QStorageInfo::uriForDrive(const QString &drive) const
 QStorageInfo::DriveType QStorageInfo::driveType(const QString &drive) const
 {
     return d_ptr->driveType(drive);
+}
+
+/*!
+    \internal
+*/
+void QStorageInfo::connectNotify(const char *signal)
+{
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+}
+
+/*!
+    \internal
+*/
+void QStorageInfo::disconnectNotify(const char *signal)
+{
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(SIGNAL(signal)) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
 }
 
 QT_END_NAMESPACE

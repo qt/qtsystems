@@ -57,10 +57,15 @@
 
 QT_BEGIN_NAMESPACE
 
-class QStorageInfoPrivate
+class QSocketNotifier;
+
+class QStorageInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     QStorageInfoPrivate(QStorageInfo *parent);
+    ~QStorageInfoPrivate();
 
     qlonglong availableDiskSpace(const QString &drive);
     qlonglong totalDiskSpace(const QString &drive);
@@ -68,9 +73,28 @@ public:
     QStringList allLogicalDrives();
     QStorageInfo::DriveType driveType(const QString &drive);
 
+Q_SIGNALS:
+    void logicalDriveChanged(const QString &drive, bool added);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     QStorageInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QStorageInfo)
+
+    int inotifyWatcher;
+    int inotifyFileDescriptor;
+    QSocketNotifier *notifier;
+    QStringList logicalDrives;
+
+    void cleanupWatcher();
+    void setupWatcher();
+    void updateLogicalDrives();
+
+private Q_SLOTS:
+    void onInotifyActivated();
 };
 
 QT_END_NAMESPACE

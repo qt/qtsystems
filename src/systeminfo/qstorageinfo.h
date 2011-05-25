@@ -84,6 +84,10 @@ public:
 Q_SIGNALS:
     void logicalDriveChanged(const QString &drive, bool added);
 
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     Q_DISABLE_COPY(QStorageInfo)
     QStorageInfoPrivate * const d_ptr;
