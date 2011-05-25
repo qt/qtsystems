@@ -57,7 +57,6 @@ public:
     QString uriForDrive(const QString &) { return QString(); }
     QStringList allLogicalDrives() { return QStringList(); }
     QStorageInfo::DriveType driveType(const QString &) { return QStorageInfo::UnknownDrive; }
-    QStorageInfo::StorageUsage storageUsage(const QString &) { return QStorageInfo::UnknownUsage; }
 };
 QT_END_NAMESPACE
 #endif
@@ -84,26 +83,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QStorageInfo::StorageUsage
-    This enum describes the usage level of the drive or volume.
-
-    \value UnknownUsage    The usage of the drive is unknown.
-    \value NormalUsage     At least 40% of the drive space is free.
-    \value HighUsage       The free space is between 10% and 40%.
-    \value VeryHighUsage   The free space is between 2% and 10%.
-    \value CriticalUsage   The free space is less than 2%.
-*/
-
-/*!
     \fn void QStorageInfo::logicalDriveChanged(const QString &drive, bool added)
 
     This signal gets emitted when a new \a drive storage has been \a added or removed.
-*/
-
-/*!
-    \fn void QStorageInfo::storageUsageChanged(const QString &drive, QStorageInfo::StorageUsage usage)
-
-    This signal gets emitted when the storage usage of the \a drive has changed to \a usage.
 */
 
 /*!
@@ -169,14 +151,6 @@ QString QStorageInfo::uriForDrive(const QString &drive) const
 QStorageInfo::DriveType QStorageInfo::driveType(const QString &drive) const
 {
     return d_ptr->driveType(drive);
-}
-
-/*!
-    Returns the storage usage of the given \a drive.
-*/
-QStorageInfo::StorageUsage QStorageInfo::storageUsage(const QString &drive) const
-{
-    return d_ptr->storageUsage(drive);
 }
 
 QT_END_NAMESPACE

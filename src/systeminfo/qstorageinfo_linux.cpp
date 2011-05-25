@@ -204,21 +204,4 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
     return type;
 }
 
-QStorageInfo::StorageUsage QStorageInfoPrivate::storageUsage(const QString &drive)
-{
-    struct statfs statistics;
-    if (statfs(drive.toLatin1(), &statistics) == -1)
-        return QStorageInfo::UnknownUsage;
-
-    double percent = (double)statistics.f_bavail / statistics.f_blocks;
-    if (percent < 0.02)
-        return QStorageInfo::CriticalUsage;
-    else if (percent < 0.1)
-        return QStorageInfo::VeryHighUsage;
-    else if (percent < 0.4)
-        return QStorageInfo::HighUsage;
-    else
-        return QStorageInfo::NormalUsage;
-}
-
 QT_END_NAMESPACE

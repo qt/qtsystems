@@ -67,7 +67,6 @@ public:
     QString uriForDrive(const QString &drive);
     QStringList allLogicalDrives();
     QStorageInfo::DriveType driveType(const QString &drive);
-    QStorageInfo::StorageUsage storageUsage(const QString &drive);
 
 private:
     QStorageInfo * const q_ptr;

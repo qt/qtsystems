@@ -57,7 +57,6 @@ class Q_SYSTEMINFO_EXPORT QStorageInfo : public QObject
     Q_OBJECT
 
     Q_ENUMS(DriveType)
-    Q_ENUMS(StorageUsage)
 
     Q_PROPERTY(QStringList allLogicalDrives READ allLogicalDrives NOTIFY logicalDriveChanged)
 
@@ -72,14 +71,6 @@ public:
         RamDrive
     };
 
-    enum StorageUsage {
-        UnknownUsage = 0,
-        NormalUsage,
-        HighUsage,
-        VeryHighUsage,
-        CriticalUsage
-    };
-
     QStorageInfo(QObject *parent = 0);
     virtual ~QStorageInfo();
 
@@ -89,11 +80,9 @@ public:
     Q_INVOKABLE qlonglong totalDiskSpace(const QString &drive) const;
     Q_INVOKABLE QString uriForDrive(const QString &drive) const;
     Q_INVOKABLE QStorageInfo::DriveType driveType(const QString &drive) const;
-    Q_INVOKABLE QStorageInfo::StorageUsage storageUsage(const QString &drive) const;
 
 Q_SIGNALS:
     void logicalDriveChanged(const QString &drive, bool added);
-    void storageUsageChanged(const QString &drive, QStorageInfo::StorageUsage usage);
 
 private:
     Q_DISABLE_COPY(QStorageInfo)

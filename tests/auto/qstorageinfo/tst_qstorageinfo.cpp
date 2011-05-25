@@ -60,20 +60,6 @@ void tst_QStorageInfo::tst_diskSpace()
         qlonglong available = storageInfo.availableDiskSpace(drive);
         qlonglong total = storageInfo.totalDiskSpace(drive);
         QVERIFY(available <= total);
-
-        if (available == -1 || total == -1) {
-            QVERIFY(QStorageInfo::UnknownUsage == storageInfo.storageUsage(drive));
-            continue;
-        }
-        double percent = (double)available / total;
-        if (percent < 0.02)
-            QVERIFY(QStorageInfo::CriticalUsage == storageInfo.storageUsage(drive));
-        else if (percent < 0.1)
-            QVERIFY(QStorageInfo::VeryHighUsage == storageInfo.storageUsage(drive));
-        else if (percent < 0.4)
-            QVERIFY(QStorageInfo::HighUsage == storageInfo.storageUsage(drive));
-        else
-            QVERIFY(QStorageInfo::NormalUsage == storageInfo.storageUsage(drive));
     }
 }
 
