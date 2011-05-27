@@ -68,6 +68,9 @@ QT_BEGIN_NAMESPACE
     \class QBatteryInfo
     \inmodule QtSystemKit
     \brief The QBatteryInfo class provides various information of the battery.
+
+    Note that on some platforms, listening to the signals could lead to a heavy CPU usage. Therefore,
+    you are strongly suggested to disconnect the signals when no longer needed in your application.
 */
 
 /*!
@@ -117,7 +120,7 @@ QT_BEGIN_NAMESPACE
     \fn void QBatteryInfo::currentFlowChanged(int battery, int flow);
 
     This signal is emitted when the current flow of the \a battery has changed to \a flow, measured
-    in milliapmeres (mA). Note that listening to this signal could lead to an intensive CPU usage.
+    in milliapmeres (mA).
 */
 
 /*!
@@ -154,7 +157,6 @@ QBatteryInfo::QBatteryInfo(QObject *parent)
 */
 QBatteryInfo::~QBatteryInfo()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -229,6 +231,26 @@ QBatteryInfo::ChargingState QBatteryInfo::chargingState(int battery) const
 QBatteryInfo::EnergyUnit QBatteryInfo::energyUnit() const
 {
     return d_ptr->energyUnit();
+}
+
+/*!
+    \internal
+*/
+void QBatteryInfo::connectNotify(const char *signal)
+{
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+}
+
+/*!
+    \internal
+*/
+void QBatteryInfo::disconnectNotify(const char *signal)
+{
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(SIGNAL(signal)) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
 }
 
 QT_END_NAMESPACE

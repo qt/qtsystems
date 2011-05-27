@@ -105,6 +105,10 @@ Q_SIGNALS:
     void remainingChargingTimeChanged(int battery, int seconds);
     void voltageChanged(int battery, int voltage);
 
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     Q_DISABLE_COPY(QBatteryInfo)
     QBatteryInfoPrivate * const d_ptr;

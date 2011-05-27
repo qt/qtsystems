@@ -55,12 +55,19 @@
 
 #include "qbatteryinfo.h"
 
+#include <QtCore/qmap.h>
+
 QT_BEGIN_NAMESPACE
 
-class QBatteryInfoPrivate
+class QTimer;
+
+class QBatteryInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     QBatteryInfoPrivate(QBatteryInfo *parent);
+    ~QBatteryInfoPrivate();
 
     int currentFlow(int battery);
     int maximumCapacity(int battery);
@@ -71,9 +78,45 @@ public:
     QBatteryInfo::ChargingState chargingState(int battery);
     QBatteryInfo::EnergyUnit energyUnit();
 
+Q_SIGNALS:
+    void chargerTypeChanged(QBatteryInfo::ChargerType type);
+    void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
+    void currentFlowChanged(int battery, int flow);
+    void remainingCapacityChanged(int battery, int capacity);
+    void remainingChargingTimeChanged(int battery, int seconds);
+    void voltageChanged(int battery, int voltage);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private Q_SLOTS:
+    void onTimeout();
+
 private:
     QBatteryInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QBatteryInfo)
+
+    bool watchChargerType;
+    bool watchChargingState;
+    bool watchCurrentFlow;
+    bool watchRemainingCapacity;
+    bool watchRemainingChargingTime;
+    bool watchVoltage;
+    QMap<int, int> currentFlows; // <battery ID, current value> pair
+    QMap<int, int> currentVoltages;
+    QMap<int, int> currentRemainingCapacities;
+    QMap<int, int> currentRemainingChargingTimes;
+    QMap<int, QBatteryInfo::ChargingState> currentChargingStates;
+    QTimer *timer;
+    QBatteryInfo::ChargerType currentChargerType;
+
+    int updateCurrentFlow(int battery);
+    int updateRemainingCapacity(int battery);
+    int updateRemainingChargingTime(int battery);
+    int updateVoltage(int battery);
+    QBatteryInfo::ChargerType updateChargerType();
+    QBatteryInfo::ChargingState updateChargingState(int battery);
 };
 
 QT_END_NAMESPACE
