@@ -51,8 +51,10 @@
 #endif // QT_NO_BLUEZ
 
 #include <math.h>
-#include <linux/wireless.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/wireless.h>
 
 QT_BEGIN_NAMESPACE
 
