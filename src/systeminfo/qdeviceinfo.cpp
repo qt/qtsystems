@@ -227,8 +227,8 @@ QString QDeviceInfo::manufacturer() const
 }
 
 /*!
-    Returns the model information of the device, or the CPU architect as a fallback. In case of
-    error, or the information is not available, an empty string is returned.
+    Returns the model information of the device, e.g. N8, or the CPU architect as a fallback. In case
+    of error, or the information is not available, an empty string is returned.
 */
 QString QDeviceInfo::model() const
 {
@@ -236,8 +236,8 @@ QString QDeviceInfo::model() const
 }
 
 /*!
-    Returns the product name of the device. In case of error, or the information is not available,
-    an empty string is returned.
+    Returns the internal product name of the device, e.g. RM-774. In case of error, or the information
+    is not available, an empty string is returned.
 */
 QString QDeviceInfo::productName() const
 {
