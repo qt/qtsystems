@@ -83,8 +83,7 @@ public:
     bool isOfonoAvailable();
 
     // Manager Interface
-    QDBusObjectPath currentModem();
-    QList<QDBusObjectPath> allModems();
+    QStringList allModems();
 
     // Network Registration Interface
     int signalStrength(const QString &modemPath);
@@ -103,15 +102,15 @@ public:
     QString imsi(const QString &modemPath);
 
 Q_SIGNALS:
-    void cellIdChanged(int sim, const QString &id);
-    void currentCellDataTechnologyChanged(int sim, QNetworkInfo::CellDataTechnology tech);
-    void currentMobileCountryCodeChanged(int sim, const QString &mcc);
-    void currentMobileNetworkCodeChanged(int sim, const QString &mnc);
+    void cellIdChanged(int interface, const QString &id);
+    void currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);
+    void currentMobileCountryCodeChanged(int interface, const QString &mcc);
+    void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
     void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
-    void locationAreaCodeChanged(int sim, const QString &lac);
-    void networkNameChanged(QNetworkInfo::NetworkMode mode, const QString &name);
-    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int strength);
-    void networkStatusChanged(QNetworkInfo::NetworkMode mode, QNetworkInfo::NetworkStatus status);
+    void locationAreaCodeChanged(int interface, const QString &lac);
+    void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
+    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
+    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
 
 protected:
     void connectNotify(const char *signal);

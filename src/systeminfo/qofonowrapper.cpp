@@ -95,27 +95,15 @@ bool QOfonoWrapper::isOfonoAvailable()
 }
 
 // Manager Interface
-QDBusObjectPath QOfonoWrapper::currentModem()
-{
-    QList<QDBusObjectPath> modems = allModems();
-    foreach (const QDBusObjectPath &modem, modems) {
-        QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                    QDBusMessage::createMethodCall(QLatin1String(OFONO_SERVICE), modem.path(), OFONO_MODEM_INTERFACE, "GetProperties"));
-        if (reply.value().value("Powered").toBool())
-            return modem;
-    }
-    return QDBusObjectPath();
-}
-
-QList<QDBusObjectPath> QOfonoWrapper::allModems()
+QStringList QOfonoWrapper::allModems()
 {
     QDBusReply<QOfonoPropertyMap> reply = QDBusConnection::systemBus().call(
                 QDBusMessage::createMethodCall(QLatin1String(OFONO_SERVICE), QLatin1String(OFONO_MANAGER_PATH), OFONO_MANAGER_INTERFACE, "GetModems"));
 
-    QList<QDBusObjectPath> modems;
+    QStringList modems;
     if (reply.isValid()) {
         foreach (const QOfonoProperties &property, reply.value())
-            modems << property.path;
+            modems << property.path.path();
     }
     return modems;
 }
@@ -235,10 +223,10 @@ void QOfonoWrapper::connectNotify(const char *signal)
         || strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,QString))) == 0
         || strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int))) == 0
         || strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,QNetworkInfo::NetworkStatus))) == 0) {
-        QList<QDBusObjectPath> modems = allModems();
-        foreach (const QDBusObjectPath &modem, modems) {
+        QStringList modems = allModems();
+        foreach (const QString &modem, modems) {
             QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
-                                                 modem.path(),
+                                                 modem,
                                                  QLatin1String(OFONO_NETWORK_REGISTRATION_INTERFACE),
                                                  QLatin1String("PropertyChanged"),
                                                  this, SLOT(onOfonoPropertyChanged(QString,QDBusVariant)));
@@ -263,10 +251,10 @@ void QOfonoWrapper::disconnectNotify(const char *signal)
         return;
     }
 
-    QList<QDBusObjectPath> modems = allModems();
-    foreach (const QDBusObjectPath &modem, modems) {
+    QStringList modems = allModems();
+    foreach (const QString &modem, modems) {
         QDBusConnection::systemBus().disconnect(QLatin1String(OFONO_SERVICE),
-                                                modem.path(),
+                                                modem,
                                                 QLatin1String(OFONO_NETWORK_REGISTRATION_INTERFACE),
                                                 QLatin1String("PropertyChanged"),
                                                 this, SLOT(onOfonoPropertyChanged(QString,QDBusVariant)));
@@ -278,23 +266,24 @@ void QOfonoWrapper::onOfonoPropertyChanged(const QString &property, const QDBusV
     if (!calledFromDBus())
         return;
 
-    // TODO: multiple-interface support
+    int interface = allModems().indexOf(message().path());
+
     if (property == "MobileCountryCode")
-        Q_EMIT currentMobileCountryCodeChanged(0, value.variant().toString());
+        Q_EMIT currentMobileCountryCodeChanged(interface, value.variant().toString());
     else if (property == "MobileNetworkCode")
-        Q_EMIT currentMobileNetworkCodeChanged(0, value.variant().toString());
+        Q_EMIT currentMobileNetworkCodeChanged(interface, value.variant().toString());
     else if (property == "CellId")
-        Q_EMIT cellIdChanged(0, value.variant().toString());
+        Q_EMIT cellIdChanged(interface, value.variant().toString());
     else if (property == "Technology")
-        Q_EMIT currentCellDataTechnologyChanged(0, technologyStringToEnum(value.variant().toString()));
+        Q_EMIT currentCellDataTechnologyChanged(interface, technologyStringToEnum(value.variant().toString()));
     else if (property == "LocationAreaCode")
-        Q_EMIT locationAreaCodeChanged(0, value.variant().toString());
+        Q_EMIT locationAreaCodeChanged(interface, value.variant().toString());
     else if (property == "Name")
-        Q_EMIT networkNameChanged(technologyToMode(currentTechnology(message().path())), value.variant().toString());
+        Q_EMIT networkNameChanged(technologyToMode(currentTechnology(message().path())), interface, value.variant().toString());
     else if (property == "Strength")
-        Q_EMIT networkSignalStrengthChanged(technologyToMode(currentTechnology(message().path())), value.variant().toInt());
+        Q_EMIT networkSignalStrengthChanged(technologyToMode(currentTechnology(message().path())), interface, value.variant().toInt());
     else if (property == "Status")
-        Q_EMIT networkStatusChanged(technologyToMode(currentTechnology(message().path())), statusStringToEnum(value.variant().toString()));
+        Q_EMIT networkStatusChanged(technologyToMode(currentTechnology(message().path())), interface, statusStringToEnum(value.variant().toString()));
 }
 
 QNetworkInfo::CellDataTechnology QOfonoWrapper::technologyStringToEnum(const QString &technology)

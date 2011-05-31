@@ -50,11 +50,11 @@ class QNetworkInfoPrivate
 public:
     QNetworkInfoPrivate(QNetworkInfo *) {}
 
-    int networkSignalStrength(QNetworkInfo::NetworkMode) { return -1; }
+    int networkSignalStrength(QNetworkInfo::NetworkMode, int) { return -1; }
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(int) { return QNetworkInfo::UnknownDataTechnology; }
     QNetworkInfo::NetworkMode currentNetworkMode() { return QNetworkInfo::UnknownMode; }
-    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode) { return QNetworkInfo::UnknownStatus; }
-    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode) { return QNetworkInterface(); }
+    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode, int) { return QNetworkInfo::UnknownStatus; }
+    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode, int) { return QNetworkInterface(); }
     QString cellId(int) { return QString(); }
     QString currentMobileCountryCode(int) { return QString(); }
     QString currentMobileNetworkCode(int) { return QString(); }
@@ -62,8 +62,8 @@ public:
     QString homeMobileNetworkCode(int) { return QString(); }
     QString imsi(int) { return QString(); }
     QString locationAreaCode(int) { return QString(); }
-    QString macAddress(QNetworkInfo::NetworkMode) { return QString(); }
-    QString networkName(QNetworkInfo::NetworkMode) { return QString(); }
+    QString macAddress(QNetworkInfo::NetworkMode, int) { return QString(); }
+    QString networkName(QNetworkInfo::NetworkMode, int) { return QString(); }
 };
 QT_END_NAMESPACE
 #endif
@@ -74,6 +74,10 @@ QT_BEGIN_NAMESPACE
     \class QNetworkInfo
     \inmodule QtSystemKit
     \brief The QNetworkInfo class provides various information of the network status.
+
+    To support the cases where one has multiple interfaces / modems for the same network mode, you
+    can specify which interface you refer to. For those cases, the 'interface' parameter is the index
+    of the interface, starting from 0.
 */
 
 /*!
@@ -118,59 +122,60 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QNetworkInfo::cellIdChanged(int sim, const QString &id)
+    \fn void QNetworkInfo::cellIdChanged(int interface, const QString &id)
 
-    This signal is emitted whenever the cell ID for \a sim has changed to \a id.
+    This signal is emitted whenever the cell ID for \a interface has changed to \a id.
 */
 
 /*!
-    \fn void QNeworkInfo::currentCellDataTechnologyChanged(int sim, QNetworkInfo::CellDataTechnology tech)
+    \fn void QNeworkInfo::currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech)
 
-    This signal is emitted whenever the current cell data technology for \a sim has changed to \a tech.
+    This signal is emitted whenever the current cell data technology for \a interface has changed to \a tech.
 */
 
 /*!
-    \fn void QNetworkInfo::currentMobileCountryCodeChanged(int sim, const QString &mcc)
+    \fn void QNetworkInfo::currentMobileCountryCodeChanged(int interface, const QString &mcc)
 
-    This signal is emitted whenever the current Mobile Country Code (MCC) for \a sim has changed
+    This signal is emitted whenever the current Mobile Country Code (MCC) for \a interface has changed
     to \a mcc.
 */
 
 /*!
-    \fn void QNetworkInfo::currentMobileNetworkCodeChanged(int sim, const QString &mnc)
+    \fn void QNetworkInfo::currentMobileNetworkCodeChanged(int interface, const QString &mnc)
 
-    This signal is emitted whenever the current Mobile Network Code (MNC) for \a sim has changed
+    This signal is emitted whenever the current Mobile Network Code (MNC) for \a interface has changed
     to \a mnc.
 */
 
 /*!
-    \fn void QNetworkInfo::currentNetworkMode(QNetworkInfo::NetworkMode mode)
+    \fn void QNetworkInfo::currentNetworkModeChanged(QNetworkInfo::NetworkMode mode)
 
     This signal is emitted whenever the current network has changed to \a mode.
 */
 
 /*!
-    \fn void QNetworkInfo::locationAreaCodeChanged(int sim, const QString &lac)
+    \fn void QNetworkInfo::locationAreaCodeChanged(int interface, const QString &lac)
 
-    This signal is emitted whenever the location area code for \a sim has changed to \a lac.
+    This signal is emitted whenever the location area code for \a interface has changed to \a lac.
 */
 
 /*!
-    \fn void QNetworkInfo::networkNameChanged(QNetworkInfo::NetworkMode mode, const QString &name)
+    \fn void QNetworkInfo::networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
 
-    This signal is emitted whenever the name for \a mode has changed to \a name.
+    This signal is emitted whenever the name for the \a interface of \a mode has changed to \a name.
 */
 
 /*!
-    \fn void QNetworkInfo::networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int strength)
+    \fn void QNetworkInfo::networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength)
 
-    This signal is emitted whenever the signal strength for \a mode has changed to \a strength.
+    This signal is emitted whenever the signal strength for the \a interface of \a mode has changed
+    to \a strength.
 */
 
 /*!
-    \fn void QNetworkInfo::networkStatusChanged(QNetworkInfo::NetworkMode mode, QNetworkInfo::NetworkStatus status)
+    \fn void QNetworkInfo::networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status)
 
-    This signal is emitted whenever the status for \a mode has changed to \a status.
+    This signal is emitted whenever the status for the \a interface of \a mode has changed to \a status.
 */
 
 /*!
@@ -191,20 +196,20 @@ QNetworkInfo::~QNetworkInfo()
 }
 
 /*!
-    Returns the signal strength for \a mode, in 0 - 100 scale. If the information is not available,
-    or error occurs, -1 is returned.
+    Returns the signal strength for \a interface of \a mode, in 0 - 100 scale. If the information
+    is not available, or error occurs, -1 is returned.
 */
-int QNetworkInfo::networkSignalStrength(QNetworkInfo::NetworkMode mode) const
+int QNetworkInfo::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface) const
 {
-    return d_ptr->networkSignalStrength(mode);
+    return d_ptr->networkSignalStrength(mode, interface);
 }
 
 /*!
-    Returns the current cell data technology used for \a sim.
+    Returns the current cell data technology used for \a interface.
 */
-QNetworkInfo::CellDataTechnology QNetworkInfo::currentCellDataTechnology(int sim) const
+QNetworkInfo::CellDataTechnology QNetworkInfo::currentCellDataTechnology(int interface) const
 {
-    return d_ptr->currentCellDataTechnology(sim);
+    return d_ptr->currentCellDataTechnology(interface);
 }
 
 /*!
@@ -219,103 +224,103 @@ QNetworkInfo::NetworkMode QNetworkInfo::currentNetworkMode() const
 }
 
 /*!
-    Returns the current status for \a mode.
+    Returns the current status for \a interface of \a mode.
 */
-QNetworkInfo::NetworkStatus QNetworkInfo::networkStatus(QNetworkInfo::NetworkMode mode) const
+QNetworkInfo::NetworkStatus QNetworkInfo::networkStatus(QNetworkInfo::NetworkMode mode, int interface) const
 {
-    return d_ptr->networkStatus(mode);
+    return d_ptr->networkStatus(mode, interface);
 }
 
 /*!
-    Returns the first found interface for \a mode. If none is found, or it can't be represented
-    by QNetworkInterface (e.g. Bluetooth), and empty object is returned.
+    Returns the first found interface for \a interface of \a mode. If none is found, or it can't be
+    represented by QNetworkInterface (e.g. Bluetooth), and empty object is returned.
 */
-QNetworkInterface QNetworkInfo::interfaceForMode(QNetworkInfo::NetworkMode mode) const
+QNetworkInterface QNetworkInfo::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface) const
 {
-    return d_ptr->interfaceForMode(mode);
+    return d_ptr->interfaceForMode(mode, interface);
 }
 
 /*!
-    Returns the cell ID of the connected tower or based station for \a sim. If this information
+    Returns the cell ID of the connected tower or based station for \a interface. If this information
     is not available or error occurs, an empty string is returned.
 */
-QString QNetworkInfo::cellId(int sim) const
+QString QNetworkInfo::cellId(int interface) const
 {
-    return d_ptr->cellId(sim);
+    return d_ptr->cellId(interface);
 }
 
 /*!
-    Returns the current Mobile Country Code (MCC) for \a sim. An empty string is returned if the
+    Returns the current Mobile Country Code (MCC) for \a interface. An empty string is returned if the
     information is not available or on error.
 */
-QString QNetworkInfo::currentMobileCountryCode(int sim) const
+QString QNetworkInfo::currentMobileCountryCode(int interface) const
 {
-    return d_ptr->currentMobileCountryCode(sim);
+    return d_ptr->currentMobileCountryCode(interface);
 }
 
 /*!
-    Returns the current Mobile Network Code (MNC) for \a sim. An empty string is returned if the
+    Returns the current Mobile Network Code (MNC) for \a interface. An empty string is returned if the
     information is not available or on error.
 */
-QString QNetworkInfo::currentMobileNetworkCode(int sim) const
+QString QNetworkInfo::currentMobileNetworkCode(int interface) const
 {
-    return d_ptr->currentMobileNetworkCode(sim);
+    return d_ptr->currentMobileNetworkCode(interface);
 }
 
 /*!
-    Returns the home Mobile Country Code (MCC) for \a sim. An empty string is returned if the
+    Returns the home Mobile Country Code (MCC) for \a interface. An empty string is returned if the
     information is not available or on error.
 */
-QString QNetworkInfo::homeMobileCountryCode(int sim) const
+QString QNetworkInfo::homeMobileCountryCode(int interface) const
 {
-    return d_ptr->homeMobileCountryCode(sim);
+    return d_ptr->homeMobileCountryCode(interface);
 }
 
 /*!
-    Returns the home Mobile Network Code (MNC) for \a sim. An empty string is returned if the
+    Returns the home Mobile Network Code (MNC) for \a interface. An empty string is returned if the
     information is not available or on error.
 */
-QString QNetworkInfo::homeMobileNetworkCode(int sim) const
+QString QNetworkInfo::homeMobileNetworkCode(int interface) const
 {
-    return d_ptr->homeMobileNetworkCode(sim);
+    return d_ptr->homeMobileNetworkCode(interface);
 }
 
 /*!
-    Returns the International Mobile Subscriber Identity (IMSI) for \a sim. If this information is
+    Returns the International Mobile Subscriber Identity (IMSI) for \a interface. If this information is
     not available, or error occurs, an empty string is returned.
 */
-QString QNetworkInfo::imsi(int sim) const
+QString QNetworkInfo::imsi(int interface) const
 {
-    return d_ptr->imsi(sim);
+    return d_ptr->imsi(interface);
 }
 
 /*!
-    Returns the location area code of the current cellular radio network for \a sim. If this information
+    Returns the location area code of the current cellular radio network for \a interface. If this information
     is not available or error occurs, an empty string is returned.
 */
-QString QNetworkInfo::locationAreaCode(int sim) const
+QString QNetworkInfo::locationAreaCode(int interface) const
 {
-    return d_ptr->locationAreaCode(sim);
+    return d_ptr->locationAreaCode(interface);
 }
 
 /*!
-    Returns the MAC address for \a mode. If the MAC address is not available or error occurs, an
-    empty string is returned.
-*/
-QString QNetworkInfo::macAddress(QNetworkInfo::NetworkMode mode) const
-{
-    return d_ptr->macAddress(mode);
-}
-
-/*!
-    Returns the name of the operator for \a mode. If the information is not available, or an error
+    Returns the MAC address for \a interface of \a mode. If the MAC address is not available or error
     occurs, an empty string is returned.
+*/
+QString QNetworkInfo::macAddress(QNetworkInfo::NetworkMode mode, int interface) const
+{
+    return d_ptr->macAddress(mode, interface);
+}
+
+/*!
+    Returns the name of the operator for \a interface of \a mode. If the information is not available,
+    or an error occurs, an empty string is returned.
 
     In case of WLAN, the SSID is returned; for Ethernet, the domain name is returned if available.
 */
-QString QNetworkInfo::networkName(QNetworkInfo::NetworkMode mode) const
+QString QNetworkInfo::networkName(QNetworkInfo::NetworkMode mode, int interface) const
 {
-    return d_ptr->networkName(mode);
+    return d_ptr->networkName(mode, interface);
 }
 
 /*!

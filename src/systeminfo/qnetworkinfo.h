@@ -97,32 +97,32 @@ public:
     QNetworkInfo(QObject *parent = 0);
     virtual ~QNetworkInfo();
 
-    Q_INVOKABLE int networkSignalStrength(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QNetworkInfo::CellDataTechnology currentCellDataTechnology(int sim) const;
-    Q_INVOKABLE QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QString cellId(int sim) const;
-    Q_INVOKABLE QString currentMobileCountryCode(int sim) const;
-    Q_INVOKABLE QString currentMobileNetworkCode(int sim) const;
-    Q_INVOKABLE QString homeMobileCountryCode(int sim) const;
-    Q_INVOKABLE QString homeMobileNetworkCode(int sim) const;
-    Q_INVOKABLE QString imsi(int sim) const;
-    Q_INVOKABLE QString locationAreaCode(int sim) const;
-    Q_INVOKABLE QString macAddress(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QString networkName(QNetworkInfo::NetworkMode mode) const;
+    Q_INVOKABLE int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface) const;
+    Q_INVOKABLE QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface) const;
+    Q_INVOKABLE QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface) const;
+    Q_INVOKABLE QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface) const;
+    Q_INVOKABLE QString cellId(int interface) const;
+    Q_INVOKABLE QString currentMobileCountryCode(int interface) const;
+    Q_INVOKABLE QString currentMobileNetworkCode(int interface) const;
+    Q_INVOKABLE QString homeMobileCountryCode(int interface) const;
+    Q_INVOKABLE QString homeMobileNetworkCode(int interface) const;
+    Q_INVOKABLE QString imsi(int interface) const;
+    Q_INVOKABLE QString locationAreaCode(int interface) const;
+    Q_INVOKABLE QString macAddress(QNetworkInfo::NetworkMode mode, int interface) const;
+    Q_INVOKABLE QString networkName(QNetworkInfo::NetworkMode mode, int interface) const;
 
     QNetworkInfo::NetworkMode currentNetworkMode() const;
 
 Q_SIGNALS:
-    void cellIdChanged(int sim, const QString &id);
-    void currentCellDataTechnologyChanged(int sim, QNetworkInfo::CellDataTechnology tech);
-    void currentMobileCountryCodeChanged(int sim, const QString &mcc);
-    void currentMobileNetworkCodeChanged(int sim, const QString &mnc);
+    void cellIdChanged(int interface, const QString &id);
+    void currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);
+    void currentMobileCountryCodeChanged(int interface, const QString &mcc);
+    void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
     void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
-    void locationAreaCodeChanged(int sim, const QString &lac);
-    void networkNameChanged(QNetworkInfo::NetworkMode mode, const QString &name);
-    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int strength);
-    void networkStatusChanged(QNetworkInfo::NetworkMode mode, QNetworkInfo::NetworkStatus status);
+    void locationAreaCodeChanged(int interface, const QString &lac);
+    void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
+    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
+    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
 
 protected:
     void connectNotify(const char *signal);
