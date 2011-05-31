@@ -46,4 +46,15 @@ unix {
                qscreensaver_linux.cpp \
                qbatteryinfo_linux.cpp \
                qnetworkinfo_linux.cpp
+
+    contains(QT_CONFIG, dbus): {
+        QT += dbus
+
+        HEADERS += qofonowrapper_p.h
+
+        SOURCES += qofonowrapper.cpp
+
+    } else {
+        DEFINES += QT_NO_OFONO
+    }
 }

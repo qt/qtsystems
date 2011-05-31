@@ -41,6 +41,10 @@
 
 #include "qnetworkinfo_linux_p.h"
 
+#if !defined(QT_NO_OFONO)
+#include "qofonowrapper_p.h"
+#endif // QT_NO_OFONO
+
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qtextstream.h>
@@ -58,11 +62,16 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_OFONO)
+Q_GLOBAL_STATIC(QOfonoWrapper, ofonoWrapper)
+#endif // QT_NO_OFONO
+
 static const QString BLUETOOTH_SYSFS_PATH("/sys/class/bluetooth/");
 static const QString NETWORK_SYSFS_PATH("/sys/class/net/");
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
-    : q_ptr(parent)
+    : QObject(parent)
+    , q_ptr(parent)
 {
 }
 
@@ -100,12 +109,21 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode)
         else
             return -1;
 
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::WimaxMode:
+    case QNetworkInfo::LteMode:
+#if !defined(QT_NO_OFONO)
+        if (ofonoWrapper()->isOfonoAvailable()) {
+            QString modem = ofonoWrapper()->currentModem().path();
+            if (!modem.isEmpty())
+                return ofonoWrapper()->signalStrength(modem);
+        }
+#endif // QT_NO_OFONO
+        break;
+
 //    case QNetworkInfo::BluetoothMode:
-//    case QNetworkInfo::GsmMode:
-//    case QNetworkInfo::CdmaMode:
-//    case QNetworkInfo::WcdmaMode:
-//    case QNetworkInfo::WimaxMode:
-//    case QNetworkInfo::LteMode:
     default:
         break;
     };
@@ -115,7 +133,16 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode)
 
 QNetworkInfo::CellDataTechnology QNetworkInfoPrivate::currentCellDataTechnology(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->currentCellDataTechnology(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QNetworkInfo::UnknownDataTechnology;
 }
 
@@ -200,11 +227,20 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
         return QNetworkInfo::UnknownStatus;
     }
 
-//    case QNetworkInfo::GsmMode:
-//    case QNetworkInfo::CdmaMode:
-//    case QNetworkInfo::WcdmaMode:
-//    case QNetworkInfo::WimaxMode:
-//    case QNetworkInfo::LteMode:
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::WimaxMode:
+    case QNetworkInfo::LteMode:
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QString modem = ofonoWrapper()->currentModem().path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->networkStatus(modem);
+    }
+#endif
+        break;
+
     default:
         break;
     };
@@ -250,43 +286,106 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 
 QString QNetworkInfoPrivate::cellId(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->cellId(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QString();
 }
 
 QString QNetworkInfoPrivate::currentMobileCountryCode(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->currentMcc(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QString();
 }
 
 QString QNetworkInfoPrivate::currentMobileNetworkCode(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->currentMnc(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QString();
 }
 
 QString QNetworkInfoPrivate::homeMobileCountryCode(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->homeMcc(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QString();
 }
 
 QString QNetworkInfoPrivate::homeMobileNetworkCode(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->homeMnc(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QString();
 }
 
 QString QNetworkInfoPrivate::imsi(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->imsi(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QString();
 }
 
 QString QNetworkInfoPrivate::locationAreaCode(int sim)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QList<QDBusObjectPath> modems = ofonoWrapper()->allModems();
+        QString modem = modems.at(sim).path();
+        if (!modem.isEmpty())
+            return ofonoWrapper()->lac(modem);
+    }
+#else
     Q_UNUSED(sim)
+#endif
     return QString();
 }
 
@@ -382,16 +481,39 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode)
         break;
     }
 
-//    case QNetworkInfo::GsmMode:
-//    case QNetworkInfo::CdmaMode:
-//    case QNetworkInfo::WcdmaMode:
-//    case QNetworkInfo::WimaxMode:
-//    case QNetworkInfo::LteMode:
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::WimaxMode:
+    case QNetworkInfo::LteMode:
+#if !defined(QT_NO_OFONO)
+        if (ofonoWrapper()->isOfonoAvailable()) {
+            QString modem = ofonoWrapper()->currentModem().path();
+            if (!modem.isEmpty())
+                return ofonoWrapper()->operatorName(modem);
+        }
+#endif // QT_NO_OFONO
+        break;
+
     default:
         break;
     };
 
     return QString();
+}
+
+void QNetworkInfoPrivate::connectNotify(const char *signal)
+{
+#if !defined(QT_NO_OFONO)
+    connect(ofonoWrapper(), signal, this, signal, Qt::UniqueConnection);
+#endif // QT_NO_OFONO
+}
+
+void QNetworkInfoPrivate::disconnectNotify(const char *signal)
+{
+#if !defined(QT_NO_OFONO)
+    disconnect(ofonoWrapper(), signal, this, signal);
+#endif // QT_NO_OFONO
 }
 
 QT_END_NAMESPACE

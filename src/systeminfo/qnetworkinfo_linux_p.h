@@ -57,8 +57,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkInfoPrivate
+class QNetworkInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     QNetworkInfoPrivate(QNetworkInfo *parent);
 
@@ -76,6 +78,21 @@ public:
     QString locationAreaCode(int sim);
     QString macAddress(QNetworkInfo::NetworkMode mode);
     QString networkName(QNetworkInfo::NetworkMode mode);
+
+Q_SIGNALS:
+    void cellIdChanged(int sim, const QString &id);
+    void currentCellDataTechnologyChanged(int sim, QNetworkInfo::CellDataTechnology tech);
+    void currentMobileCountryCodeChanged(int sim, const QString &mcc);
+    void currentMobileNetworkCodeChanged(int sim, const QString &mnc);
+    void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
+    void locationAreaCodeChanged(int sim, const QString &lac);
+    void networkNameChanged(QNetworkInfo::NetworkMode mode, const QString &name);
+    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int strength);
+    void networkStatusChanged(QNetworkInfo::NetworkMode mode, QNetworkInfo::NetworkStatus status);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
 
 private:
     QNetworkInfo * const q_ptr;

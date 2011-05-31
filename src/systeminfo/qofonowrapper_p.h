@@ -39,79 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKINFO_H
-#define QNETWORKINFO_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qsysteminfo_p.h"
+#ifndef QOFONOWRAPPER_P_H
+#define QOFONOWRAPPER_P_H
+
 #include <QtCore/qobject.h>
-#include <QtNetwork/qnetworkinterface.h>
+#include <QtDBus/qdbuscontext.h>
+#include <QtDBus/qdbusextratypes.h>
 
-QT_BEGIN_HEADER
+#include "qnetworkinfo.h"
+
+#if !defined(QT_NO_OFONO)
+
 QT_BEGIN_NAMESPACE
 
-class QNetworkInfoPrivate;
+struct QOfonoProperties
+{
+    QDBusObjectPath path;
+    QVariantMap properties;
+};
+Q_DECLARE_METATYPE(QOfonoProperties)
 
-class Q_SYSTEMINFO_EXPORT QNetworkInfo : public QObject
+typedef QList<QOfonoProperties> QOfonoPropertyMap;
+Q_DECLARE_METATYPE(QOfonoPropertyMap)
+
+class QOfonoWrapper : public QObject, protected QDBusContext
 {
     Q_OBJECT
 
-    Q_ENUMS(CellDataTechnology)
-    Q_ENUMS(NetworkMode)
-    Q_ENUMS(NetworkStatus)
-
-    Q_PROPERTY(QNetworkInfo::NetworkMode currentNetworkMode READ currentNetworkMode NOTIFY currentNetworkModeChanged)
-
 public:
-    enum CellDataTechnology {
-        UnknownDataTechnology = 0,
-        GprsDataTechnology,
-        EdgeDataTechnology,
-        UmtsDataTechnology,
-        HspaDataTechnology
-    };
+    QOfonoWrapper(QObject *parent = 0);
 
-    enum NetworkMode {
-        UnknownMode = 0,
-        GsmMode,
-        CdmaMode,
-        WcdmaMode,
-        WlanMode,
-        EthernetMode,
-        BluetoothMode,
-        WimaxMode,
-        LteMode
-    };
+    bool isOfonoAvailable();
 
-    enum NetworkStatus {
-        UnknownStatus = 0,
-        NoNetworkAvailable,
-        EmergencyOnly,
-        Searching,
-        Busy,
-        Connected,
-        Denied,
-        HomeNetwork,
-        Roaming
-    };
+    // Manager Interface
+    QDBusObjectPath currentModem();
+    QList<QDBusObjectPath> allModems();
 
-    QNetworkInfo(QObject *parent = 0);
-    virtual ~QNetworkInfo();
+    // Network Registration Interface
+    int signalStrength(const QString &modemPath);
+    QList<QDBusObjectPath> allOperators(const QString &modemPath);
+    QNetworkInfo::CellDataTechnology currentCellDataTechnology(const QString &modemPath);
+    QNetworkInfo::NetworkStatus networkStatus(const QString &modemPath);
+    QString cellId(const QString &modemPath);
+    QString currentMcc(const QString &modemPath);
+    QString currentMnc(const QString &modemPath);
+    QString lac(const QString &modemPath);
+    QString operatorName(const QString &modemPath);
 
-    Q_INVOKABLE int networkSignalStrength(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QNetworkInfo::CellDataTechnology currentCellDataTechnology(int sim) const;
-    Q_INVOKABLE QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QString cellId(int sim) const;
-    Q_INVOKABLE QString currentMobileCountryCode(int sim) const;
-    Q_INVOKABLE QString currentMobileNetworkCode(int sim) const;
-    Q_INVOKABLE QString homeMobileCountryCode(int sim) const;
-    Q_INVOKABLE QString homeMobileNetworkCode(int sim) const;
-    Q_INVOKABLE QString imsi(int sim) const;
-    Q_INVOKABLE QString locationAreaCode(int sim) const;
-    Q_INVOKABLE QString macAddress(QNetworkInfo::NetworkMode mode) const;
-    Q_INVOKABLE QString networkName(QNetworkInfo::NetworkMode mode) const;
-
-    QNetworkInfo::NetworkMode currentNetworkMode() const;
+    // SIM Manager Interface
+    QString homeMcc(const QString &modemPath);
+    QString homeMnc(const QString &modemPath);
+    QString imsi(const QString &modemPath);
 
 Q_SIGNALS:
     void cellIdChanged(int sim, const QString &id);
@@ -128,13 +117,20 @@ protected:
     void connectNotify(const char *signal);
     void disconnectNotify(const char *signal);
 
+private Q_SLOTS:
+    void onOfonoPropertyChanged(const QString &property, const QDBusVariant &value);
+
 private:
-    Q_DISABLE_COPY(QNetworkInfo)
-    QNetworkInfoPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QNetworkInfo)
+    int available;
+
+    QNetworkInfo::CellDataTechnology technologyStringToEnum(const QString &technology);
+    QNetworkInfo::NetworkMode technologyToMode(const QString &technology);
+    QNetworkInfo::NetworkStatus statusStringToEnum(const QString &status);
+    QString currentTechnology(const QString &modemPath);
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
-#endif // QNETWORKINFO_H
+#endif // QT_NO_OFONO
+
+#endif // QOFONOWRAPPER_P_H

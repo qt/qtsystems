@@ -318,4 +318,24 @@ QString QNetworkInfo::networkName(QNetworkInfo::NetworkMode mode) const
     return d_ptr->networkName(mode);
 }
 
+/*!
+    \internal
+*/
+void QNetworkInfo::connectNotify(const char *signal)
+{
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+}
+
+/*!
+    \internal
+*/
+void QNetworkInfo::disconnectNotify(const char *signal)
+{
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(signal) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
+}
+
 QT_END_NAMESPACE
