@@ -166,7 +166,7 @@ void QStorageInfo::connectNotify(const char *signal)
 void QStorageInfo::disconnectNotify(const char *signal)
 {
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (receivers(SIGNAL(signal)) > 0)
+    if (receivers(signal) > 0)
         return;
 
     disconnect(d_ptr, signal, this, signal);
