@@ -14,6 +14,7 @@ QMAKE_EXEC=qmake
 
 USE_BLKID=1
 
+
 while [ "$#" -gt 0 ]; do
     case "$1" in
     -help)
@@ -71,6 +72,44 @@ while [ "$#" -gt 0 ]; do
 done
 
 
+WHICH="$relpath/config.tests/tools/which.test"
+
+printf "Checking Qt"
+if ! "$WHICH" $QMAKE_EXEC 2>/dev/null 1>&2; then
+    QMAKE_EXEC_ALTERNATIVE=
+    if "$WHICH" qmake4 2>/dev/null 1>&2; then
+        QMAKE_EXEC_ALTERNATIVE=qmake4
+    elif "$WHICH" qmake-qt4 2>/dev/null 1>&2; then
+        QMAKE_EXEC_ALTERNATIVE=qmake-qt4
+    fi
+
+    if [ -z "$QMAKE_EXEC_ALTERNATIVE" ]; then
+        printf " ... Not found\n\n" >&2
+        echo >&2 "Cannot find "$QMAKE_EXEC" in your PATH.";
+        echo >&2 "Aborting."
+        exit 1
+    else
+        QMAKE_EXEC="$QMAKE_EXEC_ALTERNATIVE"
+    fi
+fi
+printf " ... "
+$QMAKE_EXEC -query QT_VERSION
+
+
+MAKE=
+for m in make gmake; do
+    if "$WHICH" $m >/dev/null 2>&1; then
+        MAKE=`$WHICH $m`
+        break
+    fi
+done
+if [ -z "$MAKE" ]; then
+    echo >&2 "Cannot find 'make' or 'gmake' in your PATH";
+    echo >&2 "Aborting."
+    exit 1
+fi
+
+
 CACHEFILE="$outpath/.qmake.cache"
 
 [ -f "$CACHEFILE" ] && rm -f "$CACHEFILE"
@@ -85,6 +124,7 @@ DEBUG=$DEBUG
 TESTS=$TESTS
 
 EOF
+
 
 compileTest()
 {
@@ -104,9 +144,9 @@ compileTest()
 
     $QMAKE_EXEC "$relpath/config.tests/$2/$2.pro" 2>> "$CONFIG_LOG" >> "$CONFIG_LOG"
     printf  " ."
-    make clean >> "$CONFIG_LOG"
+    $MAKE clean >> "$CONFIG_LOG"
     printf "."
-    make >> "$CONFIG_LOG" 2>&1
+    $MAKE >> "$CONFIG_LOG" 2>&1
     printf ". "
 
     if [ -e ./$2 ]; then
@@ -123,10 +163,12 @@ if [ $USE_BLKID = 1 ]; then
     compileTest "BLKID" blkid
 fi
 
+
 echo "Generating Headers..."
 rm -rf $outpath/include
 mkdir $outpath/include
 $relpath/bin/syncheaders $outpath/include/QtSystemInfo $relpath/src/systeminfo
+
 
 $QMAKE_EXEC $relpath/qtsystemkit.pro
 
