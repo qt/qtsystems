@@ -115,6 +115,11 @@ if [ $USE_BLKID = 1 ]; then
     compileTest "BLKID" blkid
 fi
 
+echo "Generating Headers..."
+rm -rf $outpath/include
+mkdir $outpath/include
+$relpath/bin/syncheaders $outpath/include/QtSystemInfo $relpath/src/systeminfo
+
 qmake $relpath/qtsystemkit.pro
 
 echo
