@@ -22,7 +22,8 @@ HEADERS += qdeviceinfo.h \
            qscreensaver.h \
            qbatteryinfo.h \
            qnetworkinfo.h \
-           qdeviceprofile.h
+           qdeviceprofile.h \
+           qinputdeviceinfo.h
 
 SOURCES += qdeviceinfo.cpp \
            qdisplayinfo.cpp \
@@ -30,7 +31,8 @@ SOURCES += qdeviceinfo.cpp \
            qscreensaver.cpp \
            qbatteryinfo.cpp \
            qnetworkinfo.cpp \
-           qdeviceprofile.cpp
+           qdeviceprofile.cpp \
+           qinputdeviceinfo.cpp
 
 unix {
     LIBS += -lXrandr -lblkid
@@ -40,14 +42,16 @@ unix {
                qstorageinfo_linux_p.h \
                qscreensaver_linux_p.h \
                qbatteryinfo_linux_p.h \
-               qnetworkinfo_linux_p.h
+               qnetworkinfo_linux_p.h \
+               qinputdeviceinfo_linux_p.h
 
     SOURCES += qdeviceinfo_linux.cpp \
                qdisplayinfo_linux.cpp \
                qstorageinfo_linux.cpp \
                qscreensaver_linux.cpp \
                qbatteryinfo_linux.cpp \
-               qnetworkinfo_linux.cpp
+               qnetworkinfo_linux.cpp \
+               qinputdeviceinfo_linux.cpp
 
     contains(QT_CONFIG, dbus): {
         QT += dbus
