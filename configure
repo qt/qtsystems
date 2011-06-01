@@ -10,6 +10,8 @@ PREFIX=`/bin/pwd`/install
 DEBUG=0
 TESTS=0
 
+QMAKE_EXEC=qmake
+
 USE_BLKID=1
 
 while [ "$#" -gt 0 ]; do
@@ -26,6 +28,8 @@ while [ "$#" -gt 0 ]; do
         echo " *  -release ........... Compile and link QtSystemKit with debugging turned off."
         echo "    -debug ............. Compile and link QtSystemKit with debugging turned on."
         echo "    -developer-build ... Compile and link QtSystemKit with developer options (including auto-tests exporting)."
+        echo
+        echo "    -qmake-exec <name> . Sets custom qmake binary."
         echo
         echo " Qt/Linux only:"
         echo
@@ -47,6 +51,10 @@ while [ "$#" -gt 0 ]; do
     -developer-build)
         TESTS=1
         DEBUG=1
+        ;;
+    -qmake-exec)
+        shift
+        QMAKE_EXEC=$1
         ;;
     -blkid)
         USE_BLKID=1
@@ -94,7 +102,7 @@ compileTest()
         cd config.tests/$2
     fi
 
-    qmake "$relpath/config.tests/$2/$2.pro" 2>> "$CONFIG_LOG" >> "$CONFIG_LOG"
+    $QMAKE_EXEC "$relpath/config.tests/$2/$2.pro" 2>> "$CONFIG_LOG" >> "$CONFIG_LOG"
     printf  " ."
     make clean >> "$CONFIG_LOG"
     printf "."
@@ -120,7 +128,7 @@ rm -rf $outpath/include
 mkdir $outpath/include
 $relpath/bin/syncheaders $outpath/include/QtSystemInfo $relpath/src/systeminfo
 
-qmake $relpath/qtsystemkit.pro
+$QMAKE_EXEC $relpath/qtsystemkit.pro
 
 echo
 echo "QtSystemKit is now configured for building. Just run 'make' to build."
