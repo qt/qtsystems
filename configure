@@ -4,9 +4,13 @@ relpath=`dirname $0`
 relpath=`(cd "$relpath"; /bin/pwd)`
 outpath=`/bin/pwd`
 
+CONFIG_LOG="$outpath/config.log"
+
 PREFIX=`/bin/pwd`/install
 DEBUG=0
 TESTS=0
+
+USE_BLKID=1
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -22,6 +26,11 @@ while [ "$#" -gt 0 ]; do
         echo " *  -release ........... Compile and link QtSystemKit with debugging turned off."
         echo "    -debug ............. Compile and link QtSystemKit with debugging turned on."
         echo "    -developer-build ... Compile and link QtSystemKit with developer options (including auto-tests exporting)."
+        echo
+        echo " Qt/Linux only:"
+        echo
+        echo " *  -blkid ............. Use the BLKID for storage info."
+        echo "    -no-blkid .......... Don't use the BLKID for storage info."
         echo
         exit
         ;;
@@ -39,6 +48,12 @@ while [ "$#" -gt 0 ]; do
         TESTS=1
         DEBUG=1
         ;;
+    -blkid)
+        USE_BLKID=1
+        ;;
+    -no-blkid)
+        USE_BLKID=0
+        ;;
     *)
         echo >&2 "Invalid option: $1"
         exit
@@ -46,6 +61,7 @@ while [ "$#" -gt 0 ]; do
     esac
     shift
 done
+
 
 CACHEFILE="$outpath/.qmake.cache"
 
@@ -59,7 +75,45 @@ BUILD_TREE = \$\$quote($outpath)
 
 DEBUG=$DEBUG
 TESTS=$TESTS
+
 EOF
+
+compileTest()
+{
+    printf "Checking $1"
+    CURRENT_PWD=`pwd`
+
+    if [ "$outpath" = "$relpath" ]; then
+        #doing source tree build
+        cd "$relpath/config.tests/$2"
+        rm -rf ./$2
+    else
+        #using shadow build
+        rm -rf config.tests/$2
+        mkdir -p config.tests/$2
+        cd config.tests/$2
+    fi
+
+    qmake "$relpath/config.tests/$2/$2.pro" 2>> "$CONFIG_LOG" >> "$CONFIG_LOG"
+    printf  " ."
+    make clean >> "$CONFIG_LOG"
+    printf "."
+    make >> "$CONFIG_LOG" 2>&1
+    printf ". "
+
+    if [ -e ./$2 ]; then
+        echo "OK"
+        echo "$2_enabled = yes" >> "$CACHEFILE"
+    else
+        echo "Not Found"
+        echo "$2_enabled = no" >> "$CACHEFILE"
+    fi
+    cd "$CURRENT_PWD"
+}
+
+if [ $USE_BLKID = 1 ]; then
+    compileTest "BLKID" blkid
+fi
 
 qmake $relpath/qtsystemkit.pro
 

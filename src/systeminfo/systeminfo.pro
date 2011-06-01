@@ -35,7 +35,7 @@ SOURCES += qdeviceinfo.cpp \
            qinputdeviceinfo.cpp
 
 unix {
-    LIBS += -lXrandr -lblkid
+    LIBS += -lXrandr
 
     HEADERS += qdeviceinfo_linux_p.h \
                qdisplayinfo_linux_p.h \
@@ -62,5 +62,12 @@ unix {
 
     } else {
         DEFINES += QT_NO_OFONO
+    }
+
+    blkid_enabled = $$blkid_enabled
+    isEqual(blkid_enabled, yes) {
+        LIBS += -lblkid
+    } else {
+        DEFINES += QT_NO_BLKID
     }
 }
