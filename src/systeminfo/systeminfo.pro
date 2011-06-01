@@ -21,14 +21,16 @@ HEADERS += qdeviceinfo.h \
            qstorageinfo.h \
            qscreensaver.h \
            qbatteryinfo.h \
-           qnetworkinfo.h
+           qnetworkinfo.h \
+           qdeviceprofile.h
 
 SOURCES += qdeviceinfo.cpp \
            qdisplayinfo.cpp \
            qstorageinfo.cpp \
            qscreensaver.cpp \
            qbatteryinfo.cpp \
-           qnetworkinfo.cpp
+           qnetworkinfo.cpp \
+           qdeviceprofile.cpp
 
 unix {
     LIBS += -lXrandr -lblkid
