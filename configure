@@ -164,15 +164,22 @@ if [ $USE_BLKID = 1 ]; then
 fi
 
 
+echo
 echo "Generating Headers..."
 rm -rf $outpath/include
 mkdir $outpath/include
 $relpath/bin/syncheaders $outpath/include/QtSystemInfo $relpath/src/systeminfo
 
 
-$QMAKE_EXEC $relpath/qtsystemkit.pro
-
 echo
-echo "QtSystemKit is now configured for building. Just run 'make' to build."
-echo "Once everything is built, you can run 'make install' to install."
-echo
+echo "Running $QMAKE_EXEC..."
+if $QMAKE_EXEC -makefile -recursive $relpath/qtsystemkit.pro; then
+    echo
+    echo "QtSystemKit is now configured for building. Just run 'make' to build."
+    echo "Once everything is built, you can run 'make install' to install."
+    echo
+else
+    echo
+    echo "Configuration failed!"
+    exit 1
+fi
