@@ -1,5 +1,8 @@
 Improve the build system.
  - Allow users to choose the qmake they use.
+ - Build dep checking.
+ - Generate & install header files.
 
 Check how much integration with the QtBase module is needed.
  - Currently we don't need it.
+ - Correct the versioning.
