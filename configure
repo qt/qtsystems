@@ -7,7 +7,9 @@ outpath=`/bin/pwd`
 CONFIG_IN="$outpath/config.in"
 CONFIG_LOG="$outpath/config.log"
 
-PREFIX=`/bin/pwd`/install
+QT_SYSTEMKIT_PREFIX=$outpath/install
+QT_SYSTEMKIT_INCLUDE=$QT_SYSTEMKIT_PREFIX/include
+QT_SYSTEMKIT_LIB=$QT_SYSTEMKIT_PREFIX/lib
 
 BUILD_UNITTESTS=
 RELEASEMODE=
@@ -35,7 +37,12 @@ while [ "$#" -gt 0 ]; do
         echo " included. Here is a short explanation of each option:"
         echo
         echo "    -prefix <dir> ...... This will install everything relative to <dir>"
-        echo "                         (default $PREFIX)"
+        echo "                         (default $QT_SYSTEMKIT_PREFIX)"
+        echo "    -headerdir <dir> ... Header files will be installed to <dir>"
+        echo "                         (default prefix: $QT_SYSTEMKIT_INCLUDE)"
+        echo "    -libdir <dir> ...... Libraries will be installed to <dir>"
+        echo "                         (default: $QT_SYSTEMKIT_LIB)"
+        echo
         echo " *  -release ........... Compile and link QtSystemKit with debugging turned off."
         echo "    -debug ............. Compile and link QtSystemKit with debugging turned on."
         echo "    -developer-build ... Compile and link QtSystemKit with developer options (including auto-tests exporting)."
@@ -51,7 +58,15 @@ while [ "$#" -gt 0 ]; do
         ;;
     -prefix)
         shift
-        PREFIX=$1
+        QT_SYSTEMKIT_PREFIX=$1
+        ;;
+    -headerdir)
+        shift
+        QT_SYSTEMKIT_INCLUDE="$1"
+        ;;
+    -libdir)
+        shift
+        QT_SYSTEMKIT_LIB="$1"
         ;;
     -release)
         RELEASEMODE=release
@@ -178,7 +193,9 @@ else
     echo "build_unit_tests = yes" >> "$CONFIG_IN"
 fi
 
-echo "PREFIX = $PREFIX" >> "$CONFIG_IN"
+echo "QT_SYSTEMKIT_PREFIX = $QT_SYSTEMKIT_PREFIX" >> "$CONFIG_IN"
+echo "QT_SYSTEMKIT_INCLUDE = $QT_SYSTEMKIT_INCLUDE" >> "$CONFIG_IN"
+echo "QT_SYSTEMKIT_LIB = $QT_SYSTEMKIT_LIB" >> "$CONFIG_IN"
 
 mv "$CONFIG_IN" config.pri
 
