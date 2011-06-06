@@ -1,10 +1,12 @@
 load(qt_module)
 
+include(../src.pri)
+
 TEMPLATE = lib
-DESTDIR  = $$BUILD_TREE/lib
+DESTDIR  = $$QT_SYSTEMKIT_BUILD_TREE/lib
 
 TARGET = QtSystemInfo
-target.path = $$PREFIX/lib
+target.path = $${PREFIX}/lib
 INSTALLS += target
 
 QT = core network
@@ -13,8 +15,6 @@ CONFIG += module
 MODULE_PRI = ../../modules/qt_systeminfo.pri
 
 DEFINES += QT_BUILD_SYSTEMINFO_LIB
-
-include(../src.pri)
 
 HEADERS += qdeviceinfo.h \
            qdisplayinfo.h \
@@ -64,8 +64,7 @@ unix {
         DEFINES += QT_NO_OFONO
     }
 
-    blkid_enabled = $$blkid_enabled
-    isEqual(blkid_enabled, yes) {
+    contains(blkid_enabled, yes) {
         LIBS += -lblkid
     } else {
         DEFINES += QT_NO_BLKID

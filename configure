@@ -4,17 +4,27 @@ relpath=`dirname $0`
 relpath=`(cd "$relpath"; /bin/pwd)`
 outpath=`/bin/pwd`
 
+CONFIG_IN="$outpath/config.in"
 CONFIG_LOG="$outpath/config.log"
 
 PREFIX=`/bin/pwd`/install
-DEBUG=0
-TESTS=0
 
+BUILD_UNITTESTS=
+RELEASEMODE=
+
+QMAKE_CACHE="$outpath/.qmake.cache"
 QMAKE_EXEC=qmake
 
 USE_BLKID=1
 
 
+# Remove old stuffs
+rm -rf "$CONFIG_IN"
+rm -rf "$CONFIG_LOG"
+rm -rf "$QMAKE_CACHE"
+
+
+# Handle command line parameters
 while [ "$#" -gt 0 ]; do
     case "$1" in
     -help)
@@ -44,13 +54,13 @@ while [ "$#" -gt 0 ]; do
         PREFIX=$1
         ;;
     -release)
-        DEBUG=0
+        RELEASEMODE=release
         ;;
     -debug)
-        DEBUG=1
+        RELEASEMODE=debug
         ;;
     -developer-build)
-        TESTS=1
+        BUILD_UNITTESTS=yes
         DEBUG=1
         ;;
     -qmake-exec)
@@ -72,6 +82,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 
+# Check dependencies
 WHICH="$relpath/config.tests/tools/which.test"
 
 printf "Checking Qt"
@@ -110,22 +121,6 @@ if [ -z "$MAKE" ]; then
 fi
 
 
-CACHEFILE="$outpath/.qmake.cache"
-
-[ -f "$CACHEFILE" ] && rm -f "$CACHEFILE"
-
-cat >>"$CACHEFILE" <<EOF
-PREFIX = \$\$quote($PREFIX)
-
-SOURCE_TREE = \$\$quote($relpath)
-BUILD_TREE = \$\$quote($outpath)
-
-DEBUG=$DEBUG
-TESTS=$TESTS
-
-EOF
-
-
 compileTest()
 {
     printf "Checking $1"
@@ -151,10 +146,10 @@ compileTest()
 
     if [ -e ./$2 ]; then
         echo "OK"
-        echo "$2_enabled = yes" >> "$CACHEFILE"
+        echo "$2_enabled = yes" >> "$CONFIG_IN"
     else
         echo "Not Found"
-        echo "$2_enabled = no" >> "$CACHEFILE"
+        echo "$2_enabled = no" >> "$CONFIG_IN"
     fi
     cd "$CURRENT_PWD"
 }
@@ -164,6 +159,31 @@ if [ $USE_BLKID = 1 ]; then
 fi
 
 
+# Set values for building
+echo "QT_SYSTEMKIT_SOURCE_TREE = $relpath" >> "$QMAKE_CACHE"
+echo "QT_SYSTEMKIT_BUILD_TREE = $outpath" >> "$QMAKE_CACHE"
+
+if [ -z "$RELEASEMODE" ]; then
+    RELEASEMODE="debug"
+fi
+echo "CONFIG += $RELEASEMODE" >> "$CONFIG_IN"
+
+if [ -n "$BUILD_SILENT" ]; then
+    echo "CONFIG += silent"  >> "$CONFIG_IN"
+fi
+
+if [ -z "$BUILD_UNITTESTS" ]; then
+    echo "build_unit_tests = no" >> "$CONFIG_IN"
+else
+    echo "build_unit_tests = yes" >> "$CONFIG_IN"
+fi
+
+echo "PREFIX = $PREFIX" >> "$CONFIG_IN"
+
+mv "$CONFIG_IN" config.pri
+
+
+# Generate header files
 echo
 echo "Generating Headers..."
 rm -rf $outpath/include
@@ -171,6 +191,7 @@ mkdir $outpath/include
 $relpath/bin/syncheaders $outpath/include/QtSystemInfo $relpath/src/systeminfo
 
 
+# Run qmake
 echo
 echo "Running $QMAKE_EXEC..."
 if $QMAKE_EXEC -makefile -recursive $relpath/qtsystemkit.pro; then

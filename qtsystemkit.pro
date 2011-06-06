@@ -8,8 +8,11 @@ module_qtsystemkit_tests.subdir = tests
 module_qtsystemkit_tests.target = module-qtsystemkit-tests
 module_qtsystemkit_tests.depends = module_qtsystemkit_src
 
-TESTS=$$TESTS
-isEqual(TESTS, 0) {
+!include($$QT_SYSTEMKIT_BUILD_TREE/config.pri) {
+    error("Please run configure script");
+}
+
+contains(build_unit_tests, no) {
     module_qtsystemkit_tests.CONFIG = no_default_target no_default_install
 }
 
