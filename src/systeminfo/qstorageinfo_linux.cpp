@@ -46,13 +46,16 @@
 
 #include <errno.h>
 #include <mntent.h>
-#include <blkid/blkid.h>
 #include <fcntl.h>
 #include <linux/fs.h>
 #include <sys/inotify.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
+
+#if !defined(QT_NO_BLKID)
+#include <blkid/blkid.h>
+#endif // QT_NO_BLKID
 
 QT_BEGIN_NAMESPACE
 
@@ -97,6 +100,8 @@ qlonglong QStorageInfoPrivate::totalDiskSpace(const QString &drive)
 QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 {
     QString uri;
+
+#if !defined(QT_NO_BLKID)
     FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
     mntent *entry = NULL;
     while ((entry = getmntent(fsDescription)) != NULL) {
@@ -123,6 +128,10 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
     }
 
     endmntent(fsDescription);
+#else
+    Q_UNUSED(drive)
+#endif // QT_NO_BLKID
+
     return uri;
 }
 
