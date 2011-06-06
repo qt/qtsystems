@@ -42,6 +42,15 @@
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
 
+#include "qbatteryinfo.h"
+#include "qdeviceinfo.h"
+#include "qdeviceprofile.h"
+#include "qdisplayinfo.h"
+#include "qinputdeviceinfo.h"
+#include "qnetworkinfo.h"
+#include "qscreensaver.h"
+#include "qstorageinfo.h"
+
 QT_BEGIN_NAMESPACE
 
 class QSystemInfoDeclarativeModule : public QDeclarativeExtensionPlugin
@@ -52,6 +61,17 @@ public:
     virtual void registerTypes(const char *uri)
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.systeminfo"));
+
+        int major = 1;
+        int minor = 0;
+        qmlRegisterType<QBatteryInfo>(uri, major, minor, "BatteryInfo");
+        qmlRegisterType<QDeviceInfo>(uri, major, minor, "DeviceInfo");
+        qmlRegisterType<QDeviceProfile>(uri, major, minor, "DeviceProfile");
+        qmlRegisterType<QDisplayInfo>(uri, major, minor, "DisplayInfo");
+        qmlRegisterType<QInputDeviceInfo>(uri, major, minor, "InputDeviceInfo");
+        qmlRegisterType<QNetworkInfo>(uri, major, minor, "NetworkInfo");
+        qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");
+        qmlRegisterType<QStorageInfo>(uri, major, minor, "StorageInfo");
     }
 };
 
