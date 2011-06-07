@@ -3,6 +3,7 @@ load(qt_module)
 include(../src.pri)
 
 TEMPLATE = lib
+VERSION = $${QT.systeminfo.VERSION}
 DESTDIR  = $$QT_SYSTEMKIT_BUILD_TREE/lib
 
 TARGET = QtSystemInfo
