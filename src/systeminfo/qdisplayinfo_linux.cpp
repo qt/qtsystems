@@ -62,6 +62,8 @@ int QDisplayInfoPrivate::colorDepth(int screen)
 {
 #if defined(Q_WS_X11)
     return QX11Info::appDepth(screen);
+#else
+    Q_UNUSED(screen)
 #endif // Q_WS_X11
 
     return QPixmap::defaultDepth();
