@@ -229,14 +229,6 @@ echo "QT_SYSTEMKIT_LIB = $QT_SYSTEMKIT_LIB" >> "$CONFIG_IN"
 mv "$CONFIG_IN" config.pri
 
 
-# Generate header files
-echo
-echo "Generating Headers..."
-rm -rf $outpath/include
-mkdir $outpath/include
-$relpath/bin/syncheaders $outpath/include/QtSystemInfo $relpath/src/systeminfo
-
-
 # Run qmake
 echo
 echo "Running $QMAKE_EXEC..."
