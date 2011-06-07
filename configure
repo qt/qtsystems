@@ -8,6 +8,7 @@ CONFIG_IN="$outpath/config.in"
 CONFIG_LOG="$outpath/config.log"
 
 QT_SYSTEMKIT_PREFIX=$outpath/install
+QT_SYSTEMKIT_IMPORTS=$QT_SYSTEMKIT_PREFIX/imports
 QT_SYSTEMKIT_INCLUDE=$QT_SYSTEMKIT_PREFIX/include
 QT_SYSTEMKIT_LIB=$QT_SYSTEMKIT_PREFIX/lib
 
@@ -40,6 +41,8 @@ while [ "$#" -gt 0 ]; do
         echo "                         (default $QT_SYSTEMKIT_PREFIX)"
         echo "    -headerdir <dir> ... Header files will be installed to <dir>"
         echo "                         (default prefix: $QT_SYSTEMKIT_INCLUDE)"
+        echo "    -importdir <dir> ... QML plugins will be installed to <dir>"
+        echo "                         (default: $QT_SYSTEMKIT_IMPORTS)"
         echo "    -libdir <dir> ...... Libraries will be installed to <dir>"
         echo "                         (default: $QT_SYSTEMKIT_LIB)"
         echo
@@ -63,6 +66,10 @@ while [ "$#" -gt 0 ]; do
     -headerdir)
         shift
         QT_SYSTEMKIT_INCLUDE="$1"
+        ;;
+    -importdir)
+        shift
+        QT_SYSTEMKIT_IMPORT="$1"
         ;;
     -libdir)
         shift
@@ -194,6 +201,7 @@ else
 fi
 
 echo "QT_SYSTEMKIT_PREFIX = $QT_SYSTEMKIT_PREFIX" >> "$CONFIG_IN"
+echo "QT_SYSTEMKIT_IMPORTS = $QT_SYSTEMKIT_IMPORTS" >> "$CONFIG_IN"
 echo "QT_SYSTEMKIT_INCLUDE = $QT_SYSTEMKIT_INCLUDE" >> "$CONFIG_IN"
 echo "QT_SYSTEMKIT_LIB = $QT_SYSTEMKIT_LIB" >> "$CONFIG_IN"
 
