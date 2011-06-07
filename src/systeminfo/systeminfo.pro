@@ -3,6 +3,7 @@ load(qt_module)
 include(../src.pri)
 
 TEMPLATE = lib
+VERSION = $${QT.systeminfo.VERSION}
 DESTDIR  = $$QT_SYSTEMKIT_BUILD_TREE/lib
 
 TARGET = QtSystemInfo
@@ -56,10 +57,12 @@ unix {
     contains(QT_CONFIG, dbus): {
         QT += dbus
 
-        PRIVATE_HEADERS += qofonowrapper_p.h
-
-        SOURCES += qofonowrapper.cpp
-
+        contains(ofono_enabled, yes) {
+            PRIVATE_HEADERS += qofonowrapper_p.h
+            SOURCES += qofonowrapper.cpp
+        } else {
+            DEFINES += QT_NO_OFONO
+        }
     } else {
         DEFINES += QT_NO_OFONO
     }

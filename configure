@@ -12,6 +12,7 @@ QT_SYSTEMKIT_IMPORTS=$QT_SYSTEMKIT_PREFIX/imports
 QT_SYSTEMKIT_INCLUDE=$QT_SYSTEMKIT_PREFIX/include
 QT_SYSTEMKIT_LIB=$QT_SYSTEMKIT_PREFIX/lib
 
+BUILD_SILENT=
 BUILD_UNITTESTS=
 RELEASEMODE=
 
@@ -19,6 +20,7 @@ QMAKE_CACHE="$outpath/.qmake.cache"
 QMAKE_EXEC=qmake
 
 USE_BLKID=1
+USE_OFONO=0
 
 
 # Remove old stuffs
@@ -51,11 +53,15 @@ while [ "$#" -gt 0 ]; do
         echo "    -developer-build ... Compile and link QtSystemKit with developer options (including auto-tests exporting)."
         echo
         echo "    -qmake-exec <name> . Sets custom qmake binary."
+        echo "    -silent ............ Reduces build output"
         echo
         echo " Qt/Linux only:"
         echo
         echo " *  -blkid ............. Use the BLKID for storage info."
         echo "    -no-blkid .......... Don't use the BLKID for storage info."
+        echo
+        echo "    -ofono ............. Use the oFono for network info."
+        echo " *  -no-ofono .......... Don't use the oFono for network info."
         echo
         exit
         ;;
@@ -89,11 +95,20 @@ while [ "$#" -gt 0 ]; do
         shift
         QMAKE_EXEC=$1
         ;;
+    -silent)
+        BUILD_SILENT=yes
+        ;;
     -blkid)
         USE_BLKID=1
         ;;
     -no-blkid)
         USE_BLKID=0
+        ;;
+    -ofono)
+        USE_OFONO=1
+        ;;
+    -no-ofono)
+        USE_OFONO=0
         ;;
     *)
         echo >&2 "Invalid option: $1"
@@ -180,6 +195,12 @@ if [ $USE_BLKID = 1 ]; then
     compileTest "BLKID" blkid
 fi
 
+if [ $USE_OFONO = 1 ]; then
+    echo "ofono_enabled = yes" >> "$CONFIG_IN"
+else
+    echo "ofono_enabled = no" >> "$CONFIG_IN"
+fi
+
 
 # Set values for building
 echo "QT_SYSTEMKIT_SOURCE_TREE = $relpath" >> "$QMAKE_CACHE"
@@ -206,14 +227,6 @@ echo "QT_SYSTEMKIT_INCLUDE = $QT_SYSTEMKIT_INCLUDE" >> "$CONFIG_IN"
 echo "QT_SYSTEMKIT_LIB = $QT_SYSTEMKIT_LIB" >> "$CONFIG_IN"
 
 mv "$CONFIG_IN" config.pri
-
-
-# Generate header files
-echo
-echo "Generating Headers..."
-rm -rf $outpath/include
-mkdir $outpath/include
-$relpath/bin/syncheaders $outpath/include/QtSystemInfo $relpath/src/systeminfo
 
 
 # Run qmake
