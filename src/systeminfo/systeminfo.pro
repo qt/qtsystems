@@ -57,10 +57,12 @@ unix {
     contains(QT_CONFIG, dbus): {
         QT += dbus
 
-        PRIVATE_HEADERS += qofonowrapper_p.h
-
-        SOURCES += qofonowrapper.cpp
-
+        contains(ofono_enabled, yes) {
+            PRIVATE_HEADERS += qofonowrapper_p.h
+            SOURCES += qofonowrapper.cpp
+        } else {
+            DEFINES += QT_NO_OFONO
+        }
     } else {
         DEFINES += QT_NO_OFONO
     }

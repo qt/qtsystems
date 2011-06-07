@@ -497,6 +497,8 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
 {
 #if !defined(QT_NO_OFONO)
     connect(ofonoWrapper(), signal, this, signal, Qt::UniqueConnection);
+#else
+    Q_UNUSED(signal)
 #endif // QT_NO_OFONO
 }
 
@@ -504,6 +506,8 @@ void QNetworkInfoPrivate::disconnectNotify(const char *signal)
 {
 #if !defined(QT_NO_OFONO)
     disconnect(ofonoWrapper(), signal, this, signal);
+#else
+    Q_UNUSED(signal)
 #endif // QT_NO_OFONO
 }
 

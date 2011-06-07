@@ -20,6 +20,7 @@ QMAKE_CACHE="$outpath/.qmake.cache"
 QMAKE_EXEC=qmake
 
 USE_BLKID=1
+USE_OFONO=0
 
 
 # Remove old stuffs
@@ -58,6 +59,9 @@ while [ "$#" -gt 0 ]; do
         echo
         echo " *  -blkid ............. Use the BLKID for storage info."
         echo "    -no-blkid .......... Don't use the BLKID for storage info."
+        echo
+        echo "    -ofono ............. Use the oFono for network info."
+        echo " *  -no-ofono .......... Don't use the oFono for network info."
         echo
         exit
         ;;
@@ -99,6 +103,12 @@ while [ "$#" -gt 0 ]; do
         ;;
     -no-blkid)
         USE_BLKID=0
+        ;;
+    -ofono)
+        USE_OFONO=1
+        ;;
+    -no-ofono)
+        USE_OFONO=0
         ;;
     *)
         echo >&2 "Invalid option: $1"
@@ -183,6 +193,12 @@ compileTest()
 
 if [ $USE_BLKID = 1 ]; then
     compileTest "BLKID" blkid
+fi
+
+if [ $USE_OFONO = 1 ]; then
+    echo "ofono_enabled = yes" >> "$CONFIG_IN"
+else
+    echo "ofono_enabled = no" >> "$CONFIG_IN"
 fi
 
 
