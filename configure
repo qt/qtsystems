@@ -12,6 +12,7 @@ QT_SYSTEMKIT_IMPORTS=$QT_SYSTEMKIT_PREFIX/imports
 QT_SYSTEMKIT_INCLUDE=$QT_SYSTEMKIT_PREFIX/include
 QT_SYSTEMKIT_LIB=$QT_SYSTEMKIT_PREFIX/lib
 
+BUILD_SILENT=
 BUILD_UNITTESTS=
 RELEASEMODE=
 
@@ -51,6 +52,7 @@ while [ "$#" -gt 0 ]; do
         echo "    -developer-build ... Compile and link QtSystemKit with developer options (including auto-tests exporting)."
         echo
         echo "    -qmake-exec <name> . Sets custom qmake binary."
+        echo "    -silent ............ Reduces build output"
         echo
         echo " Qt/Linux only:"
         echo
@@ -88,6 +90,9 @@ while [ "$#" -gt 0 ]; do
     -qmake-exec)
         shift
         QMAKE_EXEC=$1
+        ;;
+    -silent)
+        BUILD_SILENT=yes
         ;;
     -blkid)
         USE_BLKID=1
