@@ -39,64 +39,33 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+#include "qscreensaver_win_p.h"
 
-#if defined(Q_OS_LINUX)
-#  include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
-
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QT_END_NAMESPACE
-#endif
+#include <QtCore/qsettings.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemKit
-    \brief The QScreenSaver class provides various information of the screen saver.
-*/
+static const QString SCREENSAVER_REGISTRY_ENTRY("HKEY_CURRENT_USER\\Software\\Policies\\Microsoft\\Windows\\Control Panel\\Desktop");
+static const QString SCREENSAVER_REGISTRY_KEY("ScreenSaveActive");
 
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
+QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
+    : q_ptr(parent)
 {
 }
 
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
+bool QScreenSaverPrivate::screenSaverEnabled()
 {
-    delete d_ptr;
+    QSettings screenSaverSetting(SCREENSAVER_REGISTRY_ENTRY, QSettings::NativeFormat);
+    return (screenSaverSetting.value(SCREENSAVER_REGISTRY_KEY).toString() == "1");
 }
 
-/*!
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
+void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-    return d_ptr->screenSaverEnabled();
-}
-
-/*!
-    Set the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
+    QSettings screenSaverSetting(SCREENSAVER_REGISTRY_ENTRY, QSettings::NativeFormat);
+    if (enabled)
+        screenSaverSetting.setValue(SCREENSAVER_REGISTRY_KEY, QVariant("1"));
+    else
+        screenSaverSetting.setValue(SCREENSAVER_REGISTRY_KEY, QVariant("0"));
 }
 
 QT_END_NAMESPACE

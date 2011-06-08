@@ -35,6 +35,16 @@ SOURCES += qdeviceinfo.cpp \
            qdeviceprofile.cpp \
            qinputdeviceinfo.cpp
 
+win32 {
+    contains(CONFIG, release) {
+       CONFIG -= console
+    }
+
+    PRIVATE_HEADERS += qscreensaver_win_p.h
+
+    SOURCES += qscreensaver_win.cpp
+}
+
 unix {
     LIBS += -lXrandr
 
