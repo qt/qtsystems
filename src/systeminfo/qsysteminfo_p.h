@@ -55,7 +55,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 #  if defined(QT_NODLL)
 #    undef QT_MAKEDLL
 #    undef QT_DLL
@@ -69,7 +69,7 @@
 #      define Q_SYSTEMINFO_EXPORT Q_DECL_IMPORT
 #    endif
 #  elif defined(QT_DLL)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_IMPORT
+#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
 #  endif
 #endif
 

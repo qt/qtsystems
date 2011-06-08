@@ -10,7 +10,7 @@ TARGET = QtSystemInfo
 target.path = $$QT_SYSTEMKIT_LIB
 INSTALLS += target
 
-QT = core network
+QT = core gui network
 
 CONFIG += module
 MODULE_PRI = ../../modules/qt_systeminfo.pri

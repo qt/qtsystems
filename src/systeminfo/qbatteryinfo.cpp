@@ -238,7 +238,11 @@ QBatteryInfo::EnergyUnit QBatteryInfo::energyUnit() const
 */
 void QBatteryInfo::connectNotify(const char *signal)
 {
+#if defined(Q_OS_LINUX)
     connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+#else
+    Q_UNUSED(signal)
+#endif
 }
 
 /*!
@@ -246,11 +250,15 @@ void QBatteryInfo::connectNotify(const char *signal)
 */
 void QBatteryInfo::disconnectNotify(const char *signal)
 {
+#if defined(Q_OS_LINUX)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (receivers(signal) > 0)
         return;
 
     disconnect(d_ptr, signal, this, signal);
+#else
+    Q_UNUSED(signal)
+#endif
 }
 
 QT_END_NAMESPACE
