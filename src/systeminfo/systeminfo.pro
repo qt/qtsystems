@@ -41,18 +41,20 @@ win32 {
     }
 
     win32-msvc*: {
-        LIBS += -lUser32
+        LIBS += -lUser32 -lGdi32
     }
 
     win32-g++: {
-        LIBS += -luser32
+        LIBS += -luser32 -lgdi32
     }
 
     PRIVATE_HEADERS += qscreensaver_win_p.h \
-                       qinputdeviceinfo_win_p.h
+                       qinputdeviceinfo_win_p.h \
+                       qdisplayinfo_win_p.h
 
     SOURCES += qscreensaver_win.cpp \
-               qinputdeviceinfo_win.cpp
+               qinputdeviceinfo_win.cpp \
+               qdisplayinfo_win.cpp
 }
 
 unix {
