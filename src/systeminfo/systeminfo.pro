@@ -40,9 +40,19 @@ win32 {
        CONFIG -= console
     }
 
-    PRIVATE_HEADERS += qscreensaver_win_p.h
+    win32-msvc*: {
+        LIBS += -lUser32
+    }
 
-    SOURCES += qscreensaver_win.cpp
+    win32-g++: {
+        LIBS += -luser32
+    }
+
+    PRIVATE_HEADERS += qscreensaver_win_p.h \
+                       qinputdeviceinfo_win_p.h
+
+    SOURCES += qscreensaver_win.cpp \
+               qinputdeviceinfo_win.cpp
 }
 
 unix {
