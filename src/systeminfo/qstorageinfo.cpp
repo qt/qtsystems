@@ -45,6 +45,8 @@
 
 #if defined(Q_OS_LINUX)
 #  include "qstorageinfo_linux_p.h"
+#elif defined(Q_OS_WIN)
+#  include "qstorageinfo_win_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QStorageInfoPrivate
@@ -157,7 +159,7 @@ QStorageInfo::DriveType QStorageInfo::driveType(const QString &drive) const
 */
 void QStorageInfo::connectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
     connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
@@ -169,7 +171,7 @@ void QStorageInfo::connectNotify(const char *signal)
 */
 void QStorageInfo::disconnectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (receivers(signal) > 0)
         return;
