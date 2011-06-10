@@ -53,14 +53,16 @@ win32 {
                        qdisplayinfo_win_p.h \
                        qdeviceinfo_win_p.h \
                        qstorageinfo_win_p.h \
-                       qbatteryinfo_win_p.h
+                       qbatteryinfo_win_p.h \
+                       qnetworkinfo_win_p.h
 
     SOURCES += qscreensaver_win.cpp \
                qinputdeviceinfo_win.cpp \
                qdisplayinfo_win.cpp \
                qdeviceinfo_win.cpp \
                qstorageinfo_win.cpp \
-               qbatteryinfo_win.cpp
+               qbatteryinfo_win.cpp \
+               qnetworkinfo_win.cpp
 }
 
 unix {
