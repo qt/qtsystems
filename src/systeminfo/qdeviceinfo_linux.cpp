@@ -261,9 +261,6 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
             return firmware.readAll().simplified();
         break;
     }
-
-    default:
-        break;
     };
 
     return QString();

@@ -50,11 +50,13 @@ win32 {
 
     PRIVATE_HEADERS += qscreensaver_win_p.h \
                        qinputdeviceinfo_win_p.h \
-                       qdisplayinfo_win_p.h
+                       qdisplayinfo_win_p.h \
+                       qdeviceinfo_win_p.h
 
     SOURCES += qscreensaver_win.cpp \
                qinputdeviceinfo_win.cpp \
-               qdisplayinfo_win.cpp
+               qdisplayinfo_win.cpp \
+               qdeviceinfo_win.cpp
 }
 
 unix {

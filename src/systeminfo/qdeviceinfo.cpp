@@ -43,6 +43,8 @@
 
 #if defined(Q_OS_LINUX)
 #  include "qdeviceinfo_linux_p.h"
+#elif defined(Q_OS_WIN)
+#  include "qdeviceinfo_win_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QDeviceInfoPrivate
@@ -117,9 +119,7 @@ QT_BEGIN_NAMESPACE
     This enum describes the version component.
 
     \value Os                    Operating system version / platform ID.
-    \value QtCore                Qt library version.
     \value Firmware              Version of (flashable) system as a whole.
-    \value QtMobility            QtMobility library version. Since 1.1
 */
 
 /*!
