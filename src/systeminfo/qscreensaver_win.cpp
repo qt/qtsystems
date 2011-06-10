@@ -43,6 +43,8 @@
 
 #include <QtCore/qsettings.h>
 
+#include <windows.h>
+
 QT_BEGIN_NAMESPACE
 
 static const QString SCREENSAVER_REGISTRY_ENTRY("HKEY_CURRENT_USER\\Software\\Policies\\Microsoft\\Windows\\Control Panel\\Desktop");
@@ -55,17 +57,14 @@ QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
 
 bool QScreenSaverPrivate::screenSaverEnabled()
 {
-    QSettings screenSaverSetting(SCREENSAVER_REGISTRY_ENTRY, QSettings::NativeFormat);
-    return (screenSaverSetting.value(SCREENSAVER_REGISTRY_KEY).toString() == "1");
+    // Work-around for http://support.microsoft.com/kb/318781
+    QSettings screenSaverSetting("HKEY_CURRENT_USER\\Control Panel\\Desktop", QSettings::NativeFormat);
+    return !screenSaverSetting.value("SCRNSAVE.EXE").isNull();
 }
 
 void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-    QSettings screenSaverSetting(SCREENSAVER_REGISTRY_ENTRY, QSettings::NativeFormat);
-    if (enabled)
-        screenSaverSetting.setValue(SCREENSAVER_REGISTRY_KEY, QVariant("1"));
-    else
-        screenSaverSetting.setValue(SCREENSAVER_REGISTRY_KEY, QVariant("0"));
+    SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, enabled, 0, SPIF_SENDWININICHANGE);
 }
 
 QT_END_NAMESPACE
