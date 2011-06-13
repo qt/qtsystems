@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdisplayinfo.h"
+#include <qdisplayinfo.h>
 
 #include <QtGui/qapplication.h>
 #include <QtGui/qdesktopwidget.h>

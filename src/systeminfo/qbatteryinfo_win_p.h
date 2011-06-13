@@ -53,7 +53,7 @@
 #ifndef QBATTERYINFO_WIN_P_H
 #define QBATTERYINFO_WIN_P_H
 
-#include "qbatteryinfo.h"
+#include <qbatteryinfo.h>
 
 QT_BEGIN_NAMESPACE
 

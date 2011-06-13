@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeviceprofile.h"
+#include <qdeviceprofile.h>
 
 QT_BEGIN_NAMESPACE
 class QDeviceProfilePrivate

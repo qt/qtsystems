@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qbatteryinfo.h"
+#include <qbatteryinfo.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qbatteryinfo_linux_p.h"

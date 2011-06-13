@@ -53,7 +53,7 @@
 #ifndef QNETWORKINFO_WIN_P_H
 #define QNETWORKINFO_WIN_P_H
 
-#include "qnetworkinfo.h"
+#include <qnetworkinfo.h>
 
 QT_BEGIN_NAMESPACE
 

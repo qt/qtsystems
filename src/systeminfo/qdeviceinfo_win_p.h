@@ -53,7 +53,7 @@
 #ifndef QDEVICEINFO_WIN_P_H
 #define QDEVICEINFO_WIN_P_H
 
-#include "qdeviceinfo.h"
+#include <qdeviceinfo.h>
 
 QT_BEGIN_NAMESPACE
 

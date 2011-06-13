@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeviceinfo.h"
+#include <qdeviceinfo.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qdeviceinfo_linux_p.h"

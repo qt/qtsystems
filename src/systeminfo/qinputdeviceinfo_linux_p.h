@@ -53,7 +53,7 @@
 #ifndef QINPUTDEVICEINFO_LINUX_P_H
 #define QINPUTDEVICEINFO_LINUX_P_H
 
-#include "qinputdeviceinfo.h"
+#include <qinputdeviceinfo.h>
 
 QT_BEGIN_NAMESPACE
 
