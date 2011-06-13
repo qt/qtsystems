@@ -11,6 +11,6 @@ QT.systeminfo.sources = $$QT_MODULE_BASE/src/systeminfo
 QT.systeminfo.libs = $$QT_MODULE_LIB_BASE
 QT.systeminfo.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.systeminfo.imports = $$QT_MODULE_IMPORT_BASE
-QT.systeminfo.depends = core gui
+QT.systeminfo.depends = core gui network
 
 QT_CONFIG += systeminfo
