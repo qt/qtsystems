@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+#include <qscreensaver.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qscreensaver_linux_p.h"

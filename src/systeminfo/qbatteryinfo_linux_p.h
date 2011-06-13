@@ -53,7 +53,7 @@
 #ifndef QBATTERYINFO_LINUX_P_H
 #define QBATTERYINFO_LINUX_P_H
 
-#include "qbatteryinfo.h"
+#include <qbatteryinfo.h>
 
 #include <QtCore/qmap.h>
 

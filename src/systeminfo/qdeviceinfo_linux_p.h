@@ -53,7 +53,7 @@
 #ifndef QDEVICEINFO_LINUX_P_H
 #define QDEVICEINFO_LINUX_P_H
 
-#include "qdeviceinfo.h"
+#include <qdeviceinfo.h>
 
 QT_BEGIN_NAMESPACE
 

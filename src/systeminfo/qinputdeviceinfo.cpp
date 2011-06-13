@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qinputdeviceinfo.h"
+#include <qinputdeviceinfo.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qinputdeviceinfo_linux_p.h"

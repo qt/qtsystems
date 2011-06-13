@@ -53,7 +53,7 @@
 #ifndef QSTORAGEINFO_WIN_P_H
 #define QSTORAGEINFO_WIN_P_H
 
-#include "qstorageinfo.h"
+#include <qstorageinfo.h>
 
 QT_BEGIN_NAMESPACE
 

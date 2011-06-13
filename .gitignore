@@ -122,6 +122,8 @@ translations/*.qm
 translations/*_untranslated.ts
 qrc_*.cpp
 
+src/systeminfo/qtsysteminfoversion.h
+
 # Test generated files
 QObject.log
 tst_*

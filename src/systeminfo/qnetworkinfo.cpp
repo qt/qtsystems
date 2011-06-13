@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qnetworkinfo.h"
+#include <qnetworkinfo.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qnetworkinfo_linux_p.h"

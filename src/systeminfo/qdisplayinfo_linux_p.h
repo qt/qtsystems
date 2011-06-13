@@ -53,7 +53,7 @@
 #ifndef QDISPLAYINFO_LINUX_P_H
 #define QDISPLAYINFO_LINUX_P_H
 
-#include "qdisplayinfo.h"
+#include <qdisplayinfo.h>
 
 QT_BEGIN_NAMESPACE
 

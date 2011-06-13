@@ -53,7 +53,7 @@
 #ifndef QDISPLAYINFO_WIN_P_H
 #define QDISPLAYINFO_WIN_P_H
 
-#include "qdisplayinfo.h"
+#include <qdisplayinfo.h>
 
 #include <windows.h>
 

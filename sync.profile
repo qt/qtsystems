@@ -4,6 +4,7 @@
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );
 %classnames = (
+    "qtsysteminfoversion.h" => "QtSystemInfoVersion",
 );
 %mastercontent = (
     "systeminfo" => "#include <QtSystemInfo/QtSystemInfo>\n",
@@ -20,5 +21,7 @@
 %dependencies = (
     "QtSystemInfo" => {
         "QtCore" => "LATEST_RELEASE",
+        "QtDeclarative" => "LATEST_RELEASE",
+        "QtGui" => "LATEST_RELEASE",
     },
 );

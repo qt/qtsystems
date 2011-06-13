@@ -53,7 +53,7 @@
 #ifndef QSCREENSAVER_LINUX_P_H
 #define QSCREENSAVER_LINUX_P_H
 
-#include "qscreensaver.h"
+#include <qscreensaver.h>
 
 QT_BEGIN_NAMESPACE
 

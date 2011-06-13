@@ -42,14 +42,14 @@
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
 
-#include "qbatteryinfo.h"
-#include "qdeviceinfo.h"
-#include "qdeviceprofile.h"
-#include "qdisplayinfo.h"
-#include "qinputdeviceinfo.h"
-#include "qnetworkinfo.h"
-#include "qscreensaver.h"
-#include "qstorageinfo.h"
+#include <qbatteryinfo.h>
+#include <qdeviceinfo.h>
+#include <qdeviceprofile.h>
+#include <qdisplayinfo.h>
+#include <qinputdeviceinfo.h>
+#include <qnetworkinfo.h>
+#include <qscreensaver.h>
+#include <qstorageinfo.h>
 
 QT_BEGIN_NAMESPACE
 

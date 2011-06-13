@@ -57,7 +57,7 @@
 #include <QtDBus/qdbuscontext.h>
 #include <QtDBus/qdbusextratypes.h>
 
-#include "qnetworkinfo.h"
+#include <qnetworkinfo.h>
 
 #if !defined(QT_NO_OFONO)
 
