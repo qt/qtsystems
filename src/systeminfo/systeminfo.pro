@@ -17,6 +17,8 @@ MODULE_PRI = ../../modules/qt_systeminfo.pri
 
 DEFINES += QT_BUILD_SYSTEMINFO_LIB
 
+HEADERS += qtsysteminfoversion.h
+
 PUBLIC_HEADERS += qdeviceinfo.h \
                   qdisplayinfo.h \
                   qstorageinfo.h \
