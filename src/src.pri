@@ -8,7 +8,7 @@ contains(build_unit_tests, yes) {
     QMAKE_LIBS     += -lgcov
 }
 
-CONFIG(debug, debug|release) {
+!CONFIG(debug, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT QT_NO_WARNING_OUTPUT
 }
 

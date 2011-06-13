@@ -1,21 +1,15 @@
 load(qt_module)
-
-include(../src.pri)
-
-TEMPLATE = lib
-VERSION = $${QT.systeminfo.VERSION}
-DESTDIR  = $$QT_SYSTEMKIT_BUILD_TREE/lib
+load(qt_module_config)
+QPRO_PWD = $$PWD
 
 TARGET = QtSystemInfo
-target.path = $$QT_SYSTEMKIT_LIB
-INSTALLS += target
 
 QT = core gui network
 
 CONFIG += module
 MODULE_PRI = ../../modules/qt_systeminfo.pri
 
-DEFINES += QT_BUILD_SYSTEMINFO_LIB
+DEFINES += QT_BUILD_SYSTEMINFO_LIB QT_MAKEDLL
 
 HEADERS += qtsysteminfoversion.h
 
@@ -68,7 +62,7 @@ win32 {
 }
 
 unix {
-    LIBS += -lXrandr
+    LIBS += -lXrandr -lX11
 
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
