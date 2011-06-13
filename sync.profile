@@ -21,5 +21,7 @@
 %dependencies = (
     "QtSystemInfo" => {
         "QtCore" => "LATEST_RELEASE",
+        "QtDeclarative" => "LATEST_RELEASE",
+        "QtGui" => "LATEST_RELEASE",
     },
 );
