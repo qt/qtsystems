@@ -69,17 +69,15 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         const QString devfsPath("/dev/");
         const QStringList dirs = QDir(devfsPath).entryList(QStringList() << "video*", QDir::System);
         foreach (const QString &dir, dirs) {
-            int fd = open((devfsPath + dir).toStdString().c_str(), O_RDWR);
-            if (fd == -1)
+            QFile dev(devfsPath + dir);
+            if (!dev.open(QIODevice::ReadWrite))
                 continue;
             struct v4l2_capability capability;
             memset(&capability, 0, sizeof(struct v4l2_capability));
-            if (ioctl(fd, VIDIOC_QUERYCAP, &capability) != -1
+            if (ioctl(dev.handle(), VIDIOC_QUERYCAP, &capability) != -1
                 && (capability.capabilities & V4L2_CAP_VIDEO_CAPTURE) == V4L2_CAP_VIDEO_CAPTURE) {
-                close(fd);
                 return true;
             }
-            close(fd);
         }
         return false;
     }
@@ -93,17 +91,15 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         const QString devfsPath("/dev/");
         const QStringList dirs = QDir(devfsPath).entryList(QStringList() << "radio*", QDir::System);
         foreach (const QString &dir, dirs) {
-            int fd = open((devfsPath + dir).toStdString().c_str(), O_RDWR);
-            if (fd == -1)
+            QFile dev(devfsPath + dir);
+            if (!dev.open(QIODevice::ReadWrite))
                 continue;
             struct v4l2_capability capability;
             memset(&capability, 0, sizeof(struct v4l2_capability));
-            if (ioctl(fd, VIDIOC_QUERYCAP, &capability) != -1
+            if (ioctl(dev.handle(), VIDIOC_QUERYCAP, &capability) != -1
                 && (capability.capabilities & (V4L2_CAP_RADIO | V4L2_CAP_MODULATOR)) == (V4L2_CAP_RADIO | V4L2_CAP_MODULATOR)) {
-                close(fd);
                 return true;
             }
-            close(fd);
         }
         return false;
     }
@@ -147,17 +143,15 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         const QString devfsPath("/dev/");
         const QStringList dirs = QDir(devfsPath).entryList(QStringList() << "video*", QDir::System);
         foreach (const QString &dir, dirs) {
-            int fd = open((devfsPath + dir).toStdString().c_str(), O_RDWR);
-            if (fd == -1)
+            QFile dev(devfsPath + dir);
+            if (!dev.open(QIODevice::ReadWrite))
                 continue;
             struct v4l2_capability capability;
             memset(&capability, 0, sizeof(struct v4l2_capability));
-            if (ioctl(fd, VIDIOC_QUERYCAP, &capability) != -1
+            if (ioctl(dev.handle(), VIDIOC_QUERYCAP, &capability) != -1
                 && (capability.capabilities & V4L2_CAP_VIDEO_OUTPUT) == V4L2_CAP_VIDEO_OUTPUT) {
-                close(fd);
                 return true;
             }
-            close(fd);
         }
         return false;
     }

@@ -62,7 +62,7 @@ win32 {
 }
 
 unix {
-    LIBS += -lXrandr
+    LIBS += -lXrandr -lX11
 
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
