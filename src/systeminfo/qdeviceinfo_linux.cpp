@@ -61,13 +61,13 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 {
     switch (feature) {
     case QDeviceInfo::Bluetooth:
-        if (QDir("/sys/class/bluetooth/").entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QString::fromAscii("/sys/class/bluetooth/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::Camera: {
-        const QString devfsPath("/dev/");
-        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << "video*", QDir::System);
+        const QString devfsPath(QString::fromAscii("/dev/"));
+        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QString::fromAscii("video*"), QDir::System);
         foreach (const QString &dir, dirs) {
             QFile dev(devfsPath + dir);
             if (!dev.open(QIODevice::ReadWrite))
@@ -83,13 +83,13 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
     }
 
     case QDeviceInfo::FmRadio:
-        if (QDir("/sys/class/video4linux/").entryList(QStringList() << "radio*").size() > 0)
+        if (QDir(QString::fromAscii("/sys/class/video4linux/")).entryList(QStringList() << QString::fromAscii("radio*")).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::FmTransmitter: {
-        const QString devfsPath("/dev/");
-        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << "radio*", QDir::System);
+        const QString devfsPath(QString::fromAscii("/dev/"));
+        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QString::fromAscii("radio*"), QDir::System);
         foreach (const QString &dir, dirs) {
             QFile dev(devfsPath + dir);
             if (!dev.open(QIODevice::ReadWrite))
@@ -108,17 +108,17 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::Led:
-        if (QDir("/sys/class/leds/").entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QString::fromAscii("/sys/class/leds/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::MemoryCard:
-        if (QDir("/sys/class/mmc_host/").entryList(QStringList() << "mmc*").size() > 0)
+        if (QDir(QString::fromAscii("/sys/class/mmc_host/")).entryList(QStringList() << QString::fromAscii("mmc*")).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::Usb:
-        if (QDir("/sys/bus/usb/devices/").entryList(QStringList() << "usb*").size() > 0)
+        if (QDir(QString::fromAscii("/sys/bus/usb/devices/")).entryList(QStringList() << QString::fromAscii("usb*")).size() > 0)
             return true;
         return false;
 
@@ -127,7 +127,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::Wlan:
-        if (QDir("/sys/class/ieee80211/").entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QString::fromAscii("/sys/class/ieee80211/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
@@ -140,8 +140,8 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::VideoOut: {
-        const QString devfsPath("/dev/");
-        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << "video*", QDir::System);
+        const QString devfsPath(QString::fromAscii("/dev/"));
+        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QString::fromAscii("video*"), QDir::System);
         foreach (const QString &dir, dirs) {
             QFile dev(devfsPath + dir);
             if (!dev.open(QIODevice::ReadWrite))
@@ -157,7 +157,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
     }
 
     case QDeviceInfo::Haptics:
-        if (QDir("/sys/class/haptic/").entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QString::fromAscii("/sys/class/haptic/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
     }
@@ -192,22 +192,22 @@ QString QDeviceInfoPrivate::imei()
 
 QString QDeviceInfoPrivate::manufacturer()
 {
-    QFile vendor("/sys/devices/virtual/dmi/id/board_vendor");
+    QFile vendor(QString::fromAscii("/sys/devices/virtual/dmi/id/board_vendor"));
     if (vendor.open(QIODevice::ReadOnly))
-        return vendor.readAll().simplified();
+        return QString::fromAscii(vendor.readAll().simplified().data());
 
     return QString();
 }
 
 QString QDeviceInfoPrivate::model()
 {
-    QFile cpuInfo("/proc/cpuinfo");
+    QFile cpuInfo(QString::fromAscii("/proc/cpuinfo"));
     if (cpuInfo.open(QIODevice::ReadOnly)) {
         QTextStream textStream(&cpuInfo);
         while (!textStream.atEnd()) {
             QString line = textStream.readLine();
-            if (line.contains("model name"))
-                return line.split(":").at(1).simplified();
+            if (line.contains(QString::fromAscii("model name")))
+                return line.split(QString::fromAscii(":")).at(1).simplified();
         }
     }
 
@@ -216,13 +216,13 @@ QString QDeviceInfoPrivate::model()
 
 QString QDeviceInfoPrivate::productName()
 {
-    QFile lsbRelease("/etc/lsb-release");
+    QFile lsbRelease(QString::fromAscii("/etc/lsb-release"));
     if (lsbRelease.open(QIODevice::ReadOnly)) {
         QTextStream textStream(&lsbRelease);
         while (!textStream.atEnd()) {
             QString line = textStream.readLine();
-            if (line.contains("DISTRIB_DESCRIPTION"))
-                return line.split("=").at(1).simplified();
+            if (line.contains(QString::fromAscii("DISTRIB_DESCRIPTION")))
+                return line.split(QString::fromAscii("=")).at(1).simplified();
         }
     }
 
@@ -233,7 +233,7 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
     switch(type) {
     case QDeviceInfo::Os: {
-        QFile os("/etc/issue");
+        QFile os(QString::fromAscii("/etc/issue"));
         if (os.open(QIODevice::ReadOnly)) {
             QByteArray content = os.readAll();
             if (!content.isEmpty()) {
@@ -242,7 +242,7 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
                 foreach (const QByteArray &field, list) {
                     field.toDouble(&ok);
                     if (ok)
-                        return field;
+                        return QString::fromAscii(field.data());
                 }
             }
         }
@@ -250,9 +250,9 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
     }
 
     case QDeviceInfo::Firmware: {
-        QFile firmware("/proc/sys/kernel/osrelease");
+        QFile firmware(QString::fromAscii("/proc/sys/kernel/osrelease"));
         if (firmware.open(QIODevice::ReadOnly))
-            return firmware.readAll().simplified();
+            return QString::fromAscii(firmware.readAll().simplified().data());
         break;
     }
     };

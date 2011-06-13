@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString BATTERY_SYSFS_PATH("/sys/class/power_supply/BAT%1/");
+static const QString BATTERY_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/BAT%1/"));
 
 QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     : QObject(parent)
@@ -78,7 +78,7 @@ int QBatteryInfoPrivate::currentFlow(int battery)
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
 {
-    QFile maximum(BATTERY_SYSFS_PATH.arg(battery) + "charge_full");
+    QFile maximum(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("charge_full"));
     if (!maximum.open(QIODevice::ReadOnly))
         return -1;
 
@@ -187,7 +187,7 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
 
 void QBatteryInfoPrivate::onTimeout()
 {
-    int count = QDir("/sys/class/power_supply/").entryList(QStringList() << "BAT*").size();
+    int count = QDir(QString::fromAscii("/sys/class/power_supply/")).entryList(QStringList() << QString::fromAscii("BAT*")).size();
     int value;
     for (int i = 0; i < count; ++i) {
         if (watchCurrentFlow) {
@@ -246,7 +246,7 @@ int QBatteryInfoPrivate::updateCurrentFlow(int battery)
     if (state == QBatteryInfo::UnknownChargingState)
         return 0;
 
-    QFile current(BATTERY_SYSFS_PATH.arg(battery) + "current_now");
+    QFile current(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("current_now"));
     if (!current.open(QIODevice::ReadOnly))
         return 0;
 
@@ -264,7 +264,7 @@ int QBatteryInfoPrivate::updateCurrentFlow(int battery)
 
 int QBatteryInfoPrivate::updateRemainingCapacity(int battery)
 {
-    QFile remaining(BATTERY_SYSFS_PATH.arg(battery) + "charge_now");
+    QFile remaining(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("charge_now"));
     if (!remaining.open(QIODevice::ReadOnly))
         return -1;
 
@@ -296,7 +296,7 @@ int QBatteryInfoPrivate::updateRemainingChargingTime(int battery)
 
 int QBatteryInfoPrivate::updateVoltage(int battery)
 {
-    QFile current(BATTERY_SYSFS_PATH.arg(battery) + "voltage_now");
+    QFile current(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("voltage_now"));
     if (!current.open(QIODevice::ReadOnly))
         return -1;
 
@@ -309,7 +309,7 @@ int QBatteryInfoPrivate::updateVoltage(int battery)
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::updateChargerType()
 {
-    QFile charger("/sys/class/power_supply/AC/online");
+    QFile charger(QString::fromAscii("/sys/class/power_supply/AC/online"));
     if (charger.open(QIODevice::ReadOnly)) {
         char online;
         if (charger.read(&online, 1) == 1 && online == '1')
@@ -317,12 +317,12 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::updateChargerType()
         charger.close();
     }
 
-    charger.setFileName("/sys/class/power_supply/usb/present");
+    charger.setFileName(QString::fromAscii("/sys/class/power_supply/usb/present"));
     if (charger.open(QIODevice::ReadOnly)) {
         char present;
         if (charger.read(&present, 1) == 1 && present == '1') {
             charger.close();
-            charger.setFileName("/sys/class/power_supply/usb/type");
+            charger.setFileName(QString::fromAscii("/sys/class/power_supply/usb/type"));
             if (charger.open(QIODevice::ReadOnly)) {
                 if (charger.readAll().simplified() == "USB_DCP")
                     return QBatteryInfo::WallCharger;
@@ -337,7 +337,7 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::updateChargerType()
 
 QBatteryInfo::ChargingState QBatteryInfoPrivate::updateChargingState(int battery)
 {
-    QFile state(BATTERY_SYSFS_PATH.arg(battery) + "status");
+    QFile state(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("status"));
     if (!state.open(QIODevice::ReadOnly))
         return QBatteryInfo::UnknownChargingState;
 

@@ -150,7 +150,7 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
     FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
     mntent *entry = NULL;
     while ((entry = getmntent(fsDescription)) != NULL) {
-        if (drive != entry->mnt_dir)
+        if (drive != QString::fromAscii(entry->mnt_dir))
             continue;
 
         if (strcmp(entry->mnt_type, "binfmt_misc") == 0
@@ -184,23 +184,23 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
 
         // Now need to guess if it's InternalDrive, RemovableDrive, or InternalFlashDrive
         bool isMmc = false;
-        QString fsName(entry->mnt_fsname);
-        if (fsName.contains("mapper")) {
+        QString fsName(QString::fromAscii(entry->mnt_fsname));
+        if (fsName.contains(QString::fromAscii("mapper"))) {
             struct stat status;
             stat(entry->mnt_fsname, &status);
-            fsName = QString("/sys/block/dm-%1/removable").arg(status.st_rdev & 0377);
+            fsName = QString::fromAscii("/sys/block/dm-%1/removable").arg(status.st_rdev & 0377);
         } else {
-            fsName = fsName.section("/", 2, 3);
+            fsName = fsName.section(QString::fromAscii("/"), 2, 3);
             if (!fsName.isEmpty()) {
-                if (fsName.left(3) == "mmc")
+                if (fsName.left(3) == QString::fromAscii("mmc"))
                     isMmc = true;
 
                 if (fsName.length() > 3) {
                     fsName.chop(1);
-                    if (fsName.right(1) == "p")
+                    if (fsName.right(1) == QString::fromAscii("p"))
                         fsName.chop(1);
                 }
-                fsName = "/sys/block/" + fsName + "/removable";
+                fsName = QString::fromAscii("/sys/block/") + fsName + QString::fromAscii("/removable");
             }
         }
         QFile removable(fsName);
@@ -279,7 +279,7 @@ void QStorageInfoPrivate::updateLogicalDrives()
     mntent *entry = NULL;
     logicalDrives.clear();
     while ((entry = getmntent(fsDescription)) != NULL)
-        logicalDrives << entry->mnt_dir;
+        logicalDrives << QString::fromAscii(entry->mnt_dir);
     endmntent(fsDescription);
 }
 

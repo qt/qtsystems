@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString INPUT_SYSFS_PATH("/sys/class/input/");
+static const QString INPUT_SYSFS_PATH(QString::fromAscii("/sys/class/input/"));
 
 QInputDeviceInfoPrivate::QInputDeviceInfoPrivate(QInputDeviceInfo *parent)
     : q_ptr(parent)
@@ -69,21 +69,21 @@ bool QInputDeviceInfoPrivate::isWirelessKeyboardConnected()
 
 QInputDeviceInfo::InputDeviceTypes QInputDeviceInfoPrivate::availableInputDevices()
 {
-    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << "input*");
+    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("input*"));
     if (dirs.isEmpty())
         return QInputDeviceInfo::UnknownInputDevice;
 
     QInputDeviceInfo::InputDeviceTypes types(QInputDeviceInfo::UnknownInputDevice);
     foreach (const QString &dir, dirs) {
-        QFile deviceName(INPUT_SYSFS_PATH + dir + "/name");
+        QFile deviceName(INPUT_SYSFS_PATH + dir + QString::fromAscii("/name"));
         if (deviceName.open(QIODevice::ReadOnly)) {
-            QString value = deviceName.readAll();
-            if (value.contains("keyboard", Qt::CaseInsensitive)
-                || value.contains("keypad", Qt::CaseInsensitive)) {
+            QString value(QString::fromAscii(deviceName.readAll().data()));
+            if (value.contains(QString::fromAscii("keyboard"), Qt::CaseInsensitive)
+                || value.contains(QString::fromAscii("keypad"), Qt::CaseInsensitive)) {
                 types |= QInputDeviceInfo::Keys;
-            } else if (value.contains("mouse", Qt::CaseInsensitive)) {
+            } else if (value.contains(QString::fromAscii("mouse"), Qt::CaseInsensitive)) {
                 types |= QInputDeviceInfo::Mouse;
-            } else if (value.contains("touch", Qt::CaseInsensitive)) {
+            } else if (value.contains(QString::fromAscii("touch"), Qt::CaseInsensitive)) {
                 types |= QInputDeviceInfo::Touch;
             }
         }
@@ -95,18 +95,18 @@ QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
 {
     // TODO wireless key board
 
-    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << "input*");
+    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("input*"));
     if (dirs.isEmpty())
         return QInputDeviceInfo::UnknownKeyboard;
 
     QInputDeviceInfo::KeyboardTypes types(QInputDeviceInfo::UnknownKeyboard);
     foreach (const QString &dir, dirs) {
-        QFile deviceName(INPUT_SYSFS_PATH + dir + "/name");
+        QFile deviceName(INPUT_SYSFS_PATH + dir + QString::fromAscii("/name"));
         if (deviceName.open(QIODevice::ReadOnly)) {
-            QString value = deviceName.readAll();
-            if (value.contains("keyboard", Qt::CaseInsensitive))
+            QString value(QString::fromAscii(deviceName.readAll().data()));
+            if (value.contains(QString::fromAscii("keyboard"), Qt::CaseInsensitive))
                 types |= QInputDeviceInfo::FullQwertyKeyboard;
-            else if (value.contains("keypad", Qt::CaseInsensitive))
+            else if (value.contains(QString::fromAscii("keypad"), Qt::CaseInsensitive))
                 types |= QInputDeviceInfo::ITUKeypad;
         }
     }
@@ -115,18 +115,18 @@ QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
 
 QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfoPrivate::availableTouchDevices()
 {
-    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << "input*");
+    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("input*"));
     if (dirs.isEmpty())
         return QInputDeviceInfo::UnknownTouchDevice;
 
     QInputDeviceInfo::TouchDeviceTypes types(QInputDeviceInfo::UnknownTouchDevice);
     foreach (const QString &dir, dirs) {
-        QFile deviceName(INPUT_SYSFS_PATH + dir + "/name");
+        QFile deviceName(INPUT_SYSFS_PATH + dir + QString::fromAscii("/name"));
         if (deviceName.open(QIODevice::ReadOnly)) {
-            QString value = deviceName.readAll();
-            if (value.contains("multi touch", Qt::CaseInsensitive))
+            QString value(QString::fromAscii(deviceName.readAll().data()));
+            if (value.contains(QString::fromAscii("multi touch"), Qt::CaseInsensitive))
                 types |= QInputDeviceInfo::MultiTouch;
-            else if (value.contains("touch", Qt::CaseInsensitive))
+            else if (value.contains(QString::fromAscii("touch"), Qt::CaseInsensitive))
                 types |= QInputDeviceInfo::SingleTouch;
         }
     }
