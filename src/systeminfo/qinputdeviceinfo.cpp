@@ -43,6 +43,8 @@
 
 #if defined(Q_OS_LINUX)
 #  include "qinputdeviceinfo_linux_p.h"
+#elif defined(Q_OS_WIN)
+#  include "qinputdeviceinfo_win_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QInputDeviceInfoPrivate

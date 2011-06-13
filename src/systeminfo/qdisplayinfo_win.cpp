@@ -39,64 +39,76 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+#include "qdisplayinfo_win_p.h"
 
-#if defined(Q_OS_LINUX)
-#  include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
-
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QT_END_NAMESPACE
-#endif
+#include <QtGui/qapplication.h>
+#include <QtGui/qdesktopwidget.h>
+#include <QtGui/qpixmap.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemKit
-    \brief The QScreenSaver class provides various information of the screen saver.
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
+QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
+    : q_ptr(parent)
+    , hDC(NULL)
 {
 }
 
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
+QDisplayInfoPrivate::~QDisplayInfoPrivate()
 {
-    delete d_ptr;
+    ReleaseDC(NULL, hDC);
 }
 
-/*!
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
+int QDisplayInfoPrivate::colorDepth(int screen)
 {
-    return d_ptr->screenSaverEnabled();
+    if (hDC == NULL)
+        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+    return GetDeviceCaps(hDC, LOGPIXELSX);
 }
 
-/*!
-    Set the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
+int QDisplayInfoPrivate::contrast(int screen)
 {
-    d_ptr->setScreenSaverEnabled(enabled);
+    Q_UNUSED(screen)
+    return -1;
+}
+
+int QDisplayInfoPrivate::displayBrightness(int screen)
+{
+    Q_UNUSED(screen)
+    return -1;
+}
+
+int QDisplayInfoPrivate::dpiX(int screen)
+{
+    if (hDC == NULL)
+        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+    return GetDeviceCaps(hDC, LOGPIXELSX);
+}
+
+int QDisplayInfoPrivate::dpiY(int screen)
+{
+    if (hDC == NULL)
+        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+    return GetDeviceCaps(hDC, LOGPIXELSY);
+}
+
+int QDisplayInfoPrivate::physicalHeight(int screen)
+{
+    if (hDC == NULL)
+        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+    return GetDeviceCaps(hDC, VERTSIZE);
+}
+
+int QDisplayInfoPrivate::physicalWidth(int screen)
+{
+    if (hDC == NULL)
+        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+    return GetDeviceCaps(hDC, HORZSIZE);
+}
+
+QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
+{
+    Q_UNUSED(screen)
+    return QDisplayInfo::BacklightUnknown;
 }
 
 QT_END_NAMESPACE

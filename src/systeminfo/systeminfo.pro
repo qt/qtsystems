@@ -10,7 +10,7 @@ TARGET = QtSystemInfo
 target.path = $$QT_SYSTEMKIT_LIB
 INSTALLS += target
 
-QT = core network
+QT = core gui network
 
 CONFIG += module
 MODULE_PRI = ../../modules/qt_systeminfo.pri
@@ -34,6 +34,36 @@ SOURCES += qdeviceinfo.cpp \
            qnetworkinfo.cpp \
            qdeviceprofile.cpp \
            qinputdeviceinfo.cpp
+
+win32 {
+    contains(CONFIG, release) {
+       CONFIG -= console
+    }
+
+    win32-msvc*: {
+        LIBS += -lUser32 -lGdi32 -lPowrProf
+    }
+
+    win32-g++: {
+        LIBS += -luser32 -lgdi32 -lpowrprof
+    }
+
+    PRIVATE_HEADERS += qscreensaver_win_p.h \
+                       qinputdeviceinfo_win_p.h \
+                       qdisplayinfo_win_p.h \
+                       qdeviceinfo_win_p.h \
+                       qstorageinfo_win_p.h \
+                       qbatteryinfo_win_p.h \
+                       qnetworkinfo_win_p.h
+
+    SOURCES += qscreensaver_win.cpp \
+               qinputdeviceinfo_win.cpp \
+               qdisplayinfo_win.cpp \
+               qdeviceinfo_win.cpp \
+               qstorageinfo_win.cpp \
+               qbatteryinfo_win.cpp \
+               qnetworkinfo_win.cpp
+}
 
 unix {
     LIBS += -lXrandr

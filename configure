@@ -89,7 +89,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     -developer-build)
         BUILD_UNITTESTS=yes
-        DEBUG=1
+        RELEASEMODE=debug
         ;;
     -qmake-exec)
         shift

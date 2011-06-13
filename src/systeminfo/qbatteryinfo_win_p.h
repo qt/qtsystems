@@ -50,36 +50,49 @@
 // We mean it.
 //
 
-#ifndef QSYSTEMINFO_P_H
-#define QSYSTEMINFO_P_H
+#ifndef QBATTERYINFO_WIN_P_H
+#define QBATTERYINFO_WIN_P_H
 
-#include <QtCore/qglobal.h>
+#include "qbatteryinfo.h"
 
-#if defined(Q_OS_WIN)
-#  if defined(QT_NODLL)
-#    undef QT_MAKEDLL
-#    undef QT_DLL
-#  elif defined(QT_MAKEDLL)
-#    if defined(QT_DLL)
-#      undef QT_DLL
-#    endif
-#    if defined(QT_BUILD_SYSTEMINFO_LIB)
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_IMPORT
-#    endif
-#  elif defined(QT_DLL)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#  endif
-#endif
+QT_BEGIN_NAMESPACE
 
-#if !defined(Q_SYSTEMINFO_EXPORT)
-#  if defined(QT_SHARED)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_SYSTEMINFO_EXPORT
-#  endif
-#endif
+class QTimer;
 
-#endif // QSYSTEMINFO_P_H
+class QBatteryInfoPrivate : public QObject
+{
+    Q_OBJECT
 
+public:
+    QBatteryInfoPrivate(QBatteryInfo *parent);
+    ~QBatteryInfoPrivate();
+
+    int currentFlow(int battery);
+    int maximumCapacity(int battery);
+    int remainingCapacity(int battery);
+    int remainingChargingTime(int battery);
+    int voltage(int battery);
+    QBatteryInfo::ChargerType chargerType();
+    QBatteryInfo::ChargingState chargingState(int battery);
+    QBatteryInfo::EnergyUnit energyUnit();
+
+Q_SIGNALS:
+    void chargerTypeChanged(QBatteryInfo::ChargerType type);
+    void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
+    void currentFlowChanged(int battery, int flow);
+    void remainingCapacityChanged(int battery, int capacity);
+    void remainingChargingTimeChanged(int battery, int seconds);
+    void voltageChanged(int battery, int voltage);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private:
+    QBatteryInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QBatteryInfo)
+};
+
+QT_END_NAMESPACE
+
+#endif // QBATTERYINFO_WIN_P_H

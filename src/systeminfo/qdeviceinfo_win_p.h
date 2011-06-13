@@ -50,36 +50,39 @@
 // We mean it.
 //
 
-#ifndef QSYSTEMINFO_P_H
-#define QSYSTEMINFO_P_H
+#ifndef QDEVICEINFO_WIN_P_H
+#define QDEVICEINFO_WIN_P_H
 
-#include <QtCore/qglobal.h>
+#include "qdeviceinfo.h"
 
-#if defined(Q_OS_WIN)
-#  if defined(QT_NODLL)
-#    undef QT_MAKEDLL
-#    undef QT_DLL
-#  elif defined(QT_MAKEDLL)
-#    if defined(QT_DLL)
-#      undef QT_DLL
-#    endif
-#    if defined(QT_BUILD_SYSTEMINFO_LIB)
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_IMPORT
-#    endif
-#  elif defined(QT_DLL)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#  endif
-#endif
+QT_BEGIN_NAMESPACE
 
-#if !defined(Q_SYSTEMINFO_EXPORT)
-#  if defined(QT_SHARED)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_SYSTEMINFO_EXPORT
-#  endif
-#endif
+class QDeviceInfoPrivate
+{
+public:
+    QDeviceInfoPrivate(QDeviceInfo *parent);
 
-#endif // QSYSTEMINFO_P_H
+    bool hasFeature(QDeviceInfo::Feature feature);
+    QDeviceInfo::LockTypeFlags activatedLocks();
+    QDeviceInfo::LockTypeFlags enabledLocks();
+    QDeviceInfo::ThermalState thermalState();
+    QByteArray uniqueDeviceID();
+    QString imei();
+    QString manufacturer();
+    QString model();
+    QString productName();
+    QString version(QDeviceInfo::Version type);
 
+private:
+    QDeviceInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QDeviceInfo)
+
+    QByteArray deviceID;
+    QString systemManufacturerName;
+    QString systemProductName;
+    QString osVersion;
+};
+
+QT_END_NAMESPACE
+
+#endif // QDEVICEINFO_WIN_P_H

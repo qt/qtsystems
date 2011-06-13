@@ -39,47 +39,32 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "qscreensaver_win_p.h"
 
-#ifndef QSYSTEMINFO_P_H
-#define QSYSTEMINFO_P_H
+#include <QtCore/qsettings.h>
 
-#include <QtCore/qglobal.h>
+#include <windows.h>
 
-#if defined(Q_OS_WIN)
-#  if defined(QT_NODLL)
-#    undef QT_MAKEDLL
-#    undef QT_DLL
-#  elif defined(QT_MAKEDLL)
-#    if defined(QT_DLL)
-#      undef QT_DLL
-#    endif
-#    if defined(QT_BUILD_SYSTEMINFO_LIB)
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_IMPORT
-#    endif
-#  elif defined(QT_DLL)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#  endif
-#endif
+QT_BEGIN_NAMESPACE
 
-#if !defined(Q_SYSTEMINFO_EXPORT)
-#  if defined(QT_SHARED)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_SYSTEMINFO_EXPORT
-#  endif
-#endif
+static const QString SCREENSAVER_REGISTRY_ENTRY("HKEY_CURRENT_USER\\Software\\Policies\\Microsoft\\Windows\\Control Panel\\Desktop");
+static const QString SCREENSAVER_REGISTRY_KEY("ScreenSaveActive");
 
-#endif // QSYSTEMINFO_P_H
+QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
+    : q_ptr(parent)
+{
+}
 
+bool QScreenSaverPrivate::screenSaverEnabled()
+{
+    // Work-around for http://support.microsoft.com/kb/318781
+    QSettings screenSaverSetting("HKEY_CURRENT_USER\\Control Panel\\Desktop", QSettings::NativeFormat);
+    return !screenSaverSetting.value("SCRNSAVE.EXE").isNull();
+}
+
+void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
+{
+    SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, enabled, 0, SPIF_SENDWININICHANGE);
+}
+
+QT_END_NAMESPACE
