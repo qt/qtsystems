@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "gconflayer_p.h"
-#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,8 +48,8 @@ QVALUESPACE_AUTO_INSTALL_LAYER(GConfLayer)
 
 GConfLayer::GConfLayer()
 {
-    GConfItem *gconfItem = new GConfItem("/", true, this);
-    connect(gconfItem, SIGNAL(subtreeChanged(const QString &, const QVariant &)), this, SLOT(notifyChanged(const QString &, const QVariant &)));
+    GConfItem *gconfItem = new GConfItem(QString::fromAscii("/"), true, this);
+    connect(gconfItem, SIGNAL(subtreeChanged(QString,QVariant)), this, SLOT(notifyChanged(QString,QVariant)));
 }
 
 GConfLayer::~GConfLayer()
@@ -58,7 +57,6 @@ GConfLayer::~GConfLayer()
     QMutableHashIterator<QString, GConfHandle *> i(m_handles);
     while (i.hasNext()) {
         i.next();
-
         doRemoveHandle(Handle(i.value()));
     }
 }
@@ -80,8 +78,7 @@ unsigned int GConfLayer::order()
 
 QValueSpace::LayerOptions GConfLayer::layerOptions() const
 {
-    return QValueSpace::PermanentLayer |
-        QValueSpace::WritableLayer;
+    return QValueSpace::PermanentLayer | QValueSpace::WritableLayer;
 }
 
 GConfLayer *GConfLayer::instance()
@@ -118,11 +115,13 @@ bool GConfLayer::getValue(Handle handle, const QString &subPath, QVariant *data)
     QString path(subPath);
     while (path.endsWith(QLatin1Char('/')))
         path.chop(1);
-    if (handle != InvalidHandle)
+
+    if (handle != InvalidHandle) {
         while (path.startsWith(QLatin1Char('/')))
             path = path.mid(1);
-    int index = path.lastIndexOf(QLatin1Char('/'), -1);
+    }
 
+    int index = path.lastIndexOf(QLatin1Char('/'), -1);
     bool createdHandle = false;
 
     QString value;
@@ -161,17 +160,15 @@ bool GConfLayer::getValue(Handle handle, const QString &subPath, QVariant *data)
     case QVariant::List:
         *data = readValue;
         break;
-    case QVariant::String:
-    {
+    case QVariant::String: {
         QString readString = readValue.toString();
         QDataStream readStream(QByteArray::fromBase64(readString.toAscii()));
         QVariant serializedValue;
         readStream >> serializedValue;
-        if (serializedValue.isValid()) {
+        if (serializedValue.isValid())
             *data = serializedValue;
-        } else {
+        else
             *data = readValue;
-        }
         break;
     }
     default:
@@ -180,6 +177,7 @@ bool GConfLayer::getValue(Handle handle, const QString &subPath, QVariant *data)
 
     if (createdHandle)
         doRemoveHandle(handle);
+
     return data->isValid();
 }
 
@@ -223,9 +221,9 @@ QAbstractValueSpaceLayer::Handle GConfLayer::getItem(Handle parent, const QStrin
         if (!sh)
             return InvalidHandle;
 
-        if (subPath == QLatin1String("/")) {
+        if (subPath == QLatin1String("/"))
             fullPath = sh->path;
-        } else if (sh->path.endsWith(QLatin1Char('/')) && subPath.startsWith(QLatin1Char('/')))
+        else if (sh->path.endsWith(QLatin1Char('/')) && subPath.startsWith(QLatin1Char('/')))
             fullPath = sh->path + subPath.mid(1);
         else if (!sh->path.endsWith(QLatin1Char('/')) && !subPath.startsWith(QLatin1Char('/')))
             fullPath = sh->path + QLatin1Char('/') + subPath;
@@ -253,16 +251,15 @@ void GConfLayer::setProperty(Handle handle, Properties properties)
     GConfHandle *sh = gConfHandle(handle);
     if (!sh)
         return;
-    QString basePath = sh->path;
-    if (!basePath.endsWith(QLatin1Char('/'))) {
-        basePath += QLatin1Char('/');
-    }
 
-    if (properties & QAbstractValueSpaceLayer::Publish) {
+    QString basePath = sh->path;
+    if (!basePath.endsWith(QLatin1Char('/')))
+        basePath += QLatin1Char('/');
+
+    if (properties & QAbstractValueSpaceLayer::Publish)
         m_monitoringHandles.insert(sh);
-    } else {
+    else
         m_monitoringHandles.remove(sh);
-    }
 }
 
 void GConfLayer::removeHandle(Handle handle)
@@ -286,10 +283,7 @@ void GConfLayer::doRemoveHandle(Handle handle)
     delete sh;
 }
 
-bool GConfLayer::setValue(QValueSpacePublisher */*creator*/,
-                                    Handle handle,
-                                    const QString &subPath,
-                                    const QVariant &data)
+bool GConfLayer::setValue(QValueSpacePublisher */*creator*/, Handle handle, const QString &subPath, const QVariant &data)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -341,7 +335,7 @@ bool GConfLayer::setValue(QValueSpacePublisher */*creator*/,
         QByteArray byteArray;
         QDataStream writeStream(&byteArray, QIODevice::WriteOnly);
         writeStream << data;
-        QString serializedValue(byteArray.toBase64());
+        QString serializedValue(QString::fromAscii(byteArray.toBase64().data()));
         gconfItem.set(serializedValue);
     }
 
@@ -362,9 +356,7 @@ bool GConfLayer::removeSubTree(QValueSpacePublisher * /*creator*/, Handle /*hand
     return false;
 }
 
-bool GConfLayer::removeValue(QValueSpacePublisher */*creator*/,
-    Handle handle,
-    const QString &subPath)
+bool GConfLayer::removeValue(QValueSpacePublisher */*creator*/, Handle handle, const QString &subPath)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -417,9 +409,8 @@ bool GConfLayer::notifyInterest(Handle, bool)
 void GConfLayer::notifyChanged(const QString &key, const QVariant & /*value*/)
 {
     foreach (GConfHandle *handle, m_monitoringHandles.values()) {
-        if (key.startsWith(handle->path)) {
-            emit handleChanged(Handle(handle));
-        }
+        if (key.startsWith(handle->path))
+            Q_EMIT handleChanged(Handle(handle));
     }
 }
 

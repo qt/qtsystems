@@ -53,137 +53,36 @@
 #ifndef GCONFITEM_P_H
 #define GCONFITEM_P_H
 
-#include <QVariant>
-#include <QStringList>
-#include <QObject>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
-
-/*!
-
-  \brief GConfItem is a simple C++ wrapper for GConf.
-
-  Creating a GConfItem instance gives you access to a single GConf
-  key.  You can get and set its value, and connect to its
-  valueChanged() signal to be notified about changes.
-
-  The value of a GConf key is returned to you as a QVariant, and you
-  pass in a QVariant when setting the value.  GConfItem converts
-  between a QVariant and GConf values as needed, and according to the
-  following rules:
-
-  - A QVariant of type QVariant::Invalid denotes an unset GConf key.
-
-  - QVariant::Int, QVariant::Double, QVariant::Bool are converted to
-    and from the obvious equivalents.
-
-  - QVariant::String is converted to/from a GConf string and always
-    uses the UTF-8 encoding.  No other encoding is supported.
-
-  - QVariant::StringList is converted to a list of UTF-8 strings.
-
-  - QVariant::List (which denotes a QList<QVariant>) is converted
-    to/from a GConf list.  All elements of such a list must have the
-    same type, and that type must be one of QVariant::Int,
-    QVariant::Double, QVariant::Bool, or QVariant::String.  (A list of
-    strings is returned as a QVariant::StringList, however, when you
-    get it back.)
-
-  - Any other QVariant or GConf value is essentially ignored.
-
-  \warning GConfItem is as thread-safe as GConf.
-
-*/
-
 
 class GConfItem : public QObject
 {
     Q_OBJECT
 
- public:
-    /*! Initializes a GConfItem to access the GConf key denoted by
-        \a key.  Key names should follow the normal GConf conventions
-        like "/myapp/settings/first".
-
-        \param key    The name of the key.
-        \param parent Parent object
-    */
+public:
     explicit GConfItem(const QString &key, bool monitor = false, QObject *parent = 0);
-
-    /*! Finalizes a GConfItem.
-     */
     virtual ~GConfItem();
 
-    /*! Returns the key of this item, as given to the constructor.
-     */
+    void recursiveUnset();
+    void set(const QVariant &val);
+    void unset();
+    QList<QString> listDirs() const;
+    QList<QString> listEntries() const;
     QString key() const;
-
-    /*! Returns the current value of this item, as a QVariant.
-     */
     QVariant value() const;
-
-    /*! Returns the current value of this item, as a QVariant.  If
-     *  there is no value for this item, return \a def instead.
-     */
     QVariant value(const QVariant &def) const;
 
-    /*! Set the value of this item to \a val.  If \a val can not be
-        represented in GConf or GConf refuses to accept it for other
-        reasons, the current value is not changed and nothing happens.
-
-        When the new value is different from the old value, the
-        changedValue() signal is emitted on this GConfItem as part
-        of calling set(), but other GConfItem:s for the same key do
-        only receive a notification once the main loop runs.
-
-        \param val  The new value.
-    */
-    void set(const QVariant &val);
-
-    /*! Unset this item.  This is equivalent to
-
-        \code
-        item.set(QVariant(QVariant::Invalid));
-        \endcode
-     */
-    void unset();
-
-    /*! Unset this item's all sub items recursively.
-    */
-    void recursiveUnset();
-
-    /*! Return a list of the directories below this item.  The
-        returned strings are absolute key names like
-        "/myapp/settings".
-
-        A directory is a key that has children.  The same key might
-        also have a value, but that is confusing and best avoided.
-    */
-    QList<QString> listDirs() const;
-
-    /*! Return a list of entries below this item.  The returned
-        strings are absolute key names like "/myapp/settings/first".
-
-        A entry is a key that has a value.  The same key might also
-        have children, but that is confusing and is best avoided.
-    */
-    QList<QString> listEntries() const;
-
- signals:
-    /*! Emitted when the value of this item has changed.
-     */
+Q_SIGNALS:
+    void subtreeChanged(const QString &key, const QVariant &value);
     void valueChanged();
 
-    /*! Emitted when some value in subtree of this item changes
-      */
-
-    void subtreeChanged(const QString& key, const QVariant& value);
-
- private:
+private:
     friend struct GConfItemPrivate;
     struct GConfItemPrivate *priv;
 
-    void update_value(bool emit_signal,  const QString& key, const QVariant& value);
+    void update_value(bool emit_signal, const QString &key, const QVariant &value);
 };
 
 QT_END_NAMESPACE

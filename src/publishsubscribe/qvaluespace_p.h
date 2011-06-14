@@ -56,7 +56,6 @@
 #include <qvaluespace.h>
 
 #include <QtCore/qobject.h>
-#include <QtCore/quuid.h>
 
 QT_BEGIN_NAMESPACE
 

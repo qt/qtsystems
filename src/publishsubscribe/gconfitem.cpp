@@ -39,13 +39,10 @@
 **
 ****************************************************************************/
 
-#include <QString>
-#include <QStringList>
-#include <QByteArray>
-#include <QVariant>
-#include <QtDebug>
-
 #include "gconfitem_p.h"
+
+#include <QtCore/qdebug.h>
+#include <QtCore/qstringlist.h>
 
 #include <glib.h>
 #include <gconf/gconf-value.h>
@@ -53,26 +50,26 @@
 
 QT_BEGIN_NAMESPACE
 
-struct GConfItemPrivate {
+struct GConfItemPrivate
+{
     QString key;
     QVariant value;
     bool monitor;
     guint notify_id;
 
-    static void notify_trampoline(GConfClient*, guint, GConfEntry *, gpointer);
+    static void notify_trampoline(GConfClient *, guint, GConfEntry *, gpointer);
 };
 
-#define withClient(c) for(GConfClient *c = (g_type_init(), gconf_client_get_default()); c; g_object_unref(c), c=NULL)
+#define withClient(c) for (GConfClient *c = (g_type_init(), gconf_client_get_default()); c; g_object_unref(c), c = NULL)
 
-static QByteArray convertKey (QString key)
+static QByteArray convertKey(QString key)
 {
-    if (key.startsWith('/'))
+    if (key.startsWith(QString::fromAscii("/"))) {
         return key.toUtf8();
-    else
-    {
+    } else {
         qWarning() << "Using dot-separated key names with GConfItem is deprecated.";
-        qWarning() << "Please use" << '/' + key.replace('.', '/') << "instead of" << key;
-        return '/' + key.replace('.', '/').toUtf8();
+        qWarning() << "Please use" << QString::fromAscii("/") + key.replace(QString::fromAscii("."), QString::fromAscii("/")) << "instead of" << key;
+        return QString(QString::fromAscii("/") + key.replace(QString::fromAscii("."), QString::fromAscii("/"))).toUtf8();
     }
 }
 
@@ -99,20 +96,18 @@ static QVariant convertValue(GConfValue *src)
             return QVariant(QString::fromUtf8(gconf_value_get_string(src)));
         case GCONF_VALUE_LIST:
             switch (gconf_value_get_list_type(src)) {
-            case GCONF_VALUE_STRING:
-                {
-                    QStringList result;
-                    for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
-                        result.append(QString::fromUtf8(gconf_value_get_string((GConfValue *)elts->data)));
-                    return QVariant(result);
-                }
-            default:
-                {
-                    QList<QVariant> result;
-                    for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
-                        result.append(convertValue((GConfValue *)elts->data));
-                    return QVariant(result);
-                }
+            case GCONF_VALUE_STRING: {
+                QStringList result;
+                for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
+                    result.append(QString::fromUtf8(gconf_value_get_string((GConfValue *)elts->data)));
+                return QVariant(result);
+            }
+            default: {
+                QList<QVariant> result;
+                for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
+                    result.append(convertValue((GConfValue *)elts->data));
+                return QVariant(result);
+            }
             }
         case GCONF_VALUE_SCHEMA:
         default:
@@ -189,36 +184,32 @@ static int convertValue(const QVariant &src, GConfValue **valp)
     case QVariant::String:
         v = convertString(src.toString());
         break;
-    case QVariant::StringList:
-        {
+    case QVariant::StringList: {
+        GSList *elts = NULL;
+        v = gconf_value_new(GCONF_VALUE_LIST);
+        gconf_value_set_list_type(v, GCONF_VALUE_STRING);
+        foreach (const QString &str, src.toStringList())
+            elts = g_slist_prepend(elts, convertString(str));
+        gconf_value_set_list_nocopy(v, g_slist_reverse(elts));
+        break;
+    }
+    case QVariant::List: {
+        GConfValueType elt_type = uniformType(src.toList());
+        if (elt_type == GCONF_VALUE_INVALID) {
+            v = NULL;
+        } else {
             GSList *elts = NULL;
             v = gconf_value_new(GCONF_VALUE_LIST);
-            gconf_value_set_list_type(v, GCONF_VALUE_STRING);
-            foreach (const QString &str, src.toStringList())
-                elts = g_slist_prepend(elts, convertString(str));
-            gconf_value_set_list_nocopy(v, g_slist_reverse(elts));
-            break;
-        }
-    case QVariant::List:
-        {
-            GConfValueType elt_type = uniformType(src.toList());
-            if (elt_type == GCONF_VALUE_INVALID)
-                v = NULL;
-            else
-            {
-                GSList *elts = NULL;
-                v = gconf_value_new(GCONF_VALUE_LIST);
-                gconf_value_set_list_type(v, elt_type);
-                foreach (const QVariant &elt, src.toList())
-                {
-                    GConfValue *val = NULL;
-                    convertValue(elt, &val);  // guaranteed to succeed.
-                    elts = g_slist_prepend(elts, val);
-                }
-                gconf_value_set_list_nocopy(v, g_slist_reverse(elts));
+            gconf_value_set_list_type(v, elt_type);
+            foreach (const QVariant &elt, src.toList()) {
+                GConfValue *val = NULL;
+                convertValue(elt, &val);  // guaranteed to succeed.
+                elts = g_slist_prepend(elts, val);
             }
-            break;
+            gconf_value_set_list_nocopy(v, g_slist_reverse(elts));
         }
+        break;
+    }
     default:
         return 0;
     }
@@ -227,58 +218,122 @@ static int convertValue(const QVariant &src, GConfValue **valp)
     return 1;
 }
 
-void GConfItemPrivate::notify_trampoline (GConfClient*,
-                                             guint,
-                                             GConfEntry *entry,
-                                             gpointer data)
+void GConfItemPrivate::notify_trampoline(GConfClient *, guint, GConfEntry *entry, gpointer data)
 {
     GConfItem *item = (GConfItem *)data;
-
-
-    item->update_value (true, entry->key, convertValue(entry->value));
+    item->update_value(true, QString::fromUtf8(entry->key), convertValue(entry->value));
 }
 
-void GConfItem::update_value (bool emit_signal, const QString& key, const QVariant& value)
+/*!
+    \class GConfItem
+    \brief GConfItem is a simple C++ wrapper for GConf.
+    \internal
+
+    Creating a GConfItem instance gives you access to a single GConf
+    key.  You can get and set its value, and connect to its
+    valueChanged() signal to be notified about changes.
+
+    The value of a GConf key is returned to you as a QVariant, and you
+    pass in a QVariant when setting the value.  GConfItem converts
+    between a QVariant and GConf values as needed, and according to the
+    following rules:
+
+    - A QVariant of type QVariant::Invalid denotes an unset GConf key.
+
+    - QVariant::Int, QVariant::Double, QVariant::Bool are converted to
+      and from the obvious equivalents.
+
+    - QVariant::String is converted to/from a GConf string and always
+      uses the UTF-8 encoding.  No other encoding is supported.
+
+    - QVariant::StringList is converted to a list of UTF-8 strings.
+
+    - QVariant::List (which denotes a QList<QVariant>) is converted
+      to/from a GConf list.  All elements of such a list must have the
+      same type, and that type must be one of QVariant::Int,
+      QVariant::Double, QVariant::Bool, or QVariant::String.  (A list of
+      strings is returned as a QVariant::StringList, however, when you
+      get it back.)
+
+    - Any other QVariant or GConf value is essentially ignored.
+
+    \warning GConfItem is as thread-safe as GConf.
+*/
+
+/*!
+    \internal
+    \fn void GConfItem::subtreeChanged(const QString &key, const QVariant &value)
+
+    This signal is emitted whenever some \a key in subtree of this item has changed to \a value.
+*/
+
+/*!
+    \internal
+    \fn void GConfItem::valueChanged()
+
+    This signal is emitted whenever the value of this item has changed.
+*/
+
+/*!
+    \internal
+    Constructs a GConfItem object with the \a parent to access the GConf \a key.
+
+    Note that key names should follow the normal GConf conventions like "/myapp/settings/first".
+*/
+GConfItem::GConfItem(const QString &key, bool monitor, QObject *parent)
+    : QObject (parent)
 {
-    QVariant new_value;
-
-    if (emit_signal) {
-        emit subtreeChanged(key, value);
-    }
-
+    priv = new GConfItemPrivate;
+    priv->key = key;
+    priv->monitor = monitor;
     withClient(client) {
-        GError *error = NULL;
-        QByteArray k = convertKey(priv->key);
-        GConfValue *v = gconf_client_get(client, k.data(), &error);
-
-        if (error) {
-            qWarning() << error->message;
-            g_error_free (error);
-            new_value = priv->value;
-        } else {
-            new_value = convertValue(v);
-            if (v)
-                gconf_value_free(v);
+        update_value(false, QString(), QVariant());
+        if (priv->monitor) {
+            QByteArray k = convertKey(priv->key);
+            gconf_client_add_dir (client, k.data(), GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
+            priv->notify_id = gconf_client_notify_add (client, k.data(), GConfItemPrivate::notify_trampoline, this, NULL, NULL);
         }
     }
-
-    if (new_value != priv->value) {
-        priv->value = new_value;
-        if (emit_signal)
-            emit valueChanged();
-    }
 }
 
+/*!
+    \internal
+    Destroys the object.
+*/
+GConfItem::~GConfItem()
+{
+    withClient(client) {
+        QByteArray k = convertKey(priv->key);
+        if (priv->monitor) {
+            gconf_client_notify_remove (client, priv->notify_id);
+            gconf_client_remove_dir (client, k.data(), NULL);
+        }
+    }
+    delete priv;
+}
+
+/*!
+    \internal
+    Returns the key of this item, as given to the constructor.
+*/
 QString GConfItem::key() const
 {
     return priv->key;
 }
 
+/*!
+    \internal
+    Returns the current value of this item, as a QVariant.
+*/
 QVariant GConfItem::value() const
 {
     return priv->value;
 }
 
+/*!
+    \internal
+    Returns the current value of this item, or \a def if there is no value for it.
+*/
 QVariant GConfItem::value(const QVariant &def) const
 {
     if (priv->value.isNull())
@@ -287,6 +342,15 @@ QVariant GConfItem::value(const QVariant &def) const
         return priv->value;
 }
 
+/*!
+    \internal
+    Set the value of this item to \a val.  If \a val can not be represented in GConf, or GConf
+    refuses to accept it for other reasons, the current value is not changed and nothing happens.
+
+    When the new value is different from the old value, the changedValue() signal is emitted on
+    this GConfItem as part of calling set(), but other GConfItem:s for the same key do only receive
+    a notification once the main loop runs.
+*/
 void GConfItem::set(const QVariant &val)
 {
     withClient(client) {
@@ -307,19 +371,30 @@ void GConfItem::set(const QVariant &val)
                 g_error_free(error);
             } else if (priv->value != val) {
                 priv->value = val;
-                emit valueChanged();
+                Q_EMIT valueChanged();
             }
 
-        } else
+        } else {
             qWarning() << "Can't store a" << val.typeName();
+        }
     }
 }
 
-void GConfItem::unset() {
+/*!
+    \internal
+    Unset this item. This is equivalent to set an invalid or null value.
+*/
+void GConfItem::unset()
+{
     set(QVariant());
 }
 
-void GConfItem::recursiveUnset() {
+/*!
+    \internal
+    Unset this item and all its sub items recursively.
+*/
+void GConfItem::recursiveUnset()
+{
     withClient(client) {
         QByteArray k = convertKey(priv->key);
         GError *error = NULL;
@@ -332,10 +407,19 @@ void GConfItem::recursiveUnset() {
             g_error_free(error);
         } else {
             priv->value = QVariant();
-            emit valueChanged();
+            Q_EMIT valueChanged();
         }
     }
 }
+
+/*!
+    \internal
+    Return a list of the directories below this item. The returned strings are absolute key names
+    like "/myapp/settings".
+
+    A directory is a key that has children.  The same key might also have a value, but that is
+    confusing and best avoided.
+*/
 QList<QString> GConfItem::listDirs() const
 {
     QList<QString> children;
@@ -353,6 +437,14 @@ QList<QString> GConfItem::listDirs() const
     return children;
 }
 
+/*!
+    \internal
+    Return a list of entries below this item.  The returned strings are absolute key names like
+    "/myapp/settings/first".
+
+    A entry is a key that has a value.  The same key might also have children, but that is confusing
+    and is best avoided.
+*/
 QList<QString> GConfItem::listEntries() const
 {
     QList<QString> children;
@@ -370,34 +462,37 @@ QList<QString> GConfItem::listEntries() const
     return children;
 }
 
-GConfItem::GConfItem(const QString &key, bool monitor, QObject *parent)
-    : QObject (parent)
+/*!
+    \internal
+*/
+void GConfItem::update_value(bool emit_signal, const QString &key, const QVariant &value)
 {
-    priv = new GConfItemPrivate;
-    priv->key = key;
-    priv->monitor = monitor;
-    withClient(client) {
-        update_value (false, "", QVariant());
-        if (priv->monitor) {
-            QByteArray k = convertKey(priv->key);
-            gconf_client_add_dir (client, k.data(), GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
-            priv->notify_id = gconf_client_notify_add (client, k.data(),
-                                                       GConfItemPrivate::notify_trampoline, this,
-                                                       NULL, NULL);
-        }
-    }
-}
+    QVariant new_value;
 
-GConfItem::~GConfItem()
-{
+    if (emit_signal)
+        Q_EMIT subtreeChanged(key, value);
+
     withClient(client) {
+        GError *error = NULL;
         QByteArray k = convertKey(priv->key);
-        if (priv->monitor) {
-            gconf_client_notify_remove (client, priv->notify_id);
-            gconf_client_remove_dir (client, k.data(), NULL);
+        GConfValue *v = gconf_client_get(client, k.data(), &error);
+
+        if (error) {
+            qWarning() << error->message;
+            g_error_free (error);
+            new_value = priv->value;
+        } else {
+            new_value = convertValue(v);
+            if (v)
+                gconf_value_free(v);
         }
     }
-    delete priv;
+
+    if (new_value != priv->value) {
+        priv->value = new_value;
+        if (emit_signal)
+            Q_EMIT valueChanged();
+    }
 }
 
 QT_END_NAMESPACE

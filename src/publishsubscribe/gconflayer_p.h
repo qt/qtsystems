@@ -53,12 +53,13 @@
 #ifndef GCONFLAYER_P_H
 #define GCONFLAYER_P_H
 
-#include "qvaluespace_p.h"
-#include "qvaluespacepublisher.h"
+#include <qvaluespacepublisher.h>
 
-#include <QSet>
 #include "gconfitem_p.h"
-#include <QMutex>
+#include "qvaluespace_p.h"
+
+#include <QtCore/qmutex.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,48 +71,42 @@ public:
     GConfLayer();
     virtual ~GConfLayer();
 
-protected:
-    /*virtual*/ QString name();
-
-    /*virtual*/ bool startup(Type type);
-
-    /*virtual*/ QUuid id();
-    /*virtual*/ unsigned int order();
-
-    /*virtual*/ Handle item(Handle parent, const QString &subPath);
-    /*virtual*/ void removeHandle(Handle handle);
-    /*virtual*/ void setProperty(Handle handle, Properties properties);
-
-    /*virtual*/ bool value(Handle handle, QVariant *data);
-    /*virtual*/ bool value(Handle handle, const QString &subPath, QVariant *data);
-    /*virtual*/ QSet<QString> children(Handle handle);
-
-    /*virtual*/ QValueSpace::LayerOptions layerOptions() const;
-
-    /* QValueSpaceSubscriber functions */
-    /*virtual*/ bool supportsInterestNotification() const;
-    /*virtual*/ bool notifyInterest(Handle handle, bool interested);
-
-    /* QValueSpacePublisher functions */
-    /*virtual*/ bool setValue(QValueSpacePublisher *creator, Handle handle,
-                              const QString &subPath, const QVariant &value);
-    /*virtual*/ bool removeValue(QValueSpacePublisher *creator, Handle handle,
-                                 const QString &subPath);
-    /*virtual*/ bool removeSubTree(QValueSpacePublisher *creator, Handle handle);
-    /*virtual*/ void addWatch(QValueSpacePublisher *creator, Handle handle);
-    /*virtual*/ void removeWatches(QValueSpacePublisher *creator, Handle parent);
-    /*virtual*/ void sync();
-
-public:
     static GConfLayer *instance();
 
-private slots:
+protected:
+    QString name();
+
+    bool startup(Type type);
+    bool value(Handle handle, QVariant *data);
+    bool value(Handle handle, const QString &subPath, QVariant *data);
+    unsigned int order();
+    void removeHandle(Handle handle);
+    void setProperty(Handle handle, Properties properties);
+    Handle item(Handle parent, const QString &subPath);
+    QSet<QString> children(Handle handle);
+    QUuid id();
+    QValueSpace::LayerOptions layerOptions() const;
+
+    // QValueSpaceSubscriber functions
+    bool notifyInterest(Handle handle, bool interested);
+    bool supportsInterestNotification() const;
+
+    // QValueSpacePublisher functions
+    void addWatch(QValueSpacePublisher *creator, Handle handle);
+    bool removeSubTree(QValueSpacePublisher *creator, Handle handle);
+    void removeWatches(QValueSpacePublisher *creator, Handle parent);
+    bool removeValue(QValueSpacePublisher *creator, Handle handle, const QString &subPath);
+    bool setValue(QValueSpacePublisher *creator, Handle handle, const QString &subPath, const QVariant &value);
+    void sync();
+
+private Q_SLOTS:
     void notifyChanged(const QString &key, const QVariant &value);
 
 private:
-    struct GConfHandle {
+    struct GConfHandle
+    {
         GConfHandle(const QString &p)
-        :   path(p), refCount(1)
+            : path(p), refCount(1)
         {
         }
 
@@ -135,13 +130,13 @@ private:
 
     //private methods not locking a mutex
     bool getValue(Handle handle, const QString &subPath, QVariant *data);
-    Handle getItem(Handle parent, const QString &subPath);
     void doRemoveHandle(Handle handle);
+    Handle getItem(Handle parent, const QString &subPath);
 
-private:    //data
-    QSet<GConfHandle *> m_monitoringHandles;
+private:
     QMap<QString, GConfItem *> m_monitoringItems;
     QMutex m_mutex;
+    QSet<GConfHandle *> m_monitoringHandles;
 };
 
 QT_END_NAMESPACE

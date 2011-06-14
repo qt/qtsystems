@@ -51,10 +51,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QValueSpaceSubscriber
-
-    \brief The QValueSpaceSubscriber class allows applications to read and subscribe to Value Space
-           paths.
-
+    \brief The QValueSpaceSubscriber class allows applications to read and subscribe to Value Space paths.
     \inmodule QtSystemKit
 
     By default QValueSpaceSubscriber can read values from and report change notifications for all
@@ -119,7 +116,7 @@ void QValueSpaceSubscriberPrivateProxy::handleChanged(quintptr handle)
 
     for (int i = 0; i < readers.count(); ++i) {
         if (readers.at(i).first == layer && readers.at(i).second == handle) {
-            emit changed();
+            Q_EMIT changed();
             return;
         }
     }
@@ -134,10 +131,8 @@ static LayerList matchLayers(const QString &path, QValueSpace::LayerOptions filt
         return list;
 
     // Invalid filter combination.
-    if ((filter & QValueSpace::PermanentLayer &&
-         filter & QValueSpace::TransientLayer) ||
-        (filter & QValueSpace::WritableLayer &&
-         filter & QValueSpace::ReadOnlyLayer)) {
+    if ((filter & QValueSpace::PermanentLayer && filter & QValueSpace::TransientLayer)
+        || (filter & QValueSpace::WritableLayer && filter & QValueSpace::ReadOnlyLayer)) {
         return list;
     }
 
@@ -226,16 +221,13 @@ void QValueSpaceSubscriberPrivate::connect(const QValueSpaceSubscriber *space) c
         QObject::connect(connections, SIGNAL(changed()),
                          space, SIGNAL(contentsChanged()));
         for (int ii = 0; ii < readers.count(); ++ii) {
-            readers.at(ii).first->setProperty(readers.at(ii).second,
-                                              QAbstractValueSpaceLayer::Publish);
-            QObject::connect(readers.at(ii).first, SIGNAL(handleChanged(quintptr)),
-                             connections, SLOT(handleChanged(quintptr)));
+            readers.at(ii).first->setProperty(readers.at(ii).second, QAbstractValueSpaceLayer::Publish);
+            QObject::connect(readers.at(ii).first, SIGNAL(handleChanged(quintptr)), connections, SLOT(handleChanged(quintptr)));
         }
     } else if (!connections->connections.contains(space)) {
         connections->connections[space] = 1;
 
-        QObject::connect(connections, SIGNAL(changed()),
-                         space, SIGNAL(contentsChanged()));
+        QObject::connect(connections, SIGNAL(changed()), space, SIGNAL(contentsChanged()));
     } else {
         ++connections->connections[space];
     }
@@ -246,13 +238,11 @@ bool QValueSpaceSubscriberPrivate::disconnect(QValueSpaceSubscriber * space)
     QMutexLocker locker(&lock);
 
     if (connections) {
-        QHash<const QValueSpaceSubscriber *, int>::Iterator iter =
-            connections->connections.find(space);
+        QHash<const QValueSpaceSubscriber *, int>::Iterator iter = connections->connections.find(space);
         if (iter != connections->connections.end()) {
             --(*iter);
             if (!*iter) {
-                QObject::disconnect(connections, SIGNAL(changed()),
-                                    space, SIGNAL(contentsChanged()));
+                QObject::disconnect(connections, SIGNAL(changed()), space, SIGNAL(contentsChanged()));
                 connections->connections.erase(iter);
             }
             return true;
@@ -267,7 +257,7 @@ bool QValueSpaceSubscriberPrivate::disconnect(QValueSpaceSubscriber * space)
     The constructed Value Space subscriber will access all available layers.
 */
 QValueSpaceSubscriber::QValueSpaceSubscriber(QObject *parent)
-:   QObject(parent)
+    : QObject(parent)
 {
     d = new QValueSpaceSubscriberPrivate(QLatin1String("/"));
 }
@@ -278,7 +268,7 @@ QValueSpaceSubscriber::QValueSpaceSubscriber(QObject *parent)
     The constructed Value Space subscriber will access all available layers.
 */
 QValueSpaceSubscriber::QValueSpaceSubscriber(const QString &path, QObject *parent)
-:   QObject(parent)
+    : QObject(parent)
 {
     d = new QValueSpaceSubscriberPrivate(path);
 }
@@ -292,10 +282,8 @@ QValueSpaceSubscriber::QValueSpaceSubscriber(const QString &path, QObject *paren
 
     \sa isConnected()
 */
-QValueSpaceSubscriber::QValueSpaceSubscriber(QValueSpace::LayerOptions filter,
-                                             const QString &path,
-                                             QObject *parent)
-:   QObject(parent)
+QValueSpaceSubscriber::QValueSpaceSubscriber(QValueSpace::LayerOptions filter, const QString &path, QObject *parent)
+    : QObject(parent)
 {
     d = new QValueSpaceSubscriberPrivate(path, filter);
 }
@@ -312,10 +300,8 @@ QValueSpaceSubscriber::QValueSpaceSubscriber(QValueSpace::LayerOptions filter,
 
     \sa QValueSpace, isConnected()
 */
-QValueSpaceSubscriber::QValueSpaceSubscriber(const QUuid &uuid,
-                                             const QString &path,
-                                             QObject *parent)
-:   QObject(parent)
+QValueSpaceSubscriber::QValueSpaceSubscriber(const QUuid &uuid, const QString &path, QObject *parent)
+    : QObject(parent)
 {
     d = new QValueSpaceSubscriberPrivate(path, uuid);
 }

@@ -48,9 +48,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QValueSpacePublisher
-
     \brief The QValueSpacePublisher class allows applications to publish values in the Value Space.
-
     \inmodule QtSystemKit
 
     When multiple Value Space layers are available QValueSpacePublisher only publishes values to
@@ -103,8 +101,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QValueSpacePublisher::interestChanged(const QString &attribute,
-                                                   bool interested)
+    \fn void QValueSpacePublisher::interestChanged(const QString &attribute, bool interested)
 
     Signal that is emitted when interest in \a attribute changes.  If \a interested is true at
     least on QValueSpaceSubscriber is interested in the value of \a attribute.
@@ -113,9 +110,8 @@ QT_BEGIN_NAMESPACE
 class QValueSpacePublisherPrivate
 {
 public:
-    QValueSpacePublisherPrivate(const QString &_path,
-                               QValueSpace::LayerOptions filter = QValueSpace::UnspecifiedLayer);
-    QValueSpacePublisherPrivate(const QString &_path, const QUuid &uuid);
+    QValueSpacePublisherPrivate(const QString &path, QValueSpace::LayerOptions filter = QValueSpace::UnspecifiedLayer);
+    QValueSpacePublisherPrivate(const QString &path, const QUuid &uuid);
 
     QString path;
     QAbstractValueSpaceLayer *layer;
@@ -125,17 +121,17 @@ public:
     bool hasWatch;
 };
 
-QValueSpacePublisherPrivate::QValueSpacePublisherPrivate(const QString &_path,
-                                                       QValueSpace::LayerOptions filter)
-:   layer(0), handle(QAbstractValueSpaceLayer::InvalidHandle), hasSet(false), hasWatch(false)
+QValueSpacePublisherPrivate::QValueSpacePublisherPrivate(const QString &_path, QValueSpace::LayerOptions filter)
+    : layer(0)
+    , handle(QAbstractValueSpaceLayer::InvalidHandle)
+    , hasSet(false)
+    , hasWatch(false)
 {
     path = qCanonicalPath(_path);
 
     // check filter for mutually exclusive options
-    if ((filter & QValueSpace::PermanentLayer &&
-         filter & QValueSpace::TransientLayer) ||
-        (filter & QValueSpace::WritableLayer &&
-         filter & QValueSpace::ReadOnlyLayer)) {
+    if ((filter & QValueSpace::PermanentLayer && filter & QValueSpace::TransientLayer)
+        || (filter & QValueSpace::WritableLayer && filter & QValueSpace::ReadOnlyLayer)) {
         return;
     }
 
@@ -156,7 +152,10 @@ QValueSpacePublisherPrivate::QValueSpacePublisherPrivate(const QString &_path,
 }
 
 QValueSpacePublisherPrivate::QValueSpacePublisherPrivate(const QString &_path, const QUuid &uuid)
-:   layer(0), handle(QAbstractValueSpaceLayer::InvalidHandle), hasSet(false), hasWatch(false)
+    : layer(0)
+    , handle(QAbstractValueSpaceLayer::InvalidHandle)
+    , hasSet(false)
+    , hasWatch(false)
 {
     path = qCanonicalPath(_path);
 
@@ -176,14 +175,15 @@ QValueSpacePublisherPrivate::QValueSpacePublisherPrivate(const QString &_path, c
     \a path.
 */
 QValueSpacePublisher::QValueSpacePublisher(const QString &path, QObject *parent)
-:   QObject(parent), d_ptr(new QValueSpacePublisherPrivate(path))
+    : QObject(parent)
+    , d_ptr(new QValueSpacePublisherPrivate(path))
 {
     QValueSpaceManager::instance()->init(QAbstractValueSpaceLayer::Client);
 }
 
 /*!
     Constructs a QValueSpacePublisher with the specified \a parent that publishes values under
-    \a path.  The \a filter parameter is used to limit which layer this QValueSpacePublisher will
+    \a path. The \a filter parameter is used to limit which layer this QValueSpacePublisher will
     access.
 
     The constructed Value Space publisher will access the layer with the highest order that matches
@@ -193,10 +193,9 @@ QValueSpacePublisher::QValueSpacePublisher(const QString &path, QObject *parent)
 
     \sa isConnected()
 */
-QValueSpacePublisher::QValueSpacePublisher(QValueSpace::LayerOptions filter,
-                                           const QString &path,
-                                           QObject *parent)
-:   QObject(parent), d_ptr(new QValueSpacePublisherPrivate(path, filter))
+QValueSpacePublisher::QValueSpacePublisher(QValueSpace::LayerOptions filter, const QString &path, QObject *parent)
+    : QObject(parent)
+    , d_ptr(new QValueSpacePublisherPrivate(path, filter))
 {
     QValueSpaceManager::instance()->init(QAbstractValueSpaceLayer::Client);
 }
@@ -215,7 +214,8 @@ QValueSpacePublisher::QValueSpacePublisher(QValueSpace::LayerOptions filter,
 */
 
 QValueSpacePublisher::QValueSpacePublisher(const QUuid &uuid, const QString &path, QObject *parent)
-:   QObject(parent), d_ptr(new QValueSpacePublisherPrivate(path, uuid))
+    : QObject(parent)
+    , d_ptr(new QValueSpacePublisherPrivate(path, uuid))
 {
     QValueSpaceManager::instance()->init(QAbstractValueSpaceLayer::Client);
 }

@@ -55,22 +55,19 @@ QT_BEGIN_NAMESPACE
     \internal
 
     To create a new layer in the Value Space subclass this class and reimplement all of the virtual
-    functions.  The new layer is installed by either calling QValueSpace::installLayer() or by
-    adding the QVALUESPACE_AUTO_INSTALL_LAYER() macro in your implementation file.
+    functions. The new layer is installed by either calling QValueSpace::installLayer() or by using
+    the QVALUESPACE_AUTO_INSTALL_LAYER() macro in your implementation file.
 */
 
 /*!
     \internal
-
     \macro QVALUESPACE_AUTO_INSTALL_LAYER(className)
-
     \relates QAbstractValueSpaceLayer
 
-    This macro installs new Value Space layer. \a className is the name of the class implementing
-    the new layer.
+    This macro installs a new Value Space layer, specifyed by \a className.
 
     The method \c {className *className::instance()} must exist and return a pointer to an instance
-    of the layer to install.  This method will only be invoked \i {after} QApplication has been
+    of the layer to install. This method will only be invoked \i {after} QApplication has been
     constructed, making it safe to use any Qt class in your layer's constructor.
 
     This macro can only be used once for any given class and it should be used where the
@@ -92,7 +89,7 @@ QT_BEGIN_NAMESPACE
     Value Space layers are initialized in either a "Server" or a "Client" context.  There is only
     a single server in the Value Space architecture, and its layers are always initialized before
     any clients.  This distinction allows layers to implement Client/Server architecture
-    \i {if required}.  If not, layers are free to treat Server and Client contexts identically.
+    \i {if required}. If not, layers are free to treat Server and Client contexts identically.
 
     \value Server The layer is being initialized in the "server" context.
     \value Client The layer is being initialized in the "client" context.
@@ -114,7 +111,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QString QAbstractValueSpaceLayer::name()
 
-    Returns the name of the Value Space layer.  This name is only used for diagnostics purposes.
+    Returns the name of the Value Space layer. This name is only used for diagnostics purposes.
 */
 
 /*!
@@ -180,8 +177,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QSet<QString> QAbstractValueSpaceLayer::children(Handle handle)
 
-    Returns the set of children of \a handle.  For example, in a layer providing the following
-    items:
+    Returns the set of children of \a handle. For example, in a layer providing the following items:
 
     \code
         /Device/Configuration/Applications/FocusedApplication
@@ -220,8 +216,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QAbstractValueSpaceLayer::setValue(QValueSpacePublisher *creator, Handle handle,
-                                                const QString &subPath, const QVariant &value)
+    \fn bool QAbstractValueSpaceLayer::setValue(QValueSpacePublisher *creator, Handle handle, const QString &subPath, const QVariant &value)
 
     Process calls to QValueSpacePublisher::setValue() by setting the value specified by the
     \a subPath under \a handle to \a value.  Ownership of the Value Space item is assigned to
@@ -231,8 +226,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QAbstractValueSpaceLayer::removeValue(QValueSpacePublisher *creator, Handle handle,
-                                                   const QString &subPath)
+    \fn bool QAbstractValueSpaceLayer::removeValue(QValueSpacePublisher *creator, Handle handle, const QString &subPath)
 
     Process calls to QValueSpacePublisher::resetValue() by removing the Value Space item
     identified by \a handle and \a subPath and created by \a creator.
@@ -277,7 +271,7 @@ QT_BEGIN_NAMESPACE
 */
 void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publisher, const QString &path, bool interested)
 {
-    emit publisher->interestChanged(path, interested);
+    Q_EMIT publisher->interestChanged(path, interested);
 }
 
 /*!
@@ -415,7 +409,7 @@ void QValueSpace::installLayer(LayerCreateFunc func)
     force the constructed object to only access the Volatile Registry layer.
 
     You can test if the Volatile Registry layer is available by checking if the list returned by
-    QValueSpace::availableLayers() contains this value.  The Volatile Registry layer is only
+    QValueSpace::availableLayers() contains this value. The Volatile Registry layer is only
     available on Windows platforms.
 */
 
@@ -430,8 +424,23 @@ void QValueSpace::installLayer(LayerCreateFunc func)
     force the constructed object to only access the Non-Volatile Registry layer.
 
     You can test if the Non-Volatile Registry layer is available by checking if the list returned
-    by QValueSpace::availableLayers() contains this value.  The Non-Volatile Registry layer is only
+    by QValueSpace::availableLayers() contains this value. The Non-Volatile Registry layer is only
     available on Windows platforms.
+*/
+
+/*!
+    \macro QVALUESPACE_GCONF_LAYER
+    \relates QValueSpace
+
+    The UUID of the GConf layer as a QUuid.  The actual UUID value is
+    {0e2e5da0-0044-11df-941c-0002a5d5c51b}.
+
+    This value can be passed to the constructor of QValueSpacePublisher or QValueSpaceSubscriber to
+    force the constructed object to only access the GConf layer.
+
+    You can test if the GConf layer is available by checking if the list returned by
+    QValueSpace::availableLayers() contains this value. The GConf layer is only available on Linux
+    platforms.
 */
 
 /*!
