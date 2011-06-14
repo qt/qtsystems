@@ -123,6 +123,7 @@ translations/*_untranslated.ts
 qrc_*.cpp
 
 src/systeminfo/qtsysteminfoversion.h
+src/publishsubscribe/qtpublishsubscribeversion.h
 
 # Test generated files
 QObject.log

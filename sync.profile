@@ -1,16 +1,20 @@
 %modules = ( # path to module name map
     "QtSystemInfo" => "$basedir/src/systeminfo",
+    "QtPublishSubscribe" => "$basedir/src/publishsubscribe",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );
 %classnames = (
     "qtsysteminfoversion.h" => "QtSystemInfoVersion",
+    "qtpublishsubscribeversion.h" => "QtPublishSubscribeVersion",
 );
 %mastercontent = (
     "systeminfo" => "#include <QtSystemInfo/QtSystemInfo>\n",
+    "publishsubscribe" => "#include <QtPublishSubscribe/QtPublishSubscribe>\n",
 );
 %modulepris = (
     "QtSystemInfo" => "$basedir/modules/qt_systeminfo.pri",
+    "QtPublishSubscribe" => "$basedir/modules/qt_publishsubscribe.pri",
 );
 # Modules and programs, and their dependencies.
 # Each of the module version specifiers can take one of the following values:
@@ -23,5 +27,10 @@
         "QtCore" => "LATEST_RELEASE",
         "QtDeclarative" => "LATEST_RELEASE",
         "QtGui" => "LATEST_RELEASE",
+    },
+    "QtPublishSubscribe" => {
+        "QtCore" => "LATEST_RELEASE",
+        "QtDeclarative" => "LATEST_RELEASE",
+        "QtNetwork" => "LATEST_RELEASE",
     },
 );
