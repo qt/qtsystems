@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS += systeminfo
+SUBDIRS += systeminfo publishsubscribe
