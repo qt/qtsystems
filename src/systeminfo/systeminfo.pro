@@ -11,8 +11,6 @@ MODULE_PRI = ../../modules/qt_systeminfo.pri
 
 DEFINES += QT_BUILD_SYSTEMINFO_LIB QT_MAKEDLL
 
-HEADERS += qtsysteminfoversion.h
-
 PUBLIC_HEADERS += qdeviceinfo.h \
                   qdisplayinfo.h \
                   qstorageinfo.h \
@@ -100,8 +98,4 @@ unix {
     }
 }
 
-HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
-
-headers.files = $$PUBLIC_HEADERS
-headers.path = $$QT_SYSTEMKIT_INCLUDE/$$TARGET
-INSTALLS += headers
+HEADERS = qtsysteminfoversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS
