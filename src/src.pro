@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS = systeminfo publishsubscribe imports
+SUBDIRS = systeminfo publishsubscribe serviceframework imports
