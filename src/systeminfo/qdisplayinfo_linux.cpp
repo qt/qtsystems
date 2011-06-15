@@ -60,7 +60,7 @@ QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
 
 int QDisplayInfoPrivate::brightness(int screen)
 {
-    const QString sysfsPath(QString::fromAscii("/sys/class/backlight/"));
+    QString sysfsPath(QString::fromAscii("/sys/class/backlight/"));
     const QStringList dirs = QDir(sysfsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     if (dirs.size() < screen + 1)
         return -1;
@@ -68,21 +68,21 @@ int QDisplayInfoPrivate::brightness(int screen)
     bool ok = false;
     int max = 0;
     int actual = 0;
-    QFile brightness(dirs.at(screen) + QString::fromAscii("/max_brightness"));
+    sysfsPath += dirs.at(screen);
+    QFile brightness(sysfsPath + QString::fromAscii("/max_brightness"));
     if (brightness.open(QIODevice::ReadOnly)) {
         max = brightness.readAll().simplified().toInt(&ok);
-        if (!ok)
+        if (!ok || max == 0)
             return -1;
         brightness.close();
 
-        brightness.setFileName(dirs.at(screen) + QString::fromAscii("/actual_brightness"));
+        brightness.setFileName(sysfsPath + QString::fromAscii("/actual_brightness"));
         if (brightness.open(QIODevice::ReadOnly)) {
             actual = brightness.readAll().simplified().toInt(&ok);
             if (!ok)
                 return -1;
 
-            if (max != 0)
-                return actual / max;
+            return actual * 100 / max;
         }
     }
 
