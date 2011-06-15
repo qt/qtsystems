@@ -63,7 +63,7 @@ class QValueSpacePublisher;
 
 QString qCanonicalPath(const QString &path);
 
-class Q_PUBLISHSUBSCRIBE_EXPORT QAbstractValueSpaceLayer : public QObject
+class QAbstractValueSpaceLayer : public QObject
 {
     Q_OBJECT
 

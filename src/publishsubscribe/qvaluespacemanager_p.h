@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_PUBLISHSUBSCRIBE_EXPORT QValueSpaceManager
+class QValueSpaceManager
 {
 public:
     QValueSpaceManager();
