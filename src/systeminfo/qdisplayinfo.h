@@ -78,9 +78,9 @@ public:
     QDisplayInfo(QObject *parent = 0);
     virtual ~QDisplayInfo();
 
+    Q_INVOKABLE int brightness(int screen) const;
     Q_INVOKABLE int colorDepth(int screen) const;
     Q_INVOKABLE int contrast(int screen) const;
-    Q_INVOKABLE int displayBrightness(int screen) const;
     Q_INVOKABLE int dpiX(int screen) const;
     Q_INVOKABLE int dpiY(int screen) const;
     Q_INVOKABLE int physicalHeight(int screen) const;

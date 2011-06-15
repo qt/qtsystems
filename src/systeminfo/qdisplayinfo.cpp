@@ -55,9 +55,9 @@ class QDisplayInfoPrivate
 public:
     QDisplayInfoPrivate(QDisplayInfo *) {}
 
+    int brightness(int) { return -1; }
     int colorDepth(int) { return -1; }
     int contrast(int) const { return -1; }
-    int displayBrightness(int) { return -1; }
     int dpiX(int) { return -1; }
     int dpiY(int) { return -1; }
     int physicalHeight(int) { return -1; }
@@ -121,6 +121,17 @@ QDisplayInfo::~QDisplayInfo()
 }
 
 /*!
+    Returns the display brightness of the given \a screen, in 0 - 100 scale. In case of error or
+    the information is not available, -1 is returned.
+*/
+int QDisplayInfo::brightness(int screen) const
+{
+    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+        return -1;
+    return d_ptr->brightness(screen);
+}
+
+/*!
     Returns the color depth of the given \a screen, in bits per pixel. -1 is returned if not
     available or on error.
 */
@@ -140,17 +151,6 @@ int QDisplayInfo::contrast(int screen) const
     if (screen < 0 || screen >= QApplication::desktop()->screenCount())
         return -1;
     return d_ptr->contrast(screen);
-}
-
-/*!
-    Returns the display brightness of the given \a screen, in 0 - 100 scale. In case of error or
-    the information is not available, -1 is returned.
-*/
-int QDisplayInfo::displayBrightness(int screen) const
-{
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
-        return -1;
-    return d_ptr->displayBrightness(screen);
 }
 
 /*!

@@ -58,6 +58,12 @@ QDisplayInfoPrivate::~QDisplayInfoPrivate()
     ReleaseDC(NULL, hDC);
 }
 
+int QDisplayInfoPrivate::brightness(int screen)
+{
+    Q_UNUSED(screen)
+    return -1;
+}
+
 int QDisplayInfoPrivate::colorDepth(int screen)
 {
     if (hDC == NULL)
@@ -66,12 +72,6 @@ int QDisplayInfoPrivate::colorDepth(int screen)
 }
 
 int QDisplayInfoPrivate::contrast(int screen)
-{
-    Q_UNUSED(screen)
-    return -1;
-}
-
-int QDisplayInfoPrivate::displayBrightness(int screen)
 {
     Q_UNUSED(screen)
     return -1;

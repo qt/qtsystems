@@ -58,24 +58,7 @@ QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
 {
 }
 
-int QDisplayInfoPrivate::colorDepth(int screen)
-{
-#if defined(Q_WS_X11)
-    return QX11Info::appDepth(screen);
-#else
-    Q_UNUSED(screen)
-#endif // Q_WS_X11
-
-    return QPixmap::defaultDepth();
-}
-
-int QDisplayInfoPrivate::contrast(int screen)
-{
-    Q_UNUSED(screen)
-    return -1;
-}
-
-int QDisplayInfoPrivate::displayBrightness(int screen)
+int QDisplayInfoPrivate::brightness(int screen)
 {
     const QString sysfsPath(QString::fromAscii("/sys/class/backlight/"));
     const QStringList dirs = QDir(sysfsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -103,6 +86,23 @@ int QDisplayInfoPrivate::displayBrightness(int screen)
         }
     }
 
+    return -1;
+}
+
+int QDisplayInfoPrivate::colorDepth(int screen)
+{
+#if defined(Q_WS_X11)
+    return QX11Info::appDepth(screen);
+#else
+    Q_UNUSED(screen)
+#endif // Q_WS_X11
+
+    return QPixmap::defaultDepth();
+}
+
+int QDisplayInfoPrivate::contrast(int screen)
+{
+    Q_UNUSED(screen)
     return -1;
 }
 

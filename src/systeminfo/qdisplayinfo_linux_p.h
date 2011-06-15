@@ -62,9 +62,9 @@ class QDisplayInfoPrivate
 public:
     QDisplayInfoPrivate(QDisplayInfo *parent);
 
+    int brightness(int screen);
     int colorDepth(int screen);
     int contrast(int screen);
-    int displayBrightness(int screen);
     int dpiX(int screen);
     int dpiY(int screen);
     int physicalHeight(int screen);
