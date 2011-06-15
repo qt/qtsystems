@@ -52,4 +52,13 @@ unix: {
     }
 }
 
+win32: {
+    PRIVATE_HEADERS += qsystemreadwritelock_p.h \
+                       registrylayer_win_p.h
+    SOURCES += qsystemreadwritelock_win.cpp \
+               registrylayer_win.cpp
+
+    LIBS += -ladvapi32
+}
+
 HEADERS = qtpublishsubscribeversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS
