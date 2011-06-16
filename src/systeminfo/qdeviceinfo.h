@@ -80,7 +80,8 @@ public:
         Sim,
         Positioning,
         VideoOut,
-        Haptics
+        Haptics,
+        Nfc
     };
 
     enum LockType {

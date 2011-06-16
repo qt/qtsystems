@@ -90,8 +90,9 @@ QT_BEGIN_NAMESPACE
     \value Wlan           Wireless local area network (WLAN) feature.
     \value Sim            Subscriber identity module (SIM) feature.
     \value Positioning    Positioning feature, e.g. Global Positioning System (GPS).
-    \value VideoOut       Video out feature available.
-    \value Haptics        Haptics feature available.
+    \value VideoOut       Video out feature.
+    \value Haptics        Haptics feature.
+    \value Nfc            Near Field Communication (NFC) feature.
 */
 
 /*!

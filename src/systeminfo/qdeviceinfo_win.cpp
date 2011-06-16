@@ -70,6 +70,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
     case QDeviceInfo::Positioning:
     case QDeviceInfo::VideoOut:
     case QDeviceInfo::Haptics:
+    case QDeviceInfo::Nfc:
         return false;
     }
 }

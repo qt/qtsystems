@@ -103,6 +103,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         }
         return false;
     }
+
     case QDeviceInfo::Infrared:
         // TODO: find the kernel interface for this
         return false;
@@ -160,6 +161,10 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         if (QDir(QString::fromAscii("/sys/class/haptic/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
+
+    case QDeviceInfo::Nfc:
+        // As of now, it's the only supported NFC device in the kernel
+        return QFile::exists(QString::fromAscii("/dev/pn544"));
     }
 
     return false;
