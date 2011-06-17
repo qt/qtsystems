@@ -444,7 +444,7 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
 
         //check initialization first as the service may be a pre-registered one
         bool doLoading = true;
-        QString serviceInitialized = descriptor.customAttribute(SERVICE_INITIALIZED_ATTR);
+        QString serviceInitialized = descriptor.customAttribute(QLatin1String(SERVICE_INITIALIZED_ATTR));
         if (!serviceInitialized.isEmpty() && (serviceInitialized == QLatin1String("NO"))) {
             // open/create the semaphore using the service's name as identifier
             QSystemSemaphore semaphore(descriptor.serviceName(), 1);
@@ -765,8 +765,8 @@ QServiceManager::Error QServiceManager::error() const
 */
 void QServiceManager::connectNotify(const char *signal)
 {
-    if (QLatin1String(signal) == SIGNAL(serviceAdded(QString,QService::Scope))
-            || QLatin1String(signal) == SIGNAL(serviceRemoved(QString,QService::Scope))) {
+    if (QLatin1String(signal) == QLatin1String(SIGNAL(serviceAdded(QString,QService::Scope)))
+            || QLatin1String(signal) == QLatin1String(SIGNAL(serviceRemoved(QString,QService::Scope)))) {
         if (d->scope != QService::SystemScope)
             d->dbManager->setChangeNotificationsEnabled(DatabaseManager::UserScope, true);
         d->dbManager->setChangeNotificationsEnabled(DatabaseManager::SystemScope, true);
@@ -779,8 +779,8 @@ void QServiceManager::connectNotify(const char *signal)
 */
 void QServiceManager::disconnectNotify(const char *signal)
 {
-    if (QLatin1String(signal) == SIGNAL(serviceAdded(QString,QService::Scope))
-            || QLatin1String(signal) == SIGNAL(serviceRemoved(QString,QService::Scope))) {
+    if (QLatin1String(signal) == QLatin1String(SIGNAL(serviceAdded(QString,QService::Scope)))
+            || QLatin1String(signal) == QLatin1String(SIGNAL(serviceRemoved(QString,QService::Scope)))) {
         if (receivers(SIGNAL(serviceAdded(QString,QService::Scope))) == 0
                 && receivers(SIGNAL(serviceRemoved(QString,QService::Scope))) == 0) {
             if (d->scope != QService::SystemScope)

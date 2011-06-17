@@ -773,7 +773,7 @@ bool ServiceDatabase::executeQuery(QSqlQuery *query, const QString &statement, c
                 "Parameters: %4\n");
             QString parameters;
             if (bindValues.count() > 0) {
-                for(int i = 0; i < bindValues.count(); ++i) {
+                for (int i = 0; i < bindValues.count(); ++i) {
                     parameters.append(QLatin1String("\n\t[") + QString::number(i) + "]: " + bindValues.at(i).toString());
                 }
             } else {
@@ -1725,7 +1725,7 @@ bool ServiceDatabase::serviceInitialized(const QString &serviceName, const QStri
     }
 
     QStringList serviceIDs;
-    while(query.next()) {
+    while (query.next()) {
         serviceIDs << query.value(EBindIndex).toString();
     }
 

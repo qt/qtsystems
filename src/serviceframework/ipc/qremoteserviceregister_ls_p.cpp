@@ -167,7 +167,7 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
             struct ucred uc;
             socklen_t len = sizeof(struct ucred);
 
-            if( getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &uc, &len) == 0) {
+            if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &uc, &len) == 0) {
                 qcred.pid = uc.pid;
                 qcred.uid = uc.uid;
                 qcred.gid = uc.gid;

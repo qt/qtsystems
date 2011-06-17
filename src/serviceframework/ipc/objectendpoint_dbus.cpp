@@ -715,7 +715,7 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
         QEventLoop* loop = new QEventLoop( this );
         connect(this, SIGNAL(pendingRequestFinished()), loop, SLOT(quit()));
 
-        while(!response->isFinished) {
+        while (!response->isFinished) {
             loop->exec();
         }
 

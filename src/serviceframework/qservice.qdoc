@@ -55,7 +55,7 @@
 
 /*!
     \enum QService::UnrecoverableIPCError
-    Defines the unrecoverable IPC error of the service 
+    Defines the unrecoverable IPC error of the service
 
     \value    ErrorUnknown                  An unknown IPC error.
     \value    ErrorServiceNoLongerAvailable Indicates that the service is no longer available.
@@ -66,9 +66,9 @@
 
 /*!
     \enum QService::Type
-    Defines the type of the service 
+    Defines the type of the service
 
     \value    Plugin          This denotes that the service is plug-in based.
-    \value    InterProcess    This denotes that the service is deployed using IPC mechanisms 
+    \value    InterProcess    This denotes that the service is deployed using IPC mechanisms
                               available on the current platform, such as DBus or local sockets.
 */
