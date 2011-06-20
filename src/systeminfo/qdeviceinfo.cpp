@@ -186,7 +186,8 @@ QDeviceInfo::LockTypeFlags QDeviceInfo::enabledLocks() const
     \property QDeviceInfo::thermalState
     \brief The thermal state.
 
-    The current thermal state of the device.
+    The current thermal state of the device. If there are more than one thermal zone devices available,
+    the state of the most critical one is reported.
 */
 QDeviceInfo::ThermalState QDeviceInfo::thermalState() const
 {
@@ -252,6 +253,34 @@ QString QDeviceInfo::productName() const
 QString QDeviceInfo::version(QDeviceInfo::Version type) const
 {
     return d_ptr->version(type);
+}
+
+/*!
+    \internal
+*/
+void QDeviceInfo::connectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX)
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+#else
+    Q_UNUSED(signal)
+#endif
+}
+
+/*!
+    \internal
+*/
+void QDeviceInfo::disconnectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX)
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(signal) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
+#else
+    Q_UNUSED(signal)
+#endif
 }
 
 QT_END_NAMESPACE

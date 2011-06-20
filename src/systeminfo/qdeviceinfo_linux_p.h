@@ -57,8 +57,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeviceInfoPrivate
+class QTimer;
+
+class QDeviceInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     QDeviceInfoPrivate(QDeviceInfo *parent);
 
@@ -73,9 +77,25 @@ public:
     QString productName();
     QString version(QDeviceInfo::Version type);
 
+Q_SIGNALS:
+    void thermalStateChanged(QDeviceInfo::ThermalState state);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private Q_SLOTS:
+    void onTimeout();
+
 private:
     QDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceInfo)
+
+    bool watchThermalState;
+    QDeviceInfo::ThermalState currentThermalState;
+    QTimer *timer;
+
+    QDeviceInfo::ThermalState getThermalState();
 };
 
 QT_END_NAMESPACE

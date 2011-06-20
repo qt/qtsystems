@@ -43,6 +43,7 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/qtimer.h>
 
 #include <fcntl.h>
 #include <linux/videodev2.h>
@@ -54,6 +55,8 @@ QT_BEGIN_NAMESPACE
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     : q_ptr(parent)
+    , watchThermalState(false)
+    , timer(0)
 {
 }
 
@@ -182,7 +185,10 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::enabledLocks()
 
 QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
 {
-    return QDeviceInfo::UnknownThermal;
+    if (watchThermalState)
+        return currentThermalState;
+    else
+        return getThermalState();
 }
 
 QByteArray QDeviceInfoPrivate::uniqueDeviceID()
@@ -263,6 +269,98 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
     };
 
     return QString();
+}
+
+void QDeviceInfoPrivate::connectNotify(const char *signal)
+{
+    if (timer == 0) {
+        timer = new QTimer;
+        timer->setInterval(2000);
+        connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    }
+
+    if (!timer->isActive())
+        timer->start();
+
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
+        watchThermalState = true;
+        currentThermalState = getThermalState();
+    }
+}
+
+void QDeviceInfoPrivate::disconnectNotify(const char *signal)
+{
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0)
+        watchThermalState = false;
+
+    if (!watchThermalState)
+        timer->stop();
+}
+
+void QDeviceInfoPrivate::onTimeout()
+{
+    if (watchThermalState) {
+        QDeviceInfo::ThermalState newState = getThermalState();
+        if (newState != currentThermalState) {
+            currentThermalState = newState;
+            Q_EMIT thermalStateChanged(currentThermalState);
+        }
+    }
+}
+
+QDeviceInfo::ThermalState QDeviceInfoPrivate::getThermalState()
+{
+    QDeviceInfo::ThermalState state = QDeviceInfo::UnknownThermal;
+
+    const QString hwmonRoot(QString::fromAscii("/sys/class/hwmon/"));
+    const QStringList hwmonDirs(QDir(hwmonRoot).entryList(QStringList() << QString::fromAscii("hwmon*")));
+    foreach (const QString &dir, hwmonDirs) {
+        int index = 1;
+        const QString input(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_input"));
+        const QString critical(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_crit"));
+        const QString emergency(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_emergency"));
+        while (true) {
+            QFile file(input.arg(index));
+            if (!file.open(QIODevice::ReadOnly))
+                break;
+            bool ok(false);
+            int currentTemp = file.readAll().simplified().toInt(&ok);
+            if (ok) {
+                if (state == QDeviceInfo::UnknownThermal)
+                    state = QDeviceInfo::NormalThermal;
+
+                // Only check if we are below WarningThermal
+                if (state < QDeviceInfo::WarningThermal) {
+                    file.close();
+                    file.setFileName(critical.arg(index));
+                    if (file.open(QIODevice::ReadOnly)) {
+                        int criticalTemp = file.readAll().simplified().toInt(&ok);
+                        if (ok && currentTemp > criticalTemp)
+                            state = QDeviceInfo::WarningThermal;
+                    }
+                }
+
+                // Only check if we are below AlertThermal
+                if (state < QDeviceInfo::AlertThermal) {
+                    file.close();
+                    file.setFileName(emergency.arg(index));
+                    if (file.open(QIODevice::ReadOnly)) {
+                        int emergencyTemp = file.readAll().simplified().toInt(&ok);
+                        if (ok && currentTemp > emergencyTemp) {
+                            state = QDeviceInfo::AlertThermal;
+                            break; // No need for further checking, as we can't get the ErrorThermal state
+                        }
+                    }
+                }
+            } else {
+                break;
+            }
+
+            ++index;
+        }
+    }
+
+    return state;
 }
 
 QT_END_NAMESPACE

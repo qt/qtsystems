@@ -124,6 +124,10 @@ Q_SIGNALS:
     void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
     void thermalStateChanged(QDeviceInfo::ThermalState state);
 
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     Q_DISABLE_COPY(QDeviceInfo)
     QDeviceInfoPrivate * const d_ptr;
