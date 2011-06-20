@@ -101,6 +101,9 @@ public:
     QString homeMnc(const QString &modemPath);
     QString imsi(const QString &modemPath);
 
+    // Modem Interface
+    QString imei(const QString&modemPath);
+
 Q_SIGNALS:
     void cellIdChanged(int interface, const QString &id);
     void currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);

@@ -41,6 +41,10 @@
 
 #include "qdeviceinfo_linux_p.h"
 
+#if !defined(QT_NO_OFONO)
+#include "qofonowrapper_p.h"
+#endif // QT_NO_OFONO
+
 #include <QtCore/qdir.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qtimer.h>
@@ -193,7 +197,15 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
 
 QString QDeviceInfoPrivate::imei(int interface)
 {
+#if !defined(QT_NO_OFONO)
+    if (ofonoWrapper()->isOfonoAvailable()) {
+        QString modem = ofonoWrapper()->allModems().at(interface);
+        if (!modem.isEmpty())
+            return ofonoWrapper()->imsi(modem);
+    }
+#else
     Q_UNUSED(interface)
+#endif
     return QString();
 }
 

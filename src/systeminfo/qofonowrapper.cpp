@@ -53,6 +53,7 @@
 #define OFONO_MODEM_INTERFACE                "org.ofono.Modem"
 #define OFONO_NETWORK_REGISTRATION_INTERFACE "org.ofono.NetworkRegistration"
 #define OFONO_SIM_MANAGER_INTERFACE          "org.ofono.SimManager"
+#define OFONO_MODEM_INTERFACE                "org.ofono.Modem"
 
 QT_BEGIN_NAMESPACE
 
@@ -206,6 +207,15 @@ QString QOfonoWrapper::imsi(const QString &modemPath)
                 QDBusMessage::createMethodCall(QLatin1String(OFONO_SERVICE), modemPath, OFONO_SIM_MANAGER_INTERFACE, "GetProperties"));
 
     return reply.value().value("SubscriberIdentity").toString();
+}
+
+// Modem Interface
+QString QOfonoWrapper::imei(const QString &modemPath)
+{
+    QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
+                QDBusMessage::createMethodCall(QLatin1String(OFONO_SERVICE), modemPath, OFONO_MODEM_INTERFACE, "GetProperties"));
+
+    return reply.value().value("Serial").toString();
 }
 
 void QOfonoWrapper::connectNotify(const char *signal)
