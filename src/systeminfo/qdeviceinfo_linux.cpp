@@ -199,74 +199,74 @@ QString QDeviceInfoPrivate::imei(int interface)
 
 QString QDeviceInfoPrivate::manufacturer()
 {
-    QFile vendor(QString::fromAscii("/sys/devices/virtual/dmi/id/board_vendor"));
-    if (vendor.open(QIODevice::ReadOnly))
-        return QString::fromAscii(vendor.readAll().simplified().data());
-
-    return QString();
+    if (manufacturerBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/sys_vendor"));
+        if (file.open(QIODevice::ReadOnly))
+            manufacturerBuffer = QString::fromAscii(file.readAll().simplified().data());
+    }
+    return manufacturerBuffer;
 }
 
 QString QDeviceInfoPrivate::model()
 {
-    QFile cpuInfo(QString::fromAscii("/proc/cpuinfo"));
-    if (cpuInfo.open(QIODevice::ReadOnly)) {
-        QTextStream textStream(&cpuInfo);
-        while (!textStream.atEnd()) {
-            QString line = textStream.readLine();
-            if (line.contains(QString::fromAscii("model name")))
-                return line.split(QString::fromAscii(":")).at(1).simplified();
-        }
+    if (modelBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/product_name"));
+        if (file.open(QIODevice::ReadOnly))
+            modelBuffer = QString::fromAscii(file.readAll().simplified().data());
     }
-
-    return QString();
+    return modelBuffer;
 }
 
 QString QDeviceInfoPrivate::productName()
 {
-    QFile lsbRelease(QString::fromAscii("/etc/lsb-release"));
-    if (lsbRelease.open(QIODevice::ReadOnly)) {
-        QTextStream textStream(&lsbRelease);
-        while (!textStream.atEnd()) {
-            QString line = textStream.readLine();
-            if (line.contains(QString::fromAscii("DISTRIB_DESCRIPTION")))
-                return line.split(QString::fromAscii("=")).at(1).simplified();
+    if (productNameBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/etc/lsb-release"));
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream textStream(&file);
+            while (!textStream.atEnd()) {
+                QString line = textStream.readLine();
+                if (line.contains(QString::fromAscii("DISTRIB_CODENAME")))
+                    productNameBuffer = line.split(QString::fromAscii("=")).at(1).simplified();
+            }
         }
     }
-
-    return QString();
+    return productNameBuffer;
 }
 
 QString QDeviceInfoPrivate::uniqueDeviceID()
 {
-    return QString();
+    if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/product_uuid"));
+        if (file.open(QIODevice::ReadOnly))
+            modelBuffer = QString::fromAscii(file.readAll().simplified().data());
+    }
+    return uniqueDeviceIDBuffer;
 }
 
 QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
     switch(type) {
-    case QDeviceInfo::Os: {
-        QFile os(QString::fromAscii("/etc/issue"));
-        if (os.open(QIODevice::ReadOnly)) {
-            QByteArray content = os.readAll();
-            if (!content.isEmpty()) {
-                QList<QByteArray> list(content.split(' '));
-                bool ok = false;
-                foreach (const QByteArray &field, list) {
-                    field.toDouble(&ok);
-                    if (ok)
-                        return QString::fromAscii(field.data());
+    case QDeviceInfo::Os:
+        if (versionBuffer[0].isEmpty()) {
+            QFile file(QString::fromAscii("/etc/lsb-release"));
+            if (file.open(QIODevice::ReadOnly)) {
+                QTextStream textStream(&file);
+                while (!textStream.atEnd()) {
+                    QString line = textStream.readLine();
+                    if (line.contains(QString::fromAscii("DISTRIB_RELEASE")))
+                        versionBuffer[0] = line.split(QString::fromAscii("=")).at(1).simplified();
                 }
             }
         }
-        break;
-    }
+        return versionBuffer[0];
 
-    case QDeviceInfo::Firmware: {
-        QFile firmware(QString::fromAscii("/proc/sys/kernel/osrelease"));
-        if (firmware.open(QIODevice::ReadOnly))
-            return QString::fromAscii(firmware.readAll().simplified().data());
-        break;
-    }
+    case QDeviceInfo::Firmware:
+        if (versionBuffer[1].isEmpty()) {
+            QFile file(QString::fromAscii("/proc/sys/kernel/osrelease"));
+            if (file.open(QIODevice::ReadOnly))
+                versionBuffer[1] = QString::fromAscii(file.readAll().simplified().data());
+        }
+        return versionBuffer[1];
     };
 
     return QString();

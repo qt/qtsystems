@@ -93,6 +93,11 @@ private:
 
     bool watchThermalState;
     QDeviceInfo::ThermalState currentThermalState;
+    QString manufacturerBuffer;
+    QString modelBuffer;
+    QString productNameBuffer;
+    QString uniqueDeviceIDBuffer;
+    QString versionBuffer[2];
     QTimer *timer;
 
     QDeviceInfo::ThermalState getThermalState();
