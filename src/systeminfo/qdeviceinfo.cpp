@@ -56,11 +56,11 @@ public:
     QDeviceInfo::LockTypeFlags activatedLocks() { return QDeviceInfo::NoLock; }
     QDeviceInfo::LockTypeFlags enabledLocks() { return QDeviceInfo::NoLock; }
     QDeviceInfo::ThermalState thermalState() { return QDeviceInfo::UnknownThermal; }
-    QByteArray uniqueDeviceID() { return QByteArray(); }
     QString imei(int) { return QString(); }
     QString manufacturer() { return QString(); }
     QString model() { return QString(); }
     QString productName() { return QString(); }
+    QString uniqueDeviceID() { return QString(); }
     QString version(QDeviceInfo::Version) { return QString(); }
 };
 QT_END_NAMESPACE
@@ -203,14 +203,6 @@ bool QDeviceInfo::hasFeature(QDeviceInfo::Feature feature) const
 }
 
 /*!
-    Returns a unique identifier for the device, or an empty byte array if on error or not available.
-*/
-QByteArray QDeviceInfo::uniqueDeviceID() const
-{
-    return d_ptr->uniqueDeviceID();
-}
-
-/*!
     Returns the International Mobile Equipment Identity (IMEI) of the given \a interface on the device.
     In case of error, or the information is not available, an empty string is returned.
 */
@@ -244,6 +236,14 @@ QString QDeviceInfo::model() const
 QString QDeviceInfo::productName() const
 {
     return d_ptr->productName();
+}
+
+/*!
+    Returns a unique identifier for the device, or an empty string if on error or not available.
+*/
+QString QDeviceInfo::uniqueDeviceID() const
+{
+    return d_ptr->uniqueDeviceID();
 }
 
 /*!

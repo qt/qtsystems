@@ -105,15 +105,6 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
     return QDeviceInfo::UnknownThermal;
 }
 
-QByteArray QDeviceInfoPrivate::uniqueDeviceID()
-{
-    if (deviceID.isEmpty()) {
-        QSettings deviceIDSetting("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", QSettings::NativeFormat);
-        deviceID = deviceIDSetting.value("ProductId").toByteArray();
-    }
-    return deviceID;
-}
-
 QString QDeviceInfoPrivate::imei(int interface)
 {
     Q_UNUSED(interface)
@@ -141,6 +132,15 @@ QString QDeviceInfoPrivate::productName()
         systemProductName = productNameSetting.value("SystemProductName").toString();
     }
     return systemProductName;
+}
+
+QString QDeviceInfoPrivate::uniqueDeviceID()
+{
+    if (deviceID.isEmpty()) {
+        QSettings deviceIDSetting("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", QSettings::NativeFormat);
+        deviceID = deviceIDSetting.value("ProductId").toString();
+    }
+    return deviceID;
 }
 
 QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)

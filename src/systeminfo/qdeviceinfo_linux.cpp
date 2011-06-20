@@ -191,11 +191,6 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
         return getThermalState();
 }
 
-QByteArray QDeviceInfoPrivate::uniqueDeviceID()
-{
-    return QByteArray();
-}
-
 QString QDeviceInfoPrivate::imei(int interface)
 {
     Q_UNUSED(interface)
@@ -238,6 +233,11 @@ QString QDeviceInfoPrivate::productName()
         }
     }
 
+    return QString();
+}
+
+QString QDeviceInfoPrivate::uniqueDeviceID()
+{
     return QString();
 }
 

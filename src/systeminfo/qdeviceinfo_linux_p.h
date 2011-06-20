@@ -70,11 +70,11 @@ public:
     QDeviceInfo::LockTypeFlags activatedLocks();
     QDeviceInfo::LockTypeFlags enabledLocks();
     QDeviceInfo::ThermalState thermalState();
-    QByteArray uniqueDeviceID();
     QString imei(int interface);
     QString manufacturer();
     QString model();
     QString productName();
+    QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
 
 Q_SIGNALS:
