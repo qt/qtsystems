@@ -86,8 +86,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QDisplayInfo::DisplayOrientation
-    This enum describes the orientation of the display.
+    \enum QDisplayInfo::Orientation
+    This enum describes the orientation of the UI. For orientation of the display, please refer to
+    QOrientationSensor and QOrientationReading in the QSensors module.
 
     \value OrientationUnknown   The orientation is unknown.
     \value Landscape            The orientation is landscape, i.e. the width is bigger than the height.
@@ -210,7 +211,7 @@ QDisplayInfo::BacklightState QDisplayInfo::backlightState(int screen) const
 /*!
     Returns the orientation of the given \a screen.
 */
-QDisplayInfo::DisplayOrientation QDisplayInfo::orientation(int screen) const
+QDisplayInfo::Orientation QDisplayInfo::orientation(int screen) const
 {
     Q_UNUSED(screen)
     return QDisplayInfo::OrientationUnknown;
