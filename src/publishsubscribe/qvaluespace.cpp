@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtSystemKit module of the Qt Toolkit.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     \class QAbstractValueSpaceLayer
     \brief The QAbstractValueSpaceLayer class provides support for adding new logical data layers
            to the Qt Value Space.
-    \inmodule QtSystemKit
+    \inmodule QtSystems
     \internal
 
     To create a new layer in the Value Space subclass this class and reimplement all of the virtual
@@ -285,7 +285,7 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
     \namespace QValueSpace
     \brief The QValueSpace namespace contains miscellaneous identifiers used throughtout the
            Publish and Subscribe API.
-    \inmodule QtSystemKit
+    \inmodule QtSystems
 */
 
 /*!
@@ -488,7 +488,7 @@ QList<QUuid> QValueSpace::availableLayers()
 
 /*!
     \internal
-    \inmodule QtSystemKit
+    \inmodule QtSystems
 
     Returns \a path with all duplicate '/' characters removed.
 */

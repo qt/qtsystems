@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtSystemKit module of the Qt Toolkit.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QValueSpacePublisher
     \brief The QValueSpacePublisher class allows applications to publish values in the Value Space.
-    \inmodule QtSystemKit
+    \inmodule QtSystems
 
     When multiple Value Space layers are available QValueSpacePublisher only publishes values to
     the layer with the highest order.  The layers that QValueSpacePublisher can access can be

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtSystemKit module of the Qt Toolkit.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QBatteryInfo
-    \inmodule QtSystemKit
+    \inmodule QtSystems
     \brief The QBatteryInfo class provides various information of the battery.
 
     Note that on some platforms, listening to the signals could lead to a heavy CPU usage. Therefore,

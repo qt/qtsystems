@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtSystemKit module of the Qt Toolkit.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDeviceProfile
-    \inmodule QtSystemKit
+    \inmodule QtSystems
     \brief The QDeviceProfile class provides details for the profile of the device.
 */
 

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtSystemKit module of the Qt Toolkit.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QValueSpaceSubscriber
     \brief The QValueSpaceSubscriber class allows applications to read and subscribe to Value Space paths.
-    \inmodule QtSystemKit
+    \inmodule QtSystems
 
     By default QValueSpaceSubscriber can read values from and report change notifications for all
     available Value Space layers.  Only data from the layer with the highest order and that
