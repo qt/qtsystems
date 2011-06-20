@@ -39,77 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QINPUTDEVICEINFO_H
-#define QINPUTDEVICEINFO_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qsysteminfo_p.h"
+#ifndef QBLUEZWRAPPER_P_H
+#define QBLUEZWRAPPER_P_H
+
 #include <QtCore/qobject.h>
+#include <QtDBus/qdbuscontext.h>
+#include <QtDBus/qdbusextratypes.h>
 
-QT_BEGIN_HEADER
+#include <qnetworkinfo.h>
+
+#if !defined(QT_NO_BLUEZ)
+
 QT_BEGIN_NAMESPACE
 
-class QInputDeviceInfoPrivate;
-
-class Q_SYSTEMINFO_EXPORT QInputDeviceInfo : public QObject
+class QBluezWrapper : public QObject, protected QDBusContext
 {
     Q_OBJECT
 
-    Q_FLAGS(InputDeviceType IInputDeviceTypes)
-    Q_FLAGS(KeyboardType KeyboardTypes)
-    Q_FLAGS(TouchDeviceType TouchDeviceTypes)
-
 public:
-    enum InputDeviceType {
-        UnknownInputDevice = 0x0,
-        Keys = 0x1,
-        Touch = 0x2,
-        Mouse = 0x4
-    };
-    Q_DECLARE_FLAGS(InputDeviceTypes, InputDeviceType)
+    QBluezWrapper(QObject *parent = 0);
 
-    enum KeyboardType {
-        UnknownKeyboard = 0x0,
-        SoftwareKeyboard = 0x1,
-        ITUKeypad = 0x2,
-        HalfQwertyKeyboard = 0x4,
-        FullQwertyKeyboard = 0x8,
-        WirelessKeyboard = 0x10,
-        FlipableKeyboard = 0x20
-    };
-    Q_DECLARE_FLAGS(KeyboardTypes, KeyboardType)
+    bool isBluezAvailable();
 
-    enum TouchDeviceType {
-        UnknownTouchDevice = 0x0,
-        SingleTouch = 0x1,
-        MultiTouch = 0x2
-    };
-    Q_DECLARE_FLAGS(TouchDeviceTypes, TouchDeviceType)
-
-    QInputDeviceInfo(QObject *parent = 0);
-    virtual ~QInputDeviceInfo();
-
-    Q_INVOKABLE bool isKeyboardFlippedOpen() const;
-    Q_INVOKABLE bool isKeyboardLightOn() const;
-    Q_INVOKABLE bool isWirelessKeyboardConnected() const;
-    Q_INVOKABLE QInputDeviceInfo::InputDeviceTypes availableInputDevices() const;
-    Q_INVOKABLE QInputDeviceInfo::KeyboardTypes availableKeyboards() const;
-    Q_INVOKABLE QInputDeviceInfo::TouchDeviceTypes availableTouchDevices() const;
+    bool hasInputDevice();
 
 Q_SIGNALS:
-    void keyboardFlipped(bool open);
     void wirelessKeyboardConnected(bool connected);
 
 protected:
     void connectNotify(const char *signal);
     void disconnectNotify(const char *signal);
 
+private Q_SLOTS:
+    void onBluezPropertyChanged(const QString &property, const QDBusVariant &value);
+
 private:
-    Q_DISABLE_COPY(QInputDeviceInfo)
-    QInputDeviceInfoPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QInputDeviceInfo)
+    QStringList allDevices();
+
+    int available;
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
-#endif // QINPUTDEVICEINFO_H
+#endif // QT_NO_BLUEZ
+
+#endif // QBLUEZWRAPPER_P_H

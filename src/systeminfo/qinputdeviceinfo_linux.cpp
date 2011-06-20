@@ -41,14 +41,24 @@
 
 #include "qinputdeviceinfo_linux_p.h"
 
+#if !defined(QT_NO_BLUEZ)
+#include "qbluezwrapper_p.h"
+#endif // QT_NO_BLUEZ
+
 #include <QtCore/qdir.h>
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_BLUEZ)
+Q_GLOBAL_STATIC(QBluezWrapper, bluezWrapper)
+#endif // QT_NO_BLUEZ
+
 static const QString INPUT_SYSFS_PATH(QString::fromAscii("/sys/class/input/"));
 
 QInputDeviceInfoPrivate::QInputDeviceInfoPrivate(QInputDeviceInfo *parent)
-    : q_ptr(parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , watchWirelessKeyboard(false)
 {
 }
 
@@ -64,6 +74,14 @@ bool QInputDeviceInfoPrivate::isKeyboardLightOn()
 
 bool QInputDeviceInfoPrivate::isWirelessKeyboardConnected()
 {
+    if (watchWirelessKeyboard)
+        return wirelessKeyboardConnectedBuffer;
+
+#if !defined(QT_NO_BLUEZ)
+    if (bluezWrapper()->isBluezAvailable())
+        return bluezWrapper()->hasInputDevice();
+#endif
+
     return false;
 }
 
@@ -93,8 +111,6 @@ QInputDeviceInfo::InputDeviceTypes QInputDeviceInfoPrivate::availableInputDevice
 
 QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
 {
-    // TODO wireless key board
-
     const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("input*"));
     if (dirs.isEmpty())
         return QInputDeviceInfo::UnknownKeyboard;
@@ -110,6 +126,10 @@ QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
                 types |= QInputDeviceInfo::ITUKeypad;
         }
     }
+
+    if (isWirelessKeyboardConnected())
+        types |= QInputDeviceInfo::WirelessKeyboard;
+
     return types;
 }
 
@@ -131,6 +151,31 @@ QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfoPrivate::availableTouchDevice
         }
     }
     return types;
+}
+
+void QInputDeviceInfoPrivate::connectNotify(const char *signal)
+{
+#if !defined(QT_NO_BLUEZ)
+    if (strcmp(signal, SIGNAL(wirelessKeyboardConnected(bool))) == 0) {
+        connect(bluezWrapper(), signal, this, signal, Qt::UniqueConnection);
+        wirelessKeyboardConnectedBuffer = isWirelessKeyboardConnected();
+        watchWirelessKeyboard = true;
+    }
+#else
+    Q_UNUSED(signal)
+#endif
+}
+
+void QInputDeviceInfoPrivate::disconnectNotify(const char *signal)
+{
+#if !defined(QT_NO_BLUEZ)
+    if (strcmp(signal, SIGNAL(wirelessKeyboardConnected(bool))) == 0) {
+        disconnect(bluezWrapper(), signal, this, signal);
+        watchWirelessKeyboard = false;
+    }
+#else
+    Q_UNUSED(signal)
+#endif
 }
 
 QT_END_NAMESPACE

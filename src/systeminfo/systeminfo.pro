@@ -92,8 +92,12 @@ linux-* {
         } else {
             DEFINES += QT_NO_OFONO
         }
+
+        # TODO put it behind a build flag, e.g. bluez_enabled
+        PRIVATE_HEADERS += qbluezwrapper_p.h
+        SOURCES += qbluezwrapper.cpp
     } else {
-        DEFINES += QT_NO_OFONO
+        DEFINES += QT_NO_OFONO QT_NO_BLUEZ
     }
 
     contains(blkid_enabled, yes) {
