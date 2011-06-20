@@ -3,7 +3,7 @@ QT.serviceframework.MAJOR_VERSION = 5
 QT.serviceframework.MINOR_VERSION = 0
 QT.serviceframework.PATCH_VERSION = 0
 
-QT.serviceframework.name = QtSystemInfo
+QT.serviceframework.name = QtServiceFramework
 QT.serviceframework.bins = $$QT_MODULE_BIN_BASE
 QT.serviceframework.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/QtServiceFramework
 QT.serviceframework.private_includes = $$QT_MODULE_INCLUDE_BASE/QtServiceFramework/$$QT.serviceframework.VERSION
