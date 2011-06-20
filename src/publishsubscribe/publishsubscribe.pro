@@ -34,6 +34,31 @@ unix: {
 
     CONFIG += link_pkgconfig
     PKGCONFIG += gobject-2.0 gconf-2.0
+
+    contains(QT_CONFIG, dbus): {
+        QT += dbus
+
+        contains(contextkit_enabled, yes) {
+            PRIVATE_HEADERS += contextkitlayer_p.h
+            SOURCES += contextkitlayer.cpp
+
+            CONFIG += link_pkgconfig
+            PKGCONFIG += contextsubscriber-1.0 contextprovider-1.0
+        } else {
+            DEFINES += QT_NO_CONTEXTKIT
+        }
+    } else {
+        DEFINES += QT_NO_CONTEXTKIT
+    }
+}
+
+win32: {
+    PRIVATE_HEADERS += qsystemreadwritelock_p.h \
+                       registrylayer_win_p.h
+    SOURCES += qsystemreadwritelock_win.cpp \
+               registrylayer_win.cpp
+
+    LIBS += -ladvapi32
 }
 
 HEADERS = qtpublishsubscribeversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS

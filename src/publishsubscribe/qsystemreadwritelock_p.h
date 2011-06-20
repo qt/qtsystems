@@ -50,34 +50,51 @@
 // We mean it.
 //
 
-#ifndef QVALUESPACEMANAGER_P_H
-#define QVALUESPACEMANAGER_P_H
+#ifndef QSYSTEMREADWRITELOCK_P_H
+#define QSYSTEMREADWRITELOCK_P_H
 
-#include "qvaluespace_p.h"
-
-#include <QtCore/qlist.h>
+#include "qpublishsubscribe_p.h"
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 
-class QValueSpaceManager
+class QSystemReadWriteLockPrivate;
+
+class QSystemReadWriteLock
 {
 public:
-    QValueSpaceManager();
+    enum AccessMode{
+        Create,
+        Open
+    };
 
-    bool isServer() const;
-    void init(QAbstractValueSpaceLayer::Type type);
-    void install(QAbstractValueSpaceLayer * layer);
-    void install(QValueSpace::LayerCreateFunc func);
-    QList<QAbstractValueSpaceLayer *> const & getLayers();
+    enum SystemReadWriteLockError {
+        NoError,
+        PermissionDenied,
+        KeyError, //TODO:remove this enum
+        NotFound,
+        LockError, //TODO: remove this enum
+        OutOfResources, 
+        FailedToInitialize, //TODO: remove this enum
+        UnknownError
+    };
 
-    static QValueSpaceManager *instance();
+    explicit QSystemReadWriteLock(const QString &key, AccessMode mode = Open);
+    ~QSystemReadWriteLock();
+
+    bool lockForRead();
+    bool lockForWrite();
+    void unlock();
+
+    SystemReadWriteLockError error() const;
+    QString errorString() const;
+
+    QString key() const;
 
 private:
-    enum { Uninit, Server, Client } type;
-    QList<QAbstractValueSpaceLayer *> layers;
-    QList<QValueSpace::LayerCreateFunc> funcs;
+    QSystemReadWriteLockPrivate *d;
 };
 
 QT_END_NAMESPACE
 
-#endif // QVALUESPACEMANAGER_P_H
+#endif // QSYSTEMREADWRITELOCK_P_H
