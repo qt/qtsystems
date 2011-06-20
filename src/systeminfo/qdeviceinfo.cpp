@@ -57,7 +57,7 @@ public:
     QDeviceInfo::LockTypeFlags enabledLocks() { return QDeviceInfo::NoLock; }
     QDeviceInfo::ThermalState thermalState() { return QDeviceInfo::UnknownThermal; }
     QByteArray uniqueDeviceID() { return QByteArray(); }
-    QString imei() { return QString(); }
+    QString imei(int) { return QString(); }
     QString manufacturer() { return QString(); }
     QString model() { return QString(); }
     QString productName() { return QString(); }
@@ -211,12 +211,12 @@ QByteArray QDeviceInfo::uniqueDeviceID() const
 }
 
 /*!
-    Returns the International Mobile Equipment Identity (IMEI) of the device. In case of error, or
-    the information is not available, an empty string is returned.
+    Returns the International Mobile Equipment Identity (IMEI) of the given \a interface on the device.
+    In case of error, or the information is not available, an empty string is returned.
 */
-QString QDeviceInfo::imei() const
+QString QDeviceInfo::imei(int interface) const
 {
-    return d_ptr->imei();
+    return d_ptr->imei(interface);
 }
 
 /*!

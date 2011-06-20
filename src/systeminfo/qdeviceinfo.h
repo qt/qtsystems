@@ -113,7 +113,7 @@ public:
 
     Q_INVOKABLE bool hasFeature(QDeviceInfo::Feature feature) const;
     Q_INVOKABLE QByteArray uniqueDeviceID() const;
-    Q_INVOKABLE QString imei() const;
+    Q_INVOKABLE QString imei(int interface) const;
     Q_INVOKABLE QString manufacturer() const;
     Q_INVOKABLE QString model() const;
     Q_INVOKABLE QString productName() const;

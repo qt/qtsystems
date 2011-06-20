@@ -196,8 +196,9 @@ QByteArray QDeviceInfoPrivate::uniqueDeviceID()
     return QByteArray();
 }
 
-QString QDeviceInfoPrivate::imei()
+QString QDeviceInfoPrivate::imei(int interface)
 {
+    Q_UNUSED(interface)
     return QString();
 }
 
