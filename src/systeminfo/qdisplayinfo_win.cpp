@@ -111,4 +111,10 @@ QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
     return QDisplayInfo::BacklightUnknown;
 }
 
+QDisplayInfo::Orientation QDisplayInfoPrivate::orientation(int screen)
+{
+    Q_UNUSED(screen)
+    return QDisplayInfo::OrientationUnknown;
+}
+
 QT_END_NAMESPACE

@@ -63,6 +63,7 @@ public:
     int physicalHeight(int) { return -1; }
     int physicalWidth(int) { return -1; }
     QDisplayInfo::BacklightState backlightState(int) { return QDisplayInfo::BacklightUnknown; }
+    QDisplayInfo::Orientation orientation(int) { return QDispayInfo::OrientationUnknown; }
 };
 QT_END_NAMESPACE
 #endif
@@ -213,8 +214,18 @@ QDisplayInfo::BacklightState QDisplayInfo::backlightState(int screen) const
 */
 QDisplayInfo::Orientation QDisplayInfo::orientation(int screen) const
 {
-    Q_UNUSED(screen)
-    return QDisplayInfo::OrientationUnknown;
+    QDisplayInfo::Orientation orient = d_ptr->orientation(screen);
+    if (orient != QDisplayInfo::OrientationUnknown) {
+        return orient;
+    } else {
+        QWidget *widget = qApp->desktop()->screen(screen);
+        if (widget->width() > widget->height())
+            return QDisplayInfo::Landscape;
+        else if (widget->width() < widget->height())
+            return QDisplayInfo::Portrait;
+        else
+            return QDisplayInfo::OrientationUnknown;
+    }
 }
 
 QT_END_NAMESPACE

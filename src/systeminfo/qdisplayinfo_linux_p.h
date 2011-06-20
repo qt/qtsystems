@@ -70,6 +70,7 @@ public:
     int physicalHeight(int screen);
     int physicalWidth(int screen);
     QDisplayInfo::BacklightState backlightState(int screen);
+    QDisplayInfo::Orientation orientation(int screen);
 
 private:
     QDisplayInfo * const q_ptr;

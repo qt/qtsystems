@@ -176,4 +176,27 @@ QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
     return QDisplayInfo::BacklightUnknown;
 }
 
+QDisplayInfo::Orientation QDisplayInfoPrivate::orientation(int screen)
+{
+#if defined(Q_WS_X11)
+    Rotation rotation;
+    XRRRotations(QX11Info::display(), screen, &rotation);
+    switch (rotation) {
+    case RR_Rotate_0:
+        return QDisplayInfo::Landscape;
+    case RR_Rotate_90:
+        return QDisplayInfo::Portrait;
+    case RR_Rotate_180:
+        return QDisplayInfo::InvertedLandscape;
+    case RR_Rotate_270:
+        return QDisplayInfo::InvertedPortrait;
+    default:
+        return QDisplayInfo::OrientationUnknown;
+    }
+#else
+    Q_UNUSED(screen)
+    return QDisplayInfo::OrientationUnknown;
+#endif
+}
+
 QT_END_NAMESPACE
