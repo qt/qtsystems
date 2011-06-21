@@ -52,6 +52,7 @@ class QNetworkInfoPrivate
 public:
     QNetworkInfoPrivate(QNetworkInfo *) {}
 
+    int networkInterfaceCount(QNetworkInfo::NetworkMode) { return -1; }
     int networkSignalStrength(QNetworkInfo::NetworkMode, int) { return -1; }
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(int) { return QNetworkInfo::UnknownDataTechnology; }
     QNetworkInfo::NetworkMode currentNetworkMode() { return QNetworkInfo::UnknownMode; }
@@ -162,6 +163,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QNetworkInfo::networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count)
+
+    This signal is emitted whenever the number of interfaces for the \a mode has changed to \a count.
+*/
+
+/*!
     \fn void QNetworkInfo::networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
 
     This signal is emitted whenever the name for the \a interface of \a mode has changed to \a name.
@@ -195,6 +202,15 @@ QNetworkInfo::QNetworkInfo(QObject *parent)
 QNetworkInfo::~QNetworkInfo()
 {
     delete d_ptr;
+}
+
+/*!
+    Returns the number of interfaces for the \a mode. If the information is not available, or error
+    occurs, -1 is returned.
+*/
+int QNetworkInfo::networkInterfaceCount(QNetworkInfo::NetworkMode mode) const
+{
+    return d_ptr->networkInterfaceCount(mode);
 }
 
 /*!

@@ -69,10 +69,35 @@ Q_GLOBAL_STATIC(QOfonoWrapper, ofonoWrapper)
 static const QString BLUETOOTH_SYSFS_PATH(QString::fromAscii("/sys/class/bluetooth/"));
 static const QString NETWORK_SYSFS_PATH(QString::fromAscii("/sys/class/net/"));
 
+static const QStringList WLAN_MASK(QString::fromAscii("wlan*"));
+static const QStringList ETHERNET_MASK(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*"));
+
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
 {
+}
+
+int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
+{
+    switch(mode) {
+    case QNetworkInfo::WlanMode:
+        return QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).size();
+
+    case QNetworkInfo::EthernetMode:
+        return QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).size();
+
+    case QNetworkInfo::BluetoothMode:
+        return QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size();
+
+//    case QNetworkInfo::GsmMode:
+//    case QNetworkInfo::CdmaMode:
+//    case QNetworkInfo::WcdmaMode:
+//    case QNetworkInfo::WimaxMode:
+//    case QNetworkInfo::LteMode:
+    default:
+        return -1;
+    };
 }
 
 int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)

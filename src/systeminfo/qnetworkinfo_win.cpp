@@ -49,6 +49,25 @@ QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
 {
 }
 
+int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
+{
+    switch(mode) {
+    case QNetworkInfo::WlanMode:
+    case QNetworkInfo::EthernetMode:
+    case QNetworkInfo::BluetoothMode:
+
+//    case QNetworkInfo::GsmMode:
+//    case QNetworkInfo::CdmaMode:
+//    case QNetworkInfo::WcdmaMode:
+//    case QNetworkInfo::WimaxMode:
+//    case QNetworkInfo::LteMode:
+    default:
+        break;
+    };
+
+    return -1;
+}
+
 int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
 {
     switch(mode) {
