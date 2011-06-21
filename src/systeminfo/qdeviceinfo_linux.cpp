@@ -58,7 +58,8 @@
 QT_BEGIN_NAMESPACE
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
-    : q_ptr(parent)
+    : QObject(parent)
+    , q_ptr(parent)
     , watchThermalState(false)
     , timer(0)
 {

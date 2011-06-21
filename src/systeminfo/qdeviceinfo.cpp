@@ -155,7 +155,9 @@ QDeviceInfo::QDeviceInfo(QObject *parent)
 */
 QDeviceInfo::~QDeviceInfo()
 {
+#if !defined(Q_OS_LINUX)
     delete d_ptr;
+#endif
 }
 
 /*!
