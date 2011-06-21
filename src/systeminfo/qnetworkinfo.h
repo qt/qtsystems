@@ -88,7 +88,6 @@ public:
         EmergencyOnly,
         Searching,
         Busy,
-        Connected,
         Denied,
         HomeNetwork,
         Roaming

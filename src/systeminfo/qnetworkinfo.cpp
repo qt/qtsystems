@@ -118,10 +118,9 @@ QT_BEGIN_NAMESPACE
     \value EmergencyOnly        The network only allows emergency calls.
     \value Searching            The device is searching or connecting to the network.
     \value Busy                 The network is too busy to be connected.
-    \value Connected            The device has successfully connected to the network.
     \value Denied               The connection to the network has been denied.
-    \value HomeNetwork          The device is on home network. It suggests the Connected status.
-    \value Roaming              The device is on roaming network. It suggests the Connected status.
+    \value HomeNetwork          The device is connected to the home network.
+    \value Roaming              The device is connected to some roaming network.
 */
 
 /*!

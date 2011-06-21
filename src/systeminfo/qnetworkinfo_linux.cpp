@@ -129,7 +129,7 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
     }
 
     case QNetworkInfo::EthernetMode:
-        if (networkStatus(QNetworkInfo::EthernetMode, interface) == QNetworkInfo::Connected)
+        if (networkStatus(QNetworkInfo::EthernetMode, interface) == QNetworkInfo::HomeNetwork)
             return 100;
         else
             return -1;
@@ -173,21 +173,31 @@ QNetworkInfo::CellDataTechnology QNetworkInfoPrivate::currentCellDataTechnology(
 QNetworkInfo::NetworkMode QNetworkInfoPrivate::currentNetworkMode()
 {
     // TODO multiple-interface support
-    if (networkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::Connected)
+    if (networkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::EthernetMode;
-    else if (networkStatus(QNetworkInfo::WlanMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WlanMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WlanMode;
-    else if (networkStatus(QNetworkInfo::BluetoothMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::BluetoothMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::BluetoothMode;
-    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WimaxMode;
-    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::LteMode;
-    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WcdmaMode;
-    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::CdmaMode;
+    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::GsmMode;
-    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WimaxMode;
+    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::LteMode;
+    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WcdmaMode;
+    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::CdmaMode;
+    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::GsmMode;
     else
         return QNetworkInfo::UnknownMode;
@@ -204,7 +214,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
         if (carrier.open(QIODevice::ReadOnly)) {
             char state;
             if (carrier.read(&state, 1) == 1 && state == '1')
-                return QNetworkInfo::Connected;
+                return QNetworkInfo::HomeNetwork;
         }
         return QNetworkInfo::NoNetworkAvailable;
     }
@@ -217,7 +227,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
         if (carrier.open(QIODevice::ReadOnly)) {
             char state;
             if (carrier.read(&state, 1) == 1 && state == '1')
-                return QNetworkInfo::Connected;
+                return QNetworkInfo::HomeNetwork;
         }
         return QNetworkInfo::NoNetworkAvailable;
     }
@@ -240,7 +250,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
 
         for (uint j = 0; j< req.cnum; j++) {
             if (info[j].state == BT_CONNECTED)
-                return QNetworkInfo::Connected;
+                return QNetworkInfo::HomeNetwork;
         }
 
         close(ctl);
