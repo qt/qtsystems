@@ -197,7 +197,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             return QNetworkInfo::UnknownStatus;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/carrier"));
@@ -210,7 +210,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
         if (dir.isEmpty())
             return QNetworkInfo::UnknownStatus;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/carrier"));
@@ -274,7 +274,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QNetworkInterface interface = QNetworkInterface::interfaceFromName(dir);
@@ -284,7 +284,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QNetworkInterface interface = QNetworkInterface::interfaceFromName(dir);
@@ -408,7 +408,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/address"));
@@ -418,7 +418,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/address"));
@@ -453,7 +453,7 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             break;
         int sock = socket(PF_INET, SOCK_DGRAM, 0);
