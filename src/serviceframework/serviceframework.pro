@@ -1,5 +1,4 @@
 load(qt_module)
-load(qt_module_config)
 
 TARGET = QtServiceFramework
 QPRO_PWD = $PWD

@@ -1,13 +1,12 @@
 load(qt_module)
-load(qt_module_config)
-QPRO_PWD = $$PWD
 
 TARGET = QtPublishSubscribe
-
-QT = core
+QPRO_PWD = $PWD
 
 CONFIG += module
 MODULE_PRI = ../../modules/qt_publishsubscribe.pri
+
+QT = core
 
 DEFINES += QT_BUILD_PUBLISHSUBSCRIBE_LIB QT_MAKEDLL
 
