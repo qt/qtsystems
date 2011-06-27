@@ -25,30 +25,32 @@ SOURCES = qvaluespace.cpp \
           qvaluespacepublisher.cpp \
           qvaluespacesubscriber.cpp
 
-unix: {
-    PRIVATE_HEADERS += gconfitem_p.h \
-                       gconflayer_p.h
+unix {
+    linux-* {
+        PRIVATE_HEADERS += gconfitem_p.h \
+                           gconflayer_p.h
 
-    SOURCES += gconflayer.cpp \
-               gconfitem.cpp
+        SOURCES += gconflayer.cpp \
+                   gconfitem.cpp
 
-    CONFIG += link_pkgconfig
-    PKGCONFIG += gobject-2.0 gconf-2.0
+        CONFIG += link_pkgconfig
+        PKGCONFIG += gobject-2.0 gconf-2.0
 
-    contains(QT_CONFIG, dbus): {
-        QT += dbus
+        contains(QT_CONFIG, dbus): {
+            QT += dbus
 
-        contains(contextkit_enabled, yes) {
-            PRIVATE_HEADERS += contextkitlayer_p.h
-            SOURCES += contextkitlayer.cpp
+            contains(contextkit_enabled, yes) {
+                PRIVATE_HEADERS += contextkitlayer_p.h
+                SOURCES += contextkitlayer.cpp
 
-            CONFIG += link_pkgconfig
-            PKGCONFIG += contextsubscriber-1.0 contextprovider-1.0
+                CONFIG += link_pkgconfig
+                PKGCONFIG += contextsubscriber-1.0 contextprovider-1.0
+            } else {
+                DEFINES += QT_NO_CONTEXTKIT
+            }
         } else {
             DEFINES += QT_NO_CONTEXTKIT
         }
-    } else {
-        DEFINES += QT_NO_CONTEXTKIT
     }
 }
 
