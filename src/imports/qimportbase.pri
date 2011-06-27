@@ -3,6 +3,8 @@ load(qt_module)
 TEMPLATE = lib
 CONFIG += qt plugin
 
+win32|mac:!wince*:!win32-msvc:!macx-xcode:CONFIG += debug_and_release
+
 isEmpty(TARGETPATH) {
     error("qimportbase.pri: You must provide a TARGETPATH!")
 }
