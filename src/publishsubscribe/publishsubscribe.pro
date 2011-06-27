@@ -26,14 +26,18 @@ SOURCES = qvaluespace.cpp \
 
 unix {
     linux-* {
-        PRIVATE_HEADERS += gconfitem_p.h \
-                           gconflayer_p.h
+        contains(gconflayler_enabled, yes) {
+            PRIVATE_HEADERS += gconfitem_p.h \
+                               gconflayer_p.h
 
-        SOURCES += gconflayer.cpp \
-                   gconfitem.cpp
+            SOURCES += gconflayer.cpp \
+                       gconfitem.cpp
 
-        CONFIG += link_pkgconfig
-        PKGCONFIG += gobject-2.0 gconf-2.0
+            CONFIG += link_pkgconfig
+            PKGCONFIG += gobject-2.0 gconf-2.0
+        } else {
+            DEFINES += QT_NO_GCONFLAYER
+        }
 
         contains(QT_CONFIG, dbus): {
             QT += dbus

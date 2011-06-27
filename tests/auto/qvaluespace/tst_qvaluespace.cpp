@@ -71,8 +71,13 @@ void tst_QValueSpace::tst_availableLayers()
 {
     QList<QUuid> layers = QValueSpace::availableLayers();
 
+    if (QValueSpace::availableLayers() == 0)
+        QSKIP("No value space layer available, thus skip all the test cases.", SkipAll);
+
 #if defined(Q_OS_LINUX)
+#if !defined(QT_NO_GCONFLAYER)
     QVERIFY(layers.contains(QVALUESPACE_GCONF_LAYER));
+#endif
 #if !defined(QT_NO_CONTEXTKIT)
     QVERIFY(layers.contains(QVALUESPACE_CONTEXTKITNONCORE_LAYER));
     QVERIFY(layers.contains(QVALUESPACE_CONTEXTKITCORE_LAYER));
