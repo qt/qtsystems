@@ -12,5 +12,6 @@ QT.serviceframework.libs = $$QT_MODULE_LIB_BASE
 QT.serviceframework.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.serviceframework.imports = $$QT_MODULE_IMPORT_BASE
 QT.serviceframework.depends = core gui network
+QT.serviceframework.DEFINES = QT_SERVICEFRAMEWORK_LIB
 
 QT_CONFIG += serviceframework

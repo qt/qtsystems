@@ -124,6 +124,7 @@ qrc_*.cpp
 
 src/systeminfo/qtsysteminfoversion.h
 src/publishsubscribe/qtpublishsubscribeversion.h
+src/serviceframework/qtserviceframeworkversion.h
 
 # Test generated files
 QObject.log

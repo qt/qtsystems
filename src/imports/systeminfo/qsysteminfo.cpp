@@ -62,7 +62,7 @@ public:
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.systeminfo"));
 
-        int major = 1;
+        int major = 5;
         int minor = 0;
         qmlRegisterType<QBatteryInfo>(uri, major, minor, "BatteryInfo");
         qmlRegisterType<QDeviceInfo>(uri, major, minor, "DeviceInfo");

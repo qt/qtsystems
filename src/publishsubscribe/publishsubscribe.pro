@@ -1,15 +1,16 @@
 load(qt_module)
-load(qt_module_config)
-QPRO_PWD = $$PWD
 
 TARGET = QtPublishSubscribe
-
-QT = core
+QPRO_PWD = $PWD
 
 CONFIG += module
 MODULE_PRI = ../../modules/qt_publishsubscribe.pri
 
+QT = core
+
 DEFINES += QT_BUILD_PUBLISHSUBSCRIBE_LIB QT_MAKEDLL
+
+include($$QT_SOURCE_TREE/src/qbase.pri)
 
 PUBLIC_HEADERS = qvaluespace.h \
                  qvaluespacepublisher.h \
@@ -25,30 +26,36 @@ SOURCES = qvaluespace.cpp \
           qvaluespacepublisher.cpp \
           qvaluespacesubscriber.cpp
 
-unix: {
-    PRIVATE_HEADERS += gconfitem_p.h \
-                       gconflayer_p.h
+unix {
+    linux-* {
+        contains(gconflayler_enabled, yes) {
+            PRIVATE_HEADERS += gconfitem_p.h \
+                               gconflayer_p.h
 
-    SOURCES += gconflayer.cpp \
-               gconfitem.cpp
-
-    CONFIG += link_pkgconfig
-    PKGCONFIG += gobject-2.0 gconf-2.0
-
-    contains(QT_CONFIG, dbus): {
-        QT += dbus
-
-        contains(contextkit_enabled, yes) {
-            PRIVATE_HEADERS += contextkitlayer_p.h
-            SOURCES += contextkitlayer.cpp
+            SOURCES += gconflayer.cpp \
+                       gconfitem.cpp
 
             CONFIG += link_pkgconfig
-            PKGCONFIG += contextsubscriber-1.0 contextprovider-1.0
+            PKGCONFIG += gobject-2.0 gconf-2.0
+        } else {
+            DEFINES += QT_NO_GCONFLAYER
+        }
+
+        contains(QT_CONFIG, dbus): {
+            QT += dbus
+
+            contains(contextkit_enabled, yes) {
+                PRIVATE_HEADERS += contextkitlayer_p.h
+                SOURCES += contextkitlayer.cpp
+
+                CONFIG += link_pkgconfig
+                PKGCONFIG += contextsubscriber-1.0 contextprovider-1.0
+            } else {
+                DEFINES += QT_NO_CONTEXTKIT
+            }
         } else {
             DEFINES += QT_NO_CONTEXTKIT
         }
-    } else {
-        DEFINES += QT_NO_CONTEXTKIT
     }
 }
 
