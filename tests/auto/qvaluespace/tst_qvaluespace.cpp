@@ -100,6 +100,9 @@ void tst_QValueSpace::tst_PublisherPath_data()
 
 void tst_QValueSpace::tst_PublisherPath()
 {
+    if (QValueSpace::availableLayers().size() == 0)
+        QSKIP("No value space layer available, thus skip all the test cases.", SkipAll);
+
     QFETCH(QString, path);
 
     QValueSpacePublisher publisher(path);
@@ -119,6 +122,9 @@ void tst_QValueSpace::tst_PublishSubscribe_data()
 
 void tst_QValueSpace::tst_PublishSubscribe()
 {
+    if (QValueSpace::availableLayers().size() == 0)
+        QSKIP("No value space layer available, thus skip all the test cases.", SkipAll);
+
     QFETCH(QString, path);
     QFETCH(QString, name);
     QFETCH(QVariant, value);
