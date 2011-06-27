@@ -71,7 +71,7 @@ void tst_QValueSpace::tst_availableLayers()
 {
     QList<QUuid> layers = QValueSpace::availableLayers();
 
-    if (QValueSpace::availableLayers() == 0)
+    if (layers.size() == 0)
         QSKIP("No value space layer available, thus skip all the test cases.", SkipAll);
 
 #if defined(Q_OS_LINUX)

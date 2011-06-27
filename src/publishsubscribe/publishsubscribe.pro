@@ -10,6 +10,8 @@ QT = core
 
 DEFINES += QT_BUILD_PUBLISHSUBSCRIBE_LIB QT_MAKEDLL
 
+include($$QT_SOURCE_TREE/src/qbase.pri)
+
 PUBLIC_HEADERS = qvaluespace.h \
                  qvaluespacepublisher.h \
                  qvaluespacesubscriber.h

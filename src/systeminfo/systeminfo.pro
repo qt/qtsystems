@@ -10,6 +10,8 @@ QT = core gui network
 
 DEFINES += QT_BUILD_SYSTEMINFO_LIB QT_MAKEDLL
 
+include($$QT_SOURCE_TREE/src/qbase.pri)
+
 PUBLIC_HEADERS += qdeviceinfo.h \
                   qdisplayinfo.h \
                   qstorageinfo.h \
