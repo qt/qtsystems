@@ -1,6 +1,6 @@
 TARGET  = $$qtLibraryTarget(declarative_publishsubscribe)
 TARGETPATH = Qt/publishsubscribe
-include(../qimportbase.pri)
+include(qpublishsubscribeimport.pri)
 target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 DESTDIR = $$QT.publishsubscribe.imports/$$TARGETPATH
 INSTALLS += target

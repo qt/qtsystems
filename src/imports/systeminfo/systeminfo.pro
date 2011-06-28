@@ -1,6 +1,6 @@
 TARGET  = $$qtLibraryTarget(declarative_systeminfo)
 TARGETPATH = Qt/systeminfo
-include(../qimportbase.pri)
+include(qsysteminfoimport.pri)
 target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 DESTDIR = $$QT.systeminfo.imports/$$TARGETPATH
 INSTALLS += target
