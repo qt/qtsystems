@@ -46,7 +46,7 @@
 #include "objectendpoint_dbus_p.h"
 #include <QObject>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QServiceMetaObjectDBusPrivate;
 class QServiceMetaObjectDBus : public QDBusAbstractAdaptor
@@ -84,8 +84,8 @@ struct QServiceUserTypeDBus
 QDBusArgument &operator<<(QDBusArgument &argument, const QServiceUserTypeDBus &myType);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QServiceUserTypeDBus &myType);
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QTM_PREPEND_NAMESPACE(QServiceUserTypeDBus))
+Q_DECLARE_METATYPE(QServiceUserTypeDBus)
 
 #endif //QSERVICE_METAOBJECT_DBUS_H

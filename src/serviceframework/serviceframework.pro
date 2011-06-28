@@ -10,7 +10,7 @@ QT = core sql
 
 DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
-include($$QT_SOURCE_TREE/src/qbase.pri)
+load(qt_module_config)
 
 include(ipc/ipc.pri)
 

@@ -44,7 +44,7 @@
 #include "instancemanager_p.h"
 #include "qremoteserviceregisterentry_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(InstanceManager, typeRegister);
 
@@ -244,4 +244,4 @@ int InstanceManager::totalInstances() const
 
 #include "moc_instancemanager_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

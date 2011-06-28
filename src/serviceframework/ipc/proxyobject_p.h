@@ -52,7 +52,7 @@
 
 #include <QObject>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QServiceProxyPrivate;
 class QServiceProxy : public QObject
@@ -75,6 +75,6 @@ private:
 
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //PROXY_OBJECT_H

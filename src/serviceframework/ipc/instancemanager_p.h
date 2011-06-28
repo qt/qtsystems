@@ -52,7 +52,7 @@
 #include <QUuid>
 #include <QDebug>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 struct ServiceIdentDescriptor
 {
@@ -99,7 +99,7 @@ private:
 
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 
 #endif //QSERVICE_INSTANCE_MANAGER

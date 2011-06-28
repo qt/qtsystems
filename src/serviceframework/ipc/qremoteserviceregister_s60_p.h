@@ -57,7 +57,7 @@
 
 #include <QQueue>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class ServiceMessageListener;
 
@@ -271,6 +271,6 @@ private:
     QByteArray iByteArray;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif // QREMOTESERVICEREGISTER_S60_P_H

@@ -41,7 +41,7 @@
 
 #include "qservicecontext.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #define CLIENT_DATA_INDEX 0
 
@@ -207,4 +207,4 @@ void QServiceContext::resetClientData()
 
 #include "moc_qservicecontext.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

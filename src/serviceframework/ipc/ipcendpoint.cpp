@@ -41,7 +41,7 @@
 
 #include "ipcendpoint_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 /*!
     QServiceIpcEndPoint
 */
@@ -73,4 +73,4 @@ void QServiceIpcEndPoint::writePackage(QServicePackage newPackage)
 }
 
 #include "moc_ipcendpoint_p.cpp"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

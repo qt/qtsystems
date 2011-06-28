@@ -46,7 +46,7 @@
 #include "instancemanager_p.h"
 #include "qserviceinterfacedescriptor.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class ObjectEndPoint;
 class QRemoteServiceRegisterPrivate: public QObject
@@ -80,6 +80,6 @@ public:
     static QRemoteServiceRegisterPrivate* constructPrivateObject(QObject *parent);
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif

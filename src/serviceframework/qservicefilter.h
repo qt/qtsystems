@@ -45,13 +45,10 @@
 #include "qserviceframeworkglobal.h"
 #include <QStringList>
 
-QT_BEGIN_NAMESPACE
-class QDataStream;
-QT_END_NAMESPACE
-
 QT_BEGIN_HEADER
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
+class QDataStream;
 
 #ifdef QT_SFW_SERVICEDATABASE_GENERATE
 #undef Q_SERVICEFW_EXPORT
@@ -116,7 +113,7 @@ Q_SERVICEFW_EXPORT QDataStream &operator<<(QDataStream &, const QServiceFilter &
 Q_SERVICEFW_EXPORT QDataStream &operator>>(QDataStream &, QServiceFilter &);
 #endif
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 QT_END_HEADER
 #endif //QSERVICEFILTER_H

@@ -67,7 +67,7 @@
 #include <sys/ucred.h>
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 //IPC based on QLocalSocket
 
@@ -283,4 +283,4 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
 
 #include "moc_qremoteserviceregister_ls_p.cpp"
 #include "qremoteserviceregister_ls_p.moc"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

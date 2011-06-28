@@ -59,7 +59,7 @@
 #include <QDebug>
 #include <s32mem.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 /*
     \class DatabaseManager
@@ -536,6 +536,6 @@ void RDatabaseManagerSession::CancelNotifyServiceSignal() const
 
 #include "moc_databasemanager_symbian_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //defined(__WINS__) && !defined(SYMBIAN_EMULATOR_SUPPORTS_PERPROCESS_WSD)

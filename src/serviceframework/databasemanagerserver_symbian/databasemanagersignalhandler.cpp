@@ -40,7 +40,7 @@
 ****************************************************************************/
 #include "databasemanagersignalhandler_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 DatabaseManagerSignalHandler::DatabaseManagerSignalHandler(CDatabaseManagerServerSession& databaseManagerServerSession)
     : iDatabaseManagerServerSession(databaseManagerServerSession)
@@ -53,4 +53,4 @@ void DatabaseManagerSignalHandler::databaseChanged(const QString &path)
 }
 
 #include "moc_databasemanagersignalhandler_p.cpp"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

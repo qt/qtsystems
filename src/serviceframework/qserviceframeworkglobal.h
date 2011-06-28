@@ -43,11 +43,6 @@
 
 #include <QtCore/qglobal.h>
 
-// The namespace is hardcoded as moc has issues resolving
-// macros which would be a prerequisite for a dynmamic namespace
-//#define QTM_NAMESPACE QtMobility
-//#define QTM_NAMESPACE
-
 #if defined(Q_OS_WIN)
 #  if defined(QT_NODLL)
 #    undef QT_MAKEDLL
@@ -73,21 +68,6 @@
 #    define Q_SERVICEFW_EXPORT
 #  endif
 #endif
-
-#ifdef QTM_NAMESPACE
-# define QTM_PREPEND_NAMESPACE(name) ::QTM_NAMESPACE::name
-# define QTM_BEGIN_NAMESPACE namespace QTM_NAMESPACE {
-# define QTM_END_NAMESPACE }
-# define QTM_USE_NAMESPACE using namespace QTM_NAMESPACE;
-#else
-# define QTM_PREPEND_NAMESPACE(name) ::name
-# define QTM_BEGIN_NAMESPACE
-# define QTM_END_NAMESPACE
-# define QTM_USE_NAMESPACE
-#endif
-
-//in case Qt is in namespace
-QT_USE_NAMESPACE
 
 #endif // QSERVICEFRAMEWORK_H
 

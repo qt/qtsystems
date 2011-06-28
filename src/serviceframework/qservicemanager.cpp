@@ -59,7 +59,7 @@
 #include <QDir>
 #include <QSystemSemaphore>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 static QString qservicemanager_resolveLibraryPath(const QString &libNameOrPath)
 {
@@ -792,5 +792,5 @@ void QServiceManager::disconnectNotify(const char *signal)
 
 #include "moc_qservicemanager.cpp"
 #include "qservicemanager.moc"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 

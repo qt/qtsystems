@@ -65,7 +65,7 @@
 //Service type prefix
 #define SERVICE_IPC_PREFIX "_q_ipc_addr:"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &out, const ServiceMetaDataResults &r)
@@ -722,4 +722,4 @@ void ServiceMetaData::clearMetadata()
     serviceType = QService::Plugin;
 }
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

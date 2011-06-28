@@ -48,7 +48,7 @@
 
 QT_BEGIN_HEADER
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QSignalIntercepterPrivate;
 class QSignalIntercepter : public QObject
@@ -80,7 +80,7 @@ private:
     static int typeFromName( const QByteArray& name );
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

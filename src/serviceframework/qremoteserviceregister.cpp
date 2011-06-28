@@ -44,7 +44,7 @@
 #include "ipc/instancemanager_p.h"
 #include "qremoteserviceregister_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QRemoteServiceRegister::Entry
@@ -458,4 +458,4 @@ QDebug operator<<(QDebug dbg, const QRemoteServiceRegister::Entry& entry) {
 
 #include "moc_qremoteserviceregister.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

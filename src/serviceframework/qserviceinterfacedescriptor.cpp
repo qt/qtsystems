@@ -47,7 +47,7 @@
 #include <QDebug>
 #include <QStringList>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QServiceInterfaceDescriptor
@@ -414,5 +414,5 @@ QDataStream &operator>>(QDataStream &in, QServiceInterfaceDescriptor &dc)
 
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 

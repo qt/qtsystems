@@ -48,7 +48,7 @@
 #include <QCoreApplication>
 //#include <QThread>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #define SEC_TOKEN 0x00000000
 
@@ -222,7 +222,7 @@ void DatabaseManagerServerSignalHandler::importChanged(const QString& path)
 }
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 
 #include "moc_databasemanagerserver_p.cpp"

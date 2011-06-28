@@ -63,7 +63,7 @@
 #endif
 
 QT_BEGIN_HEADER
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class DatabaseFileWatcher;
 class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
@@ -134,7 +134,7 @@ private:
     QStringList m_monitoredDbPaths;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif

@@ -51,7 +51,7 @@
 #include <QTime>
 #include <QCoreApplication>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class Response
 {
@@ -633,4 +633,4 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 
 #include "moc_objectendpoint_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

@@ -78,7 +78,7 @@
 //service prefixes
 #define SERVICE_IPC_PREFIX "_q_ipc_addr:"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 enum TBindIndexes
     {
@@ -2325,4 +2325,4 @@ bool ServiceDatabase::populateServiceProperties(QServiceInterfaceDescriptor *int
 
 #include "moc_servicedatabase_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

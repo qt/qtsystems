@@ -48,7 +48,7 @@
 
 #include "qservicepackage_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QServiceIpcEndPoint : public QObject
 {
@@ -73,6 +73,6 @@ protected:
 };
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //Q_SERVICECOMM_P_H

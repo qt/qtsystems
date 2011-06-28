@@ -50,11 +50,9 @@
 #include "qremoteserviceregister.h"
 
 QT_BEGIN_NAMESPACE
+
 class QDataStream;
 class QDebug;
-QT_END_NAMESPACE
-
-QTM_BEGIN_NAMESPACE
 
 class QServicePackagePrivate;
 class Q_AUTOTEST_EXPORT QServicePackage
@@ -126,6 +124,6 @@ public:
     }
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif

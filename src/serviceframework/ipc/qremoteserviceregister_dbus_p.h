@@ -51,7 +51,7 @@
 #include "ipcendpoint_p.h"
 #include "objectendpoint_dbus_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #define SERVER 0
 #define CLIENT 1
@@ -142,6 +142,6 @@ private:
     QDBusConnection *connection;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif

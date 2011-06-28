@@ -51,7 +51,7 @@
 #include <QtDBus>
 #include "qservicemetaobject_dbus_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QServiceMetaObjectDBus;
 class ObjectEndPointPrivate;
@@ -98,6 +98,6 @@ private:
     QServiceMetaObjectDBus *signalsObject;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //OBJECT_ENDPOINT_DBUS_H

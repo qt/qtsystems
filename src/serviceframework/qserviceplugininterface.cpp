@@ -41,7 +41,7 @@
 
 #include "qserviceplugininterface.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 /*!
     \class QServicePluginInterface
     \ingroup servicefw
@@ -113,4 +113,4 @@ void QServicePluginInterface::uninstallService()
 {
 }
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

@@ -56,7 +56,7 @@
 #include "qserviceframeworkglobal.h"
 #include <QString>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT DBError
 {
@@ -99,6 +99,6 @@ class Q_AUTOTEST_EXPORT DBError
         QString m_text;
         ErrorCode m_error;
 };
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif  //DBERROR_H

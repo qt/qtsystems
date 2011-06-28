@@ -44,7 +44,7 @@
 #include "qsignalintercepter_p.h"
 #include <QDebug>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class ServiceMetaSignalIntercepter : public QSignalIntercepter
 {
@@ -84,8 +84,8 @@ QServiceMetaObjectDBus::QServiceMetaObjectDBus(QObject* service, bool signalsObj
     : QDBusAbstractAdaptor(service)
 {
     // Register our DBus custom type object
-    qRegisterMetaType<QTM_PREPEND_NAMESPACE(QServiceUserTypeDBus)>();
-    qDBusRegisterMetaType<QTM_PREPEND_NAMESPACE(QServiceUserTypeDBus)>();
+    qRegisterMetaType<QServiceUserTypeDBus>();
+    qDBusRegisterMetaType<QServiceUserTypeDBus>();
 
     // Generate our DBus meta object
     d = new QServiceMetaObjectDBusPrivate();
@@ -577,4 +577,4 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QServiceUserTypeD
     return argument;
 }
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
