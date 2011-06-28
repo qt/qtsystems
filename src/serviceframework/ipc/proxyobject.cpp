@@ -45,7 +45,7 @@
 
 #include <QDebug>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QServiceProxyPrivate
 {
@@ -224,4 +224,4 @@ void *QServiceProxy::qt_metacast(const char* className)
     //this object should not be castable to anything but QObject
     return QObject::qt_metacast(className);
 }
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

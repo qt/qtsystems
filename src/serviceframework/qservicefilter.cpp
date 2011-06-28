@@ -48,7 +48,7 @@
 
 #include "qservicefilter.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QServiceFilterPrivate
 {
@@ -536,5 +536,5 @@ QDataStream &operator>>(QDataStream &in, QServiceFilter &sf)
 #endif //QT_NO_DATASTREAM
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 

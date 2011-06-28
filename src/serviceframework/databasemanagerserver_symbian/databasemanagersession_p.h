@@ -48,7 +48,7 @@
 
 class QFileSystemWatcher;
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class CDatabaseManagerServer;
 class DatabaseManagerSignalHandler;
@@ -105,7 +105,7 @@ class CDatabaseManagerServerSession : public CSession2
         QFileSystemWatcher *m_watcher;
     };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif
 

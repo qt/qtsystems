@@ -42,7 +42,7 @@
 #include "qservicepackage_p.h"
 #include <QDebug>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 QServicePackage::QServicePackage()
     : d(0)
@@ -176,4 +176,4 @@ QDebug operator<<(QDebug dbg, const QServicePackage& p)
 
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

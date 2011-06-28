@@ -48,7 +48,7 @@
 #include <QEventLoop>
 #include <QVarLengthArray>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class Response
 {
@@ -136,8 +136,8 @@ ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* pa
     connect(dispatch, SIGNAL(readyRead()), this, SLOT(newPackageReady()));
     if (type == Client) {
         // client waiting for construct proxy and registers DBus custom type
-        qDBusRegisterMetaType<QTM_PREPEND_NAMESPACE(QServiceUserTypeDBus)>();
-        qRegisterMetaType<QTM_PREPEND_NAMESPACE(QServiceUserTypeDBus)>();
+        qDBusRegisterMetaType<QServiceUserTypeDBus>();
+        qRegisterMetaType<QServiceUserTypeDBus>();
         return;
     } else {
         connect(InstanceManager::instance(),
@@ -725,4 +725,4 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 
 #include "moc_objectendpoint_dbus_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

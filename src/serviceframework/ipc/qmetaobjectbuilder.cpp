@@ -46,7 +46,7 @@
 #include <stdint.h>
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QMetaObjectBuilder
@@ -2608,4 +2608,4 @@ void QMetaEnumBuilder::removeKey(int index)
     }
 }
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

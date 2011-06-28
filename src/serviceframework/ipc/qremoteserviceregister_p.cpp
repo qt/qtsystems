@@ -44,7 +44,7 @@
 
 #include <QCoreApplication>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 QRemoteServiceRegisterPrivate::QRemoteServiceRegisterPrivate(QObject* parent)
     : QObject(parent), iFilter(0)
@@ -97,4 +97,4 @@ QRemoteServiceRegister::SecurityFilter QRemoteServiceRegisterPrivate::getSecurit
 
 
 #include "moc_qremoteserviceregister_p.cpp"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

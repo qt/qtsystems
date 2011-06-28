@@ -41,7 +41,7 @@
 
 #include "dberror_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 DBError::DBError()
 {
@@ -81,4 +81,4 @@ void DBError::setError(ErrorCode error, const QString &text)
             m_error = UnknownError;
     }
 }
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

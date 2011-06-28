@@ -54,15 +54,14 @@ QT_USE_NAMESPACE
 #define Q_SERVICEFW_EXPORT
 #endif
 
+
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
+
 class QDebug;
 class QStringList;
 class QDataStream;
-QT_END_NAMESPACE
 
-QT_BEGIN_HEADER
-
-QTM_BEGIN_NAMESPACE
 
 class QServiceInterfaceDescriptorPrivate;
 class Q_SERVICEFW_EXPORT QServiceInterfaceDescriptor
@@ -121,7 +120,7 @@ Q_SERVICEFW_EXPORT QDebug operator<<(QDebug, const QServiceInterfaceDescriptor &
 #endif
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

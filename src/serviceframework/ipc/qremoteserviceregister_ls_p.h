@@ -48,7 +48,7 @@
 #include "qremoteserviceregister_p.h"
 #include <QLocalServer>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class ObjectEndPoint;
 
@@ -69,6 +69,6 @@ private:
     QList<ObjectEndPoint*> pendingConnections;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif

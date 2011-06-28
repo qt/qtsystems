@@ -1,5 +1,4 @@
 load(qt_module)
-load(qt_module_config)
 
 TARGET = QtServiceFramework
 QPRO_PWD = $PWD
@@ -10,6 +9,8 @@ MODULE_PRI = ../../modules/qt_serviceframework.pri
 QT = core sql
 
 DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
+
+load(qt_module_config)
 
 include(ipc/ipc.pri)
 

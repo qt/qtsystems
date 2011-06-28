@@ -52,7 +52,7 @@
  * IPC is based on Symbian Client-Server architecture.
  */
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #ifdef QT_SFW_SYMBIAN_IPC_DEBUG
 void printServicePackage(const QServicePackage& package)
@@ -871,4 +871,4 @@ void ServiceMessageListener::RunL()
 
 #include "moc_qremoteserviceregister_s60_p.cpp"
 #include "qremoteserviceregister_s60.moc"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

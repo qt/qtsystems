@@ -67,8 +67,6 @@ public:
     virtual void uninstallService();
 };
 
-//moc doesn't understand QTM_PREPEND_NAMESPACE() macro. we have to be explicit
-//Q_DECLARE_INTERFACE(QTM_PREPEND_NAMESPACE(QServicePluginInterface), "com.nokia.qt.QServicePluginInterface/1.0")
 Q_DECLARE_INTERFACE(QServicePluginInterface, "com.nokia.qt.QServicePluginInterface/1.0")
 QT_END_NAMESPACE
 

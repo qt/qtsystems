@@ -58,7 +58,7 @@
 #include <QString>
 #include <QHash>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #define SERVICE_INITIALIZED_ATTR    "INITIALIZED"
 
@@ -121,6 +121,6 @@ public:
     int minor;
     QService::Scope scope;
 };
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QSERVICEINTERFACEDESCRIPTOR_P_H

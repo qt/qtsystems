@@ -49,7 +49,7 @@
 #include <QDebug>
 #include <QExplicitlySharedDataPointer>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QRemoteServiceRegisterPrivate;
 class QRemoteServiceRegisterEntryPrivate;
@@ -166,5 +166,5 @@ QRemoteServiceRegister::Entry QRemoteServiceRegister::createEntry(const QString&
 }
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 #endif //QREMOTESERVICEREGISTER_H

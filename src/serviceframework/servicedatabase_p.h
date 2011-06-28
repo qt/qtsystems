@@ -62,7 +62,7 @@
 
 
 QT_BEGIN_HEADER
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QServiceInterfaceDescriptor;
 
@@ -135,7 +135,7 @@ Q_SIGNALS:
         DBError m_lastError;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif /*QSERVICEDATABASE_H_*/

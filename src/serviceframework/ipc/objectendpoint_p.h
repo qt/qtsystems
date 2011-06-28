@@ -49,7 +49,7 @@
 #include <QPointer>
 #include <QHash>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class ObjectEndPointPrivate;
 class ObjectEndPoint : public QObject
@@ -87,6 +87,6 @@ private:
     ObjectEndPointPrivate* d;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //OBJECT_ENDPOINT_H

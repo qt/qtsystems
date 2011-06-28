@@ -69,7 +69,7 @@
 
 
 QT_BEGIN_HEADER
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class CDatabaseManagerServerThread;
 class QServiceFilter;
@@ -176,7 +176,7 @@ class DatabaseManagerSignalMonitor : public CActive
         RDatabaseManagerSession& iDatabaseManagerSession;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif //defined(__WINS__) && !defined(SYMBIAN_EMULATOR_SUPPORTS_PERPROCESS_WSD)

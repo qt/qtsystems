@@ -46,7 +46,7 @@
 #include <QTimer>
 
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class DBusEndPoint : public QServiceIpcEndPoint
 {
@@ -356,4 +356,4 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
 
 #include "moc_qremoteserviceregister_dbus_p.cpp"
 #include "qremoteserviceregister_dbus_p.moc"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
