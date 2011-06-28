@@ -1,5 +1,4 @@
 load(qt_module)
-load(qt_module_config)
 
 TARGET = QtPublishSubscribe
 QPRO_PWD = $PWD
@@ -10,6 +9,8 @@ MODULE_PRI = ../../modules/qt_publishsubscribe.pri
 QT = core
 
 DEFINES += QT_BUILD_PUBLISHSUBSCRIBE_LIB QT_MAKEDLL
+
+load(qt_module_config)
 
 PUBLIC_HEADERS = qvaluespace.h \
                  qvaluespacepublisher.h \
