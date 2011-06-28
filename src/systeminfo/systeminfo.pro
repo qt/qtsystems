@@ -29,6 +29,8 @@ SOURCES += qdeviceinfo.cpp \
            qdeviceprofile.cpp \
            qinputdeviceinfo.cpp
 
+!win32:!embedded:!qpa:!mac:!symbian: CONFIG += x11
+
 win32 {
     contains(CONFIG, release) {
        CONFIG -= console
@@ -59,44 +61,44 @@ win32 {
                qnetworkinfo_win.cpp
 }
 
-unix {
-    linux-* {
-        LIBS += -lXrandr -lX11
+x11 {
+    LIBS += -lXrandr -lX11
+}
 
-        PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
-                           qdisplayinfo_linux_p.h \
-                           qstorageinfo_linux_p.h \
-                           qscreensaver_linux_p.h \
-                           qbatteryinfo_linux_p.h \
-                           qnetworkinfo_linux_p.h \
-                           qinputdeviceinfo_linux_p.h
+linux-* {
+    PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
+                       qdisplayinfo_linux_p.h \
+                       qstorageinfo_linux_p.h \
+                       qscreensaver_linux_p.h \
+                       qbatteryinfo_linux_p.h \
+                       qnetworkinfo_linux_p.h \
+                       qinputdeviceinfo_linux_p.h
 
-        SOURCES += qdeviceinfo_linux.cpp \
-                   qdisplayinfo_linux.cpp \
-                   qstorageinfo_linux.cpp \
-                   qscreensaver_linux.cpp \
-                   qbatteryinfo_linux.cpp \
-                   qnetworkinfo_linux.cpp \
-                   qinputdeviceinfo_linux.cpp
+    SOURCES += qdeviceinfo_linux.cpp \
+               qdisplayinfo_linux.cpp \
+               qstorageinfo_linux.cpp \
+               qscreensaver_linux.cpp \
+               qbatteryinfo_linux.cpp \
+               qnetworkinfo_linux.cpp \
+               qinputdeviceinfo_linux.cpp
 
-        contains(QT_CONFIG, dbus): {
-            QT += dbus
+    contains(QT_CONFIG, dbus): {
+        QT += dbus
 
-            contains(ofono_enabled, yes) {
-                PRIVATE_HEADERS += qofonowrapper_p.h
-                SOURCES += qofonowrapper.cpp
-            } else {
-                DEFINES += QT_NO_OFONO
-            }
+        contains(ofono_enabled, yes) {
+            PRIVATE_HEADERS += qofonowrapper_p.h
+            SOURCES += qofonowrapper.cpp
         } else {
             DEFINES += QT_NO_OFONO
         }
+    } else {
+        DEFINES += QT_NO_OFONO
+    }
 
-        contains(blkid_enabled, yes) {
-            LIBS += -lblkid
-        } else {
-            DEFINES += QT_NO_BLKID
-        }
+    contains(blkid_enabled, yes) {
+        LIBS += -lblkid
+    } else {
+        DEFINES += QT_NO_BLKID
     }
 }
 
