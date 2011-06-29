@@ -43,3 +43,5 @@
         "QtSql" => "LATEST_REVISION"
     },
 );
+
+do "$basedir/bin/compiletests";
