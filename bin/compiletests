@@ -45,5 +45,4 @@ close QMAKECACHE;
 
 executeTest($basedir, $out_basedir, "simple");
 executeTest($basedir, $out_basedir, "failed");
-
-
+executeText($basedir, $out_basedir, "gconf");

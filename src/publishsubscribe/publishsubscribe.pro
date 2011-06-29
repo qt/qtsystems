@@ -28,7 +28,7 @@ SOURCES = qvaluespace.cpp \
 
 unix {
     linux-* {
-        contains(gconflayler_enabled, yes) {
+        contains(gconf_enabled, yes) {
             PRIVATE_HEADERS += gconfitem_p.h \
                                gconflayer_p.h
 
