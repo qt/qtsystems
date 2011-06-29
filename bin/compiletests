@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+
+sub executeTest {
+    my ($basedir, $out_basedir, $testName) = @_;
+
+    my $oldWorkingDir = getcwd();
+    my $newWorkingDir;
+
+
+    if ($basedir eq $out_basedir) {
+        chdir "$basedir/config.tests/$testName";
+        $newWorkingDir = getcwd();
+
+        `qmake`;
+    } else { # shadow build
+        mkdir "$out_basedir/config.tests";
+        mkdir "$out_basedir/config.tests/$testName";
+        chdir "$out_basedir/config.tests/$testName";
+        $newWorkingDir = getcwd();
+
+        `qmake $basedir/config.tests/$testName`;
+    }
+
+    `make clean`;
+    `make`;
+
+    open QMAKECACHE, ">>$out_basedir/.qmake.cache" or die "unable to write .qmake.cache file";
+    if (-e "$out_basedir/config.tests/$testName") {
+        #printf "$testName"."_enabled = yes\n";
+        print QMAKECACHE "$testName"."_enabled = yes\n";
+    } else {
+        #printf "$testName"."_enabled = no\n";
+        print QMAKECACHE "$testName"."_enabled = no\n";
+    }
+    close QMAKECACHE;
+
+    chdir $oldWorkingDir;
+}
+
+#cleanup .qmake.cache
+open QMAKECACHE, ">$out_basedir/.qmake.cache" or die "unable to write .qmake.cache";
+print QMAKECACHE "#Compile time test results\n";
+close QMAKECACHE;
+
+
+executeTest($basedir, $out_basedir, "simple");
+executeTest($basedir, $out_basedir, "failed");
+
+

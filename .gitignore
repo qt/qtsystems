@@ -16,9 +16,9 @@ demos/spectrum/bin
 !demos/*/*[.]*
 demos/*/*[.]app
 !demos/declarative/*
-config.tests/*/*/*
-!config.tests/*/*/*[.]*
-config.tests/*/*/*[.]app
+config.tests/*/*
+!config.tests/*/*[.]*
+config.tests/*/*[.]app
 
 qml_location_*
 
