@@ -70,7 +70,7 @@ class QBluezWrapper : public QObject, protected QDBusContext
 public:
     QBluezWrapper(QObject *parent = 0);
 
-    bool isBluezAvailable();
+    static bool isBluezAvailable();
 
     bool hasInputDevice();
 
@@ -87,7 +87,7 @@ private Q_SLOTS:
 private:
     QStringList allDevices();
 
-    int available;
+    static int available;
 };
 
 QT_END_NAMESPACE

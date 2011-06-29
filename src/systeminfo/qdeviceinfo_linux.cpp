@@ -62,6 +62,9 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     , q_ptr(parent)
     , watchThermalState(false)
     , timer(0)
+#if !defined(QT_NO_OFONO)
+    , ofonoWrapper(0)
+#endif // QT_NO_OFONO
 {
 }
 
@@ -199,10 +202,12 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
 QString QDeviceInfoPrivate::imei(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->imsi(modem);
+            return ofonoWrapper->imsi(modem);
     }
 #else
     Q_UNUSED(interface)

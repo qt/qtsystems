@@ -80,7 +80,7 @@ class QOfonoWrapper : public QObject, protected QDBusContext
 public:
     QOfonoWrapper(QObject *parent = 0);
 
-    bool isOfonoAvailable();
+    static bool isOfonoAvailable();
 
     // Manager Interface
     QStringList allModems();
@@ -123,7 +123,7 @@ private Q_SLOTS:
     void onOfonoPropertyChanged(const QString &property, const QDBusVariant &value);
 
 private:
-    int available;
+    static int available;
 
     QNetworkInfo::CellDataTechnology technologyStringToEnum(const QString &technology);
     QNetworkInfo::NetworkMode technologyToMode(const QString &technology);

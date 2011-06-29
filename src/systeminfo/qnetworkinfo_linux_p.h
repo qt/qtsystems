@@ -57,6 +57,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_OFONO)
+class QOfonoWrapper;
+#endif // QT_NO_OFONO
+
 class QNetworkInfoPrivate : public QObject
 {
     Q_OBJECT
@@ -99,6 +103,10 @@ protected:
 private:
     QNetworkInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QNetworkInfo)
+
+#if !defined(QT_NO_OFONO)
+    QOfonoWrapper *ofonoWrapper;
+#endif // QT_NO_OFONO
 };
 
 QT_END_NAMESPACE

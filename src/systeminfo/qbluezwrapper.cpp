@@ -66,9 +66,10 @@ static const int BLUEZ_INPUT_DEVICE_CLASS(9536);
     \brief QBluezWrapper is a wrapper for BLUEZ DBus APIs.
 */
 
+int QBluezWrapper::available = -1;
+
 QBluezWrapper::QBluezWrapper(QObject *parent)
     : QObject(parent)
-    , available(-1)
 {
 }
 

@@ -59,6 +59,10 @@ QT_BEGIN_NAMESPACE
 
 class QTimer;
 
+#if !defined(QT_NO_OFONO)
+class QOfonoWrapper;
+#endif // QT_NO_OFONO
+
 class QDeviceInfoPrivate : public QObject
 {
     Q_OBJECT
@@ -101,6 +105,10 @@ private:
     QTimer *timer;
 
     QDeviceInfo::ThermalState getThermalState();
+
+#if !defined(QT_NO_OFONO)
+    QOfonoWrapper *ofonoWrapper;
+#endif // QT_NO_OFONO
 };
 
 QT_END_NAMESPACE

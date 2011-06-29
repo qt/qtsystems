@@ -57,6 +57,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_BLUEZ)
+class QBluezWrapper;
+#endif // QT_NO_BLUEZ
+
 class QInputDeviceInfoPrivate : public QObject
 {
     Q_OBJECT
@@ -84,6 +88,10 @@ private:
 
     bool watchWirelessKeyboard;
     bool wirelessKeyboardConnectedBuffer;
+
+#if !defined(QT_NO_BLUEZ)
+    QBluezWrapper *bluezWrapper;
+#endif // QT_NO_BLUEZ
 };
 
 QT_END_NAMESPACE

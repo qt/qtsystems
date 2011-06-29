@@ -49,16 +49,15 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_BLUEZ)
-Q_GLOBAL_STATIC(QBluezWrapper, bluezWrapper)
-#endif // QT_NO_BLUEZ
-
 static const QString INPUT_SYSFS_PATH(QString::fromAscii("/sys/class/input/"));
 
 QInputDeviceInfoPrivate::QInputDeviceInfoPrivate(QInputDeviceInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
     , watchWirelessKeyboard(false)
+#if !defined(QT_NO_BLUEZ)
+    , bluezWrapper(0)
+#endif // QT_NO_BLUEZ
 {
 }
 
@@ -78,8 +77,11 @@ bool QInputDeviceInfoPrivate::isWirelessKeyboardConnected()
         return wirelessKeyboardConnectedBuffer;
 
 #if !defined(QT_NO_BLUEZ)
-    if (bluezWrapper()->isBluezAvailable())
-        return bluezWrapper()->hasInputDevice();
+    if (QBluezWrapper::isBluezAvailable()) {
+        if (!bluezWrapper)
+            bluezWrapper = new QBluezWrapper(this);
+        return bluezWrapper->hasInputDevice();
+    }
 #endif
 
     return false;
@@ -156,10 +158,14 @@ QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfoPrivate::availableTouchDevice
 void QInputDeviceInfoPrivate::connectNotify(const char *signal)
 {
 #if !defined(QT_NO_BLUEZ)
-    if (strcmp(signal, SIGNAL(wirelessKeyboardConnected(bool))) == 0) {
-        connect(bluezWrapper(), signal, this, signal, Qt::UniqueConnection);
-        wirelessKeyboardConnectedBuffer = isWirelessKeyboardConnected();
-        watchWirelessKeyboard = true;
+    if (QBluezWrapper::isBluezAvailable()) {
+        if (strcmp(signal, SIGNAL(wirelessKeyboardConnected(bool))) == 0) {
+            if (!bluezWrapper)
+                bluezWrapper = new QBluezWrapper(this);
+            connect(bluezWrapper, signal, this, signal, Qt::UniqueConnection);
+            wirelessKeyboardConnectedBuffer = isWirelessKeyboardConnected();
+            watchWirelessKeyboard = true;
+        }
     }
 #else
     Q_UNUSED(signal)
@@ -169,8 +175,11 @@ void QInputDeviceInfoPrivate::connectNotify(const char *signal)
 void QInputDeviceInfoPrivate::disconnectNotify(const char *signal)
 {
 #if !defined(QT_NO_BLUEZ)
+    if (!QBluezWrapper::isBluezAvailable() || !bluezWrapper)
+        return;
+
     if (strcmp(signal, SIGNAL(wirelessKeyboardConnected(bool))) == 0) {
-        disconnect(bluezWrapper(), signal, this, signal);
+        disconnect(bluezWrapper, signal, this, signal);
         watchWirelessKeyboard = false;
     }
 #else

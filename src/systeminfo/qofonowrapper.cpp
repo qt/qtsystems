@@ -63,9 +63,10 @@ QT_BEGIN_NAMESPACE
     \brief QOfonoWrapper is a wrapper for OFONO DBus APIs.
 */
 
+int QOfonoWrapper::available = -1;
+
 QOfonoWrapper::QOfonoWrapper(QObject *parent)
     : QObject(parent)
-    , available(-1)
 {
 }
 
