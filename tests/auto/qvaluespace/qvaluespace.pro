@@ -4,7 +4,7 @@ QMAKE_LIBS += -Wl,-rpath,$${QT.publishsubscribe.libs}
 
 QT += publishsubscribe
 
-!contains(gconflayer_enabled, yes) {
+!contains(gconf_enabled, yes) {
     DEFINES += QT_NO_GCONFLAYER
 }
 

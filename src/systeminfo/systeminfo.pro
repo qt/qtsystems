@@ -97,7 +97,8 @@ linux-* {
     }
 
     contains(blkid_enabled, yes) {
-        LIBS += -lblkid
+        CONFIG += link_pkgconfig
+        PKGCONFIG += blkid
     } else {
         DEFINES += QT_NO_BLKID
     }

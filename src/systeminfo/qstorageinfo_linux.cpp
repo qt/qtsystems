@@ -105,7 +105,7 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
     FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
     mntent *entry = NULL;
     while ((entry = getmntent(fsDescription)) != NULL) {
-        if (drive != entry->mnt_dir)
+        if (drive != QString::fromAscii(entry->mnt_dir))
             continue;
 
         int fd = open(entry->mnt_fsname, O_RDONLY);
@@ -120,7 +120,7 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
             && blkid_probe_set_device(probe, fd, 0, size) == 0
             && blkid_do_safeprobe(probe) == 0
             && blkid_probe_lookup_value(probe, "UUID", &label, NULL) == 0) {
-            uri = label;
+            uri = QString::fromAscii(label);
         }
         blkid_free_probe(probe);
         close(fd);
