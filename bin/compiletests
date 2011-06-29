@@ -25,7 +25,7 @@ sub executeTest {
     `make`;
 
     open QMAKECACHE, ">>$out_basedir/.qmake.cache" or die "unable to write .qmake.cache file";
-    if (-e "$out_basedir/config.tests/$testName") {
+    if (-e "$out_basedir/config.tests/$testName/$testName") {
         #printf "$testName"."_enabled = yes\n";
         print QMAKECACHE "$testName"."_enabled = yes\n";
     } else {
