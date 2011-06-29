@@ -44,10 +44,10 @@
 
 #include "qserviceframeworkglobal.h"
 
-#ifdef QT_NO_DBUS
-    #include "objectendpoint_p.h"
-#else
+#ifdef SFW_USE_DBUS_BACKEND
     #include "objectendpoint_dbus_p.h"
+#else
+    #include "objectendpoint_p.h"
 #endif
 
 #include <QObject>

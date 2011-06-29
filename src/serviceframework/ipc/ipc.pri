@@ -7,6 +7,7 @@ symbian {
 }
 else {
     contains(QT_CONFIG,dbus) {
+        DEFINES += SFW_USE_DBUS_BACKEND
         QT += dbus \
             network
         PRIVATE_HEADERS += ipc/qremoteserviceregister_dbus_p.h \
