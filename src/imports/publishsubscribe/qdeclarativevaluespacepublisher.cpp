@@ -117,10 +117,10 @@ QDeclarativeValueSpacePublisherQueueItem::QDeclarativeValueSpacePublisherQueueIt
 QDeclarativeValueSpacePublisher::QDeclarativeValueSpacePublisher(QObject *parent)
     : QObject(parent),
       d(new QDeclarativeValueSpacePublisherMetaObject(this)),
-      m_publisher(0),
-      m_pathSet(false),
       m_hasSubscribers(false),
-      m_complete(false)
+      m_complete(false),
+      m_publisher(0),
+      m_pathSet(false)
 {
 }
 
@@ -256,7 +256,7 @@ QStringList QDeclarativeValueSpacePublisher::keys() const
     return m_keys;
 }
 
-void QDeclarativeValueSpacePublisher::onInterestChanged(QString path, bool state)
+void QDeclarativeValueSpacePublisher::onInterestChanged(QString /*path*/, bool state)
 {
     m_hasSubscribers = state;
     // TODO: pass this on to key properties

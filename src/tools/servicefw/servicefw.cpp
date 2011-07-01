@@ -217,7 +217,7 @@ void CommandProcessor::add(const QStringList &args)
             error = 10;
         *stdoutStream << "Error: cannot register service at " << xmlPath
                 << " (" << errorTable[error] << ")" << '\n';
-    
+
         setErrorCode(error);
     }
 }
@@ -242,7 +242,7 @@ void CommandProcessor::dbusservice(const QStringList &args)
         *stdoutStream << "Usage:\n\tdbusservice <service-xml-file> <service-executable>\n";
         return;
     }
-  
+
 #if defined(QT_NO_DBUS)
     *stdoutStream << "Error: no D-Bus module found in Qt\n";
     return;
@@ -259,7 +259,7 @@ void CommandProcessor::dbusservice(const QStringList &args)
         *stdoutStream << "Error: cannot find service file " << servicePath << '\n';
         return;
     }
-    
+
     QFile *f = new QFile(xmlPath);
     ServiceMetaData parser(f);
     if (!parser.extractMetadata()) {
@@ -281,12 +281,12 @@ void CommandProcessor::dbusservice(const QStringList &args)
             // if not supplied generate in default
             QDir dir(QDir::homePath());
             dir.mkpath(".local/share/dbus-1/services/");
-            path = QDir::homePath() + "/.local/share/dbus-1/services/";    
+            path = QDir::homePath() + "/.local/share/dbus-1/services/";
         } else {
             path = xdgPath;
         }
     } else {
-        path = "/usr/share/dbus-1/services/";    
+        path = "/usr/share/dbus-1/services/";
     }
 
     const QString &name = "com.nokia.qtmobility.sfw." + results.name;
@@ -341,7 +341,7 @@ bool CommandProcessor::setOptions(const QStringList &options)
         showUsage();
         return false;
     }
-    
+
     serviceManager = new QServiceManager(scope, this);
 
     return true;
@@ -356,7 +356,7 @@ void CommandProcessor::showAllEntries()
         *stdoutStream << "Found 1 service.\n\n";
     else
         *stdoutStream << "Found " << services.count() << " services.\n\n";
-    
+
     foreach (const QString &service, services)
         showServiceInfo(service);
 }
@@ -388,7 +388,7 @@ void CommandProcessor::showServiceInfo(const QString &service)
         *stdoutStream << "Service " << service << " not found.\n";
         return;
     }
-   
+
     QList<QServiceInterfaceDescriptor> pluginDescs;
     QList<QServiceInterfaceDescriptor> ipcDescs;
     foreach (const QServiceInterfaceDescriptor &desc, descriptors) {
@@ -403,30 +403,30 @@ void CommandProcessor::showServiceInfo(const QString &service)
         *stdoutStream << service;
         if (ipcDescs.size() > 0)
             *stdoutStream << " (Plugin):\n";
-        else 
+        else
             *stdoutStream << ":\n";
 
         QString description = pluginDescs[0].attribute(
                 QServiceInterfaceDescriptor::ServiceDescription).toString();
         if (!description.isEmpty())
             *stdoutStream << '\t' << description << '\n';
-        
+
         *stdoutStream << "\tPlugin Library: ";
         showInterfaceInfo(pluginDescs);
     }
-   
+
     if (ipcDescs.size() > 0) {
         *stdoutStream << service;
         if (pluginDescs.size() > 0)
             *stdoutStream << " (IPC):\n";
-        else 
+        else
             *stdoutStream << ":\n";
-        
+
         QString description = ipcDescs[0].attribute(
                 QServiceInterfaceDescriptor::ServiceDescription).toString();
         if (!description.isEmpty())
             *stdoutStream << '\t' << description << '\n';
-    
+
         *stdoutStream << "\tIPC Address: ";
         showInterfaceInfo(ipcDescs);
     }
@@ -436,14 +436,14 @@ void CommandProcessor::showInterfaceInfo(QList<QServiceInterfaceDescriptor> desc
 {
     QList<QServiceInterfaceDescriptor> systemList;
     QList<QServiceInterfaceDescriptor> userList;
-    
+
     foreach (const QServiceInterfaceDescriptor &desc, descriptors) {
         if (desc.scope() == QService::SystemScope)
             systemList.append(desc);
         else
             userList.append(desc);
     }
-    
+
     if (userList.size() > 0) {
         *stdoutStream << userList[0].attribute(QServiceInterfaceDescriptor::Location).toString() << '\n'
                       << "\tUser Implements:\n";
@@ -457,11 +457,11 @@ void CommandProcessor::showInterfaceInfo(QList<QServiceInterfaceDescriptor> desc
                 << (capabilities.isEmpty() ? "" : "\t{" + capabilities.join(", ") + "}") << "\n";
         }
     }
-    
+
     if (systemList.size() > 0) {
         if (userList.size() < 1)
             *stdoutStream << systemList[0].attribute(QServiceInterfaceDescriptor::Location).toString() << '\n';
-            
+
         *stdoutStream << "\tSystem Implements:\n";
 
         foreach (const QServiceInterfaceDescriptor &desc, systemList) {
@@ -492,7 +492,7 @@ int main(int argc, char *argv[])
 
     // check for at least one non-option argument
     bool exec = false;
-    
+
     QStringList options;
     for (int i=1; i<args.count(); i++) {
         if (args[i].startsWith("--"))
