@@ -1,4 +1,4 @@
-TARGET  = $$qtLibraryTarget(declarative_systeminfo)
+TARGET  = declarative_systeminfo
 TARGETPATH = Qt/systeminfo
 include(qsysteminfoimport.pri)
 target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH

@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS += systeminfo publishsubscribe
+SUBDIRS += systeminfo publishsubscribe serviceframework
