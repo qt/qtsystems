@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>TestService</name>
+    <filepath>.\testserviceplugin.dll</filepath>
+    <description>Test service description</description> 
+    <interface>
+        <description>Test Module</description>
+        <version>1.456</version>
+    </interface>
+</service>
+
+
+

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+  <name>ServiceA</name>
+  <filepath>C:/TestData/testservice.dll</filepath>
+  <description>Test service description</description> 
+  <interface>
+    <name>com.nokia.qt.tests.IDownloader</name>
+    <version></version>
+    <description>Interface that provides download support</description> 
+  </interface>
+</service>
+

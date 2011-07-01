@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>SampleService</name>
+    <filepath>plugins/tst_sfw_sampleserviceplugin</filepath>
+    <description>tst_QServiceManager test service</description>
+    <interface>
+        <name>com.nokia.qt.TestInterfaceA</name>
+        <version>1.0</version>
+        <description>tst_QServiceManager test interface A 1.0</description>
+        <customproperty key="testkey">testvalue for A</customproperty>
+    </interface>
+    <interface>
+        <name>com.nokia.qt.TestInterfaceB</name>
+        <version>1.0</version>
+        <description>tst_QServiceManager test interface B 1.0</description>
+        <customproperty key="testkey">testvalue for B</customproperty>
+        <customproperty key="additionalkey">custom</customproperty>
+    </interface>
+    <interface>
+        <name>com.nokia.qt.TestInterfaceC</name>
+        <version>1.0</version>
+        <description>tst_QServiceManager test interface C 1.0</description>
+    </interface>
+</service>

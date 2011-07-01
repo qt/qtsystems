@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SFW version="1.1">
+<service>
+    <name>TestService</name>
+    <version>1.0.456</version>
+    <capabilities>ReadUserData,WriteUserData</capabilities>
+    <filepath>.\testserviceplugin.dll</filepath>
+    <description>Test service description</description> 
+</service>
+</SFW>
