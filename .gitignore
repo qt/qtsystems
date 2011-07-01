@@ -94,6 +94,7 @@ bin/qmlconv*
 bin/qmldebugger*
 bin/qml*
 bin/qttracereplay*
+bin/servicefw
 configure.cache
 config.status
 mkspecs/default
