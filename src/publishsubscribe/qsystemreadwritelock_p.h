@@ -74,7 +74,7 @@ public:
         KeyError, //TODO:remove this enum
         NotFound,
         LockError, //TODO: remove this enum
-        OutOfResources, 
+        OutOfResources,
         FailedToInitialize, //TODO: remove this enum
         UnknownError
     };

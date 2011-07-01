@@ -112,19 +112,19 @@ public:
     ~QDeclarativeServiceList();
 
     QDeclarativeListProperty<QDeclarativeService> services();
-    
+
     void setServiceName(const QString& service);
     QString serviceName() const;
-    
+
     void setInterfaceName(const QString& interface);
     QString interfaceName() const;
 
     void setMinorVersion(int minor);
     int minorVersion() const;
-    
+
     void setMajorVersion(int major);
     int majorVersion() const;
-    
+
     void setVersionMatch(QDeclarativeServiceList::MatchRule match);
     QDeclarativeServiceList::MatchRule versionMatch() const;
 
@@ -133,7 +133,7 @@ public:
     //Derived from QDeclarativeParserStatus
     virtual void classBegin();
     virtual void componentComplete();
-    
+
 private:
     QList<QDeclarativeService *> m_services;
     QServiceManager* serviceManager;

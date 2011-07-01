@@ -45,12 +45,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QDeclarativeValueSpacePublisherMetaObject::QDeclarativeValueSpacePublisherMetaObject(QObject *obj)
+QDeclarativeValueSpacePublisherMetaObject::QDeclarativeValueSpacePublisherMetaObject(QObject * /*obj*/)
 //    : QDeclarativeOpenMetaObject(obj)
 {
 }
 
-void QDeclarativeValueSpacePublisherMetaObject::addKey(const QString &key, bool interest)
+void QDeclarativeValueSpacePublisherMetaObject::addKey(const QString &key, bool /*interest*/)
 {
     if (key.contains(QRegExp("[^a-zA-Z0-9]")))
         return;
@@ -74,11 +74,11 @@ void QDeclarativeValueSpacePublisherMetaObject::getValue(int id, void **a)
     }
 }
 
-void QDeclarativeValueSpacePublisherMetaObject::setValue(int id, void **a)
+void QDeclarativeValueSpacePublisherMetaObject::setValue(int id, void ** /*a*/)
 {
     if (m_keyProperties.contains(id)) {
-        QString key = m_keyProperties.value(id);
-        QVariant &v = *reinterpret_cast<QVariant*>(a[0]);
+        //QString key = m_keyProperties.value(id);
+        //QVariant &v = *reinterpret_cast<QVariant*>(a[0]);
 
 //        QDeclarativeValueSpacePublisher *pub = qobject_cast<QDeclarativeValueSpacePublisher*>(object());
 //        pub->queueChange(key, v);
