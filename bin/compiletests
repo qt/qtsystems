@@ -1,46 +1,51 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
+
+#use strict;
+use warnings;
 
 sub executeTest {
     my ($basedir, $out_basedir, $testName) = @_;
 
     my $oldWorkingDir = getcwd();
-    my $newWorkingDir;
 
 
     if ($basedir eq $out_basedir) {
         chdir "$basedir/config.tests/$testName";
-        $newWorkingDir = getcwd();
 
-        `qmake`;
+        `qmake 2>&1`;
     } else { # shadow build
         mkdir "$out_basedir/config.tests";
         mkdir "$out_basedir/config.tests/$testName";
         chdir "$out_basedir/config.tests/$testName";
-        $newWorkingDir = getcwd();
 
-        `qmake $basedir/config.tests/$testName`;
+        `qmake $basedir/config.tests/$testName 2>&1`;
     }
 
-    `make clean`;
-    `make`;
+    `make clean 2>&1`;
+    `make 2>&1`;
 
-    open QMAKECACHE, ">>$out_basedir/.qmake.cache" or die "unable to write .qmake.cache file";
+
+    my $filename = "$out_basedir/.qmake.cache";
+    my $fh;
+    open $fh, ">>", $filename or die "open $out_basedir/.qmake.cache for write: $!";
     if (-e "$out_basedir/config.tests/$testName/$testName") {
-        #printf "$testName"."_enabled = yes\n";
-        print QMAKECACHE "$testName"."_enabled = yes\n";
+        printf $testName."_enabled = yes\n";
+        print $fh $testName."_enabled = yes\n";
     } else {
-        #printf "$testName"."_enabled = no\n";
-        print QMAKECACHE "$testName"."_enabled = no\n";
+        printf $testName."_enabled = no\n";
+        print $fh $testName."_enabled = no\n";
     }
-    close QMAKECACHE;
+    close $fh || die "close $filename: $!";
 
     chdir $oldWorkingDir;
 }
 
 #cleanup .qmake.cache
-open QMAKECACHE, ">$out_basedir/.qmake.cache" or die "unable to write .qmake.cache";
-print QMAKECACHE "#Compile time test results\n";
-close QMAKECACHE;
+my $filename = "$out_basedir/.qmake.cache";
+my $fh;
+open $fh, '>',$filename or die "open $filename for write: $!";
+print $fh "#Compile time test results\n";
+close $fh || die "close $filename: $!";
 
 
 executeTest($basedir, $out_basedir, "simple");
@@ -48,3 +53,5 @@ executeTest($basedir, $out_basedir, "failed");
 executeTest($basedir, $out_basedir, "gconf");
 executeTest($basedir, $out_basedir, "contextkit");
 executeTest($basedir, $out_basedir, "blkid");
+
+1;

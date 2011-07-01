@@ -44,4 +44,4 @@
     },
 );
 
-do "$basedir/bin/compiletests";
+do "$basedir/bin/compiletests" || die "do $basedir/bin/compiletests: $! $@";
