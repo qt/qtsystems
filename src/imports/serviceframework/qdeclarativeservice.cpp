@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup qml-serviceframework
 
-    The Service element is part of the \bold{QtMobility.serviceframework 1.1} module and
+    The Service element is part of the Qt ServiceFramework API and
     provides a client instance of the service object. This element is a simplified
     reflection of the QServiceInterfaceDescriptor class that allows the specification of
     the Service::interfaceName to locate the default service implemented at this interface.
@@ -194,7 +194,7 @@ QObject* QDeclarativeService::serviceObject()
 
     \ingroup qml-serviceframework
 
-    The ServiceList element is part of the \bold{QtMobility.serviceframework 1.1} module and
+    The ServiceList element is part of the Qt ServiceFramework API and
     provides a list of \l Service elements at the interface ServiceList::interfaceName with
     minimum version match ServiceList::minVersion properties. This list can be used to
     select the desired service and instantiate a service object for access via the QMetaObject.
