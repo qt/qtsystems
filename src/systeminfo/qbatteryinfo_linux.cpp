@@ -73,7 +73,7 @@ QBatteryInfoPrivate::~QBatteryInfoPrivate()
 int QBatteryInfoPrivate::batteryCount()
 {
     if (batteryCounts == -1)
-        return updateBatteryCount();
+        return getBatteryCount();
 
     return batteryCounts;
 }
@@ -81,7 +81,7 @@ int QBatteryInfoPrivate::batteryCount()
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
     if (currentFlows.isEmpty())
-        return updateCurrentFlow(battery);
+        return getCurrentFlow(battery);
 
     return currentFlows.value(battery);
 }
@@ -102,7 +102,7 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
 int QBatteryInfoPrivate::remainingCapacity(int battery)
 {
     if (currentRemainingCapacities.isEmpty())
-        return updateRemainingCapacity(battery);
+        return getRemainingCapacity(battery);
 
     return currentRemainingCapacities.value(battery);
 }
@@ -110,7 +110,7 @@ int QBatteryInfoPrivate::remainingCapacity(int battery)
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
 {
     if (currentRemainingChargingTimes.isEmpty())
-        return updateRemainingChargingTime(battery);
+        return getRemainingChargingTime(battery);
 
     return currentRemainingCapacities.value(battery);
 }
@@ -118,7 +118,7 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
 int QBatteryInfoPrivate::voltage(int battery)
 {
     if (currentVoltages.isEmpty())
-        return updateVoltage(battery);
+        return getVoltage(battery);
 
     return currentVoltages.value(battery);
 }
@@ -126,7 +126,7 @@ int QBatteryInfoPrivate::voltage(int battery)
 QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
 {
     if (currentChargerType == QBatteryInfo::UnknownCharger)
-        return updateChargerType();
+        return getChargerType();
 
     return currentChargerType;
 }
@@ -134,7 +134,7 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
 QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState(int battery)
 {
     if (currentChargingStates.isEmpty())
-        return updateChargingState(battery);
+        return getChargingState(battery);
 
     return currentChargingStates.value(battery);
 }
@@ -157,35 +157,35 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
 
     if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
         watchBatteryCount = true;
-        batteryCounts = updateBatteryCount();
+        batteryCounts = getBatteryCount();
     } else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
         watchCurrentFlow = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentFlows[i] = updateCurrentFlow(i);
+            currentFlows[i] = getCurrentFlow(i);
     } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
         watchVoltage = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentVoltages[i] = updateVoltage(i);
+            currentVoltages[i] = getVoltage(i);
     } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
         watchRemainingCapacity = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentRemainingCapacities[i] = updateRemainingCapacity(i);
+            currentRemainingCapacities[i] = getRemainingCapacity(i);
     } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
         watchRemainingChargingTime = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentRemainingChargingTimes[i] = updateRemainingChargingTime(i);
+            currentRemainingChargingTimes[i] = getRemainingChargingTime(i);
     } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
         watchChargerType = true;
-        currentChargerType = updateChargerType();
+        currentChargerType = getChargerType();
     } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
         watchChargingState = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentChargingStates[i] = updateChargingState(i);
+            currentChargingStates[i] = getChargingState(i);
     }
 }
 
@@ -223,7 +223,7 @@ void QBatteryInfoPrivate::onTimeout()
     int count = QDir(QString::fromAscii("/sys/class/power_supply/")).entryList(QStringList() << QString::fromAscii("BAT*")).size();
     int value;
     if (watchBatteryCount) {
-        value = updateBatteryCount();
+        value = getBatteryCount();
         if (batteryCounts != value) {
             batteryCounts = value;
             Q_EMIT batteryCountChanged(value);
@@ -232,7 +232,7 @@ void QBatteryInfoPrivate::onTimeout()
 
     for (int i = 0; i < count; ++i) {
         if (watchCurrentFlow) {
-            value = updateCurrentFlow(i);
+            value = getCurrentFlow(i);
             if (currentFlows.value(i) != value) {
                 currentFlows[i] = value;
                 Q_EMIT currentFlowChanged(i, value);
@@ -240,7 +240,7 @@ void QBatteryInfoPrivate::onTimeout()
         }
 
         if (watchVoltage) {
-            value = updateVoltage(i);
+            value = getVoltage(i);
             if (currentVoltages.value(i) != value) {
                 currentVoltages[i] = value;
                 Q_EMIT voltageChanged(i, value);
@@ -248,7 +248,7 @@ void QBatteryInfoPrivate::onTimeout()
         }
 
         if (watchRemainingCapacity) {
-            value = updateRemainingCapacity(i);
+            value = getRemainingCapacity(i);
             if (currentRemainingCapacities.value(i) != value) {
                 currentRemainingCapacities[i] = value;
                 Q_EMIT remainingCapacityChanged(i, value);
@@ -256,7 +256,7 @@ void QBatteryInfoPrivate::onTimeout()
         }
 
         if (watchRemainingChargingTime) {
-            value = updateRemainingChargingTime(i);
+            value = getRemainingChargingTime(i);
             if (currentRemainingChargingTimes.value(i) != value) {
                 currentRemainingChargingTimes[i] = value;
                 Q_EMIT remainingChargingTimeChanged(i, value);
@@ -264,7 +264,7 @@ void QBatteryInfoPrivate::onTimeout()
         }
 
         if (watchChargerType) {
-            QBatteryInfo::ChargerType charger = updateChargerType();
+            QBatteryInfo::ChargerType charger = getChargerType();
             if (currentChargerType != charger) {
                 currentChargerType = charger;
                 Q_EMIT chargerTypeChanged(charger);
@@ -272,7 +272,7 @@ void QBatteryInfoPrivate::onTimeout()
         }
 
         if (watchChargingState) {
-            QBatteryInfo::ChargingState state = updateChargingState(i);
+            QBatteryInfo::ChargingState state = getChargingState(i);
             if (currentChargingStates.value(i) != state) {
                 currentChargingStates[i] = state;
                 Q_EMIT chargingStateChanged(i, state);
@@ -281,12 +281,12 @@ void QBatteryInfoPrivate::onTimeout()
     }
 }
 
-int QBatteryInfoPrivate::updateBatteryCount()
+int QBatteryInfoPrivate::getBatteryCount()
 {
     return QDir(QString::fromAscii("/sys/class/power_supply/")).entryList(QStringList() << QString::fromAscii("BAT*")).size();
 }
 
-int QBatteryInfoPrivate::updateCurrentFlow(int battery)
+int QBatteryInfoPrivate::getCurrentFlow(int battery)
 {
     QBatteryInfo::ChargingState state = chargingState(battery);
     if (state == QBatteryInfo::UnknownChargingState)
@@ -308,7 +308,7 @@ int QBatteryInfoPrivate::updateCurrentFlow(int battery)
     return 0;
 }
 
-int QBatteryInfoPrivate::updateRemainingCapacity(int battery)
+int QBatteryInfoPrivate::getRemainingCapacity(int battery)
 {
     QFile remaining(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("charge_now"));
     if (!remaining.open(QIODevice::ReadOnly))
@@ -321,7 +321,7 @@ int QBatteryInfoPrivate::updateRemainingCapacity(int battery)
     return -1;
 }
 
-int QBatteryInfoPrivate::updateRemainingChargingTime(int battery)
+int QBatteryInfoPrivate::getRemainingChargingTime(int battery)
 {
     QBatteryInfo::ChargingState state = chargingState(battery);
     if (state == QBatteryInfo::UnknownChargingState)
@@ -340,7 +340,7 @@ int QBatteryInfoPrivate::updateRemainingChargingTime(int battery)
     return (max - remaining) * -3600 / current;
 }
 
-int QBatteryInfoPrivate::updateVoltage(int battery)
+int QBatteryInfoPrivate::getVoltage(int battery)
 {
     QFile current(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("voltage_now"));
     if (!current.open(QIODevice::ReadOnly))
@@ -353,7 +353,7 @@ int QBatteryInfoPrivate::updateVoltage(int battery)
     return -1;
 }
 
-QBatteryInfo::ChargerType QBatteryInfoPrivate::updateChargerType()
+QBatteryInfo::ChargerType QBatteryInfoPrivate::getChargerType()
 {
     QFile charger(QString::fromAscii("/sys/class/power_supply/AC/online"));
     if (charger.open(QIODevice::ReadOnly)) {
@@ -381,7 +381,7 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::updateChargerType()
     return QBatteryInfo::UnknownCharger;
 }
 
-QBatteryInfo::ChargingState QBatteryInfoPrivate::updateChargingState(int battery)
+QBatteryInfo::ChargingState QBatteryInfoPrivate::getChargingState(int battery)
 {
     QFile state(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("status"));
     if (!state.open(QIODevice::ReadOnly))

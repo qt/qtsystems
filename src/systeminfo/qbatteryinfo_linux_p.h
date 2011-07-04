@@ -115,13 +115,13 @@ private:
     QTimer *timer;
     QBatteryInfo::ChargerType currentChargerType;
 
-    int updateBatteryCount();
-    int updateCurrentFlow(int battery);
-    int updateRemainingCapacity(int battery);
-    int updateRemainingChargingTime(int battery);
-    int updateVoltage(int battery);
-    QBatteryInfo::ChargerType updateChargerType();
-    QBatteryInfo::ChargingState updateChargingState(int battery);
+    int getBatteryCount();
+    int getCurrentFlow(int battery);
+    int getRemainingCapacity(int battery);
+    int getRemainingChargingTime(int battery);
+    int getVoltage(int battery);
+    QBatteryInfo::ChargerType getChargerType();
+    QBatteryInfo::ChargingState getChargingState(int battery);
 };
 
 QT_END_NAMESPACE
