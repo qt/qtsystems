@@ -155,20 +155,38 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
     if (!timer->isActive())
         timer->start();
 
-    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0)
+    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
         watchBatteryCount = true;
-    else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0)
+        batteryCounts = updateBatteryCount();
+    } else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
         watchCurrentFlow = true;
-    else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0)
+        int count = batteryCount();
+        for (int i = 0; i < count; ++i)
+            currentFlows[i] = updateCurrentFlow(i);
+    } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
         watchVoltage = true;
-    else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0)
+        int count = batteryCount();
+        for (int i = 0; i < count; ++i)
+            currentVoltages[i] = updateVoltage(i);
+    } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
         watchRemainingCapacity = true;
-    else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0)
+        int count = batteryCount();
+        for (int i = 0; i < count; ++i)
+            currentRemainingCapacities[i] = updateRemainingCapacity(i);
+    } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
         watchRemainingChargingTime = true;
-    else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0)
+        int count = batteryCount();
+        for (int i = 0; i < count; ++i)
+            currentRemainingChargingTimes[i] = updateRemainingChargingTime(i);
+    } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
         watchChargerType = true;
-    else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0)
+        currentChargerType = updateChargerType();
+    } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
         watchChargingState = true;
+        int count = batteryCount();
+        for (int i = 0; i < count; ++i)
+            currentChargingStates[i] = updateChargingState(i);
+    }
 }
 
 void QBatteryInfoPrivate::disconnectNotify(const char *signal)
