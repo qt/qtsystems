@@ -96,6 +96,7 @@ private:
 void tst_QAbstractSecuritySession::initTestCase()
 {
     path = QCoreApplication::applicationDirPath() + "/xml/";
+    qDebug() << "Used path" << path;
 
     QSfwTestUtil::setupTempUserDb();
     QSfwTestUtil::setupTempSystemDb();

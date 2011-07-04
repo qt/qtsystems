@@ -836,6 +836,7 @@ void tst_QServiceManager::loadInterface_descriptor_data()
     priv->interfaceName = "com.nokia.qt.TestInterfaceA";    // needed by service plugin implementation
 
     lib.setFileName(QCoreApplication::applicationDirPath() + "/plugins/tst_sfw_sampleserviceplugin");
+    qDebug() << "&&&&&&&&" << QCoreApplication::applicationDirPath();
     QVERIFY(lib.load());
     QVERIFY(lib.unload());
 #if defined (Q_OS_SYMBIAN)
