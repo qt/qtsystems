@@ -88,15 +88,21 @@ int QBatteryInfoPrivate::currentFlow(int battery)
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
 {
-    QFile maximum(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("charge_full"));
-    if (!maximum.open(QIODevice::ReadOnly))
-        return -1;
+    if (maximumCapacities[battery] == 0) {
+        QFile maximum(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("charge_full"));
+        if (maximum.open(QIODevice::ReadOnly)) {
+            bool ok = false;
+            int capacity = maximum.readAll().simplified().toInt(&ok);
+            if (ok)
+                maximumCapacities[battery] = capacity / 1000;
+            else
+                maximumCapacities[battery] = -1;
+        } else {
+            maximumCapacities[battery] = -1;
+        }
+    }
 
-    bool ok = false;
-    int capacity = maximum.readAll().simplified().toInt(&ok);
-    if (ok)
-        return capacity / 1000;
-    return -1;
+    return maximumCapacities[battery];
 }
 
 int QBatteryInfoPrivate::remainingCapacity(int battery)

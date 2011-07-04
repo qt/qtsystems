@@ -111,6 +111,7 @@ private:
     QMap<int, int> currentVoltages;
     QMap<int, int> currentRemainingCapacities;
     QMap<int, int> currentRemainingChargingTimes;
+    QMap<int, int> maximumCapacities;
     QMap<int, QBatteryInfo::ChargingState> currentChargingStates;
     QTimer *timer;
     QBatteryInfo::ChargerType currentChargerType;
