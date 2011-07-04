@@ -326,8 +326,10 @@ void QDeviceInfoPrivate::connectNotify(const char *signal)
 
 void QDeviceInfoPrivate::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0)
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
         watchThermalState = false;
+        currentThermalState = QDeviceInfo::UnknownThermal;
+    }
 
     if (!watchThermalState)
         timer->stop();
