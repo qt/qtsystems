@@ -72,7 +72,7 @@ QBatteryInfoPrivate::~QBatteryInfoPrivate()
 
 int QBatteryInfoPrivate::batteryCount()
 {
-    if (batteryCounts == -1)
+    if (!watchBatteryCount)
         return getBatteryCount();
 
     return batteryCounts;
@@ -80,7 +80,7 @@ int QBatteryInfoPrivate::batteryCount()
 
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
-    if (currentFlows.isEmpty())
+    if (!watchCurrentFlow)
         return getCurrentFlow(battery);
 
     return currentFlows.value(battery);
@@ -101,7 +101,7 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
 
 int QBatteryInfoPrivate::remainingCapacity(int battery)
 {
-    if (currentRemainingCapacities.isEmpty())
+    if (!watchRemainingCapacity)
         return getRemainingCapacity(battery);
 
     return currentRemainingCapacities.value(battery);
@@ -109,7 +109,7 @@ int QBatteryInfoPrivate::remainingCapacity(int battery)
 
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
 {
-    if (currentRemainingChargingTimes.isEmpty())
+    if (!watchRemainingChargingTime)
         return getRemainingChargingTime(battery);
 
     return currentRemainingCapacities.value(battery);
@@ -117,7 +117,7 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
 
 int QBatteryInfoPrivate::voltage(int battery)
 {
-    if (currentVoltages.isEmpty())
+    if (!watchVoltage)
         return getVoltage(battery);
 
     return currentVoltages.value(battery);
@@ -125,7 +125,7 @@ int QBatteryInfoPrivate::voltage(int battery)
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
 {
-    if (currentChargerType == QBatteryInfo::UnknownCharger)
+    if (!watchChargerType)
         return getChargerType();
 
     return currentChargerType;
@@ -133,7 +133,7 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
 
 QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState(int battery)
 {
-    if (currentChargingStates.isEmpty())
+    if (!watchChargingState)
         return getChargingState(battery);
 
     return currentChargingStates.value(battery);
