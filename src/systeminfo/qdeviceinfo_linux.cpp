@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdeviceinfo_linux_p.h"
+#include "qscreensaver_linux_p.h"
 
 #if !defined(QT_NO_OFONO)
 #include "qofonowrapper_p.h"
@@ -198,7 +199,13 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
 
 QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::enabledLocks()
 {
-    return QDeviceInfo::NoLock;
+    QDeviceInfo::LockTypeFlags enabledLocks = QDeviceInfo::NoLock;
+
+    QScreenSaverPrivate screenSaver(0);
+    if (screenSaver.screenSaverEnabled())
+        enabledLocks = QDeviceInfo::TouchOrKeyboardLock;
+
+    return enabledLocks;
 }
 
 QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
