@@ -47,7 +47,11 @@
 
 QT_BEGIN_NAMESPACE
 
+static const QString AC_ONLINE_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/AC/online"));
 static const QString BATTERY_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/BAT%1/"));
+static const QString POWER_SUPPLY_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/"));
+static const QString USB_PRESENT_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/usb/present"));
+static const QString USB_TYPE_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/usb/type"));
 
 QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     : QObject(parent)
@@ -229,7 +233,7 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
 
 void QBatteryInfoPrivate::onTimeout()
 {
-    int count = QDir(QString::fromAscii("/sys/class/power_supply/")).entryList(QStringList() << QString::fromAscii("BAT*")).size();
+    int count = QDir(POWER_SUPPLY_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("BAT*")).size();
     int value;
     if (watchBatteryCount) {
         value = getBatteryCount();
@@ -292,7 +296,7 @@ void QBatteryInfoPrivate::onTimeout()
 
 int QBatteryInfoPrivate::getBatteryCount()
 {
-    return QDir(QString::fromAscii("/sys/class/power_supply/")).entryList(QStringList() << QString::fromAscii("BAT*")).size();
+    return QDir(POWER_SUPPLY_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("BAT*")).size();
 }
 
 int QBatteryInfoPrivate::getCurrentFlow(int battery)
@@ -364,7 +368,7 @@ int QBatteryInfoPrivate::getVoltage(int battery)
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::getChargerType()
 {
-    QFile charger(QString::fromAscii("/sys/class/power_supply/AC/online"));
+    QFile charger(AC_ONLINE_SYSFS_PATH);
     if (charger.open(QIODevice::ReadOnly)) {
         char online;
         if (charger.read(&online, 1) == 1 && online == '1')
@@ -372,12 +376,12 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::getChargerType()
         charger.close();
     }
 
-    charger.setFileName(QString::fromAscii("/sys/class/power_supply/usb/present"));
+    charger.setFileName(USB_PRESENT_SYSFS_PATH);
     if (charger.open(QIODevice::ReadOnly)) {
         char present;
         if (charger.read(&present, 1) == 1 && present == '1') {
             charger.close();
-            charger.setFileName(QString::fromAscii("/sys/class/power_supply/usb/type"));
+            charger.setFileName(USB_TYPE_SYSFS_PATH);
             if (charger.open(QIODevice::ReadOnly)) {
                 if (charger.readAll().simplified() == "USB_DCP")
                     return QBatteryInfo::WallCharger;
