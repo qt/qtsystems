@@ -220,8 +220,11 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
         chargingStates.clear();
     }
 
-    if (!watchCurrentFlow && !watchVoltage)
+    if (!watchBatteryCount && !watchChargerType && !watchChargingState
+        && !watchCurrentFlow && !watchRemainingCapacity
+        && !watchRemainingChargingTime && !watchVoltage) {
         timer->stop();
+    }
 }
 
 void QBatteryInfoPrivate::onTimeout()
