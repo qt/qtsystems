@@ -144,7 +144,17 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::Sim:
-        // TODO: find the kernel interface for this
+#if !defined(QT_NO_OFONO)
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QStringList modems = ofonoWrapper->allModems();
+        foreach (const QString &modem, modems) {
+            if (!ofonoWrapper->imei(modem).isEmpty())
+                return true;
+        }
+    }
+#endif
         return false;
 
     case QDeviceInfo::Positioning:
@@ -207,7 +217,7 @@ QString QDeviceInfoPrivate::imei(int interface)
             ofonoWrapper = new QOfonoWrapper(this);
         QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper->imsi(modem);
+            return ofonoWrapper->imei(modem);
     }
 #else
     Q_UNUSED(interface)
