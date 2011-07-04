@@ -176,6 +176,8 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
                 return true;
             }
         }
+        if (QDir(QString::fromAscii("/sys/class/video_output/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+            return true;
         return false;
     }
 
