@@ -67,6 +67,7 @@ public:
     QBatteryInfoPrivate(QBatteryInfo *parent);
     ~QBatteryInfoPrivate();
 
+    int batteryCount();
     int currentFlow(int battery);
     int maximumCapacity(int battery);
     int remainingCapacity(int battery);
@@ -77,6 +78,7 @@ public:
     QBatteryInfo::EnergyUnit energyUnit();
 
 Q_SIGNALS:
+    void batteryCountChanged(int count);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
     void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
     void currentFlowChanged(int battery, int flow);

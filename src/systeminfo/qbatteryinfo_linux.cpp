@@ -52,12 +52,14 @@ static const QString BATTERY_SYSFS_PATH(QString::fromAscii("/sys/class/power_sup
 QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
+    , watchBatteryCount(false)
     , watchChargerType(false)
     , watchChargingState(false)
     , watchCurrentFlow(false)
     , watchRemainingCapacity(false)
     , watchRemainingChargingTime(false)
     , watchVoltage(false)
+    , batteryCounts(-1)
     , timer(0)
     , currentChargerType(QBatteryInfo::UnknownCharger)
 {
@@ -66,6 +68,14 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
 QBatteryInfoPrivate::~QBatteryInfoPrivate()
 {
     delete timer;
+}
+
+int QBatteryInfoPrivate::batteryCount()
+{
+    if (batteryCounts == -1)
+        return updateBatteryCount();
+
+    return batteryCounts;
 }
 
 int QBatteryInfoPrivate::currentFlow(int battery)
@@ -145,7 +155,9 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
     if (!timer->isActive())
         timer->start();
 
-    if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0)
+    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0)
+        watchBatteryCount = true;
+    else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0)
         watchCurrentFlow = true;
     else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0)
         watchVoltage = true;
@@ -161,7 +173,10 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
 
 void QBatteryInfoPrivate::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
+    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
+        watchBatteryCount = false;
+        batteryCounts = -1;
+    } else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
         watchCurrentFlow = false;
         currentFlows.clear();
     } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
@@ -189,6 +204,14 @@ void QBatteryInfoPrivate::onTimeout()
 {
     int count = QDir(QString::fromAscii("/sys/class/power_supply/")).entryList(QStringList() << QString::fromAscii("BAT*")).size();
     int value;
+    if (watchBatteryCount) {
+        value = updateBatteryCount();
+        if (batteryCounts != value) {
+            batteryCounts = value;
+            Q_EMIT batteryCountChanged(value);
+        }
+    }
+
     for (int i = 0; i < count; ++i) {
         if (watchCurrentFlow) {
             value = updateCurrentFlow(i);
@@ -238,6 +261,11 @@ void QBatteryInfoPrivate::onTimeout()
             }
         }
     }
+}
+
+int QBatteryInfoPrivate::updateBatteryCount()
+{
+    return QDir(QString::fromAscii("/sys/class/power_supply/")).entryList(QStringList() << QString::fromAscii("BAT*")).size();
 }
 
 int QBatteryInfoPrivate::updateCurrentFlow(int battery)

@@ -69,6 +69,7 @@ public:
     QBatteryInfoPrivate(QBatteryInfo *parent);
     ~QBatteryInfoPrivate();
 
+    int batteryCount();
     int currentFlow(int battery);
     int maximumCapacity(int battery);
     int remainingCapacity(int battery);
@@ -79,6 +80,7 @@ public:
     QBatteryInfo::EnergyUnit energyUnit();
 
 Q_SIGNALS:
+    void batteryCountChanged(int count);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
     void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
     void currentFlowChanged(int battery, int flow);
@@ -97,12 +99,14 @@ private:
     QBatteryInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QBatteryInfo)
 
+    bool watchBatteryCount;
     bool watchChargerType;
     bool watchChargingState;
     bool watchCurrentFlow;
     bool watchRemainingCapacity;
     bool watchRemainingChargingTime;
     bool watchVoltage;
+    int batteryCounts;
     QMap<int, int> currentFlows; // <battery ID, current value> pair
     QMap<int, int> currentVoltages;
     QMap<int, int> currentRemainingCapacities;
@@ -111,6 +115,7 @@ private:
     QTimer *timer;
     QBatteryInfo::ChargerType currentChargerType;
 
+    int updateBatteryCount();
     int updateCurrentFlow(int battery);
     int updateRemainingCapacity(int battery);
     int updateRemainingChargingTime(int battery);
