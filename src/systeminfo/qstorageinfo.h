@@ -67,7 +67,6 @@ public:
         RemovableDrive,
         RemoteDrive,
         CdromDrive,
-        InternalFlashDrive,
         RamDrive
     };
 

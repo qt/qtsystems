@@ -182,8 +182,7 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
             break;
         }
 
-        // Now need to guess if it's InternalDrive, RemovableDrive, or InternalFlashDrive
-        bool isMmc = false;
+        // Now need to guess if it's InternalDrive or RemovableDrive
         QString fsName(QString::fromAscii(entry->mnt_fsname));
         if (fsName.contains(QString::fromAscii("mapper"))) {
             struct stat status;
@@ -192,9 +191,6 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
         } else {
             fsName = fsName.section(QString::fromAscii("/"), 2, 3);
             if (!fsName.isEmpty()) {
-                if (fsName.left(3) == QString::fromAscii("mmc"))
-                    isMmc = true;
-
                 if (fsName.length() > 3) {
                     fsName.chop(1);
                     if (fsName.right(1) == QString::fromAscii("p"))
@@ -207,14 +203,10 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
         char isRemovable;
         if (!removable.open(QIODevice::ReadOnly) || 1 != removable.read(&isRemovable, 1))
             break;
-        if (isRemovable == '0') {
-            if (isMmc)
-                type = QStorageInfo::InternalFlashDrive;
-            else
-                type = QStorageInfo::InternalDrive;
-        } else {
+        if (isRemovable == '0')
+            type = QStorageInfo::InternalDrive;
+        else
             type = QStorageInfo::RemovableDrive;
-        }
         break;
     }
 

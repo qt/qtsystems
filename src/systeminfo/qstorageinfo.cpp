@@ -80,7 +80,6 @@ QT_BEGIN_NAMESPACE
     \value RemovableDrive       Removable drive, e.g. memory card.
     \value RemoteDrive          Network drive.
     \value CdromDrive           CD-ROM.
-    \value InternalFlashDrive   Internal flash disk, or phone memory.
     \value RamDrive             Virtual drive made in RAM memory.
 */
 

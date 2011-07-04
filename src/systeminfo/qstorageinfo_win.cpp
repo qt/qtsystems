@@ -97,7 +97,7 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
     case DRIVE_REMOVABLE:
         return QStorageInfo::RemovableDrive;
     case DRIVE_FIXED:
-        return QStorageInfo::InternalDrive; // Can't tell between InternalDrive and InternalFlashDrive
+        return QStorageInfo::InternalDrive;
     case DRIVE_REMOTE:
         return QStorageInfo::RemoteDrive;
     case DRIVE_CDROM:
