@@ -88,8 +88,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QDisplayInfo::Orientation
-    This enum describes the orientation of the UI. For orientation of the display, please refer to
-    QOrientationSensor and QOrientationReading in the QSensors module.
+    This enum describes the orientation of the window system. Note that if the UI of an application
+    is rotated through methods other than talking with the window system, its orientation can't be
+    correctly reported by QDisplayInfo.
+
+    For orientation of the display, please refer to QOrientationSensor and QOrientationReading in
+    the QtSensors module.
 
     \value OrientationUnknown   The orientation is unknown.
     \value Landscape            The orientation is landscape, i.e. the width is bigger than the height.
