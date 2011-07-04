@@ -9,4 +9,5 @@ SUBDIRS += qdeviceinfo \
            qservicefilter \
            qserviceinterfacedescriptor \
            qservicemanager \
-           qservicemetadata
+           qservicemetadata \
+           servicedatabase
