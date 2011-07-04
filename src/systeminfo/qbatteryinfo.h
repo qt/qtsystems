@@ -78,7 +78,7 @@ public:
     };
 
     enum EnergyUnit {
-            UnitUnknown = -1,
+            UnitUnknown = 0,
             UnitmAh,
             UnitmWh
         };
