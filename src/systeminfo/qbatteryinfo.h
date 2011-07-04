@@ -66,8 +66,6 @@ public:
         UnknownCharger = 0,
         WallCharger,
         USBCharger,
-        USB_500mACharger, // Is it really necessary to have these different USB charger types?
-        USB_100mACharger,
         VariableCurrentCharger
     };
 

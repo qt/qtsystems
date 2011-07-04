@@ -82,8 +82,6 @@ QT_BEGIN_NAMESPACE
     \value UnknownCharger           The charger type is unknown, or no charger.
     \value WallCharger              Using wall (mains) charger.
     \value USBCharger               Using USB charger when the system cannot differentiate the current.
-    \value USB_500mACharger         Using USB charger at 500 mA.
-    \value USB_100mACharger         Using USB charger at 100 mA.
     \value VariableCurrentCharger   Using variable current charger such as bicycle or solar.
 */
 
