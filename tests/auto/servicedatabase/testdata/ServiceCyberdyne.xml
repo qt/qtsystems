@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>Cyberdyne</name>
+    <filepath>C:/California/connor.dll</filepath>
+    <description>Cyberdyne Termination Services</description>
+    <interface>
+        <name>COM.cyberdyne.terminator</name>
+        <version>2.1</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800</description>
+    </interface>    
+    <interface>
+        <name>com.Cyberdyne.terminator</name>
+        <version>2.0</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800</description>
+    </interface>
+    <interface>
+        <name>com.cyberdyne.TERMinator</name>
+        <version>1.7</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800</description>
+    </interface>
+    <interface>
+        <name>COM.cyberdyne.terminator</name>
+        <version>1.6</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800</description>
+    </interface>
+    <interface>
+        <name>com.cyberdyne.terminator</name>
+        <version>1.2</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800</description>
+    </interface>    
+</service>
+

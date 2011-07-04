@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>DHarmaInitiative</name>
+    <filepath>C:/island/hydra.dll</filepath>
+    <description>Department of Heuristics And Research on Material Applications(H)</description>
+    <interface>
+        <name>com.dharma.electro.discharge</name>
+        <version>23.0</version>
+        <capabilities></capabilities>
+        <description>Releases electromagnetic energy buildup every 108 minutes</description>
+    </interface>    
+    <interface>
+        <name>com.dharma.electro.discharge</name>
+        <version>42.0</version>
+        <description>Releases electromagnetic energy buildup every 108 minutes</description>
+    </interface>    
+    <interface>
+        <name>com.dharma.cage</name>
+        <version>3.16</version>
+        <capabilities></capabilities>
+        <description>Contains polar bears</description>
+    </interface>    
+</service>
