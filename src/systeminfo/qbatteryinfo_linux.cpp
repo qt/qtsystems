@@ -233,7 +233,7 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
 
 void QBatteryInfoPrivate::onTimeout()
 {
-    int count = QDir(POWER_SUPPLY_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("BAT*")).size();
+    int count = getBatteryCount();
     int value;
     if (watchBatteryCount) {
         value = getBatteryCount();
