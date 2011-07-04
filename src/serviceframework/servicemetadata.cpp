@@ -226,6 +226,7 @@ bool ServiceMetaData::extractMetadata()
     bool parseError = false;
     //Open xml file
     if (!xmlDevice->isOpen() && !xmlDevice->open(QIODevice::ReadOnly)) {
+        qWarning() << xmlDevice->errorString();
         latestError = ServiceMetaData::SFW_ERROR_UNABLE_TO_OPEN_FILE;
         parseError = true;
     } else {

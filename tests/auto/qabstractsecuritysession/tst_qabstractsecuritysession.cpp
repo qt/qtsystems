@@ -49,6 +49,9 @@
 #include <qabstractsecuritysession.h>
 
 QT_USE_NAMESPACE
+
+#define PRINT_ERR(a) qPrintable(QString("error = %1").arg(a.error()))
+
 class TestSession : public QAbstractSecuritySession
 {
 public:
@@ -118,7 +121,7 @@ void tst_QAbstractSecuritySession::testSecSessionHandling()
     QFile file(QDir::toNativeSeparators(path+"testserviceplugin.xml"));
     QServiceManager mgr;
     QVERIFY(mgr.findServices().isEmpty());
-    QVERIFY(mgr.addService(&file));
+    QVERIFY2(mgr.addService(&file), PRINT_ERR(mgr));
     QVERIFY(mgr.findServices() == (QStringList()<< "TestService"));
 
     QServiceFilter simpleFilter;

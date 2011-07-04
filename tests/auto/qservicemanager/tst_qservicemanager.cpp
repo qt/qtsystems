@@ -866,8 +866,8 @@ void tst_QServiceManager::loadInterface_descriptor_data()
 void tst_QServiceManager::loadInterface_testLoadedObjectAttributes()
 {
     QLibrary lib(QCoreApplication::applicationDirPath() + "/plugins/tst_sfw_testservice2plugin");
-    QVERIFY(lib.load());
-    QVERIFY(lib.unload());
+    QVERIFY2(lib.load(), qPrintable(lib.errorString()));
+    QVERIFY2(lib.unload(), qPrintable(lib.errorString()));
 
     QServiceInterfaceDescriptor descriptor;
     QServiceInterfaceDescriptorPrivate *priv = new QServiceInterfaceDescriptorPrivate;
@@ -935,7 +935,7 @@ void tst_QServiceManager::loadLocalTypedInterface()
 {
     //ensure the plugin exists 
     QLibrary lib(QCoreApplication::applicationDirPath() + "/plugins/tst_sfw_sampleserviceplugin");
-    QCOMPARE(lib.load(), true);
+    QVERIFY2(lib.load(), qPrintable(lib.errorString()));
     lib.unload();
 
     QServiceManager mgr;
@@ -966,7 +966,7 @@ void tst_QServiceManager::loadLocalTypedInterface()
 
     //use database descriptor
     QFile file1(xmlTestDataPath("sampleservice.xml"));
-    QVERIFY(file1.exists());
+    QVERIFY2(file1.exists(), qPrintable(QString("%1: %2").arg(xmlTestDataPath("sampleservice.xml")).arg(file1.errorString()) ));
     QVERIFY2(mgr.addService(&file1), PRINT_ERR(mgr));
 
     QCOMPARE(mgr.findServices("com.nokia.qt.TestInterfaceA"), QStringList("SampleService"));

@@ -7,6 +7,8 @@ HEADERS += ../qsfwtestutil.h
 SOURCES += tst_qabstractsecuritysession.cpp \
            ../qsfwtestutil.cpp
 
+mac:CONFIG += insignificant_test
+
 symbian|wince* {
     
     symbian {

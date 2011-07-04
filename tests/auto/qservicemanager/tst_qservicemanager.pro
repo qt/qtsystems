@@ -11,6 +11,7 @@ SOURCES += tst_qservicemanager.cpp \
            sampleservice/sampleserviceplugin.cpp \
            ../qsfwtestutil.cpp
 
+
 symbian|wince* {
     symbian {
         TARGET.CAPABILITY = ALL -TCB
