@@ -110,7 +110,7 @@ int QBatteryInfoPrivate::remainingCapacity(int battery)
     if (!watchRemainingCapacity)
         return getRemainingCapacity(battery);
 
-    return currentRemainingCapacities.value(battery);
+    return remainingCapacities.value(battery);
 }
 
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
@@ -118,7 +118,7 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
     if (!watchRemainingChargingTime)
         return getRemainingChargingTime(battery);
 
-    return currentRemainingCapacities.value(battery);
+    return remainingCapacities.value(battery);
 }
 
 int QBatteryInfoPrivate::voltage(int battery)
@@ -126,7 +126,7 @@ int QBatteryInfoPrivate::voltage(int battery)
     if (!watchVoltage)
         return getVoltage(battery);
 
-    return currentVoltages.value(battery);
+    return voltages.value(battery);
 }
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
@@ -142,7 +142,7 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState(int battery)
     if (!watchChargingState)
         return getChargingState(battery);
 
-    return currentChargingStates.value(battery);
+    return chargingStates.value(battery);
 }
 
 QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
@@ -173,17 +173,17 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
         watchVoltage = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentVoltages[i] = getVoltage(i);
+            voltages[i] = getVoltage(i);
     } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
         watchRemainingCapacity = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentRemainingCapacities[i] = getRemainingCapacity(i);
+            remainingCapacities[i] = getRemainingCapacity(i);
     } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
         watchRemainingChargingTime = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentRemainingChargingTimes[i] = getRemainingChargingTime(i);
+            remainingChargingTimes[i] = getRemainingChargingTime(i);
     } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
         watchChargerType = true;
         currentChargerType = getChargerType();
@@ -191,7 +191,7 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
         watchChargingState = true;
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
-            currentChargingStates[i] = getChargingState(i);
+            chargingStates[i] = getChargingState(i);
     }
 }
 
@@ -205,19 +205,19 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
         currentFlows.clear();
     } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
         watchVoltage = false;
-        currentVoltages.clear();
+        voltages.clear();
     } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
         watchRemainingCapacity = false;
-        currentRemainingCapacities.clear();
+        remainingCapacities.clear();
     } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
         watchRemainingChargingTime = false;
-        currentRemainingChargingTimes.clear();
+        remainingChargingTimes.clear();
     } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
         watchChargerType = false;
         currentChargerType = QBatteryInfo::UnknownCharger;
     } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
         watchChargingState = false;
-        currentChargingStates.clear();
+        chargingStates.clear();
     }
 
     if (!watchCurrentFlow && !watchVoltage)
@@ -247,24 +247,24 @@ void QBatteryInfoPrivate::onTimeout()
 
         if (watchVoltage) {
             value = getVoltage(i);
-            if (currentVoltages.value(i) != value) {
-                currentVoltages[i] = value;
+            if (voltages.value(i) != value) {
+                voltages[i] = value;
                 Q_EMIT voltageChanged(i, value);
             }
         }
 
         if (watchRemainingCapacity) {
             value = getRemainingCapacity(i);
-            if (currentRemainingCapacities.value(i) != value) {
-                currentRemainingCapacities[i] = value;
+            if (remainingCapacities.value(i) != value) {
+                remainingCapacities[i] = value;
                 Q_EMIT remainingCapacityChanged(i, value);
             }
         }
 
         if (watchRemainingChargingTime) {
             value = getRemainingChargingTime(i);
-            if (currentRemainingChargingTimes.value(i) != value) {
-                currentRemainingChargingTimes[i] = value;
+            if (remainingChargingTimes.value(i) != value) {
+                remainingChargingTimes[i] = value;
                 Q_EMIT remainingChargingTimeChanged(i, value);
             }
         }
@@ -279,8 +279,8 @@ void QBatteryInfoPrivate::onTimeout()
 
         if (watchChargingState) {
             QBatteryInfo::ChargingState state = getChargingState(i);
-            if (currentChargingStates.value(i) != state) {
-                currentChargingStates[i] = state;
+            if (chargingStates.value(i) != state) {
+                chargingStates[i] = state;
                 Q_EMIT chargingStateChanged(i, state);
             }
         }

@@ -108,11 +108,11 @@ private:
     bool watchVoltage;
     int batteryCounts;
     QMap<int, int> currentFlows; // <battery ID, current value> pair
-    QMap<int, int> currentVoltages;
-    QMap<int, int> currentRemainingCapacities;
-    QMap<int, int> currentRemainingChargingTimes;
+    QMap<int, int> voltages;
+    QMap<int, int> remainingCapacities;
+    QMap<int, int> remainingChargingTimes;
     QMap<int, int> maximumCapacities;
-    QMap<int, QBatteryInfo::ChargingState> currentChargingStates;
+    QMap<int, QBatteryInfo::ChargingState> chargingStates;
     QTimer *timer;
     QBatteryInfo::ChargerType currentChargerType;
 
