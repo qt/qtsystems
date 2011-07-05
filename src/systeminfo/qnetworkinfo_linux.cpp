@@ -51,7 +51,6 @@
 
 #if !defined(QT_NO_BLUEZ)
 #include <bluetooth/bluetooth.h>
-#include <bluetooth/bnep.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 #endif // QT_NO_BLUEZ
@@ -164,7 +163,11 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
 #endif // QT_NO_OFONO
         break;
 
-//    case QNetworkInfo::BluetoothMode:
+    case QNetworkInfo::BluetoothMode: {
+#if !defined(QT_NO_BLUEZ)
+#endif // QT_NO_BLUEZ
+    }
+
     default:
         break;
     };
@@ -251,30 +254,34 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
     }
 
     case QNetworkInfo::BluetoothMode: {
+        QNetworkInfo::NetworkStatus status = QNetworkInfo::UnknownStatus;
+
 #if !defined(QT_NO_BLUEZ)
-        // TODO multiple-interface support
-        int ctl = socket(PF_BLUETOOTH, SOCK_RAW, BTPROTO_BNEP);
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
         if (ctl < 0)
-            return QNetworkInfo::UnknownStatus;
-
-        struct bnep_conninfo info[36];
-        struct bnep_connlist_req req;
-
-        req.ci = info;
-        req.cnum = 36;
-
-        if (ioctl(ctl, BNEPGETCONNLIST, &req) < 0)
-            return QNetworkInfo::UnknownStatus;
-
-        for (uint j = 0; j< req.cnum; j++) {
-            if (info[j].state == BT_CONNECTED)
-                return QNetworkInfo::HomeNetwork;
+            break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                status = QNetworkInfo::NoNetworkAvailable; // Valid interface, so either not connected or connected
+                                                           // TODO add support for searching and denied
+                struct hci_conn_list_req *connectionList = (struct hci_conn_list_req *)malloc(sizeof(struct hci_conn_info) + sizeof(struct hci_conn_list_req));
+                connectionList->dev_id = (deviceList->dev_req + interface)->dev_id;
+                connectionList->conn_num = 1;
+                if (ioctl(ctl, HCIGETCONNLIST, connectionList) == 0) {
+                    if (connectionList->conn_num == 1)
+                        status = QNetworkInfo::HomeNetwork;
+                }
+                free (connectionList);
+            }
         }
-
+        free(deviceList);
         close(ctl);
 #endif // QT_NO_BLUEZ
 
-        return QNetworkInfo::UnknownStatus;
+        return status;
     }
 
     case QNetworkInfo::GsmMode:
