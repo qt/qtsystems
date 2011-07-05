@@ -52,6 +52,7 @@
 #if !defined(QT_NO_BLUEZ)
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/bnep.h>
+#include <bluetooth/hci.h>
 #endif // QT_NO_BLUEZ
 
 #include <math.h>
@@ -86,8 +87,21 @@ int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
     case QNetworkInfo::EthernetMode:
         return QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).size();
 
-    case QNetworkInfo::BluetoothMode:
-        return QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size();
+    case QNetworkInfo::BluetoothMode: {
+#if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
+            return -1;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        int count = -1;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0)
+            count = deviceList->dev_num;
+        free(deviceList);
+        close(ctl);
+        return count;
+#endif // QT_NO_BLUEZ
+    }
 
 //    case QNetworkInfo::GsmMode:
 //    case QNetworkInfo::CdmaMode:
