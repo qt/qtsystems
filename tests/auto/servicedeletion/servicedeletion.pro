@@ -7,7 +7,7 @@ QT = core serviceframework
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 
-# Input 
+# Input
 SOURCES += tst_servicedeletion.cpp
 
 

@@ -175,7 +175,7 @@ void tst_QServiceDeletion::publishService()
     QTRY_VERIFY(sigs == 2);
     QCOMPARE(conn2->property("time").toInt(), 21);
 
-    delete conn2;    
+    delete conn2;
     QCOMPARE(conn1->property("time").toInt(), 21);
 
     sigs = 0;
@@ -218,7 +218,7 @@ void tst_QServiceDeletion::error(QService::UnrecoverableIPCError)
 }
 
 void tst_QServiceDeletion::timeChanged()
-{    
+{
     qDebug() << "time changed";
     sigs++;
 }
