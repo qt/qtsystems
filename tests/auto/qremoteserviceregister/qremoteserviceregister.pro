@@ -5,6 +5,8 @@ QT = core serviceframework
 SOURCES += tst_qremoteserviceregister.cpp
 HEADERS += service.h
 
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
+
 symbian {
     TARGET.CAPABILITY = ALL -TCB
 }

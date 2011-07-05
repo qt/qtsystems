@@ -128,10 +128,9 @@ void tst_QRemoteServiceRegister::initTestCase()
 
     // Symbian has auto registration
 #ifndef Q_OS_SYMBIAN
-    const QString path = QCoreApplication::applicationDirPath() + "/xmldata/rsrexampleservice.xml";
+    const QString path = QString(SRCDIR) + "/xmldata/rsrexampleservice.xml";
     bool r = manager->addService(path);
-    if (!r)
-        qWarning() << "Cannot register RSRExampleService" << path;
+    QVERIFY2(r, qPrintable(QString("Cannot register RSRExampleService - %1").arg(path)));
 #endif
 
     // D-Bus auto registration
