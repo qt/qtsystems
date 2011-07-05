@@ -164,8 +164,44 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
         break;
 
     case QNetworkInfo::BluetoothMode: {
+        int signalStrength = -1;
 #if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
+            break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                signalStrength = 0; // Valid interface
+
+                struct hci_conn_list_req *connectionList = (struct hci_conn_list_req *)malloc(sizeof(struct hci_conn_info) + sizeof(struct hci_conn_list_req));
+                connectionList->dev_id = (deviceList->dev_req + interface)->dev_id;
+                connectionList->conn_num = 1;
+                if (ioctl(ctl, HCIGETCONNLIST, connectionList) == 0) {
+                    if (connectionList->conn_num == 1) {
+                        int fd = hci_open_dev((deviceList->dev_req + interface)->dev_id);
+                        if (fd > 0) {
+                            struct hci_conn_info_req *connectionInfo = (struct hci_conn_info_req *)malloc(sizeof(struct hci_conn_info_req) + sizeof(struct hci_conn_info));
+                            bacpy(&connectionInfo->bdaddr, &connectionList->conn_info->bdaddr);
+                            connectionInfo->type = ACL_LINK;
+                            if (ioctl(fd, HCIGETCONNINFO, connectionInfo) == 0) {
+                                uint8_t linkQuality;
+                                if (hci_read_link_quality(fd, htobs(connectionInfo->conn_info->handle), &linkQuality, 0) == 0)
+                                    signalStrength = linkQuality * 100 / 255;
+                            }
+                            free(connectionInfo);
+                        }
+                    }
+                }
+                free (connectionList);
+            }
+        }
+        free(deviceList);
+        close(ctl);
 #endif // QT_NO_BLUEZ
+        return signalStrength;
     }
 
     default:
