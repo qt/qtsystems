@@ -553,13 +553,28 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
     }
 
     case QNetworkInfo::BluetoothMode: {
-        const QString dir = QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).at(interface);
-        if (dir.isEmpty())
+#if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
             break;
-        QFile carrier(BLUETOOTH_SYSFS_PATH + dir + QString::fromAscii("/name"));
-        if (carrier.open(QIODevice::ReadOnly))
-            return QString::fromAscii(carrier.readAll().simplified().data());
-        break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        QString networkName;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                int fd = hci_open_dev((deviceList->dev_req + interface)->dev_id);
+                if (fd > 0) {
+                    char name[249];
+                    if (hci_read_local_name(fd, sizeof(name), name, 0) == 0)
+                        networkName = QString::fromAscii(name);
+                }
+            }
+        }
+        free(deviceList);
+        close(ctl);
+        return networkName;
+#endif // QT_NO_BLUEZ
     }
 
     case QNetworkInfo::GsmMode:
