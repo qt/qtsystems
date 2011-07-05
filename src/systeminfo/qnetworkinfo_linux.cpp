@@ -53,6 +53,7 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/bnep.h>
 #include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
 #endif // QT_NO_BLUEZ
 
 #include <math.h>
@@ -471,13 +472,34 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
     }
 
     case QNetworkInfo::BluetoothMode: {
-        const QString dir = QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).at(interface);
-        if (dir.isEmpty())
+#if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
             break;
-        QFile carrier(BLUETOOTH_SYSFS_PATH + dir + QString::fromAscii("/address"));
-        if (carrier.open(QIODevice::ReadOnly))
-            return QString::fromAscii(carrier.readAll().simplified());
-        break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        QString macAddress;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                struct hci_dev_info deviceInfo;
+                deviceInfo.dev_id = (deviceList->dev_req + interface)->dev_id;
+                if (ioctl(ctl, HCIGETDEVINFO, &deviceInfo) == 0) {
+                    if (hci_test_bit(HCI_RAW, &deviceInfo.flags) && !bacmp(&deviceInfo.bdaddr, BDADDR_ANY)) {
+                        int hciDevice = hci_open_dev(deviceInfo.dev_id);
+                        hci_read_bd_addr(hciDevice, &deviceInfo.bdaddr, 1000);
+                        hci_close_dev(hciDevice);
+                    }
+                    char address[18];
+                    ba2str(&deviceInfo.bdaddr, address);
+                    macAddress = QString::fromAscii(address);
+                }
+            }
+        }
+        free(deviceList);
+        close(ctl);
+        return macAddress;
+#endif // QT_NO_BLUEZ
     }
 
 //    case QNetworkInfo::GsmMode:
