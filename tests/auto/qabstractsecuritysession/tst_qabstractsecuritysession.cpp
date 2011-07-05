@@ -95,8 +95,7 @@ private:
 
 void tst_QAbstractSecuritySession::initTestCase()
 {
-    path = QCoreApplication::applicationDirPath() + "/xml/";
-    qDebug() << "Used path" << path;
+    path = QString(SRCDIR) + "/xml/";
 
     QSfwTestUtil::setupTempUserDb();
     QSfwTestUtil::setupTempSystemDb();
@@ -106,6 +105,8 @@ void tst_QAbstractSecuritySession::initTestCase()
 #if defined(Q_OS_SYMBIAN)
     QSfwTestUtil::removeDatabases_symbian();
 #endif
+
+   QCoreApplication::addLibraryPath(SRCDIR);
 }
 
 void tst_QAbstractSecuritySession::cleanup()

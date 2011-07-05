@@ -3,6 +3,8 @@ load(qttest_p4)
 QT = core sql serviceframework serviceframework-private
 CONFIG += parallel_test
 
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
+
 
 # Input 
 HEADERS += sampleservice/sampleserviceplugin.h \

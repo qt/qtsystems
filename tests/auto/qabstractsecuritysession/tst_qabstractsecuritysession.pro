@@ -2,12 +2,11 @@ load(qttest_p4)
 
 QT = core serviceframework
 
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += ../qsfwtestutil.h
 SOURCES += tst_qabstractsecuritysession.cpp \
            ../qsfwtestutil.cpp
-
-mac:CONFIG += insignificant_test
 
 symbian|wince* {
     

@@ -11,4 +11,5 @@ SUBDIRS += qdeviceinfo \
            qserviceinterfacedescriptor \
            qservicemanager \
            qservicemetadata \
-           servicedatabase
+           servicedeletion
+#           servicedatabase \
