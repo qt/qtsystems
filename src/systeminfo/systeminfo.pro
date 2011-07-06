@@ -93,6 +93,8 @@ linux-* {
             DEFINES += QT_NO_OFONO
         }
 
+        !contains(udisks_enabled, yes): DEFINES += QT_NO_UDISKS
+
         # TODO put it behind a build flag, e.g. bluez_enabled
         PRIVATE_HEADERS += qbluezwrapper_p.h
         SOURCES += qbluezwrapper.cpp
