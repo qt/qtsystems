@@ -56,6 +56,11 @@ QBatteryInfoPrivate::~QBatteryInfoPrivate()
 {
 }
 
+int QBatteryInfoPrivate::batteryCount()
+{
+    return -1;
+}
+
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
     return 0;
@@ -137,7 +142,8 @@ QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
 
 void QBatteryInfoPrivate::connectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
+    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
+    } else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
@@ -148,7 +154,8 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
 
 void QBatteryInfoPrivate::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
+    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
+    } else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {

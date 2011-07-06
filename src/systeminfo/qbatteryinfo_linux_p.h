@@ -69,6 +69,7 @@ public:
     QBatteryInfoPrivate(QBatteryInfo *parent);
     ~QBatteryInfoPrivate();
 
+    int batteryCount();
     int currentFlow(int battery);
     int maximumCapacity(int battery);
     int remainingCapacity(int battery);
@@ -79,6 +80,7 @@ public:
     QBatteryInfo::EnergyUnit energyUnit();
 
 Q_SIGNALS:
+    void batteryCountChanged(int count);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
     void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
     void currentFlowChanged(int battery, int flow);
@@ -97,26 +99,30 @@ private:
     QBatteryInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QBatteryInfo)
 
+    bool watchBatteryCount;
     bool watchChargerType;
     bool watchChargingState;
     bool watchCurrentFlow;
     bool watchRemainingCapacity;
     bool watchRemainingChargingTime;
     bool watchVoltage;
+    int batteryCounts;
     QMap<int, int> currentFlows; // <battery ID, current value> pair
-    QMap<int, int> currentVoltages;
-    QMap<int, int> currentRemainingCapacities;
-    QMap<int, int> currentRemainingChargingTimes;
-    QMap<int, QBatteryInfo::ChargingState> currentChargingStates;
+    QMap<int, int> voltages;
+    QMap<int, int> remainingCapacities;
+    QMap<int, int> remainingChargingTimes;
+    QMap<int, int> maximumCapacities;
+    QMap<int, QBatteryInfo::ChargingState> chargingStates;
     QTimer *timer;
     QBatteryInfo::ChargerType currentChargerType;
 
-    int updateCurrentFlow(int battery);
-    int updateRemainingCapacity(int battery);
-    int updateRemainingChargingTime(int battery);
-    int updateVoltage(int battery);
-    QBatteryInfo::ChargerType updateChargerType();
-    QBatteryInfo::ChargingState updateChargingState(int battery);
+    int getBatteryCount();
+    int getCurrentFlow(int battery);
+    int getRemainingCapacity(int battery);
+    int getRemainingChargingTime(int battery);
+    int getVoltage(int battery);
+    QBatteryInfo::ChargerType getChargerType();
+    QBatteryInfo::ChargingState getChargingState(int battery);
 };
 
 QT_END_NAMESPACE

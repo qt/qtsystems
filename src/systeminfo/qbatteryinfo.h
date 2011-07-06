@@ -58,6 +58,7 @@ class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
     Q_ENUMS(ChargingState)
     Q_ENUMS(EnergyUnit)
 
+    Q_PROPERTY(int batteryCount READ batteryCount NOTIFY batteryCountChanged)
     Q_PROPERTY(ChargerType chargerType READ chargerType NOTIFY chargerTypeChanged)
     Q_PROPERTY(EnergyUnit energyUnit READ energyUnit)
 
@@ -66,8 +67,6 @@ public:
         UnknownCharger = 0,
         WallCharger,
         USBCharger,
-        USB_500mACharger, // Is it really necessary to have these different USB charger types?
-        USB_100mACharger,
         VariableCurrentCharger
     };
 
@@ -79,7 +78,7 @@ public:
     };
 
     enum EnergyUnit {
-            UnitUnknown = -1,
+            UnitUnknown = 0,
             UnitmAh,
             UnitmWh
         };
@@ -87,6 +86,7 @@ public:
     QBatteryInfo(QObject *parent = 0);
     virtual ~QBatteryInfo();
 
+    Q_INVOKABLE int batteryCount() const;
     Q_INVOKABLE int currentFlow(int battery) const;
     Q_INVOKABLE int maximumCapacity(int battery) const;
     Q_INVOKABLE int remainingCapacity(int battery) const;
@@ -98,6 +98,7 @@ public:
     QBatteryInfo::EnergyUnit energyUnit() const;
 
 Q_SIGNALS:
+    void batteryCountChanged(int count);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
     void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
     void currentFlowChanged(int battery, int flow);
