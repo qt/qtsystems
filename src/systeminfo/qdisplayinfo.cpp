@@ -63,7 +63,7 @@ public:
     int physicalHeight(int) { return -1; }
     int physicalWidth(int) { return -1; }
     QDisplayInfo::BacklightState backlightState(int) { return QDisplayInfo::BacklightUnknown; }
-    QDisplayInfo::Orientation orientation(int) { return QDispayInfo::OrientationUnknown; }
+    QDisplayInfo::Orientation orientation(int) { return QDisplayInfo::OrientationUnknown; }
 };
 QT_END_NAMESPACE
 #endif
