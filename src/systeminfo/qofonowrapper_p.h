@@ -102,7 +102,7 @@ public:
     QString imsi(const QString &modemPath);
 
     // Modem Interface
-    QString imei(const QString&modemPath);
+    QString imei(const QString &modemPath);
 
 Q_SIGNALS:
     void cellIdChanged(int interface, const QString &id);

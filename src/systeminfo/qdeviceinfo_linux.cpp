@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdeviceinfo_linux_p.h"
+#include "qscreensaver_linux_p.h"
 
 #if !defined(QT_NO_OFONO)
 #include "qofonowrapper_p.h"
@@ -144,7 +145,17 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::Sim:
-        // TODO: find the kernel interface for this
+#if !defined(QT_NO_OFONO)
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QStringList modems = ofonoWrapper->allModems();
+        foreach (const QString &modem, modems) {
+            if (!ofonoWrapper->imei(modem).isEmpty())
+                return true;
+        }
+    }
+#endif
         return false;
 
     case QDeviceInfo::Positioning:
@@ -165,6 +176,8 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
                 return true;
             }
         }
+        if (QDir(QString::fromAscii("/sys/class/video_output/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+            return true;
         return false;
     }
 
@@ -188,7 +201,13 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
 
 QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::enabledLocks()
 {
-    return QDeviceInfo::NoLock;
+    QDeviceInfo::LockTypeFlags enabledLocks = QDeviceInfo::NoLock;
+
+    QScreenSaverPrivate screenSaver(0);
+    if (screenSaver.screenSaverEnabled())
+        enabledLocks = QDeviceInfo::TouchOrKeyboardLock;
+
+    return enabledLocks;
 }
 
 QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
@@ -207,7 +226,7 @@ QString QDeviceInfoPrivate::imei(int interface)
             ofonoWrapper = new QOfonoWrapper(this);
         QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper->imsi(modem);
+            return ofonoWrapper->imei(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -309,8 +328,10 @@ void QDeviceInfoPrivate::connectNotify(const char *signal)
 
 void QDeviceInfoPrivate::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0)
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
         watchThermalState = false;
+        currentThermalState = QDeviceInfo::UnknownThermal;
+    }
 
     if (!watchThermalState)
         timer->stop();
