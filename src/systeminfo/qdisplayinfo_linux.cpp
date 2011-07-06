@@ -58,6 +58,37 @@ QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
 {
 }
 
+int QDisplayInfoPrivate::brightness(int screen)
+{
+    QString sysfsPath(QString::fromAscii("/sys/class/backlight/"));
+    const QStringList dirs = QDir(sysfsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    if (dirs.size() < screen + 1)
+        return -1;
+
+    bool ok = false;
+    int max = 0;
+    int actual = 0;
+    sysfsPath += dirs.at(screen);
+    QFile brightness(sysfsPath + QString::fromAscii("/max_brightness"));
+    if (brightness.open(QIODevice::ReadOnly)) {
+        max = brightness.readAll().simplified().toInt(&ok);
+        if (!ok || max == 0)
+            return -1;
+        brightness.close();
+
+        brightness.setFileName(sysfsPath + QString::fromAscii("/actual_brightness"));
+        if (brightness.open(QIODevice::ReadOnly)) {
+            actual = brightness.readAll().simplified().toInt(&ok);
+            if (!ok)
+                return -1;
+
+            return actual * 100 / max;
+        }
+    }
+
+    return -1;
+}
+
 int QDisplayInfoPrivate::colorDepth(int screen)
 {
 #if defined(Q_WS_X11)
@@ -72,37 +103,6 @@ int QDisplayInfoPrivate::colorDepth(int screen)
 int QDisplayInfoPrivate::contrast(int screen)
 {
     Q_UNUSED(screen)
-    return -1;
-}
-
-int QDisplayInfoPrivate::displayBrightness(int screen)
-{
-    const QString sysfsPath(QString::fromAscii("/sys/class/backlight/"));
-    const QStringList dirs = QDir(sysfsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    if (dirs.size() < screen + 1)
-        return -1;
-
-    bool ok = false;
-    int max = 0;
-    int actual = 0;
-    QFile brightness(dirs.at(screen) + QString::fromAscii("/max_brightness"));
-    if (brightness.open(QIODevice::ReadOnly)) {
-        max = brightness.readAll().simplified().toInt(&ok);
-        if (!ok)
-            return -1;
-        brightness.close();
-
-        brightness.setFileName(dirs.at(screen) + QString::fromAscii("/actual_brightness"));
-        if (brightness.open(QIODevice::ReadOnly)) {
-            actual = brightness.readAll().simplified().toInt(&ok);
-            if (!ok)
-                return -1;
-
-            if (max != 0)
-                return actual / max;
-        }
-    }
-
     return -1;
 }
 
@@ -174,6 +174,29 @@ QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
 {
     Q_UNUSED(screen);
     return QDisplayInfo::BacklightUnknown;
+}
+
+QDisplayInfo::Orientation QDisplayInfoPrivate::orientation(int screen)
+{
+#if defined(Q_WS_X11)
+    Rotation rotation;
+    XRRRotations(QX11Info::display(), screen, &rotation);
+    switch (rotation) {
+    case RR_Rotate_0:
+        return QDisplayInfo::Landscape;
+    case RR_Rotate_90:
+        return QDisplayInfo::Portrait;
+    case RR_Rotate_180:
+        return QDisplayInfo::InvertedLandscape;
+    case RR_Rotate_270:
+        return QDisplayInfo::InvertedPortrait;
+    default:
+        return QDisplayInfo::OrientationUnknown;
+    }
+#else
+    Q_UNUSED(screen)
+    return QDisplayInfo::OrientationUnknown;
+#endif
 }
 
 QT_END_NAMESPACE

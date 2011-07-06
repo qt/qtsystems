@@ -99,6 +99,10 @@ Q_SIGNALS:
     void keyboardFlipped(bool open);
     void wirelessKeyboardConnected(bool connected);
 
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     Q_DISABLE_COPY(QInputDeviceInfo)
     QInputDeviceInfoPrivate * const d_ptr;

@@ -128,7 +128,9 @@ QInputDeviceInfo::QInputDeviceInfo(QObject *parent)
 */
 QInputDeviceInfo::~QInputDeviceInfo()
 {
+#if !defined(Q_OS_LINUX)
     delete d_ptr;
+#endif
 }
 
 /*!
@@ -177,6 +179,34 @@ QInputDeviceInfo::KeyboardTypes QInputDeviceInfo::availableKeyboards() const
 QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfo::availableTouchDevices() const
 {
     return d_ptr->availableTouchDevices();
+}
+
+/*!
+    \internal
+*/
+void QInputDeviceInfo::connectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX)
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+#else
+    Q_UNUSED(signal)
+#endif
+}
+
+/*!
+    \internal
+*/
+void QInputDeviceInfo::disconnectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX)
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(signal) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
+#else
+    Q_UNUSED(signal)
+#endif
 }
 
 QT_END_NAMESPACE

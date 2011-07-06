@@ -55,7 +55,7 @@ class Q_SYSTEMINFO_EXPORT QDisplayInfo : public QObject
     Q_OBJECT
 
     Q_ENUMS(BacklightState)
-    Q_ENUMS(DisplayOrientation)
+    Q_ENUMS(Orientation)
 
 public:
     enum BacklightState {
@@ -65,9 +65,7 @@ public:
         BacklightOn
     };
 
-    // FIXME before Qt 5 gets released
-    // not a good design, think about a specicial where the width equals the height...
-    enum DisplayOrientation {
+    enum Orientation {
         OrientationUnknown = 0,
         Landscape,
         Portrait,
@@ -78,18 +76,18 @@ public:
     QDisplayInfo(QObject *parent = 0);
     virtual ~QDisplayInfo();
 
+    Q_INVOKABLE int brightness(int screen) const;
     Q_INVOKABLE int colorDepth(int screen) const;
     Q_INVOKABLE int contrast(int screen) const;
-    Q_INVOKABLE int displayBrightness(int screen) const;
     Q_INVOKABLE int dpiX(int screen) const;
     Q_INVOKABLE int dpiY(int screen) const;
     Q_INVOKABLE int physicalHeight(int screen) const;
     Q_INVOKABLE int physicalWidth(int screen) const;
     Q_INVOKABLE QDisplayInfo::BacklightState backlightState(int screen) const;
-    Q_INVOKABLE QDisplayInfo::DisplayOrientation orientation(int screen) const;
+    Q_INVOKABLE QDisplayInfo::Orientation orientation(int screen) const;
 
 Q_SIGNALS:
-    void orientationChanged(int scree, QDisplayInfo::DisplayOrientation orientation);
+    void orientationChanged(int screen, QDisplayInfo::Orientation orientation);
 
 private:
     Q_DISABLE_COPY(QDisplayInfo)

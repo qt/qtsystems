@@ -66,18 +66,18 @@ public:
     QDeviceInfo::LockTypeFlags activatedLocks();
     QDeviceInfo::LockTypeFlags enabledLocks();
     QDeviceInfo::ThermalState thermalState();
-    QByteArray uniqueDeviceID();
-    QString imei();
+    QString imei(int interface);
     QString manufacturer();
     QString model();
     QString productName();
+    QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
 
 private:
     QDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceInfo)
 
-    QByteArray deviceID;
+    QString deviceID;
     QString systemManufacturerName;
     QString systemProductName;
     QString osVersion;

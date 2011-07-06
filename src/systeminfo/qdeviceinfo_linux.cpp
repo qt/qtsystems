@@ -41,8 +41,13 @@
 
 #include "qdeviceinfo_linux_p.h"
 
+#if !defined(QT_NO_OFONO)
+#include "qofonowrapper_p.h"
+#endif // QT_NO_OFONO
+
 #include <QtCore/qdir.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/qtimer.h>
 
 #include <fcntl.h>
 #include <linux/videodev2.h>
@@ -53,7 +58,13 @@
 QT_BEGIN_NAMESPACE
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
-    : q_ptr(parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , watchThermalState(false)
+    , timer(0)
+#if !defined(QT_NO_OFONO)
+    , ofonoWrapper(0)
+#endif // QT_NO_OFONO
 {
 }
 
@@ -103,6 +114,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         }
         return false;
     }
+
     case QDeviceInfo::Infrared:
         // TODO: find the kernel interface for this
         return false;
@@ -160,6 +172,10 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         if (QDir(QString::fromAscii("/sys/class/haptic/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
+
+    case QDeviceInfo::Nfc:
+        // As of now, it's the only supported NFC device in the kernel
+        return QFile::exists(QString::fromAscii("/dev/pn544"));
     }
 
     return false;
@@ -177,87 +193,193 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::enabledLocks()
 
 QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
 {
-    return QDeviceInfo::UnknownThermal;
+    if (watchThermalState)
+        return currentThermalState;
+    else
+        return getThermalState();
 }
 
-QByteArray QDeviceInfoPrivate::uniqueDeviceID()
+QString QDeviceInfoPrivate::imei(int interface)
 {
-    return QByteArray();
-}
-
-QString QDeviceInfoPrivate::imei()
-{
+#if !defined(QT_NO_OFONO)
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
+        if (!modem.isEmpty())
+            return ofonoWrapper->imsi(modem);
+    }
+#else
+    Q_UNUSED(interface)
+#endif
     return QString();
 }
 
 QString QDeviceInfoPrivate::manufacturer()
 {
-    QFile vendor(QString::fromAscii("/sys/devices/virtual/dmi/id/board_vendor"));
-    if (vendor.open(QIODevice::ReadOnly))
-        return QString::fromAscii(vendor.readAll().simplified().data());
-
-    return QString();
+    if (manufacturerBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/sys_vendor"));
+        if (file.open(QIODevice::ReadOnly))
+            manufacturerBuffer = QString::fromAscii(file.readAll().simplified().data());
+    }
+    return manufacturerBuffer;
 }
 
 QString QDeviceInfoPrivate::model()
 {
-    QFile cpuInfo(QString::fromAscii("/proc/cpuinfo"));
-    if (cpuInfo.open(QIODevice::ReadOnly)) {
-        QTextStream textStream(&cpuInfo);
-        while (!textStream.atEnd()) {
-            QString line = textStream.readLine();
-            if (line.contains(QString::fromAscii("model name")))
-                return line.split(QString::fromAscii(":")).at(1).simplified();
-        }
+    if (modelBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/product_name"));
+        if (file.open(QIODevice::ReadOnly))
+            modelBuffer = QString::fromAscii(file.readAll().simplified().data());
     }
-
-    return QString();
+    return modelBuffer;
 }
 
 QString QDeviceInfoPrivate::productName()
 {
-    QFile lsbRelease(QString::fromAscii("/etc/lsb-release"));
-    if (lsbRelease.open(QIODevice::ReadOnly)) {
-        QTextStream textStream(&lsbRelease);
-        while (!textStream.atEnd()) {
-            QString line = textStream.readLine();
-            if (line.contains(QString::fromAscii("DISTRIB_DESCRIPTION")))
-                return line.split(QString::fromAscii("=")).at(1).simplified();
+    if (productNameBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/etc/lsb-release"));
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream textStream(&file);
+            while (!textStream.atEnd()) {
+                QString line = textStream.readLine();
+                if (line.contains(QString::fromAscii("DISTRIB_CODENAME")))
+                    productNameBuffer = line.split(QString::fromAscii("=")).at(1).simplified();
+            }
         }
     }
+    return productNameBuffer;
+}
 
-    return QString();
+QString QDeviceInfoPrivate::uniqueDeviceID()
+{
+    if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/product_uuid"));
+        if (file.open(QIODevice::ReadOnly))
+            modelBuffer = QString::fromAscii(file.readAll().simplified().data());
+    }
+    return uniqueDeviceIDBuffer;
 }
 
 QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
     switch(type) {
-    case QDeviceInfo::Os: {
-        QFile os(QString::fromAscii("/etc/issue"));
-        if (os.open(QIODevice::ReadOnly)) {
-            QByteArray content = os.readAll();
-            if (!content.isEmpty()) {
-                QList<QByteArray> list(content.split(' '));
-                bool ok = false;
-                foreach (const QByteArray &field, list) {
-                    field.toDouble(&ok);
-                    if (ok)
-                        return QString::fromAscii(field.data());
+    case QDeviceInfo::Os:
+        if (versionBuffer[0].isEmpty()) {
+            QFile file(QString::fromAscii("/etc/lsb-release"));
+            if (file.open(QIODevice::ReadOnly)) {
+                QTextStream textStream(&file);
+                while (!textStream.atEnd()) {
+                    QString line = textStream.readLine();
+                    if (line.contains(QString::fromAscii("DISTRIB_RELEASE")))
+                        versionBuffer[0] = line.split(QString::fromAscii("=")).at(1).simplified();
                 }
             }
         }
-        break;
-    }
+        return versionBuffer[0];
 
-    case QDeviceInfo::Firmware: {
-        QFile firmware(QString::fromAscii("/proc/sys/kernel/osrelease"));
-        if (firmware.open(QIODevice::ReadOnly))
-            return QString::fromAscii(firmware.readAll().simplified().data());
-        break;
-    }
+    case QDeviceInfo::Firmware:
+        if (versionBuffer[1].isEmpty()) {
+            QFile file(QString::fromAscii("/proc/sys/kernel/osrelease"));
+            if (file.open(QIODevice::ReadOnly))
+                versionBuffer[1] = QString::fromAscii(file.readAll().simplified().data());
+        }
+        return versionBuffer[1];
     };
 
     return QString();
+}
+
+void QDeviceInfoPrivate::connectNotify(const char *signal)
+{
+    if (timer == 0) {
+        timer = new QTimer;
+        timer->setInterval(2000);
+        connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    }
+
+    if (!timer->isActive())
+        timer->start();
+
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
+        watchThermalState = true;
+        currentThermalState = getThermalState();
+    }
+}
+
+void QDeviceInfoPrivate::disconnectNotify(const char *signal)
+{
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0)
+        watchThermalState = false;
+
+    if (!watchThermalState)
+        timer->stop();
+}
+
+void QDeviceInfoPrivate::onTimeout()
+{
+    if (watchThermalState) {
+        QDeviceInfo::ThermalState newState = getThermalState();
+        if (newState != currentThermalState) {
+            currentThermalState = newState;
+            Q_EMIT thermalStateChanged(currentThermalState);
+        }
+    }
+}
+
+QDeviceInfo::ThermalState QDeviceInfoPrivate::getThermalState()
+{
+    QDeviceInfo::ThermalState state = QDeviceInfo::UnknownThermal;
+
+    const QString hwmonRoot(QString::fromAscii("/sys/class/hwmon/"));
+    const QStringList hwmonDirs(QDir(hwmonRoot).entryList(QStringList() << QString::fromAscii("hwmon*")));
+    foreach (const QString &dir, hwmonDirs) {
+        int index = 1;
+        const QString input(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_input"));
+        const QString critical(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_crit"));
+        const QString emergency(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_emergency"));
+        while (true) {
+            QFile file(input.arg(index));
+            if (!file.open(QIODevice::ReadOnly))
+                break;
+            bool ok(false);
+            int currentTemp = file.readAll().simplified().toInt(&ok);
+            if (ok) {
+                if (state == QDeviceInfo::UnknownThermal)
+                    state = QDeviceInfo::NormalThermal;
+
+                // Only check if we are below WarningThermal
+                if (state < QDeviceInfo::WarningThermal) {
+                    file.close();
+                    file.setFileName(critical.arg(index));
+                    if (file.open(QIODevice::ReadOnly)) {
+                        int criticalTemp = file.readAll().simplified().toInt(&ok);
+                        if (ok && currentTemp > criticalTemp)
+                            state = QDeviceInfo::WarningThermal;
+                    }
+                }
+
+                // Only check if we are below AlertThermal
+                if (state < QDeviceInfo::AlertThermal) {
+                    file.close();
+                    file.setFileName(emergency.arg(index));
+                    if (file.open(QIODevice::ReadOnly)) {
+                        int emergencyTemp = file.readAll().simplified().toInt(&ok);
+                        if (ok && currentTemp > emergencyTemp) {
+                            state = QDeviceInfo::AlertThermal;
+                            break; // No need for further checking, as we can't get the ErrorThermal state
+                        }
+                    }
+                }
+            } else {
+                break;
+            }
+
+            ++index;
+        }
+    }
+
+    return state;
 }
 
 QT_END_NAMESPACE

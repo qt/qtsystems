@@ -49,6 +49,25 @@ QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
 {
 }
 
+int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
+{
+    switch(mode) {
+    case QNetworkInfo::WlanMode:
+    case QNetworkInfo::EthernetMode:
+    case QNetworkInfo::BluetoothMode:
+
+//    case QNetworkInfo::GsmMode:
+//    case QNetworkInfo::CdmaMode:
+//    case QNetworkInfo::WcdmaMode:
+//    case QNetworkInfo::WimaxMode:
+//    case QNetworkInfo::LteMode:
+    default:
+        break;
+    };
+
+    return -1;
+}
+
 int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
 {
     switch(mode) {
@@ -77,21 +96,31 @@ QNetworkInfo::CellDataTechnology QNetworkInfoPrivate::currentCellDataTechnology(
 QNetworkInfo::NetworkMode QNetworkInfoPrivate::currentNetworkMode()
 {
     // TODO multiple-interface support
-    if (networkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::Connected)
+    if (networkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::EthernetMode;
-    else if (networkStatus(QNetworkInfo::WlanMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WlanMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WlanMode;
-    else if (networkStatus(QNetworkInfo::BluetoothMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::BluetoothMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::BluetoothMode;
-    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WimaxMode;
-    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::LteMode;
-    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WcdmaMode;
-    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::CdmaMode;
+    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::GsmMode;
-    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WimaxMode;
+    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::LteMode;
+    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WcdmaMode;
+    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::CdmaMode;
+    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::GsmMode;
     else
         return QNetworkInfo::UnknownMode;

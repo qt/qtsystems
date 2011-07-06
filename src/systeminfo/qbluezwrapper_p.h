@@ -50,33 +50,48 @@
 // We mean it.
 //
 
-#ifndef QDISPLAYINFO_LINUX_P_H
-#define QDISPLAYINFO_LINUX_P_H
+#ifndef QBLUEZWRAPPER_P_H
+#define QBLUEZWRAPPER_P_H
 
-#include <qdisplayinfo.h>
+#include <QtCore/qobject.h>
+#include <QtDBus/qdbuscontext.h>
+#include <QtDBus/qdbusextratypes.h>
+
+#include <qnetworkinfo.h>
+
+#if !defined(QT_NO_BLUEZ)
 
 QT_BEGIN_NAMESPACE
 
-class QDisplayInfoPrivate
+class QBluezWrapper : public QObject, protected QDBusContext
 {
-public:
-    QDisplayInfoPrivate(QDisplayInfo *parent);
+    Q_OBJECT
 
-    int brightness(int screen);
-    int colorDepth(int screen);
-    int contrast(int screen);
-    int dpiX(int screen);
-    int dpiY(int screen);
-    int physicalHeight(int screen);
-    int physicalWidth(int screen);
-    QDisplayInfo::BacklightState backlightState(int screen);
-    QDisplayInfo::Orientation orientation(int screen);
+public:
+    QBluezWrapper(QObject *parent = 0);
+
+    static bool isBluezAvailable();
+
+    bool hasInputDevice();
+
+Q_SIGNALS:
+    void wirelessKeyboardConnected(bool connected);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private Q_SLOTS:
+    void onBluezPropertyChanged(const QString &property, const QDBusVariant &value);
 
 private:
-    QDisplayInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QDisplayInfo)
+    QStringList allDevices();
+
+    static int available;
 };
 
 QT_END_NAMESPACE
 
-#endif // QDISPLAYINFO_LINUX_P_H
+#endif // QT_NO_BLUEZ
+
+#endif // QBLUEZWRAPPER_P_H

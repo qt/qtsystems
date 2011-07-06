@@ -52,6 +52,7 @@ class QBatteryInfoPrivate
 public:
     QBatteryInfoPrivate(QBatteryInfo *) {}
 
+    int batteryCount() { return -1; }
     int currentFlow(int) { return 0; }
     int maximumCapacity(int) { return -1; }
     int remainingCapacity(int) { return -1; }
@@ -82,8 +83,6 @@ QT_BEGIN_NAMESPACE
     \value UnknownCharger           The charger type is unknown, or no charger.
     \value WallCharger              Using wall (mains) charger.
     \value USBCharger               Using USB charger when the system cannot differentiate the current.
-    \value USB_500mACharger         Using USB charger at 500 mA.
-    \value USB_100mACharger         Using USB charger at 100 mA.
     \value VariableCurrentCharger   Using variable current charger such as bicycle or solar.
 */
 
@@ -104,6 +103,12 @@ QT_BEGIN_NAMESPACE
     \value UnitUnknown            Energy unit unknown.
     \value UnitmAh                Energy described in milliamp-hour (mAh)
     \value UnitmWh                Energy described in milliwatt-hour (mWh)
+*/
+
+/*!
+    \fn void QBatteryInfo::batteryCountChanged(int count);
+
+    This signal is emitted when the number of batteries available has changed to \a count.
 */
 
 /*!
@@ -159,6 +164,17 @@ QBatteryInfo::QBatteryInfo(QObject *parent)
 */
 QBatteryInfo::~QBatteryInfo()
 {
+}
+
+/*!
+    \property QBatteryInfo::batteryCount
+    \brief The number of the batteries available.
+
+    Returns the number of batteries available, or -1 on error or the information is not available.
+*/
+int QBatteryInfo::batteryCount() const
+{
+    return d_ptr->batteryCount();
 }
 
 /*!

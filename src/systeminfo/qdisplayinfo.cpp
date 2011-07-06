@@ -55,14 +55,15 @@ class QDisplayInfoPrivate
 public:
     QDisplayInfoPrivate(QDisplayInfo *) {}
 
+    int brightness(int) { return -1; }
     int colorDepth(int) { return -1; }
     int contrast(int) const { return -1; }
-    int displayBrightness(int) { return -1; }
     int dpiX(int) { return -1; }
     int dpiY(int) { return -1; }
     int physicalHeight(int) { return -1; }
     int physicalWidth(int) { return -1; }
     QDisplayInfo::BacklightState backlightState(int) { return QDisplayInfo::BacklightUnknown; }
+    QDisplayInfo::Orientation orientation(int) { return QDisplayInfo::OrientationUnknown; }
 };
 QT_END_NAMESPACE
 #endif
@@ -86,8 +87,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QDisplayInfo::DisplayOrientation
-    This enum describes the orientation of the display.
+    \enum QDisplayInfo::Orientation
+    This enum describes the orientation of the UI. For orientation of the display, please refer to
+    QOrientationSensor and QOrientationReading in the QSensors module.
 
     \value OrientationUnknown   The orientation is unknown.
     \value Landscape            The orientation is landscape, i.e. the width is bigger than the height.
@@ -121,6 +123,17 @@ QDisplayInfo::~QDisplayInfo()
 }
 
 /*!
+    Returns the display brightness of the given \a screen, in 0 - 100 scale. In case of error or
+    the information is not available, -1 is returned.
+*/
+int QDisplayInfo::brightness(int screen) const
+{
+    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+        return -1;
+    return d_ptr->brightness(screen);
+}
+
+/*!
     Returns the color depth of the given \a screen, in bits per pixel. -1 is returned if not
     available or on error.
 */
@@ -140,17 +153,6 @@ int QDisplayInfo::contrast(int screen) const
     if (screen < 0 || screen >= QApplication::desktop()->screenCount())
         return -1;
     return d_ptr->contrast(screen);
-}
-
-/*!
-    Returns the display brightness of the given \a screen, in 0 - 100 scale. In case of error or
-    the information is not available, -1 is returned.
-*/
-int QDisplayInfo::displayBrightness(int screen) const
-{
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
-        return -1;
-    return d_ptr->displayBrightness(screen);
 }
 
 /*!
@@ -210,10 +212,20 @@ QDisplayInfo::BacklightState QDisplayInfo::backlightState(int screen) const
 /*!
     Returns the orientation of the given \a screen.
 */
-QDisplayInfo::DisplayOrientation QDisplayInfo::orientation(int screen) const
+QDisplayInfo::Orientation QDisplayInfo::orientation(int screen) const
 {
-    Q_UNUSED(screen)
-    return QDisplayInfo::OrientationUnknown;
+    QDisplayInfo::Orientation orient = d_ptr->orientation(screen);
+    if (orient != QDisplayInfo::OrientationUnknown) {
+        return orient;
+    } else {
+        QWidget *widget = qApp->desktop()->screen(screen);
+        if (widget->width() > widget->height())
+            return QDisplayInfo::Landscape;
+        else if (widget->width() < widget->height())
+            return QDisplayInfo::Portrait;
+        else
+            return QDisplayInfo::OrientationUnknown;
+    }
 }
 
 QT_END_NAMESPACE

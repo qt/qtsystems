@@ -57,8 +57,16 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeviceInfoPrivate
+class QTimer;
+
+#if !defined(QT_NO_OFONO)
+class QOfonoWrapper;
+#endif // QT_NO_OFONO
+
+class QDeviceInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     QDeviceInfoPrivate(QDeviceInfo *parent);
 
@@ -66,16 +74,41 @@ public:
     QDeviceInfo::LockTypeFlags activatedLocks();
     QDeviceInfo::LockTypeFlags enabledLocks();
     QDeviceInfo::ThermalState thermalState();
-    QByteArray uniqueDeviceID();
-    QString imei();
+    QString imei(int interface);
     QString manufacturer();
     QString model();
     QString productName();
+    QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
+
+Q_SIGNALS:
+    void thermalStateChanged(QDeviceInfo::ThermalState state);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private Q_SLOTS:
+    void onTimeout();
 
 private:
     QDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceInfo)
+
+    bool watchThermalState;
+    QDeviceInfo::ThermalState currentThermalState;
+    QString manufacturerBuffer;
+    QString modelBuffer;
+    QString productNameBuffer;
+    QString uniqueDeviceIDBuffer;
+    QString versionBuffer[2];
+    QTimer *timer;
+
+    QDeviceInfo::ThermalState getThermalState();
+
+#if !defined(QT_NO_OFONO)
+    QOfonoWrapper *ofonoWrapper;
+#endif // QT_NO_OFONO
 };
 
 QT_END_NAMESPACE

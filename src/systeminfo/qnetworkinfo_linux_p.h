@@ -57,6 +57,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_OFONO)
+class QOfonoWrapper;
+#endif // QT_NO_OFONO
+
 class QNetworkInfoPrivate : public QObject
 {
     Q_OBJECT
@@ -64,6 +68,7 @@ class QNetworkInfoPrivate : public QObject
 public:
     QNetworkInfoPrivate(QNetworkInfo *parent);
 
+    int networkInterfaceCount(QNetworkInfo::NetworkMode mode);
     int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface);
     QNetworkInfo::NetworkMode currentNetworkMode();
@@ -86,6 +91,7 @@ Q_SIGNALS:
     void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
     void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
     void locationAreaCodeChanged(int interface, const QString &lac);
+    void networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
     void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
     void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
     void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
@@ -97,6 +103,10 @@ protected:
 private:
     QNetworkInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QNetworkInfo)
+
+#if !defined(QT_NO_OFONO)
+    QOfonoWrapper *ofonoWrapper;
+#endif // QT_NO_OFONO
 };
 
 QT_END_NAMESPACE

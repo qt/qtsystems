@@ -56,11 +56,11 @@ public:
     QDeviceInfo::LockTypeFlags activatedLocks() { return QDeviceInfo::NoLock; }
     QDeviceInfo::LockTypeFlags enabledLocks() { return QDeviceInfo::NoLock; }
     QDeviceInfo::ThermalState thermalState() { return QDeviceInfo::UnknownThermal; }
-    QByteArray uniqueDeviceID() { return QByteArray(); }
-    QString imei() { return QString(); }
+    QString imei(int) { return QString(); }
     QString manufacturer() { return QString(); }
     QString model() { return QString(); }
     QString productName() { return QString(); }
+    QString uniqueDeviceID() { return QString(); }
     QString version(QDeviceInfo::Version) { return QString(); }
 };
 QT_END_NAMESPACE
@@ -90,8 +90,9 @@ QT_BEGIN_NAMESPACE
     \value Wlan           Wireless local area network (WLAN) feature.
     \value Sim            Subscriber identity module (SIM) feature.
     \value Positioning    Positioning feature, e.g. Global Positioning System (GPS).
-    \value VideoOut       Video out feature available.
-    \value Haptics        Haptics feature available.
+    \value VideoOut       Video out feature.
+    \value Haptics        Haptics feature.
+    \value Nfc            Near Field Communication (NFC) feature.
 */
 
 /*!
@@ -154,7 +155,9 @@ QDeviceInfo::QDeviceInfo(QObject *parent)
 */
 QDeviceInfo::~QDeviceInfo()
 {
+#if !defined(Q_OS_LINUX)
     delete d_ptr;
+#endif
 }
 
 /*!
@@ -185,7 +188,8 @@ QDeviceInfo::LockTypeFlags QDeviceInfo::enabledLocks() const
     \property QDeviceInfo::thermalState
     \brief The thermal state.
 
-    The current thermal state of the device.
+    The current thermal state of the device. If there are more than one thermal zone devices available,
+    the state of the most critical one is reported.
 */
 QDeviceInfo::ThermalState QDeviceInfo::thermalState() const
 {
@@ -201,20 +205,12 @@ bool QDeviceInfo::hasFeature(QDeviceInfo::Feature feature) const
 }
 
 /*!
-    Returns a unique identifier for the device, or an empty byte array if on error or not available.
+    Returns the International Mobile Equipment Identity (IMEI) of the given \a interface on the device.
+    In case of error, or the information is not available, an empty string is returned.
 */
-QByteArray QDeviceInfo::uniqueDeviceID() const
+QString QDeviceInfo::imei(int interface) const
 {
-    return d_ptr->uniqueDeviceID();
-}
-
-/*!
-    Returns the International Mobile Equipment Identity (IMEI) of the device. In case of error, or
-    the information is not available, an empty string is returned.
-*/
-QString QDeviceInfo::imei() const
-{
-    return d_ptr->imei();
+    return d_ptr->imei(interface);
 }
 
 /*!
@@ -245,12 +241,48 @@ QString QDeviceInfo::productName() const
 }
 
 /*!
+    Returns a unique identifier for the device, or an empty string if on error or not available.
+*/
+QString QDeviceInfo::uniqueDeviceID() const
+{
+    return d_ptr->uniqueDeviceID();
+}
+
+/*!
     Returns the version of \a type. In case of error, or the version is unknown, an empty string
     is returned.
 */
 QString QDeviceInfo::version(QDeviceInfo::Version type) const
 {
     return d_ptr->version(type);
+}
+
+/*!
+    \internal
+*/
+void QDeviceInfo::connectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX)
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+#else
+    Q_UNUSED(signal)
+#endif
+}
+
+/*!
+    \internal
+*/
+void QDeviceInfo::disconnectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX)
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(signal) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
+#else
+    Q_UNUSED(signal)
+#endif
 }
 
 QT_END_NAMESPACE

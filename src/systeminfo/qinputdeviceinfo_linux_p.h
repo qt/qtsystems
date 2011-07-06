@@ -57,8 +57,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QInputDeviceInfoPrivate
+#if !defined(QT_NO_BLUEZ)
+class QBluezWrapper;
+#endif // QT_NO_BLUEZ
+
+class QInputDeviceInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     QInputDeviceInfoPrivate(QInputDeviceInfo *parent);
 
@@ -69,9 +75,23 @@ public:
     QInputDeviceInfo::KeyboardTypes availableKeyboards();
     QInputDeviceInfo::TouchDeviceTypes availableTouchDevices();
 
+Q_SIGNALS:
+    void wirelessKeyboardConnected(bool connected);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     QInputDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QInputDeviceInfo)
+
+    bool watchWirelessKeyboard;
+    bool wirelessKeyboardConnectedBuffer;
+
+#if !defined(QT_NO_BLUEZ)
+    QBluezWrapper *bluezWrapper;
+#endif // QT_NO_BLUEZ
 };
 
 QT_END_NAMESPACE
