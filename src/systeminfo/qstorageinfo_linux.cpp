@@ -57,7 +57,26 @@
 #include <blkid/blkid.h>
 #endif // QT_NO_BLKID
 
+#if !defined(QT_NO_UDISKS)
+#include <QtDBus/qdbusconnection.h>
+#include <QtDBus/qdbusinterface.h>
+#include <QtDBus/qdbusreply.h>
+#endif // QT_NO_UDISKS
+
 QT_BEGIN_NAMESPACE
+
+#if !defined(QT_NO_UDISKS)
+static const QString UDISKS_SERVICE(QString::fromAscii("org.freedesktop.UDisks"));
+static const QString UDISKS_PATH(QString::fromAscii("/org/freedesktop/UDisks"));
+static const QString UDISKS_INTERFACE(QString::fromAscii("org.freedesktop.UDisks"));
+static const QString UDISKS_DEVICE_INTERFACE(QString::fromAscii("org.freedesktop.UDisks.Device"));
+static const QString UDISKS_PROPERTY_INTERFACE(QString::fromAscii("org.freedesktop.DBus.Properties"));
+
+static const QString UDISKS_GET(QString::fromAscii("Get"));
+static const QString UDISKS_ENUMERATE_DEVICES(QString::fromAscii("EnumerateDevices"));
+static const QString UDISKS_MOUNT_PATH(QString::fromAscii("DeviceMountPaths"));
+static const QString UDISKS_UUID(QString::fromAscii("IdUuid"));
+#endif // QT_NO_UDISKS
 
 QStorageInfoPrivate::QStorageInfoPrivate(QStorageInfo *parent)
     : QObject(parent)
@@ -99,11 +118,10 @@ qlonglong QStorageInfoPrivate::totalDiskSpace(const QString &drive)
 
 QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 {
-    QString uri;
-
 #if !defined(QT_NO_BLKID)
     FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
     mntent *entry = NULL;
+    QString uri;
     while ((entry = getmntent(fsDescription)) != NULL) {
         if (drive != QString::fromAscii(entry->mnt_dir))
             continue;
@@ -128,11 +146,31 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
     }
 
     endmntent(fsDescription);
-#else
-    Q_UNUSED(drive)
+
+    if (!uri.isEmpty())
+        return uri;
 #endif // QT_NO_BLKID
 
-    return uri;
+#if !defined(QT_NO_UDISKS)
+    QDBusReply<QList<QDBusObjectPath> > reply = QDBusConnection::systemBus().call(
+                QDBusMessage::createMethodCall(UDISKS_SERVICE, UDISKS_PATH, UDISKS_INTERFACE, UDISKS_ENUMERATE_DEVICES));
+    if (reply.isValid()) {
+        QList<QDBusObjectPath> paths = reply.value();
+        foreach (const QDBusObjectPath &path, paths) {
+            QDBusInterface interface(UDISKS_SERVICE, path.path(), UDISKS_PROPERTY_INTERFACE, QDBusConnection::systemBus());
+            if (!interface.isValid())
+                continue;
+            QDBusReply<QVariant> reply = interface.call(UDISKS_GET, UDISKS_DEVICE_INTERFACE, UDISKS_MOUNT_PATH);
+            if (reply.isValid() && reply.value().toString() == drive) {
+                reply = interface.call(UDISKS_GET, UDISKS_DEVICE_INTERFACE, UDISKS_UUID);
+                if (reply.isValid())
+                    return reply.value().toString();
+            }
+        }
+    }
+#endif // QT_NO_UDISKS
+
+    return QString::null;
 }
 
 QStringList QStorageInfoPrivate::allLogicalDrives()
@@ -182,8 +220,7 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
             break;
         }
 
-        // Now need to guess if it's InternalDrive, RemovableDrive, or InternalFlashDrive
-        bool isMmc = false;
+        // Now need to guess if it's InternalDrive or RemovableDrive
         QString fsName(QString::fromAscii(entry->mnt_fsname));
         if (fsName.contains(QString::fromAscii("mapper"))) {
             struct stat status;
@@ -192,9 +229,6 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
         } else {
             fsName = fsName.section(QString::fromAscii("/"), 2, 3);
             if (!fsName.isEmpty()) {
-                if (fsName.left(3) == QString::fromAscii("mmc"))
-                    isMmc = true;
-
                 if (fsName.length() > 3) {
                     fsName.chop(1);
                     if (fsName.right(1) == QString::fromAscii("p"))
@@ -207,14 +241,10 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
         char isRemovable;
         if (!removable.open(QIODevice::ReadOnly) || 1 != removable.read(&isRemovable, 1))
             break;
-        if (isRemovable == '0') {
-            if (isMmc)
-                type = QStorageInfo::InternalFlashDrive;
-            else
-                type = QStorageInfo::InternalDrive;
-        } else {
+        if (isRemovable == '0')
+            type = QStorageInfo::InternalDrive;
+        else
             type = QStorageInfo::RemovableDrive;
-        }
         break;
     }
 

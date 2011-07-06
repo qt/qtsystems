@@ -39,63 +39,9 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <bluetooth/bluetooth.h>
 
-#ifndef QDISPLAYINFO_LINUX_P_H
-#define QDISPLAYINFO_LINUX_P_H
-
-#include <qdisplayinfo.h>
-
-#include <QtCore/qmap.h>
-
-QT_BEGIN_NAMESPACE
-
-class QDisplayInfoPrivate : public QObject
+int main()
 {
-    Q_OBJECT
-
-public:
-    QDisplayInfoPrivate(QDisplayInfo *parent);
-
-    int brightness(int screen);
-    int colorDepth(int screen);
-    int contrast(int screen);
-    int dpiX(int screen);
-    int dpiY(int screen);
-    int physicalHeight(int screen);
-    int physicalWidth(int screen);
-    QDisplayInfo::BacklightState backlightState(int screen);
-    QDisplayInfo::Orientation orientation(int screen);
-
-Q_SIGNALS:
-    void orientationChanged(int screen, QDisplayInfo::Orientation orientation);
-
-protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
-
-private Q_SLOTS:
-    void onDesktopWidgetResized(int screen);
-
-private:
-    QDisplayInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QDisplayInfo)
-
-    QDisplayInfo::Orientation getOrientation(int screen);
-
-    bool watchOrientation;
-    QMap<int, QDisplayInfo::Orientation> currentOrientation;
-};
-
-QT_END_NAMESPACE
-
-#endif // QDISPLAYINFO_LINUX_P_H
+    return 0;
+}

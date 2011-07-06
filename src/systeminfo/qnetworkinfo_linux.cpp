@@ -51,7 +51,8 @@
 
 #if !defined(QT_NO_BLUEZ)
 #include <bluetooth/bluetooth.h>
-#include <bluetooth/bnep.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
 #endif // QT_NO_BLUEZ
 
 #include <math.h>
@@ -86,8 +87,21 @@ int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
     case QNetworkInfo::EthernetMode:
         return QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).size();
 
-    case QNetworkInfo::BluetoothMode:
-        return QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size();
+    case QNetworkInfo::BluetoothMode: {
+#if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
+            return -1;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        int count = -1;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0)
+            count = deviceList->dev_num;
+        free(deviceList);
+        close(ctl);
+        return count;
+#endif // QT_NO_BLUEZ
+    }
 
 //    case QNetworkInfo::GsmMode:
 //    case QNetworkInfo::CdmaMode:
@@ -149,7 +163,47 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
 #endif // QT_NO_OFONO
         break;
 
-//    case QNetworkInfo::BluetoothMode:
+    case QNetworkInfo::BluetoothMode: {
+        int signalStrength = -1;
+#if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
+            break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                signalStrength = 0; // Valid interface
+
+                struct hci_conn_list_req *connectionList = (struct hci_conn_list_req *)malloc(sizeof(struct hci_conn_info) + sizeof(struct hci_conn_list_req));
+                connectionList->dev_id = (deviceList->dev_req + interface)->dev_id;
+                connectionList->conn_num = 1;
+                if (ioctl(ctl, HCIGETCONNLIST, connectionList) == 0) {
+                    if (connectionList->conn_num == 1) {
+                        int fd = hci_open_dev((deviceList->dev_req + interface)->dev_id);
+                        if (fd > 0) {
+                            struct hci_conn_info_req *connectionInfo = (struct hci_conn_info_req *)malloc(sizeof(struct hci_conn_info_req) + sizeof(struct hci_conn_info));
+                            bacpy(&connectionInfo->bdaddr, &connectionList->conn_info->bdaddr);
+                            connectionInfo->type = ACL_LINK;
+                            if (ioctl(fd, HCIGETCONNINFO, connectionInfo) == 0) {
+                                uint8_t linkQuality;
+                                if (hci_read_link_quality(fd, htobs(connectionInfo->conn_info->handle), &linkQuality, 0) == 0)
+                                    signalStrength = linkQuality * 100 / 255;
+                            }
+                            free(connectionInfo);
+                        }
+                    }
+                }
+                free (connectionList);
+            }
+        }
+        free(deviceList);
+        close(ctl);
+#endif // QT_NO_BLUEZ
+        return signalStrength;
+    }
+
     default:
         break;
     };
@@ -236,30 +290,34 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
     }
 
     case QNetworkInfo::BluetoothMode: {
+        QNetworkInfo::NetworkStatus status = QNetworkInfo::UnknownStatus;
+
 #if !defined(QT_NO_BLUEZ)
-        // TODO multiple-interface support
-        int ctl = socket(PF_BLUETOOTH, SOCK_RAW, BTPROTO_BNEP);
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
         if (ctl < 0)
-            return QNetworkInfo::UnknownStatus;
-
-        struct bnep_conninfo info[36];
-        struct bnep_connlist_req req;
-
-        req.ci = info;
-        req.cnum = 36;
-
-        if (ioctl(ctl, BNEPGETCONNLIST, &req) < 0)
-            return QNetworkInfo::UnknownStatus;
-
-        for (uint j = 0; j< req.cnum; j++) {
-            if (info[j].state == BT_CONNECTED)
-                return QNetworkInfo::HomeNetwork;
+            break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                status = QNetworkInfo::NoNetworkAvailable; // Valid interface, so either not connected or connected
+                                                           // TODO add support for searching and denied
+                struct hci_conn_list_req *connectionList = (struct hci_conn_list_req *)malloc(sizeof(struct hci_conn_info) + sizeof(struct hci_conn_list_req));
+                connectionList->dev_id = (deviceList->dev_req + interface)->dev_id;
+                connectionList->conn_num = 1;
+                if (ioctl(ctl, HCIGETCONNLIST, connectionList) == 0) {
+                    if (connectionList->conn_num == 1)
+                        status = QNetworkInfo::HomeNetwork;
+                }
+                free (connectionList);
+            }
         }
-
+        free(deviceList);
         close(ctl);
 #endif // QT_NO_BLUEZ
 
-        return QNetworkInfo::UnknownStatus;
+        return status;
     }
 
     case QNetworkInfo::GsmMode:
@@ -457,13 +515,34 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
     }
 
     case QNetworkInfo::BluetoothMode: {
-        const QString dir = QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).at(interface);
-        if (dir.isEmpty())
+#if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
             break;
-        QFile carrier(BLUETOOTH_SYSFS_PATH + dir + QString::fromAscii("/address"));
-        if (carrier.open(QIODevice::ReadOnly))
-            return QString::fromAscii(carrier.readAll().simplified());
-        break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        QString macAddress;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                struct hci_dev_info deviceInfo;
+                deviceInfo.dev_id = (deviceList->dev_req + interface)->dev_id;
+                if (ioctl(ctl, HCIGETDEVINFO, &deviceInfo) == 0) {
+                    if (hci_test_bit(HCI_RAW, &deviceInfo.flags) && !bacmp(&deviceInfo.bdaddr, BDADDR_ANY)) {
+                        int hciDevice = hci_open_dev(deviceInfo.dev_id);
+                        hci_read_bd_addr(hciDevice, &deviceInfo.bdaddr, 1000);
+                        hci_close_dev(hciDevice);
+                    }
+                    char address[18];
+                    ba2str(&deviceInfo.bdaddr, address);
+                    macAddress = QString::fromAscii(address);
+                }
+            }
+        }
+        free(deviceList);
+        close(ctl);
+        return macAddress;
+#endif // QT_NO_BLUEZ
     }
 
 //    case QNetworkInfo::GsmMode:
@@ -517,13 +596,28 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
     }
 
     case QNetworkInfo::BluetoothMode: {
-        const QString dir = QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).at(interface);
-        if (dir.isEmpty())
+#if !defined(QT_NO_BLUEZ)
+        int ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+        if (ctl < 0)
             break;
-        QFile carrier(BLUETOOTH_SYSFS_PATH + dir + QString::fromAscii("/name"));
-        if (carrier.open(QIODevice::ReadOnly))
-            return QString::fromAscii(carrier.readAll().simplified().data());
-        break;
+        struct hci_dev_list_req *deviceList = (struct hci_dev_list_req *)malloc(HCI_MAX_DEV * sizeof(struct hci_dev_req) + sizeof(uint16_t));
+        deviceList->dev_num = HCI_MAX_DEV;
+        QString networkName;
+        if (ioctl(ctl, HCIGETDEVLIST, deviceList) == 0) {
+            int count = deviceList->dev_num;
+            if (interface < count) {
+                int fd = hci_open_dev((deviceList->dev_req + interface)->dev_id);
+                if (fd > 0) {
+                    char name[249];
+                    if (hci_read_local_name(fd, sizeof(name), name, 0) == 0)
+                        networkName = QString::fromAscii(name);
+                }
+            }
+        }
+        free(deviceList);
+        close(ctl);
+        return networkName;
+#endif // QT_NO_BLUEZ
     }
 
     case QNetworkInfo::GsmMode:

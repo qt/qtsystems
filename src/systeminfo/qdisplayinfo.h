@@ -89,6 +89,10 @@ public:
 Q_SIGNALS:
     void orientationChanged(int screen, QDisplayInfo::Orientation orientation);
 
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     Q_DISABLE_COPY(QDisplayInfo)
     QDisplayInfoPrivate * const d_ptr;

@@ -54,7 +54,9 @@
 QT_BEGIN_NAMESPACE
 
 QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
-    : q_ptr(parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , watchOrientation(false)
 {
 }
 
@@ -177,6 +179,42 @@ QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
 }
 
 QDisplayInfo::Orientation QDisplayInfoPrivate::orientation(int screen)
+{
+    if (watchOrientation)
+        return currentOrientation[screen];
+    return getOrientation(screen);
+}
+
+void QDisplayInfoPrivate::connectNotify(const char *signal)
+{
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
+        watchOrientation = true;
+        int count = qApp->desktop()->screenCount();
+        for (int i = 0; i < count; ++i)
+            currentOrientation[i] = getOrientation(i);
+        connect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
+    }
+}
+
+void QDisplayInfoPrivate::disconnectNotify(const char *signal)
+{
+    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
+        watchOrientation = false;
+        currentOrientation.clear();
+        disconnect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
+    }
+}
+
+void QDisplayInfoPrivate::onDesktopWidgetResized(int screen)
+{
+    QDisplayInfo::Orientation current = getOrientation(screen);
+    if (currentOrientation[screen] != current) {
+        currentOrientation[screen] = current;
+        Q_EMIT orientationChanged(screen, current);
+    }
+}
+
+QDisplayInfo::Orientation QDisplayInfoPrivate::getOrientation(int screen)
 {
 #if defined(Q_WS_X11)
     Rotation rotation;

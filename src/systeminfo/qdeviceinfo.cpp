@@ -119,8 +119,10 @@ QT_BEGIN_NAMESPACE
     \enum QDeviceInfo::Version
     This enum describes the version component.
 
-    \value Os                    Operating system version / platform ID.
-    \value Firmware              Version of (flashable) system as a whole.
+    \value Os                    Operating system version / platform ID. For Linux, it returns the
+                                 version of the distribution if any.
+    \value Firmware              Version of (flashable) system as a whole. For Linux, it's the version
+                                 of the kernel.
 */
 
 /*!
@@ -234,6 +236,8 @@ QString QDeviceInfo::model() const
 /*!
     Returns the internal product name of the device, e.g. RM-774. In case of error, or the information
     is not available, an empty string is returned.
+
+    For Linux, it returns the codename of the distribution if any.
 */
 QString QDeviceInfo::productName() const
 {
