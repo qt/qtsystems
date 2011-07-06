@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -226,6 +226,7 @@ bool ServiceMetaData::extractMetadata()
     bool parseError = false;
     //Open xml file
     if (!xmlDevice->isOpen() && !xmlDevice->open(QIODevice::ReadOnly)) {
+        qWarning() << xmlDevice->errorString();
         latestError = ServiceMetaData::SFW_ERROR_UNABLE_TO_OPEN_FILE;
         parseError = true;
     } else {

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>WayneEnt</name>
+    <filepath>C:/Gotham/knight.dll</filepath>
+    <interface>
+        <name>com.omni.device.Accelerometer</name>
+        <version>2.0</version>
+        <capabilities>SurroundingsDD</capabilities>
+        <description>Interface that provides accelerometer readings</description>
+    </interface>
+</service>
+

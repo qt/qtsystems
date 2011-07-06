@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>TestService</name>
+    <filepath>plugins/tst_sfw_testservice2plugin</filepath>
+    <description>SFW test service</description>
+    <interface>
+        <name>com.nokia.qt.ISimpleTypeTest</name>
+        <version>1.0</version>
+        <capabilities>simple</capabilities>
+        <description>APIs to test simple types</description>
+    </interface>
+    <interface>
+        <name>com.nokia.qt.IComplexTypeTest</name>
+        <version>2.3</version>
+        <capabilities>complex,simple</capabilities>
+        <description>APIs to test complex types</description>
+    </interface>
+</service>

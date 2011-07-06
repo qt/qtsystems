@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>acme</name>
+    <filepath>C:/TestData/testservice.dll</filepath>
+    <description>Acme services</description> 
+    <interface>
+        <name>com.acme.service.downloader</name>
+        <version>1.0</version>
+        <description>Interface that provides download support</description> 
+    </interface>
+    <interface>
+        <name>com.acme.service.location</name>
+        <version>1.0</version>
+        <capabilities></capabilities>
+        <description>Interface that provides location support</description>
+        <customproperty key="coordinate">global</customproperty>
+    </interface>
+    <interface>
+        <name>com.acme.device.sysinfo</name>
+        <capabilities>ReadUserData</capabilities>
+        <version>2.3</version>
+        <description>Interface that provides system information support</description> 
+        <customproperty key="cpu"></customproperty>
+    </interface>  
+    <interface>
+        <name>com.acme.device.sendMessage</name>
+        <capabilities>ReadUserData,WriteUserData</capabilities>
+        <version>3.0</version>
+        <description>Interface that provides message sending support</description> 
+        <customproperty key="smtp">smtp.mail.com</customproperty>
+    </interface>
+    <interface>
+        <name>com.acme.device.receiveMessage</name>
+        <version>1.1</version>
+        <capabilities>ReadUserData,WriteUserData,ExecUserData</capabilities>
+        <description>Interface that provides message receiving support</description> 
+        <customproperty key="imap">imap.mail.com</customproperty>
+        <customproperty key="pop">pop.mail.com</customproperty>
+    </interface>
+</service>

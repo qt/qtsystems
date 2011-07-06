@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SFW version="1.1">
+<service>
+    <name>TestService</name>
+    <filepath>testdata/testservice.dll</filepath>
+    <interface>
+        <name>com.nokia.qt.tests.IDownloader</name>
+        <description>Interface that provides download support</description>
+    </interface>
+</service>
+</SFW>

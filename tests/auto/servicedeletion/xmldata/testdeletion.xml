@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SFW version="1.1">
+<service>
+    <name>TestService</name>
+    <ipcaddress>test_service</ipcaddress>
+    <description>Test Service</description>
+    <interface>
+        <name>com.nokia.test.services.TestService</name>
+        <version>1.0</version>
+        <description>Test service</description>
+        <capabilities></capabilities>
+    </interface>
+</service>
+</SFW>

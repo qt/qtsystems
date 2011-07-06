@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -452,6 +452,7 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
                 //try to create it
                 semaphore.setKey(descriptor.serviceName(), 1, QSystemSemaphore::Create);
             }
+
             if (semaphore.error() == QSystemSemaphore::NoError && semaphore.acquire()) {
                 pluginIFace->installService();
                 DatabaseManager::DbScope scope = d->scope == QService::UserScope ?
@@ -459,9 +460,11 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
                 d->dbManager->serviceInitialized(descriptor.serviceName(), scope);
                 // release semaphore
                 semaphore.release();
-            }
-            else
+            } else {
+                qWarning() << semaphore.errorString();
                 doLoading = false;
+
+            }
         }
 
         if (doLoading) {
@@ -470,8 +473,15 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
                 QServicePluginCleanup *cleanup = new QServicePluginCleanup(loader);
                 QObject::connect(obj, SIGNAL(destroyed()), cleanup, SLOT(deleteLater()));
                 return obj;
+            } else {
+                qWarning() << "Cannot create object instance for "
+                     << descriptor.interfaceName() << ":"
+                     << serviceFilePath;
             }
+
         }
+    } else {
+        qWarning() << "QServiceManager::loadInterface():" << serviceFilePath << loader->errorString();
     }
 
     //loader->unload();
@@ -606,6 +616,9 @@ bool QServiceManager::addService(QIODevice *device)
         } else {
             d->setError(PluginLoadingFailed);
             result = false;
+            qWarning() << "QServiceManager::addService()"  << data.location << "->"
+                << qservicemanager_resolveLibraryPath(data.location) << ":"
+                << loader->errorString() << " - Aborting registration";
             d->dbManager->unregisterService(data.name, scope);
         }
         //loader->unload();

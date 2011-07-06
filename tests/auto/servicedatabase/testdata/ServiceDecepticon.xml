@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>Decepticon</name>
+    <filepath>C:/Cybertron/unicron.dll</filepath>
+    <description>Decepticon Elimination Services</description>
+    <interface>
+        <name>com.cybertron.transform</name> 
+        <version>2.0</version>
+        <capabilities>hunt,spy,kill</capabilities>
+        <description>Transformation interface</description>
+    </interface>
+    <interface>
+        <name>com.cybertron.transform</name> 
+        <version>1.1</version>
+        <capabilities>hunt</capabilities>
+        <description>Transformation interface</description>
+        <customproperty key="weapon"></customproperty>
+    </interface>
+    <interface>
+        <name>com.cybertron.transform</name> 
+        <version>5.3</version>
+        <capabilities></capabilities>
+        <description>Transformation interface</description>
+    </interface>
+    <interface>
+        <name>com.cybertron.transform</name> 
+        <version>2.5</version>
+        <capabilities>hunt,spy</capabilities>
+        <description>Transformation interface</description>
+    </interface>  
+</service>

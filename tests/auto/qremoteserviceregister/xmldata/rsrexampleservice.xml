@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SFW version="1.1">
+<service>
+    <name>RSRExampleService</name>
+    <ipcaddress>qt_sfw_example_rsr_unittest</ipcaddress>
+    <description>Example service</description>
+    <interface>
+        <name>com.nokia.qt.rsrunittest</name>
+        <version>1.0</version>
+        <description>test code that tests the QRemoteServiceRegister class</description>
+        <capabilities></capabilities>
+    </interface>
+</service>
+</SFW>

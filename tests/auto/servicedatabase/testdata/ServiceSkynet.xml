@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>skynet</name>
+    <filepath>C:/California/dyson.dll</filepath>
+    <description>Skynet Termination Services</description>
+    <interface>
+        <name>com.cyberdyne.terminator</name>
+        <version>3.6</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800</description>
+    </interface> 
+    <interface>
+        <name>com.cyberdyne.terminator</name>
+        <version>2.0</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800</description>
+    </interface> 
+    <interface>
+        <name>com.cyberdyne.terminator</name>
+        <version>1.8</version>
+        <capabilities>NetworkServices</capabilities>
+    </interface> 
+    <interface>
+        <name>com.cyberdyne.terminator</name>
+        <version>1.6</version>
+        <capabilities>NetworkServices</capabilities>
+        <description></description>
+    </interface> 
+    <interface>
+        <name>com.cyberdyne.terminator</name>
+        <version>1.5</version>
+        <capabilities>NetworkServices</capabilities>
+        <description>Remote communications interface for the T-800v1.5</description>
+    </interface> 
+</service>
+

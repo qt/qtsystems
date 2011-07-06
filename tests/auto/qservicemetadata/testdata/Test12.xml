@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SFW version="1.0">
+<service>
+    <name>TestService</name>
+    <description>Test service description</description> 
+    <interface>
+        <name>com.nokia.qt.tests.Interface1</name>
+        <version>1.456</version>
+        <capabilities>ReadUserData,WriteUserData</capabilities>
+        <description>First test interface description</description> 
+    </interface>
+</service>
+</SFW>
+
+
+

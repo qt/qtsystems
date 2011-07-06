@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>Yamagato</name>
+    <filepath>C:/NewYork/kensei.dll</filepath>
+    <description>Yamagato Industries</description>
+    <interface>
+        <name>com.yamagato.light</name>
+        <version>1.4</version>
+        <capabilities></capabilities>
+        <description>Interface that controls lights</description>
+    </interface>    
+    <interface>
+        <name>com.omni.device.Accelerometer</name> 
+        <version>1.2</version>
+        <capabilities>SurroundingsDD</capabilities>
+       <description>Interface that provides accelerometer readings</description>
+    </interface>
+</service>
+

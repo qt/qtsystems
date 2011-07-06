@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>ovi</name>
+    <filepath>C:/Nokia/ovi.dll</filepath>
+    <description>Ovi Services</description>
+   <interface>
+        <name>com.nokia.service.contacts</name>
+        <version>1.7</version>
+        <capabilities>ReadUserData,WriteUserData</capabilities>
+        <description>Contacts management service</description>
+    </interface>
+</service>
+ 

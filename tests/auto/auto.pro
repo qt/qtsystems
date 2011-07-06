@@ -3,4 +3,13 @@ SUBDIRS += qdeviceinfo \
            qdisplayinfo \
            qstorageinfo \
            qbatteryinfo \
-           qvaluespace
+           qvaluespace \
+           qabstractsecuritysession \
+           qremoteserviceregister \
+           qservicecontext \
+           qservicefilter \
+           qserviceinterfacedescriptor \
+           qservicemanager \
+           qservicemetadata \
+           servicedeletion
+#           servicedatabase \

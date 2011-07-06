@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<service>
+    <name>DharmaInitiative</name>
+    <filepath>C:/island/swan.dll</filepath>
+    <description>Department of Heuristics And Research on Material Applications(S)</description>
+    <interface>
+        <name>com.dhARMa.electro.discharge</name>
+        <version>4.0</version>
+        <capabilities></capabilities>
+        <description>Releases electromagnetic energy buildup every 108 minutes</description>
+    </interface>    
+</service>
