@@ -53,5 +53,6 @@ executeTest($basedir, $out_basedir, "failed");
 executeTest($basedir, $out_basedir, "gconf");
 executeTest($basedir, $out_basedir, "contextkit");
 executeTest($basedir, $out_basedir, "blkid");
+executeTest($basedir, $out_basedir, "bluez");
 
 1;
