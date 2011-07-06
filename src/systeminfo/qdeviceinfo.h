@@ -80,7 +80,8 @@ public:
         Sim,
         Positioning,
         VideoOut,
-        Haptics
+        Haptics,
+        Nfc
     };
 
     enum LockType {
@@ -111,17 +112,21 @@ public:
     QDeviceInfo::ThermalState thermalState() const;
 
     Q_INVOKABLE bool hasFeature(QDeviceInfo::Feature feature) const;
-    Q_INVOKABLE QByteArray uniqueDeviceID() const;
-    Q_INVOKABLE QString imei() const;
+    Q_INVOKABLE QString imei(int interface) const;
     Q_INVOKABLE QString manufacturer() const;
     Q_INVOKABLE QString model() const;
     Q_INVOKABLE QString productName() const;
+    Q_INVOKABLE QString uniqueDeviceID() const;
     Q_INVOKABLE QString version(QDeviceInfo::Version type) const;
 
 Q_SIGNALS:
     void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
     void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
     void thermalStateChanged(QDeviceInfo::ThermalState state);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
 
 private:
     Q_DISABLE_COPY(QDeviceInfo)

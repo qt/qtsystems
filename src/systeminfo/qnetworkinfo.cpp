@@ -52,6 +52,7 @@ class QNetworkInfoPrivate
 public:
     QNetworkInfoPrivate(QNetworkInfo *) {}
 
+    int networkInterfaceCount(QNetworkInfo::NetworkMode) { return -1; }
     int networkSignalStrength(QNetworkInfo::NetworkMode, int) { return -1; }
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(int) { return QNetworkInfo::UnknownDataTechnology; }
     QNetworkInfo::NetworkMode currentNetworkMode() { return QNetworkInfo::UnknownMode; }
@@ -117,10 +118,9 @@ QT_BEGIN_NAMESPACE
     \value EmergencyOnly        The network only allows emergency calls.
     \value Searching            The device is searching or connecting to the network.
     \value Busy                 The network is too busy to be connected.
-    \value Connected            The device has successfully connected to the network.
     \value Denied               The connection to the network has been denied.
-    \value HomeNetwork          The device is on home network. It suggests the Connected status.
-    \value Roaming              The device is on roaming network. It suggests the Connected status.
+    \value HomeNetwork          The device is connected to the home network.
+    \value Roaming              The device is connected to some roaming network.
 */
 
 /*!
@@ -162,6 +162,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QNetworkInfo::networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count)
+
+    This signal is emitted whenever the number of interfaces for the \a mode has changed to \a count.
+*/
+
+/*!
     \fn void QNetworkInfo::networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
 
     This signal is emitted whenever the name for the \a interface of \a mode has changed to \a name.
@@ -195,6 +201,15 @@ QNetworkInfo::QNetworkInfo(QObject *parent)
 QNetworkInfo::~QNetworkInfo()
 {
     delete d_ptr;
+}
+
+/*!
+    Returns the number of interfaces for the \a mode. If the information is not available, or error
+    occurs, -1 is returned.
+*/
+int QNetworkInfo::networkInterfaceCount(QNetworkInfo::NetworkMode mode) const
+{
+    return d_ptr->networkInterfaceCount(mode);
 }
 
 /*!

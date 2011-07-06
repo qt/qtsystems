@@ -62,17 +62,41 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_OFONO)
-Q_GLOBAL_STATIC(QOfonoWrapper, ofonoWrapper)
-#endif // QT_NO_OFONO
-
 static const QString BLUETOOTH_SYSFS_PATH(QString::fromAscii("/sys/class/bluetooth/"));
 static const QString NETWORK_SYSFS_PATH(QString::fromAscii("/sys/class/net/"));
+
+static const QStringList WLAN_MASK(QString::fromAscii("wlan*"));
+static const QStringList ETHERNET_MASK(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*"));
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
+#if !defined(QT_NO_OFONO)
+    , ofonoWrapper(0)
+#endif // QT_NO_OFONO
 {
+}
+
+int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
+{
+    switch(mode) {
+    case QNetworkInfo::WlanMode:
+        return QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).size();
+
+    case QNetworkInfo::EthernetMode:
+        return QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).size();
+
+    case QNetworkInfo::BluetoothMode:
+        return QDir(BLUETOOTH_SYSFS_PATH).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size();
+
+//    case QNetworkInfo::GsmMode:
+//    case QNetworkInfo::CdmaMode:
+//    case QNetworkInfo::WcdmaMode:
+//    case QNetworkInfo::WimaxMode:
+//    case QNetworkInfo::LteMode:
+    default:
+        return -1;
+    };
 }
 
 int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
@@ -104,7 +128,7 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
     }
 
     case QNetworkInfo::EthernetMode:
-        if (networkStatus(QNetworkInfo::EthernetMode, interface) == QNetworkInfo::Connected)
+        if (networkStatus(QNetworkInfo::EthernetMode, interface) == QNetworkInfo::HomeNetwork)
             return 100;
         else
             return -1;
@@ -115,10 +139,12 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
     case QNetworkInfo::WimaxMode:
     case QNetworkInfo::LteMode:
 #if !defined(QT_NO_OFONO)
-        if (ofonoWrapper()->isOfonoAvailable()) {
-            QString modem = ofonoWrapper()->allModems().at(interface);
+        if (QOfonoWrapper::isOfonoAvailable()) {
+            if (!ofonoWrapper)
+                ofonoWrapper = new QOfonoWrapper(this);
+            QString modem = ofonoWrapper->allModems().at(interface);
             if (!modem.isEmpty())
-                return ofonoWrapper()->signalStrength(modem);
+                return ofonoWrapper->signalStrength(modem);
         }
 #endif // QT_NO_OFONO
         break;
@@ -134,10 +160,12 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
 QNetworkInfo::CellDataTechnology QNetworkInfoPrivate::currentCellDataTechnology(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->currentCellDataTechnology(modem);
+            return ofonoWrapper->currentCellDataTechnology(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -148,21 +176,31 @@ QNetworkInfo::CellDataTechnology QNetworkInfoPrivate::currentCellDataTechnology(
 QNetworkInfo::NetworkMode QNetworkInfoPrivate::currentNetworkMode()
 {
     // TODO multiple-interface support
-    if (networkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::Connected)
+    if (networkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::EthernetMode;
-    else if (networkStatus(QNetworkInfo::WlanMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WlanMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WlanMode;
-    else if (networkStatus(QNetworkInfo::BluetoothMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::BluetoothMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::BluetoothMode;
-    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WimaxMode;
-    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::LteMode;
-    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WcdmaMode;
-    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::CdmaMode;
+    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::GsmMode;
-    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Connected)
+    else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WimaxMode;
+    else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::LteMode;
+    else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WcdmaMode;
+    else if (networkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::CdmaMode;
+    else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::GsmMode;
     else
         return QNetworkInfo::UnknownMode;
@@ -172,27 +210,27 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             return QNetworkInfo::UnknownStatus;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/carrier"));
         if (carrier.open(QIODevice::ReadOnly)) {
             char state;
             if (carrier.read(&state, 1) == 1 && state == '1')
-                return QNetworkInfo::Connected;
+                return QNetworkInfo::HomeNetwork;
         }
         return QNetworkInfo::NoNetworkAvailable;
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
         if (dir.isEmpty())
             return QNetworkInfo::UnknownStatus;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/carrier"));
         if (carrier.open(QIODevice::ReadOnly)) {
             char state;
             if (carrier.read(&state, 1) == 1 && state == '1')
-                return QNetworkInfo::Connected;
+                return QNetworkInfo::HomeNetwork;
         }
         return QNetworkInfo::NoNetworkAvailable;
     }
@@ -215,7 +253,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
 
         for (uint j = 0; j< req.cnum; j++) {
             if (info[j].state == BT_CONNECTED)
-                return QNetworkInfo::Connected;
+                return QNetworkInfo::HomeNetwork;
         }
 
         close(ctl);
@@ -230,10 +268,12 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
     case QNetworkInfo::WimaxMode:
     case QNetworkInfo::LteMode:
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper()->networkStatus(modem);
+        if (QOfonoWrapper::isOfonoAvailable()) {
+            if (!ofonoWrapper)
+                ofonoWrapper = new QOfonoWrapper(this);
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->networkStatus(modem);
     }
 #endif
         break;
@@ -249,7 +289,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QNetworkInterface interface = QNetworkInterface::interfaceFromName(dir);
@@ -259,7 +299,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QNetworkInterface interface = QNetworkInterface::interfaceFromName(dir);
@@ -284,10 +324,12 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 QString QNetworkInfoPrivate::cellId(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->cellId(modem);
+            return ofonoWrapper->cellId(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -298,10 +340,12 @@ QString QNetworkInfoPrivate::cellId(int interface)
 QString QNetworkInfoPrivate::currentMobileCountryCode(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->currentMcc(modem);
+            return ofonoWrapper->currentMcc(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -312,10 +356,12 @@ QString QNetworkInfoPrivate::currentMobileCountryCode(int interface)
 QString QNetworkInfoPrivate::currentMobileNetworkCode(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->currentMnc(modem);
+            return ofonoWrapper->currentMnc(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -326,10 +372,12 @@ QString QNetworkInfoPrivate::currentMobileNetworkCode(int interface)
 QString QNetworkInfoPrivate::homeMobileCountryCode(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->homeMcc(modem);
+            return ofonoWrapper->homeMcc(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -340,10 +388,12 @@ QString QNetworkInfoPrivate::homeMobileCountryCode(int interface)
 QString QNetworkInfoPrivate::homeMobileNetworkCode(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->homeMnc(modem);
+            return ofonoWrapper->homeMnc(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -354,10 +404,12 @@ QString QNetworkInfoPrivate::homeMobileNetworkCode(int interface)
 QString QNetworkInfoPrivate::imsi(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->imsi(modem);
+            return ofonoWrapper->imsi(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -368,10 +420,12 @@ QString QNetworkInfoPrivate::imsi(int interface)
 QString QNetworkInfoPrivate::locationAreaCode(int interface)
 {
 #if !defined(QT_NO_OFONO)
-    if (ofonoWrapper()->isOfonoAvailable()) {
-        QString modem = ofonoWrapper()->allModems().at(interface);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        QString modem = ofonoWrapper->allModems().at(interface);
         if (!modem.isEmpty())
-            return ofonoWrapper()->lac(modem);
+            return ofonoWrapper->lac(modem);
     }
 #else
     Q_UNUSED(interface)
@@ -383,7 +437,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/address"));
@@ -393,7 +447,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
         if (dir.isEmpty())
             break;
         QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/address"));
@@ -428,7 +482,7 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
 {
     switch(mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("wlan*")).at(interface);
+        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
             break;
         int sock = socket(PF_INET, SOCK_DGRAM, 0);
@@ -478,10 +532,12 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
     case QNetworkInfo::WimaxMode:
     case QNetworkInfo::LteMode:
 #if !defined(QT_NO_OFONO)
-        if (ofonoWrapper()->isOfonoAvailable()) {
-            QString modem = ofonoWrapper()->allModems().at(interface);
+        if (QOfonoWrapper::isOfonoAvailable()) {
+            if (!ofonoWrapper)
+                ofonoWrapper = new QOfonoWrapper(this);
+            QString modem = ofonoWrapper->allModems().at(interface);
             if (!modem.isEmpty())
-                return ofonoWrapper()->operatorName(modem);
+                return ofonoWrapper->operatorName(modem);
         }
 #endif // QT_NO_OFONO
         break;
@@ -496,7 +552,11 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
 void QNetworkInfoPrivate::connectNotify(const char *signal)
 {
 #if !defined(QT_NO_OFONO)
-    connect(ofonoWrapper(), signal, this, signal, Qt::UniqueConnection);
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        connect(ofonoWrapper, signal, this, signal, Qt::UniqueConnection);
+    }
 #else
     Q_UNUSED(signal)
 #endif // QT_NO_OFONO
@@ -505,7 +565,10 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
 void QNetworkInfoPrivate::disconnectNotify(const char *signal)
 {
 #if !defined(QT_NO_OFONO)
-    disconnect(ofonoWrapper(), signal, this, signal);
+    if (!QOfonoWrapper::isOfonoAvailable() || !ofonoWrapper)
+        return;
+
+    disconnect(ofonoWrapper, signal, this, signal);
 #else
     Q_UNUSED(signal)
 #endif // QT_NO_OFONO

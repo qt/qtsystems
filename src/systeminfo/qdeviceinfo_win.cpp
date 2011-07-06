@@ -70,6 +70,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
     case QDeviceInfo::Positioning:
     case QDeviceInfo::VideoOut:
     case QDeviceInfo::Haptics:
+    case QDeviceInfo::Nfc:
         return false;
     }
 }
@@ -104,17 +105,9 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
     return QDeviceInfo::UnknownThermal;
 }
 
-QByteArray QDeviceInfoPrivate::uniqueDeviceID()
+QString QDeviceInfoPrivate::imei(int interface)
 {
-    if (deviceID.isEmpty()) {
-        QSettings deviceIDSetting("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", QSettings::NativeFormat);
-        deviceID = deviceIDSetting.value("ProductId").toByteArray();
-    }
-    return deviceID;
-}
-
-QString QDeviceInfoPrivate::imei()
-{
+    Q_UNUSED(interface)
     return QString();
 }
 
@@ -139,6 +132,15 @@ QString QDeviceInfoPrivate::productName()
         systemProductName = productNameSetting.value("SystemProductName").toString();
     }
     return systemProductName;
+}
+
+QString QDeviceInfoPrivate::uniqueDeviceID()
+{
+    if (deviceID.isEmpty()) {
+        QSettings deviceIDSetting("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", QSettings::NativeFormat);
+        deviceID = deviceIDSetting.value("ProductId").toString();
+    }
+    return deviceID;
 }
 
 QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)

@@ -88,7 +88,6 @@ public:
         EmergencyOnly,
         Searching,
         Busy,
-        Connected,
         Denied,
         HomeNetwork,
         Roaming
@@ -97,6 +96,7 @@ public:
     QNetworkInfo(QObject *parent = 0);
     virtual ~QNetworkInfo();
 
+    Q_INVOKABLE int networkInterfaceCount(QNetworkInfo::NetworkMode mode) const;
     Q_INVOKABLE int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface) const;
     Q_INVOKABLE QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface) const;
     Q_INVOKABLE QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface) const;
@@ -120,6 +120,7 @@ Q_SIGNALS:
     void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
     void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
     void locationAreaCodeChanged(int interface, const QString &lac);
+    void networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
     void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
     void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
     void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);

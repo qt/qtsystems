@@ -53,12 +53,20 @@ class tst_QDisplayInfo : public QObject
 private slots:
     void tst_colorDepth();
     void tst_contrast();
-    void tst_displayBrightness();
+    void tst_brightness();
     void tst_dpiX();
     void tst_dpiY();
     void tst_physicalHeight();
     void tst_physicalWidth();
 };
+
+void tst_QDisplayInfo::tst_brightness()
+{
+    QDisplayInfo displayInfo;
+
+    QVERIFY(-1 == displayInfo.brightness(-1));
+    QVERIFY(-1 == displayInfo.brightness(QApplication::desktop()->screenCount()));
+}
 
 void tst_QDisplayInfo::tst_contrast()
 {
@@ -74,14 +82,6 @@ void tst_QDisplayInfo::tst_colorDepth()
 
     QVERIFY(-1 == displayInfo.colorDepth(-1));
     QVERIFY(-1 == displayInfo.colorDepth(QApplication::desktop()->screenCount()));
-}
-
-void tst_QDisplayInfo::tst_displayBrightness()
-{
-    QDisplayInfo displayInfo;
-
-    QVERIFY(-1 == displayInfo.displayBrightness(-1));
-    QVERIFY(-1 == displayInfo.displayBrightness(QApplication::desktop()->screenCount()));
 }
 
 void tst_QDisplayInfo::tst_dpiX()

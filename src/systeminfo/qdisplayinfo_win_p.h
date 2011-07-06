@@ -65,14 +65,15 @@ public:
     QDisplayInfoPrivate(QDisplayInfo *parent);
     ~QDisplayInfoPrivate();
 
+    int brightness(int screen);
     int colorDepth(int screen);
     int contrast(int screen);
-    int displayBrightness(int screen);
     int dpiX(int screen);
     int dpiY(int screen);
     int physicalHeight(int screen);
     int physicalWidth(int screen);
     QDisplayInfo::BacklightState backlightState(int screen);
+    QDisplayInfo::Orientation orientation(int screen);
 
 private:
     QDisplayInfo * const q_ptr;
