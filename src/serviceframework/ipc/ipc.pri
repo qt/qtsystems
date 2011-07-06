@@ -6,7 +6,7 @@ symbian {
         ipc/objectendpoint.cpp
 }
 else {
-    contains(QT_CONFIG,dbus) {
+    contains(QT_CONFIG,dbus3) {
         DEFINES += SFW_USE_DBUS_BACKEND
         QT += dbus \
             network
