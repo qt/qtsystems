@@ -55,11 +55,21 @@
 
 #include <qnetworkinfo.h>
 
+#include <QtCore/qmap.h>
+
 QT_BEGIN_NAMESPACE
+
+class QTimer;
 
 #if !defined(QT_NO_OFONO)
 class QOfonoWrapper;
 #endif // QT_NO_OFONO
+
+#if !defined(QT_NO_UDEV)
+class QSocketNotifier;
+struct udev;
+struct udev_monitor;
+#endif // QT_NO_UDEV
 
 class QNetworkInfoPrivate : public QObject
 {
@@ -67,6 +77,7 @@ class QNetworkInfoPrivate : public QObject
 
 public:
     QNetworkInfoPrivate(QNetworkInfo *parent);
+    ~QNetworkInfoPrivate();
 
     int networkInterfaceCount(QNetworkInfo::NetworkMode mode);
     int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
@@ -100,13 +111,45 @@ protected:
     void connectNotify(const char *signal);
     void disconnectNotify(const char *signal);
 
+private Q_SLOTS:
+#if !defined(QT_NO_UDEV)
+    void onUdevChanged();
+#endif // QT_NO_UDEV
+
+    void onTimeout();
+
 private:
     QNetworkInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QNetworkInfo)
 
+    int getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode);
+    int getNetworkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
+    QNetworkInfo::NetworkMode getCurrentNetworkMode();
+    QNetworkInfo::NetworkStatus getNetworkStatus(QNetworkInfo::NetworkMode mode, int interface);
+    QString getNetworkName(QNetworkInfo::NetworkMode mode, int interface);
+
+    bool watchCurrentNetworkMode;
+    bool watchNetworkInterfaceCount;
+    bool watchNetworkSignalStrength;
+    bool watchNetworkStatus;
+    bool watchNetworkName;
+    QNetworkInfo::NetworkMode currentMode;
+    QMap<QNetworkInfo::NetworkMode, int> networkInterfaceCounts;
+    QMap<QPair<QNetworkInfo::NetworkMode, int>, int> networkSignalStrengths;
+    QMap<QPair<QNetworkInfo::NetworkMode, int>, QNetworkInfo::NetworkStatus> networkStatuses;
+    QMap<QPair<QNetworkInfo::NetworkMode, int>, QString> networkNames;
+
+    QTimer *timer;
+
 #if !defined(QT_NO_OFONO)
     QOfonoWrapper *ofonoWrapper;
 #endif // QT_NO_OFONO
+
+#if !defined(QT_NO_UDEV)
+    QSocketNotifier *udevNotifier;
+    struct udev *udevHandle;
+    struct udev_monitor *udevMonitor;
+#endif // QT_NO_UDEV
 };
 
 QT_END_NAMESPACE

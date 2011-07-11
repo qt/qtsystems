@@ -115,6 +115,14 @@ linux-* {
     } else {
         DEFINES += QT_NO_BLKID
     }
+
+    contains(udev_enabled, yes) {
+        CONFIG += link_pkgconfig
+        PKGCONFIG += udev
+        LIBS += -ludev
+    } else {
+        DEFINES += QT_NO_UDEV
+    }
 }
 
 HEADERS = qtsysteminfoversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS
