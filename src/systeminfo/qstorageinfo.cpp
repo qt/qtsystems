@@ -114,8 +114,7 @@ QStorageInfo::~QStorageInfo()
 */
 QStringList QStorageInfo::allLogicalDrives()
 {
-    QStorageInfoPrivate priv(0);
-    return priv.allLogicalDrives();
+    return d_ptr->allLogicalDrives();
 }
 
 /*!

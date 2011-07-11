@@ -73,7 +73,7 @@ public:
     QStorageInfo(QObject *parent = 0);
     virtual ~QStorageInfo();
 
-    static QStringList allLogicalDrives();
+    QStringList allLogicalDrives();
 
     Q_INVOKABLE qlonglong availableDiskSpace(const QString &drive) const;
     Q_INVOKABLE qlonglong totalDiskSpace(const QString &drive) const;

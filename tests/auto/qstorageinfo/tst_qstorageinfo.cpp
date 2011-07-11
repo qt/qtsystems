@@ -55,7 +55,7 @@ private slots:
 void tst_QStorageInfo::tst_diskSpace()
 {
     QStorageInfo storageInfo;
-    QStringList drives = QStorageInfo::allLogicalDrives();
+    QStringList drives = storageInfo.allLogicalDrives();
     foreach (const QString &drive, drives) {
         qlonglong available = storageInfo.availableDiskSpace(drive);
         qlonglong total = storageInfo.totalDiskSpace(drive);
