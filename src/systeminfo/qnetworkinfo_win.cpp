@@ -51,7 +51,7 @@ QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
 
 int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
     case QNetworkInfo::BluetoothMode:
@@ -70,7 +70,7 @@ int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
 
 int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
     case QNetworkInfo::BluetoothMode:
@@ -128,7 +128,7 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::currentNetworkMode()
 
 QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
     case QNetworkInfo::BluetoothMode:
@@ -149,7 +149,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
 
 QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
 
@@ -210,7 +210,7 @@ QString QNetworkInfoPrivate::locationAreaCode(int interface)
 
 QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
     case QNetworkInfo::BluetoothMode:
@@ -229,7 +229,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
 
 QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
     case QNetworkInfo::BluetoothMode:

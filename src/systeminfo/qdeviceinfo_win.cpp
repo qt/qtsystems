@@ -145,7 +145,7 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
 
 QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
-    switch(type) {
+    switch (type) {
     case QDeviceInfo::Os:
         if (osVersion.isEmpty()) {
             OSVERSIONINFOEX versionInfo;

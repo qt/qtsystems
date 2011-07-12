@@ -282,7 +282,7 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
 
 QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
-    switch(type) {
+    switch (type) {
     case QDeviceInfo::Os:
         if (versionBuffer[0].isEmpty()) {
             QFile file(QString::fromAscii("/etc/lsb-release"));

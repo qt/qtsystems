@@ -156,7 +156,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
 
 QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode: {
         const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
@@ -304,7 +304,7 @@ QString QNetworkInfoPrivate::locationAreaCode(int interface)
 
 QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode: {
         const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
@@ -587,7 +587,7 @@ void QNetworkInfoPrivate::onTimeout()
 
 int QNetworkInfoPrivate::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode:
         return QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).size();
 
@@ -622,7 +622,7 @@ int QNetworkInfoPrivate::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode
 
 int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode: {
         QFile file(QString::fromAscii("/proc/net/wireless"));
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -753,7 +753,7 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::getCurrentNetworkMode()
 
 QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode: {
         const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())
@@ -836,7 +836,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
 
 QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int interface)
 {
-    switch(mode) {
+    switch (mode) {
     case QNetworkInfo::WlanMode: {
         const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
         if (dir.isEmpty())

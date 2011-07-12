@@ -88,7 +88,7 @@ QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
     QInputDeviceInfo::KeyboardTypes types(QInputDeviceInfo::UnknownKeyboard);
 
     int keyboardType = GetKeyboardType(0);
-    switch(keyboardType) {
+    switch (keyboardType) {
     case 1:
     case 2:
     case 3:
