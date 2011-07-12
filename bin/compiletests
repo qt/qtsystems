@@ -55,5 +55,6 @@ executeTest($basedir, $out_basedir, "contextkit");
 executeTest($basedir, $out_basedir, "blkid");
 executeTest($basedir, $out_basedir, "bluez");
 executeTest($basedir, $out_basedir, "udev");
+executeTest($basedir, $out_basedir, "jsondb");
 
 1;

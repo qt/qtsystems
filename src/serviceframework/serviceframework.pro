@@ -12,6 +12,12 @@ DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
+contains(jsondb_enabled, yes) {
+    DEFINES += QT_NO_DBUS QT_JSONDB
+    INCLUDEPATH += /opt/mt/include
+    LIBS += -L/opt/mt/lib -lmtcore -Wl,-rpath,/opt/mt/lib
+}
+
 include(ipc/ipc.pri)
 
 PUBLIC_HEADERS += qservice.h \
@@ -22,9 +28,7 @@ PUBLIC_HEADERS += qservice.h \
     qserviceinterfacedescriptor.h \
     qservicefilter.h \
     qremoteserviceregister.h
-PRIVATE_HEADERS += servicedatabase_p.h \
-    databasemanager_p.h \
-    servicemetadata_p.h \
+PRIVATE_HEADERS += servicemetadata_p.h \
     qserviceinterfacedescriptor_p.h \
     dberror_p.h
 SOURCES += servicemetadata.cpp \
@@ -50,7 +54,14 @@ symbian {
         qsfwdatabasemanagerserver.exe
     QtServiceFrameworkDeployment.path = /sys/bin
     DEPLOYMENT += QtServiceFrameworkDeployment
-} else:SOURCES += servicedatabase.cpp \
-    databasemanager.cpp
+} else:contains(jsondb_enabled, yes) {
+    SOURCES += databasemanager_jsondb.cpp
+    PRIVATE_HEADERS += databasemanager_jsondb_p.h
+} else {
+    SOURCES += servicedatabase.cpp \
+        databasemanager.cpp
+    PRIVATE_HEADERS += servicedatabase_p.h \
+        databasemanager_p.h \
+}
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS

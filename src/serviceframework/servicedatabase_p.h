@@ -104,7 +104,7 @@ Q_SIGNALS:
         void serviceAdded(const QString& serviceName);
         void serviceRemoved(const QString& serviceName);
 
-#ifdef QTM_BUILD_UNITTESTS
+#ifdef QT_BUILD_UNITTESTS
     public:
 #else
     private:

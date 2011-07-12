@@ -45,6 +45,7 @@
 #include "objectendpoint_p.h"
 
 #include <QLocalServer>
+#include <QEventLoop>
 #include <QLocalSocket>
 #include <QDataStream>
 #include <QTimer>
@@ -53,6 +54,10 @@
 
 #include <time.h>
 #include <sys/types.h>          /* See NOTES */
+
+#ifdef QT_JSONDB
+#include <mtcore/notion-client.h>
+#endif
 
 #ifndef Q_OS_WIN
 #include <sys/un.h>
@@ -231,12 +236,13 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             QString path = location;
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
             // If we have autotests enable, check for the service in .
-#ifdef QTM_BUILD_UNITTESTS
+#ifndef QT_JSONDB
+#ifdef QT_BUILD_UNITTESTS
             QFile file("./" + path);
             if (file.exists()){
                 path.prepend("./");
             }
-#endif
+#endif /* QT_BUILD_UNITTESTS */
             qint64 pid = 0;
             // Start the service as a detached process
             if (QProcess::startDetached(path, QStringList(), QString(), &pid)){
@@ -251,7 +257,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                     tm.tv_sec = 0;
                     tm.tv_nsec = 1000000;
                     nanosleep(&tm, 0x0);
-#endif
+#endif /* Q_OS_WIN */
                     socket->connectToServer(location);
                     // keep trying for a while
                 }
@@ -260,8 +266,39 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                     return false;
                 }
             }
-            else
+            else {
                 qWarning() << "Server could not be started";
+            }
+#else
+            NotionClient *client = new NotionClient();
+            qDebug() << "Sending launch";
+            client->launch(path);
+
+            QEventLoop* loop = new QEventLoop();
+            QTimer::singleShot(30000, loop, SLOT(quit()));
+            connect(client, SIGNAL(launchEvent( const QVariant&, const QVariant& , const QVariant& )), loop, SLOT(quit()));
+            connect(client, SIGNAL(notionEvent( const QVariantMap& )), loop, SLOT(quit()));
+            //loop->exec();
+            delete client;
+            delete loop;
+            qDebug() << "Waiting for" << location;
+            socket->connectToServer(location);
+            for (int i = 0; !socket->isValid() && i < 1000; i++){
+                // Temporary hack till we can improve startup signaling
+                struct timespec tm;
+                tm.tv_sec = 0;
+                tm.tv_nsec = 1000000;
+                nanosleep(&tm, 0x0);
+                socket->connectToServer(location);
+                // keep trying for a while
+            }
+            if (!socket->isValid()){
+                qWarning() << "Server failed to start within waiting period";
+                return false;
+            }
+            qDebug() << "Done launch";
+
+#endif /* QT_JSONDB */
         }
     }
     if (socket->isValid()){

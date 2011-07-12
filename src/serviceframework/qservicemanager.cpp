@@ -46,7 +46,9 @@
 #include "qremoteserviceregister_p.h"
 #include "qremoteserviceregisterentry_p.h"
 
-#ifdef Q_OS_SYMBIAN
+#ifdef QT_JSONDB
+    #include "databasemanager_jsondb_p.h"
+#elif defined(Q_OS_SYMBIAN)
     #include "databasemanager_symbian_p.h"
 #else
     #include "databasemanager_p.h"

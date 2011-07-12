@@ -6,7 +6,7 @@ symbian {
         ipc/objectendpoint.cpp
 }
 else {
-    contains(QT_CONFIG,dbus) {
+    !contains(jsondb_enabled, yes):contains(QT_CONFIG,dbus) {
         DEFINES += SFW_USE_DBUS_BACKEND
         QT += dbus \
             network
@@ -45,3 +45,5 @@ SOURCES += ipc/qslotinvoker.cpp \
     ipc/qremoteserviceregister_p.cpp \
     ipc/qmetaobjectbuilder.cpp
 
+OTHER_FILES += \
+    ipc/json-schema.txt
