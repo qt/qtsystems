@@ -12,4 +12,5 @@ SUBDIRS += qdeviceinfo \
            qservicemanager \
            qservicemetadata \
            servicedeletion
-#           servicedatabase \
+#           qmetaobjectbuilder #(requires test symbols)
+#           servicedatabase    #(requires test symbols)
