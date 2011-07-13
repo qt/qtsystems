@@ -1,0 +1,12 @@
+{
+    "info-version": "1.0",
+    "dict": {
+        "Category": "application",
+        "Runtime": "qml",
+        "DisplayName": "Test Dialer",
+        "Subcategory": "internet",
+        "Version": "1.0",
+        "Identifier": "com.nokia.qt.examples.dialer",
+        "MainQML": "declarative-sfw-dialer.qml"
+    }
+}

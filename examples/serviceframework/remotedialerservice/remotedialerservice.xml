@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SFW version="1.1">
+<service>
+    <name>VoipDialer</name>
+    <ipcaddress>dialer_service</ipcaddress>
+    <description>Voip Dialer Service</description>
+    <interface>
+        <name>com.nokia.qt.examples.Dialer</name>
+        <version>1.1</version>
+        <description>VoIP based service implementation of Dialer</description>
+    </interface>
+</service>
+</SFW>

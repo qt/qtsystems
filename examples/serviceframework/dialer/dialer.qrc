@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>content/call.png</file>
+        <file>content/DialButton.qml</file>
+        <file>content/DialerList.qml</file>
+        <file>content/DialScreen.qml</file>
+        <file>content/hangup.png</file>
+        <file>dialer.qml</file>
+    </qresource>
+</RCC>
