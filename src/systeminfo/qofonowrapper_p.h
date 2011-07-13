@@ -53,25 +53,17 @@
 #ifndef QOFONOWRAPPER_P_H
 #define QOFONOWRAPPER_P_H
 
+#include <qnetworkinfo.h>
+
 #include <QtCore/qobject.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qstringlist.h>
 #include <QtDBus/qdbuscontext.h>
 #include <QtDBus/qdbusextratypes.h>
-
-#include <qnetworkinfo.h>
 
 #if !defined(QT_NO_OFONO)
 
 QT_BEGIN_NAMESPACE
-
-struct QOfonoProperties
-{
-    QDBusObjectPath path;
-    QVariantMap properties;
-};
-Q_DECLARE_METATYPE(QOfonoProperties)
-
-typedef QList<QOfonoProperties> QOfonoPropertyMap;
-Q_DECLARE_METATYPE(QOfonoPropertyMap)
 
 class QOfonoWrapper : public QObject, protected QDBusContext
 {
@@ -87,7 +79,6 @@ public:
 
     // Network Registration Interface
     int signalStrength(const QString &modemPath);
-    QList<QDBusObjectPath> allOperators(const QString &modemPath);
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(const QString &modemPath);
     QNetworkInfo::NetworkStatus networkStatus(const QString &modemPath);
     QString cellId(const QString &modemPath);
@@ -95,6 +86,8 @@ public:
     QString currentMnc(const QString &modemPath);
     QString lac(const QString &modemPath);
     QString operatorName(const QString &modemPath);
+
+    QNetworkInfo::NetworkMode networkMode(const QString& modemPath);
 
     // SIM Manager Interface
     QString homeMcc(const QString &modemPath);
@@ -111,6 +104,7 @@ Q_SIGNALS:
     void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
     void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
     void locationAreaCodeChanged(int interface, const QString &lac);
+    void networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
     void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
     void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
     void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
@@ -120,6 +114,8 @@ protected:
     void disconnectNotify(const char *signal);
 
 private Q_SLOTS:
+    void onOfonoModemAdded(const QDBusObjectPath &path);
+    void onOfonoModemRemoved(const QDBusObjectPath &path);
     void onOfonoPropertyChanged(const QString &property, const QDBusVariant &value);
 
 private:
@@ -129,6 +125,31 @@ private:
     QNetworkInfo::NetworkMode technologyToMode(const QString &technology);
     QNetworkInfo::NetworkStatus statusStringToEnum(const QString &status);
     QString currentTechnology(const QString &modemPath);
+
+    // Manager Interface
+    QStringList getAllModems();
+
+    // Network Registration Interface
+    int getSignalStrength(const QString &modemPath);
+    QNetworkInfo::CellDataTechnology getCurrentCellDataTechnology(const QString &modemPath);
+    QNetworkInfo::NetworkStatus getNetworkStatus(const QString &modemPath);
+    QString getCellId(const QString &modemPath);
+    QString getCurrentMcc(const QString &modemPath);
+    QString getCurrentMnc(const QString &modemPath);
+    QString getLac(const QString &modemPath);
+    QString getOperatorName(const QString &modemPath);
+
+    bool watchAllModems;
+    bool watchProperties;
+    QMap<QString, int> signalStrengths;
+    QMap<QString, QNetworkInfo::CellDataTechnology> currentCellDataTechnologies;
+    QMap<QString, QNetworkInfo::NetworkStatus> networkStatuses;
+    QMap<QString, QString> cellIds;
+    QMap<QString, QString> currentMccs;
+    QMap<QString, QString> currentMncs;
+    QMap<QString, QString> lacs;
+    QMap<QString, QString> operatorNames;
+    QStringList allModemPaths;
 };
 
 QT_END_NAMESPACE

@@ -610,11 +610,19 @@ int QNetworkInfoPrivate::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode
 #endif // QT_NO_BLUEZ
     }
 
-//    case QNetworkInfo::GsmMode:
-//    case QNetworkInfo::CdmaMode:
-//    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::LteMode:
+#if !defined(QT_NO_OFONO)
+        if (QOfonoWrapper::isOfonoAvailable()) {
+            if (!ofonoWrapper)
+                ofonoWrapper = new QOfonoWrapper(this);
+            return ofonoWrapper->allModems().size();
+        }
+#endif // QT_NO_OFONO
+
 //    case QNetworkInfo::WimaxMode:
-//    case QNetworkInfo::LteMode:
     default:
         return -1;
     };
@@ -657,14 +665,13 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
     case QNetworkInfo::GsmMode:
     case QNetworkInfo::CdmaMode:
     case QNetworkInfo::WcdmaMode:
-    case QNetworkInfo::WimaxMode:
     case QNetworkInfo::LteMode:
 #if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
             QString modem = ofonoWrapper->allModems().at(interface);
-            if (!modem.isEmpty())
+            if (!modem.isEmpty() && ofonoWrapper->networkMode(modem) == mode)
                 return ofonoWrapper->signalStrength(modem);
         }
 #endif // QT_NO_OFONO
@@ -711,6 +718,7 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
         return signalStrength;
     }
 
+//    case QNetworkInfo::WimaxMode:
     default:
         break;
     };
@@ -814,19 +822,19 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
     case QNetworkInfo::GsmMode:
     case QNetworkInfo::CdmaMode:
     case QNetworkInfo::WcdmaMode:
-    case QNetworkInfo::WimaxMode:
     case QNetworkInfo::LteMode:
 #if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
             QString modem = ofonoWrapper->allModems().at(interface);
-            if (!modem.isEmpty())
+            if (!modem.isEmpty() && ofonoWrapper->networkMode(modem) == mode)
                 return ofonoWrapper->networkStatus(modem);
     }
 #endif
         break;
 
+//    case QNetworkInfo::WimaxMode:
     default:
         break;
     };
@@ -900,7 +908,6 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
     case QNetworkInfo::GsmMode:
     case QNetworkInfo::CdmaMode:
     case QNetworkInfo::WcdmaMode:
-    case QNetworkInfo::WimaxMode:
     case QNetworkInfo::LteMode:
 #if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
@@ -913,6 +920,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
 #endif // QT_NO_OFONO
         break;
 
+//    case QNetworkInfo::WimaxMode:
     default:
         break;
     };
