@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 2.0
 // ![4]
-import QtMobility.serviceframework 1.1
+import Qt.serviceframework 5.0
 // ![4]
 
 //Layout of the ServiceList control

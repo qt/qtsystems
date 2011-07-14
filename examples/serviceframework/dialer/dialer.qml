@@ -38,12 +38,12 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
-import QtMobility.serviceframework 1.1
+import QtQuick 2.0
+import Qt.serviceframework 5.0
 import com.nokia.components 1.0
 import SPhone 1.0
 import SPhoneLib.JsonDB 1.0
-import "content-sfw-dialer"
+import "content"
 
 
 //Layout of the mainPage

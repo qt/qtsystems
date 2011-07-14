@@ -2,7 +2,7 @@
 <SFW version="1.1">
 <service>
     <name>VoipDialer</name>
-    <ipcaddress>dialer_service</ipcaddress>
+    <ipcaddress>com.nokia.qt.examples.remotedialer</ipcaddress>
     <description>Voip Dialer Service</description>
     <interface>
         <name>com.nokia.qt.examples.Dialer</name>

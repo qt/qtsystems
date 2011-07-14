@@ -1,0 +1,13 @@
+{
+    "info-version": "1.0",
+    "dict": {
+        "Category": "daemon",
+        "Runtime": "native",
+        "DisplayName": "RemoteDialerService",
+        "Subcategory": "utility",
+        "Version": "1.0",
+        "Identifier": "com.nokia.qt.examples.remotedialer",
+        "Application": "remotedialerservice"
+    }
+}
+
