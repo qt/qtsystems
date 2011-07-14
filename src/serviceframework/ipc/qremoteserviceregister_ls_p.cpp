@@ -57,6 +57,9 @@
 
 #ifdef QT_JSONDB
 #include <mtcore/notion-client.h>
+
+#include <QCoreApplication>
+#include <QTextStream>
 #endif
 
 #ifndef Q_OS_WIN
@@ -143,7 +146,14 @@ QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPriva
 
 void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& ident)
 {
-    createServiceEndPoint(ident) ;
+    createServiceEndPoint(ident);
+
+#ifdef QT_JSONDB
+    // Must write the outputMatch to stdout to tell it we're ready
+    // We must complete this without 10 seconds
+    QTextStream out(stdout); out<<"Ready";out.flush();
+#endif
+
 }
 
 void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
@@ -270,21 +280,13 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                 qWarning() << "Server could not be started";
             }
 #else
-            NotionClient *client = new NotionClient();
-            qDebug() << "Sending launch";
-            client->launch(path);
+            NotionClient *client = new NotionClient;
+            client->instruct(path, QLatin1String("start"));
 
-            QEventLoop* loop = new QEventLoop();
-            QTimer::singleShot(30000, loop, SLOT(quit()));
-            connect(client, SIGNAL(launchEvent( const QVariant&, const QVariant& , const QVariant& )), loop, SLOT(quit()));
-            connect(client, SIGNAL(notionEvent( const QVariantMap& )), loop, SLOT(quit()));
-            //loop->exec();
-            delete client;
-            delete loop;
-            qDebug() << "Waiting for" << location;
             socket->connectToServer(location);
-            for (int i = 0; !socket->isValid() && i < 1000; i++){
+            for (int i = 0; !socket->isValid() && i < 5000; i++){
                 // Temporary hack till we can improve startup signaling
+                QCoreApplication::processEvents();
                 struct timespec tm;
                 tm.tv_sec = 0;
                 tm.tv_nsec = 1000000;
@@ -296,8 +298,6 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                 qWarning() << "Server failed to start within waiting period";
                 return false;
             }
-            qDebug() << "Done launch";
-
 #endif /* QT_JSONDB */
         }
     }

@@ -406,8 +406,6 @@ void QDeclarativeServiceList::s_append(QDeclarativeListProperty<QDeclarativeServ
 }
 int QDeclarativeServiceList::s_count(QDeclarativeListProperty<QDeclarativeService> *prop)
 {
-    qmlInfo(0) << "s_count" << static_cast<QDeclarativeServiceList*>(prop->object)->m_services.count();
-
     return static_cast<QDeclarativeServiceList*>(prop->object)->m_services.count();
 }
 

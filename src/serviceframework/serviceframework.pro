@@ -6,7 +6,7 @@ QPRO_PWD = $PWD
 CONFIG += module
 MODULE_PRI = ../../modules/qt_serviceframework.pri
 
-QT = core sql
+QT = core sql script
 
 DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
@@ -14,8 +14,11 @@ load(qt_module_config)
 
 contains(jsondb_enabled, yes) {
     DEFINES += QT_NO_DBUS QT_JSONDB
-    INCLUDEPATH += /opt/mt/include
+    INCLUDEPATH += $$[QT_INSTALL_PREFIX]/opt/mt/include /opt/mt/include
+    LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
     LIBS += -L/opt/mt/lib -lmtcore -Wl,-rpath,/opt/mt/lib
+    PKGCONFIG += mtcore
+
 }
 
 include(ipc/ipc.pri)

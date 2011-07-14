@@ -72,12 +72,12 @@ Rectangle {
     color: "white"
 
     property variant dialerObject: 0
-    width: 240
-    height: 380
+    width: 320
+    height: 480
 
     DialerList {
         id: dialerList
-        height: parent.height - dialScreen.height - 10
+        height: 240
         width: childrenRect.width-5
         anchors.top: dialScreen.bottom
         anchors.left: parent.left
@@ -116,19 +116,20 @@ Rectangle {
     Text {
         id: serviceDetails
         text: "Service:"
-        width: parent.width - dialScreen.width
+        width: parent.width
         anchors.topMargin: 5
         anchors.leftMargin: 5
         anchors.rightMargin: 5;
-        anchors.left: dialScreen.right
-        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.top: dialerList.bottom
         wrapMode: "WrapAtWordBoundaryOrAnywhere"
     }
 
     Text {
         id: status
-        width:  serviceDetails.width
-        anchors.top:  serviceDetails.bottom
+        width:  parent.width - dialScreen.width
+        height: dialScreen.height
+        anchors.top:  parent.top
         anchors.left: dialScreen.right
         anchors.leftMargin: 5
         wrapMode: "Wrap"

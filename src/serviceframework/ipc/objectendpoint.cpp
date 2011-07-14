@@ -616,7 +616,6 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
 
 void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 {
-    qDebug() << "start ObjectEndPoint::waitForResponse";
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests()->contains(requestId) ) {
         Response* response = openRequests()->value(requestId);
@@ -625,10 +624,7 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
         connect(this, SIGNAL(pendingRequestFinished()), loop, SLOT(quit()));
         loop->exec();
         delete loop;
-        qDebug() << "- response->isFinished: " << response->isFinished;
-
     }
-    qDebug() << "finished ObjectEndPoint::waitForResponse";
 }
 
 #include "moc_objectendpoint_p.cpp"
