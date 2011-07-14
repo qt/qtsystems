@@ -95,18 +95,17 @@ linux-* {
 
         !contains(udisks_enabled, yes): DEFINES += QT_NO_UDISKS
 
-        # TODO put it behind a build flag, e.g. bluez_enabled
-        PRIVATE_HEADERS += qbluezwrapper_p.h
-        SOURCES += qbluezwrapper.cpp
+        contains(bluez_enabled, yes) {
+            CONFIG += link_pkgconfig
+            PKGCONFIG += bluez
+
+            PRIVATE_HEADERS += qbluezwrapper_p.h
+            SOURCES += qbluezwrapper.cpp
+        } else {
+            DEFINES += QT_NO_BLUEZ
+        }
     } else {
         DEFINES += QT_NO_OFONO
-    }
-
-    contains(bluez_enabled, yes) {
-        CONFIG += link_pkgconfig
-        PKGCONFIG += bluez
-    } else {
-        DEFINES += QT_NO_BLUEZ
     }
 
     contains(blkid_enabled, yes) {
