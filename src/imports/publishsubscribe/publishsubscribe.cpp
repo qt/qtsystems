@@ -54,10 +54,12 @@ class QSubscriberDeclarativeModule : public QDeclarativeExtensionPlugin
 public:
     virtual void registerTypes(const char *uri)
     {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtMobility.publishsubscribe"));
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.publishsubscribe"));
 
-        qmlRegisterType<QDeclarativeValueSpaceSubscriber>(uri, 1, 1, "ValueSpaceSubscriber");
-        qmlRegisterType<QDeclarativeValueSpacePublisher>(uri, 1, 2, "ValueSpacePublisher");
+        int major = 5;
+        int minor = 0;
+        qmlRegisterType<QDeclarativeValueSpaceSubscriber>(uri, major, minor, "ValueSpaceSubscriber");
+        qmlRegisterType<QDeclarativeValueSpacePublisher>(uri, major, minor, "ValueSpacePublisher");
     }
 };
 
