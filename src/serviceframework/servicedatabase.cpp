@@ -652,7 +652,7 @@ bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfa
 {
     QString statement = QLatin1String("INSERT INTO Interface(ID, ServiceID,Name,VerMaj, VerMin) "
                         "VALUES(?,?,?,?,?)");
-    QString interfaceID = QUuid::createUuid();
+    QString interfaceID = QUuid::createUuid().toString();
 
     QList<QVariant> bindValues;
     bindValues.append(interfaceID);

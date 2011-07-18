@@ -102,7 +102,7 @@ protected:
         out.setVersion(QDataStream::Qt_4_6);
         out << package;
 
-        packageId = package.d->messageId;
+        packageId = package.d->messageId.toString();
         interface->asyncCall(QLatin1String("writePackage"), block, endType, packageId);
     }
 
