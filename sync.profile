@@ -34,4 +34,13 @@
     "qtdeclarative" => "refs/heads/master",
 );
 
-do "$basedir/bin/compiletests" || die "do $basedir/bin/compiletests: $! $@";
+# FIXME! Only run the compile tests during the syncqt run.
+# The correct fix is to stop doing this at all from within sync.profile, which
+# should only contain static data and should not call out to other programs.
+# $out_basedir is some arbitrary variable which is defined during a syncqt
+# run, and (hopefully) not during any other script sourcing this file.
+my $in_syncqt = eval q{ defined( $out_basedir ) };
+if ($in_syncqt) {
+    warn 'FIXME: about to run some compile tests';
+    do "$basedir/bin/compiletests" || die "do $basedir/bin/compiletests: $! $@";
+}
