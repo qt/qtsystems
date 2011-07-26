@@ -17,7 +17,11 @@ dialer.qml
 target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS dialer.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
-INSTALLS += target sources
+contains(jsondb_enabled, yes) {
+    info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
+    info.files = info.json
+}
+INSTALLS += target sources info
 
 symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example
@@ -38,4 +42,5 @@ symbian {
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
-qtcAddDeployment()
+# installs into /usr/loca/bin, bad idea, deployment rules are above
+#qtcAddDeployment()

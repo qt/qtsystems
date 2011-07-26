@@ -14,7 +14,11 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS remotedialer.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialer
 xml.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/xmldata
 xml.files = remotedialerservice.xml
-INSTALLS += target sources xml
+contains(jsondb_enabled, yes) {
+    info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
+    info.files = info.json notions.json
+}
+INSTALLS += target sources xml info
 
 symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example
