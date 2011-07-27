@@ -6,7 +6,7 @@ symbian {
         ipc/objectendpoint.cpp
 }
 else {
-    !contains(jsondb_enabled, yes):contains(QT_CONFIG,dbus) {
+    !contains(config_test_jsondb, yes):contains(QT_CONFIG,dbus) {
         DEFINES += SFW_USE_DBUS_BACKEND
         QT += dbus \
             network

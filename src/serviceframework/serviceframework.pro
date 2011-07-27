@@ -12,7 +12,7 @@ DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
-contains(jsondb_enabled, yes) {
+contains(config_test_jsondb, yes) {
     DEFINES += QT_NO_DBUS QT_JSONDB
     INCLUDEPATH += $$[QT_INSTALL_PREFIX]/opt/mt/include /opt/mt/include
     LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
@@ -57,7 +57,7 @@ symbian {
         qsfwdatabasemanagerserver.exe
     QtServiceFrameworkDeployment.path = /sys/bin
     DEPLOYMENT += QtServiceFrameworkDeployment
-} else:contains(jsondb_enabled, yes) {
+} else:contains(config_test_jsondb, yes) {
     SOURCES += databasemanager_jsondb.cpp
     PRIVATE_HEADERS += databasemanager_jsondb_p.h
 } else {

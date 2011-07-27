@@ -17,7 +17,7 @@ dialer.qml
 target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS dialer.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
-contains(jsondb_enabled, yes) {
+contains(config_test_jsondb, yes) {
     info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
     info.files = info.json
 }

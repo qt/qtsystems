@@ -4,11 +4,11 @@ QMAKE_LIBS += -Wl,-rpath,$${QT.publishsubscribe.libs}
 
 QT += publishsubscribe
 
-!contains(gconf_enabled, yes) {
+!contains(config_test_gconf, yes) {
     DEFINES += QT_NO_GCONFLAYER
 }
 
-!contains(contextkit_enabled, yes) {
+!contains(config_test_contextkit, yes) {
     DEFINES += QT_NO_CONTEXTKIT
 }
 

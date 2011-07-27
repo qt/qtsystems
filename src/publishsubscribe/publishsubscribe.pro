@@ -28,7 +28,7 @@ SOURCES = qvaluespace.cpp \
 
 unix {
     linux-* {
-        contains(gconf_enabled, yes) {
+        contains(config_test_gconf, yes) {
             PRIVATE_HEADERS += gconfitem_p.h \
                                gconflayer_p.h
 
@@ -44,7 +44,7 @@ unix {
         contains(QT_CONFIG, dbus): {
             QT += dbus
 
-            contains(contextkit_enabled, yes) {
+            contains(config_test_contextkit, yes) {
                 PRIVATE_HEADERS += contextkitlayer_p.h
                 SOURCES += contextkitlayer.cpp
 

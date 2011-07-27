@@ -86,16 +86,16 @@ linux-* {
     contains(QT_CONFIG, dbus): {
         QT += dbus
 
-        contains(ofono_enabled, yes) {
+        contains(config_test_ofono, yes) {
             PRIVATE_HEADERS += qofonowrapper_p.h
             SOURCES += qofonowrapper.cpp
         } else {
             DEFINES += QT_NO_OFONO
         }
 
-        !contains(udisks_enabled, yes): DEFINES += QT_NO_UDISKS
+        !contains(config_test_udisks, yes): DEFINES += QT_NO_UDISKS
 
-        contains(bluez_enabled, yes) {
+        contains(config_test_bluez, yes) {
             CONFIG += link_pkgconfig
             PKGCONFIG += bluez
 
@@ -108,14 +108,14 @@ linux-* {
         DEFINES += QT_NO_OFONO
     }
 
-    contains(blkid_enabled, yes) {
+    contains(config_test_blkid, yes) {
         CONFIG += link_pkgconfig
         PKGCONFIG += blkid
     } else {
         DEFINES += QT_NO_BLKID
     }
 
-    contains(udev_enabled, yes) {
+    contains(config_test_udev, yes) {
         CONFIG += link_pkgconfig
         PKGCONFIG += udev
         LIBS += -ludev
