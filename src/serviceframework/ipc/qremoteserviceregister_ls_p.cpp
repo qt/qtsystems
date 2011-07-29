@@ -139,21 +139,110 @@ private:
     QLocalSocket* socket;
 };
 
-QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPrivate(QObject* parent)
-    : QRemoteServiceRegisterPrivate(parent)
+#ifdef QT_JSONDB
+
+class NotionWaiter : public QObject
 {
+    Q_OBJECT
+public:
+    NotionWaiter(NotionClient *client, QObject *parent = 0)
+        : QObject(parent),
+          client(client)
+    {
+        waitingOnNotion = true;
+        loop = new QEventLoop(this);
+        timer = new QTimer(this);
+        connect(timer, SIGNAL(timeout()), loop, SLOT(quit()));
+        connect(client, SIGNAL(notionEvent(QVariantMap)), this, SLOT(notionEvent(QVariantMap)));
+        connect(client, SIGNAL(errorEvent(QString,QString)), this, SLOT(errorEvent(QString,QString)));
+    }
+    ~NotionWaiter() { }
+
+    void reset() {
+        waitingOnNotion = true;
+        timer->stop();
+        notion.clear();
+        errorNotion.clear();
+        errorText.clear();
+    }
+
+    void wait(int ms) {
+        timer->setInterval(ms);
+        timer->start();
+        loop->exec();
+        timer->stop();
+    }
+
+    bool waitingOnNotion;
+    QVariantMap notion;
+    QString errorNotion;
+    QString errorText;
+
+protected slots:
+    void notionEvent(const QVariantMap& map ) {
+        waitingOnNotion = false;
+        notion = map;
+        loop->quit();
+    }
+
+    void errorEvent(const QString& event, const QString& error) {
+        waitingOnNotion = false;
+        errorNotion = event;
+        errorText = error;
+        loop->quit();
+    }
+
+private:
+        QEventLoop *loop;
+        QTimer *timer;
+        NotionClient *client;
+};
+
+#endif
+
+QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPrivate(QObject* parent)
+    : QRemoteServiceRegisterPrivate(parent),
+      notionClient(new NotionClient)
+{    
 }
 
 void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& ident)
 {
     createServiceEndPoint(ident);
 
-#ifdef QT_JSONDB
+#ifdef QT_JSONDB    
+    connect(notionClient, SIGNAL(notionEvent(QVariantMap)), this, SLOT(notionEvent(QVariantMap)));
+    notionClient->setActive(true);
+
     // Must write the outputMatch to stdout to tell it we're ready
     // We must complete this without 10 seconds
     QTextStream out(stdout); out<<"Ready";out.flush();
 #endif
 
+}
+
+void QRemoteServiceRegisterLocalSocketPrivate::notionEvent(const QVariantMap &notion)
+{
+#ifdef QT_JSONDB
+    qDebug() << Q_FUNC_INFO << "Got" << notion.value(QLatin1String("notions"));
+    if (notion.value(QLatin1String("notion")).toString() == QLatin1String("ServiceAuthorizationEvent")) {
+        QString token = notion.value(QLatin1String("token")).toString();
+        QStringList authorized = notion.value(QLatin1String("authorized")).toStringList();
+
+        if(token.isEmpty() || authorized.isEmpty()) {
+            qWarning() << "Invalid ServiceAuthorizedEvent notion received";
+            return;
+        }
+
+        authorizedClients.insert(token, authorized);
+
+        QVariantMap map(notion);
+        map.remove(QLatin1String("notion"));
+        map.insert(QLatin1String("notion"), QLatin1String("ServiceAuthorizationReply"));
+        notionClient->send(map);
+    }
+
+#endif
 }
 
 void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
@@ -280,24 +369,54 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                 qWarning() << "Server could not be started";
             }
 #else
-            NotionClient *client = new NotionClient;
-            client->instruct(path, QLatin1String("start"));
+            NotionClient *client = new NotionClient();
+            NotionWaiter *waiter = new NotionWaiter(client);
+            client->setActive(true);
+
+            QVariantMap notion;
+            notion.insert(QLatin1String("notion"), QLatin1String("ServiceRequest"));
+            notion.insert(QLatin1String("service"), location);
+            client->send(notion);
+
+
+            bool serviceRequestEventReceived = false;
+
+            while(!serviceRequestEventReceived) {
+                waiter->wait(30000);
+
+                if(!waiter->errorNotion.isEmpty() &&
+                        (waiter->errorNotion == QLatin1String("ServiceRequest"))) {
+                    qWarning() << "Error on ServiceRequest!" << waiter->errorText;
+                    delete waiter;
+                    delete client;
+                    return false;
+                }
+
+                if(waiter->waitingOnNotion == true) {
+                    qWarning() << "Notions failed to return within waiting period";
+                    delete waiter;
+                    delete client;
+                    return false;
+                }
+
+                if(waiter->notion.value("notion") == QLatin1String("ServiceRequestEvent")) {
+                    serviceRequestEventReceived = true;
+                }
+                else {
+                    waiter->reset();
+                }
+            }
+
+            qDebug() << "Got ServiceRequestEvent" << waiter->notion;
 
             socket->connectToServer(location);
-            for (int i = 0; !socket->isValid() && i < 5000; i++){
-                // Temporary hack till we can improve startup signaling
-                QCoreApplication::processEvents();
-                struct timespec tm;
-                tm.tv_sec = 0;
-                tm.tv_nsec = 1000000;
-                nanosleep(&tm, 0x0);
-                socket->connectToServer(location);
-                // keep trying for a while
-            }
             if (!socket->isValid()){
                 qWarning() << "Server failed to start within waiting period";
                 return false;
             }
+
+            delete waiter;
+            delete client;
 #endif /* QT_JSONDB */
         }
     }
