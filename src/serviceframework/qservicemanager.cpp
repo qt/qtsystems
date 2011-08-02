@@ -41,7 +41,6 @@
 
 #include "qservicemanager.h"
 #include "qserviceplugininterface.h"
-#include "qabstractsecuritysession.h"
 #include "qserviceinterfacedescriptor_p.h"
 #include "qremoteserviceregister_p.h"
 #include "qremoteserviceregisterentry_p.h"
@@ -376,9 +375,9 @@ QList<QServiceInterfaceDescriptor> QServiceManager::findInterfaces(const QString
     \sa setInterfaceDefault(), interfaceDefault()
     \since 1.0
 */
-QObject* QServiceManager::loadInterface(const QString& interfaceName, QServiceContext* context, QAbstractSecuritySession* session)
+QObject* QServiceManager::loadInterface(const QString& interfaceName)
 {
-    return loadInterface(interfaceDefault(interfaceName), context, session);
+    return loadInterface(interfaceDefault(interfaceName));
 }
 
 /*!
@@ -396,17 +395,11 @@ QObject* QServiceManager::loadInterface(const QString& interfaceName, QServiceCo
     are enforced during service loading.
     \since 1.0
 */
-QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context, QAbstractSecuritySession* session)
+QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descriptor)
 {
     d->setError(NoError);
     if (!descriptor.isValid()) {
         d->setError(InvalidServiceInterfaceDescriptor);
-        return 0;
-    }
-
-    const QStringList serviceCaps = descriptor.attribute(QServiceInterfaceDescriptor::Capabilities).toStringList();
-    if ( session && !session->isAllowed(serviceCaps) ) {
-        d->setError(ServiceCapabilityDenied);
         return 0;
     }
 
@@ -417,7 +410,7 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
         //ipc service
         const int majorversion = descriptor.majorVersion();
         const int minorversion = descriptor.minorVersion();
-        QString version = QString::number(majorversion) + "." + QString::number(minorversion);
+        QString version = QString::number(majorversion) + QLatin1String(".") + QString::number(minorversion);
 
         QRemoteServiceRegister::Entry serviceEntry;
         serviceEntry.d->iface = descriptor.interfaceName();
@@ -470,7 +463,7 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
         }
 
         if (doLoading) {
-            QObject *obj = pluginIFace->createInstance(descriptor, context, session);
+            QObject *obj = pluginIFace->createInstance(descriptor);
             if (obj) {
                 QServicePluginCleanup *cleanup = new QServicePluginCleanup(loader);
                 QObject::connect(obj, SIGNAL(destroyed()), cleanup, SLOT(deleteLater()));

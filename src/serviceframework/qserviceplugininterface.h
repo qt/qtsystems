@@ -50,8 +50,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QServiceInterfaceDescriptor;
-class QServiceContext;
-class QAbstractSecuritySession;
 
 class Q_SERVICEFW_EXPORT QServicePluginInterface
 {
@@ -59,9 +57,7 @@ public:
     QServicePluginInterface();
     virtual ~QServicePluginInterface();
 
-    virtual QObject* createInstance(const QServiceInterfaceDescriptor& descriptor,
-                                    QServiceContext* context,
-                                    QAbstractSecuritySession* session) = 0;
+    virtual QObject* createInstance(const QServiceInterfaceDescriptor& descriptor) = 0;
 
     virtual void installService();
     virtual void uninstallService();

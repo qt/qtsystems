@@ -40,9 +40,6 @@
 ****************************************************************************/
 #include "sampleserviceplugin.h"
 
-#include <qservicecontext.h>
-#include <qabstractsecuritysession.h>
-
 #include <QtPlugin>
 #include <QSettings>
 
@@ -50,12 +47,12 @@ SampleServicePlugin::~SampleServicePlugin()
 {
 }
 
-QObject* SampleServicePlugin::createInstance(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context, QAbstractSecuritySession* session)
+QObject* SampleServicePlugin::createInstance(const QServiceInterfaceDescriptor& descriptor)
 {
     if ( descriptor.interfaceName() == "com.nokia.qt.TestInterfaceA" ) {
-        return new SampleServicePluginClass(descriptor, context, session);
+        return new SampleServicePluginClass(descriptor);
     } else if (descriptor.interfaceName() == "com.nokia.qt.TestInterfaceB") {
-        return new DerivedSampleServicePluginClass(descriptor, context, session);
+        return new DerivedSampleServicePluginClass(descriptor);
     }
 
     //As per service xml this plugin supports com.nokia.qt.TestInterfaceC as
@@ -76,10 +73,8 @@ void SampleServicePlugin::uninstallService()
 }
 
 
-SampleServicePluginClass::SampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context, QAbstractSecuritySession* session)
-    : m_descriptor(descriptor),
-      m_context(context),
-      m_security(session)
+SampleServicePluginClass::SampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor)
+    : m_descriptor(descriptor)
 {
 }
 
@@ -89,8 +84,8 @@ void SampleServicePluginClass::testSlotOne()
     m_descriptor.interfaceName();
 }
 
-DerivedSampleServicePluginClass::DerivedSampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context, QAbstractSecuritySession* session)
-    : SampleServicePluginClass(descriptor,context,session)
+DerivedSampleServicePluginClass::DerivedSampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor)
+    : SampleServicePluginClass(descriptor)
 {
 }
 

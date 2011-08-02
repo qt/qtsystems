@@ -42,8 +42,6 @@
 //TESTED_COMPONENT=src/serviceframework
 
 #include <qservicemanager.h>
-#include <qservicecontext.h>
-#include <qabstractsecuritysession.h>
 #include <private/qserviceinterfacedescriptor_p.h>
 #include "sampleservice/sampleserviceplugin.h"
 #include "../qsfwtestutil.h"
@@ -126,24 +124,6 @@ static const QStringList VALID_PLUGIN_FILES = validPluginFiles();
     qDebug() << "***isValid(): " << desc.isValid();
     qDebug() << "***scope (user:0, system:1): " << desc.scope();
 }*/
-
-class MySecuritySession : public QAbstractSecuritySession
-{
-public:
-    MySecuritySession() {}
-    virtual ~MySecuritySession() {}
-
-    virtual bool isAllowed(const QStringList&) { return true; }
-};
-
-class MyServiceContext : public QServiceContext
-{
-public:
-    MyServiceContext() {}
-    ~MyServiceContext() {}
-
-    virtual void notify(ContextType, const QVariant&) {}
-};
 
 
 class ServicesListener : public QObject
@@ -779,7 +759,7 @@ void tst_QServiceManager::loadInterface_string()
 
 
 
-    obj = mgr.loadInterface(commonInterface, 0, 0);
+    obj = mgr.loadInterface(commonInterface);
     QVERIFY(obj != 0);
     QCOMPARE(QString(obj->metaObject()->className()), serviceAClassName);
     delete obj;
@@ -791,7 +771,7 @@ void tst_QServiceManager::loadInterface_string()
 
     // if first service is set as default, it should be returned
     QVERIFY(mgr.setInterfaceDefault(serviceA, commonInterface));
-    obj = mgr.loadInterface(commonInterface, 0, 0);
+    obj = mgr.loadInterface(commonInterface);
     QVERIFY(obj != 0);
     QCOMPARE(QString(obj->metaObject()->className()), serviceAClassName);
     delete obj;
@@ -799,7 +779,7 @@ void tst_QServiceManager::loadInterface_string()
 
     // if second service is set as default, it should be returned
     QVERIFY(mgr.setInterfaceDefault(serviceB, commonInterface));
-    obj = mgr.loadInterface(commonInterface, 0, 0);
+    obj = mgr.loadInterface(commonInterface);
     QVERIFY(obj != 0);
     QCOMPARE(QString(obj->metaObject()->className()), serviceBClassName);
     delete obj;
@@ -814,9 +794,7 @@ void tst_QServiceManager::loadInterface_descriptor()
     QObject* obj;
     {
         QServiceManager mgr;
-        MySecuritySession session;
-        MyServiceContext context;
-        obj = mgr.loadInterface(descriptor, &context, &session);
+        obj = mgr.loadInterface(descriptor);
         QVERIFY(obj != 0);
         QCOMPARE(className, QString(obj->metaObject()->className()));
     }
@@ -882,9 +860,7 @@ void tst_QServiceManager::loadInterface_testLoadedObjectAttributes()
     QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
 
     QServiceManager mgr;
-    MySecuritySession session;
-    MyServiceContext context;
-    QObject *obj = mgr.loadInterface(descriptor, &context, &session);
+    QObject *obj = mgr.loadInterface(descriptor);
     QVERIFY(obj != 0);
 
     bool invokeOk = false;
@@ -941,8 +917,6 @@ void tst_QServiceManager::loadLocalTypedInterface()
     lib.unload();
 
     QServiceManager mgr;
-    MySecuritySession session;
-    MyServiceContext context;
 
     QServiceInterfaceDescriptor descriptor;
     QServiceInterfaceDescriptorPrivate *priv = new QServiceInterfaceDescriptorPrivate;
@@ -956,11 +930,9 @@ void tst_QServiceManager::loadLocalTypedInterface()
 
     //use manual descriptor -> avoid database involvement
     SampleServicePluginClass *plugin = 0;
-    plugin = mgr.loadLocalTypedInterface<SampleServicePluginClass>(descriptor, &context, &session);
+    plugin = mgr.loadLocalTypedInterface<SampleServicePluginClass>(descriptor);
 
     QVERIFY(plugin != 0);
-    QCOMPARE(plugin->context(), (QServiceContext *)&context);
-    QCOMPARE(plugin->securitySession(), (QAbstractSecuritySession *)&session);
 
     delete plugin;
     plugin = 0;
@@ -978,14 +950,12 @@ void tst_QServiceManager::loadLocalTypedInterface()
     QList<SampleServicePluginClass*> serviceObjects;
     QVERIFY(ifaces.count() == 3);
     for (int i = 0; i<ifaces.count(); i++) {
-        plugin = mgr.loadLocalTypedInterface<SampleServicePluginClass>(ifaces.at(i), &context, &session);
+        plugin = mgr.loadLocalTypedInterface<SampleServicePluginClass>(ifaces.at(i));
 
         if (ifaces.at(i).interfaceName() == "com.nokia.qt.TestInterfaceC") {
             QVERIFY(plugin == 0);
         } else {
             QVERIFY(plugin != 0);
-            QCOMPARE(plugin->context(), (QServiceContext *)&context);
-            QCOMPARE(plugin->securitySession(), (QAbstractSecuritySession *)&session);
             plugin->testSlotOne();
             serviceObjects.append(plugin);
         }
@@ -1005,17 +975,15 @@ void tst_QServiceManager::loadLocalTypedInterface()
 
 
     //use default lookup
-    plugin = mgr.loadLocalTypedInterface<SampleServicePluginClass>("com.nokia.qt.TestInterfaceA", &context, &session);
+    plugin = mgr.loadLocalTypedInterface<SampleServicePluginClass>("com.nokia.qt.TestInterfaceA");
     QVERIFY(plugin != 0);
-    QCOMPARE(plugin->context(), (QServiceContext *)&context);
-    QCOMPARE(plugin->securitySession(), (QAbstractSecuritySession *)&session);
 
     delete plugin;
     QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
     plugin = 0;
 
     //use totally wrong but QObject based template class type
-    QFile *w = mgr.loadLocalTypedInterface<QFile>("com.nokia.qt.TestInterfaceA", &context, &session);
+    QFile *w = mgr.loadLocalTypedInterface<QFile>("com.nokia.qt.TestInterfaceA");
     QVERIFY(!w);
 
     //use non QObject based template class type

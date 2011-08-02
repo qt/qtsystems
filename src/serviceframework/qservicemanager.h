@@ -59,7 +59,6 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QServiceContext;
-class QAbstractSecuritySession;
 class QServiceFilter;
 class QServiceManagerPrivate;
 class Q_SERVICEFW_EXPORT QServiceManager : public QObject
@@ -91,21 +90,21 @@ public:
     QList<QServiceInterfaceDescriptor> findInterfaces(const QServiceFilter& filter = QServiceFilter()) const;
     QList<QServiceInterfaceDescriptor> findInterfaces(const QString& serviceName) const;
 
-    QObject* loadInterface(const QString& interfaceName, QServiceContext* context = 0, QAbstractSecuritySession* session = 0);
-    QObject* loadInterface(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context = 0, QAbstractSecuritySession* session = 0);
+    QObject* loadInterface(const QString& interfaceName);
+    QObject* loadInterface(const QServiceInterfaceDescriptor& descriptor);
 
     template <class T>
-    T* loadLocalTypedInterface(const QString& interfaceName, QServiceContext* context = 0, QAbstractSecuritySession* session = 0)
+    T* loadLocalTypedInterface(const QString& interfaceName)
     {
-        return loadLocalTypedInterface<T>(interfaceDefault(interfaceName), context, session);
+        return loadLocalTypedInterface<T>(interfaceDefault(interfaceName));
     }
 
     template <class T>
-    T* loadLocalTypedInterface(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context = 0, QAbstractSecuritySession* session = 0)
+    T* loadLocalTypedInterface(const QServiceInterfaceDescriptor& descriptor)
     {
         T* instance = 0;
         if (descriptor.isValid()) {
-            QObject* obj = loadInterface(descriptor, context, session);
+            QObject* obj = loadInterface(descriptor);
             if (!obj) return 0;
 
             //TODO this should really be

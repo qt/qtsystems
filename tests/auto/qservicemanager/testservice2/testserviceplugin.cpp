@@ -52,12 +52,9 @@
 */
 
 
-QObject* TestServicePlugin::createInstance(const QServiceInterfaceDescriptor& descriptor,
-        QServiceContext* context, QAbstractSecuritySession* session)
+QObject* TestServicePlugin::createInstance(const QServiceInterfaceDescriptor& descriptor)
 {
     Q_UNUSED(descriptor);
-    Q_UNUSED(context);
-    Q_UNUSED(session);
 
     return new TestService();
 }

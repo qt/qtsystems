@@ -4,9 +4,7 @@ SUBDIRS += qdeviceinfo \
            qstorageinfo \
            qbatteryinfo \
            qvaluespace \
-           qabstractsecuritysession \
            qremoteserviceregister \
-           qservicecontext \
            qservicefilter \
            qserviceinterfacedescriptor \
            qservicemanager \

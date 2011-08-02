@@ -54,9 +54,7 @@ class SampleServicePlugin : public QObject, public QServicePluginInterface
 
 public:
     ~SampleServicePlugin();
-    QObject* createInstance(const QServiceInterfaceDescriptor& descriptor,
-                            QServiceContext* context,
-                            QAbstractSecuritySession* session);
+    QObject* createInstance(const QServiceInterfaceDescriptor& descriptor);
 
     virtual void installService();
     virtual void uninstallService();
@@ -67,14 +65,10 @@ class SampleServicePluginClass : public QObject
 {
     Q_OBJECT
 public:
-    SampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor,
-                             QServiceContext* context,
-                             QAbstractSecuritySession* session);
+    SampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor);
     virtual ~SampleServicePluginClass() {}
 
     QServiceInterfaceDescriptor descriptor() const;
-    QServiceContext *context() const { return m_context; }
-    QAbstractSecuritySession *securitySession() const { return m_security; }
 
 public slots:
     void testSlotOne();
@@ -82,17 +76,13 @@ public slots:
 
 protected:
     QServiceInterfaceDescriptor m_descriptor;
-    QServiceContext *m_context;
-    QAbstractSecuritySession *m_security;
 };
 
 class DerivedSampleServicePluginClass : public SampleServicePluginClass
 {
     Q_OBJECT
 public:
-    DerivedSampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor,
-                             QServiceContext* context,
-                             QAbstractSecuritySession* session);
+    DerivedSampleServicePluginClass(const QServiceInterfaceDescriptor& descriptor);
     virtual ~DerivedSampleServicePluginClass() {}
 public slots:
     void testSlotOne();

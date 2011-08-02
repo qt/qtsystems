@@ -26,8 +26,6 @@ include(ipc/ipc.pri)
 PUBLIC_HEADERS += qservice.h \
     qservicemanager.h \
     qserviceplugininterface.h \
-    qservicecontext.h \
-    qabstractsecuritysession.h \
     qserviceinterfacedescriptor.h \
     qservicefilter.h \
     qremoteserviceregister.h
@@ -37,8 +35,6 @@ PRIVATE_HEADERS += servicemetadata_p.h \
 SOURCES += servicemetadata.cpp \
     qservicemanager.cpp \
     qserviceplugininterface.cpp \
-    qservicecontext.cpp \
-    qabstractsecuritysession.cpp \
     qserviceinterfacedescriptor.cpp \
     qservicefilter.cpp \
     dberror.cpp \

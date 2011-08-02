@@ -53,9 +53,7 @@ class SampleServicePlugin2 : public QObject, public QServicePluginInterface
     Q_INTERFACES(QServicePluginInterface)
 
 public:
-    QObject* createInstance(const QServiceInterfaceDescriptor& descriptor,
-                            QServiceContext* context,
-                            QAbstractSecuritySession* session);
+    QObject* createInstance(const QServiceInterfaceDescriptor& descriptor);
 };
 
 

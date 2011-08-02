@@ -45,8 +45,6 @@
 #include <QObject>
 #include <qserviceplugininterface.h>
 #include <qserviceinterfacedescriptor.h>
-#include <qservicecontext.h>
-#include <qabstractsecuritysession.h>
 
 QT_USE_NAMESPACE
 
@@ -56,8 +54,7 @@ class TestServicePlugin : public QObject, public QServicePluginInterface
     Q_INTERFACES(QServicePluginInterface)
 
 public:
-    QObject* createInstance(const QServiceInterfaceDescriptor& descriptor,
-            QServiceContext* context, QAbstractSecuritySession* session);
+    QObject* createInstance(const QServiceInterfaceDescriptor& descriptor);
 
 };
 

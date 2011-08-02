@@ -40,17 +40,12 @@
 ****************************************************************************/
 #include "sampleserviceplugin2.h"
 
-#include <qservicecontext.h>
-#include <qabstractsecuritysession.h>
-
 #include <QtPlugin>
 
 
-QObject* SampleServicePlugin2::createInstance(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context, QAbstractSecuritySession* session)
+QObject* SampleServicePlugin2::createInstance(const QServiceInterfaceDescriptor& descriptor)
 {
     Q_UNUSED(descriptor);
-    Q_UNUSED(context);
-    Q_UNUSED(session);
     return new SampleServicePluginClass2;
 }
 
