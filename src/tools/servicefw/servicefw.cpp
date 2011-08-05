@@ -50,6 +50,20 @@
 
 QT_BEGIN_NAMESPACE
 
+static const char * const errorTable[] = {
+    "No error", //0
+    "Storage read error",
+    "Invalid service location",
+    "Invalid service xml",
+    "Invalid service interface descriptor",
+    "Service already exists",
+    "Interface implementation already exists",
+    "Loading of plug-in failed",
+    "Service or interface not found",
+    "Insufficient capabilities to access service",
+    "Unknown error",
+};
+
 class CommandProcessor : public QObject
 {
     Q_OBJECT
@@ -69,6 +83,7 @@ public slots:
     void add(const QStringList &args);
     void remove(const QStringList &args);
     void dbusservice(const QStringList &args);
+    void setdefault(const QStringList &args);
 
 private:
     bool setOptions(const QStringList &options);
@@ -147,6 +162,25 @@ void CommandProcessor::browse(const QStringList &args)
     showAllEntries();
 }
 
+void CommandProcessor::setdefault(const QStringList &args)
+{
+    if (args.isEmpty() || args.count() < 2) {
+        *stdoutStream << "Usage:\n\tsetdefault <interface> <service>\n\n"
+                         "Examples:\n"
+                         "\tsetdefault com.nokia.SomeInterface foo";
+        return;
+    }
+
+
+    const QString &interface = args[0];
+    const QString &service = args[1];
+    bool res = serviceManager->setInterfaceDefault(service, interface);
+    if(!res) {
+        *stdoutStream << "Failed to set interface default"
+                      << errorTable[serviceManager->error()];
+    }
+}
+
 void CommandProcessor::search(const QStringList &args)
 {
     if (args.isEmpty()) {
@@ -181,19 +215,6 @@ void CommandProcessor::search(const QStringList &args)
     }
 }
 
-static const char * const errorTable[] = {
-    "No error", //0
-    "Storage read error",
-    "Invalid service location",
-    "Invalid service xml",
-    "Invalid service interface descriptor",
-    "Service already exists",
-    "Interface implementation already exists",
-    "Loading of plug-in failed",
-    "Service or interface not found",
-    "Insufficient capabilities to access service",
-    "Unknown error",
-};
 
 void CommandProcessor::add(const QStringList &args)
 {
