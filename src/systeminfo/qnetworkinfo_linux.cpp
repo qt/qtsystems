@@ -339,7 +339,9 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
                 struct hci_dev_info deviceInfo;
                 deviceInfo.dev_id = (deviceList->dev_req + interface)->dev_id;
                 if (ioctl(ctl, HCIGETDEVINFO, &deviceInfo) == 0) {
-                    if (hci_test_bit(HCI_RAW, &deviceInfo.flags) && !bacmp(&deviceInfo.bdaddr, BDADDR_ANY)) {
+                    // do not use BDADDR_ANY, fails with gcc 4.6
+                    bdaddr_t bdaddr_any = (bdaddr_t) {{0, 0, 0, 0, 0, 0}};
+                    if (hci_test_bit(HCI_RAW, &deviceInfo.flags) && !bacmp(&deviceInfo.bdaddr, &bdaddr_any)) {
                         int hciDevice = hci_open_dev(deviceInfo.dev_id);
                         hci_read_bd_addr(hciDevice, &deviceInfo.bdaddr, 1000);
                         hci_close_dev(hciDevice);
