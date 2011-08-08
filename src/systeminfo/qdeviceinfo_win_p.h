@@ -63,6 +63,7 @@ public:
     QDeviceInfoPrivate(QDeviceInfo *parent);
 
     bool hasFeature(QDeviceInfo::Feature feature);
+    int imeiCount();
     QDeviceInfo::LockTypeFlags activatedLocks();
     QDeviceInfo::LockTypeFlags enabledLocks();
     QDeviceInfo::ThermalState thermalState();

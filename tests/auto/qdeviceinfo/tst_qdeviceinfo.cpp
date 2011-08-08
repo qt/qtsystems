@@ -49,8 +49,24 @@ class tst_QDeviceInfo : public QObject
     Q_OBJECT
 
 private slots:
+    void tst_imei();
     void tst_lockTypes();
 };
+
+void tst_QDeviceInfo::tst_imei()
+{
+    QDeviceInfo deviceInfo;
+
+    int imeiCount = deviceInfo.imeiCount();
+    QVERIFY(imeiCount >= -1);
+
+    QVERIFY(deviceInfo.imei(-1).isEmpty());
+    QVERIFY(deviceInfo.imei(imeiCount).isEmpty());
+
+    QRegExp imeiPattern("(\\d{0,0}|\\d{15,15})");
+    for (int i = 0; i < imeiCount; ++i)
+        QVERIFY(imeiPattern.exactMatch(deviceInfo.imei(i)));
+}
 
 void tst_QDeviceInfo::tst_lockTypes()
 {

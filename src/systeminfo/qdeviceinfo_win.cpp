@@ -105,6 +105,11 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
     return QDeviceInfo::UnknownThermal;
 }
 
+int QDeviceInfoPrivate::imeiCount()
+{
+    return -1;
+}
+
 QString QDeviceInfoPrivate::imei(int interface)
 {
     Q_UNUSED(interface)

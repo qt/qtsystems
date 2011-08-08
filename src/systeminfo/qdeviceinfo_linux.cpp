@@ -218,6 +218,19 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
         return getThermalState();
 }
 
+int QDeviceInfoPrivate::imeiCount()
+{
+#if !defined(QT_NO_OFONO)
+    if (QOfonoWrapper::isOfonoAvailable()) {
+        if (!ofonoWrapper)
+            ofonoWrapper = new QOfonoWrapper(this);
+        return ofonoWrapper->allModems().size();
+    }
+#else
+    return -1;
+#endif
+}
+
 QString QDeviceInfoPrivate::imei(int interface)
 {
 #if !defined(QT_NO_OFONO)

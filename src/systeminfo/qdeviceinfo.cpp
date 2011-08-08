@@ -53,6 +53,7 @@ public:
     QDeviceInfoPrivate(QDeviceInfo *) {}
 
     bool hasFeature(QDeviceInfo::Feature) { return false; }
+    int imeiCount() { return -1; }
     QDeviceInfo::LockTypeFlags activatedLocks() { return QDeviceInfo::NoLock; }
     QDeviceInfo::LockTypeFlags enabledLocks() { return QDeviceInfo::NoLock; }
     QDeviceInfo::ThermalState thermalState() { return QDeviceInfo::UnknownThermal; }
@@ -204,6 +205,15 @@ QDeviceInfo::ThermalState QDeviceInfo::thermalState() const
 bool QDeviceInfo::hasFeature(QDeviceInfo::Feature feature) const
 {
     return d_ptr->hasFeature(feature);
+}
+
+/*!
+    Returns the count of available International Mobile Equipment Identity (IMEI) of the device. In
+    case of error, or the information is not available, -1 is returned.
+*/
+int QDeviceInfo::imeiCount() const
+{
+    return d_ptr->imeiCount();
 }
 
 /*!
