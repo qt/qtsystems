@@ -15,8 +15,10 @@ QT += declarative publishsubscribe
 SOURCES += publishsubscribe.cpp \
            qdeclarativevaluespacepublisher.cpp \
            qdeclarativevaluespacepublishermetaobject.cpp \
-           qdeclarativevaluespacesubscriber.cpp
+           qdeclarativevaluespacesubscriber.cpp \
+           qmetaobjectbuilder.cpp
 
 HEADERS += qdeclarativevaluespacepublisher_p.h \
            qdeclarativevaluespacepublishermetaobject_p.h \
-           qdeclarativevaluespacesubscriber_p.h
+           qdeclarativevaluespacesubscriber_p.h \
+           qmetaobjectbuilder_p.h

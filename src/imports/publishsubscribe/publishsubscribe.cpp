@@ -42,7 +42,6 @@
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
 
-#include "qvaluespacesubscriber.h"
 #include "qdeclarativevaluespacepublisher_p.h"
 #include "qdeclarativevaluespacesubscriber_p.h"
 
@@ -67,5 +66,5 @@ QT_END_NAMESPACE
 
 #include "publishsubscribe.moc"
 
-Q_EXPORT_PLUGIN2(qsubscriberdeclarativemodule, QT_PREPEND_NAMESPACE(QSubscriberDeclarativeModule));
+Q_EXPORT_PLUGIN2(qsubscriberdeclarativemodule, QT_PREPEND_NAMESPACE(QSubscriberDeclarativeModule))
 

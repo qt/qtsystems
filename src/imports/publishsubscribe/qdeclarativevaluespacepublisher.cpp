@@ -41,39 +41,22 @@
 
 #include "qdeclarativevaluespacepublisher_p.h"
 #include "qdeclarativevaluespacepublishermetaobject_p.h"
-
-#include <QDeclarativeInfo>
+#include <QtCore/qregexp.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeValueSpacePublisherQueueItem
-{
-public:
-    QDeclarativeValueSpacePublisherQueueItem(const QString &subPath, const QVariant &value);
-
-    QString subPath;
-    QVariant value;
-};
-
-QDeclarativeValueSpacePublisherQueueItem::QDeclarativeValueSpacePublisherQueueItem(const QString &subPath, const QVariant &value) :
-    subPath(subPath),
-    value(value)
-{
-}
-
 /*!
     \qmlclass ValueSpacePublisher QDeclarativeValueSpacePublisher
+    \ingroup qml-publishsubscribe
 
-    \brief The ValueSpacePublisher element represents a path in the value space
-           where keys can be published.
+    \brief The ValueSpacePublisher allows application to publish values to Value Space.
 
-    ValueSpacePublishers are constructed with a set \a path which cannot be
-    changed. If you need to publish within multiple different paths, you will
-    need multiple ValueSpacePublishers.
+    ValueSpacePublishers are constructed with a fixed \a path which cannot be changed. And you should
+    set the \a path property before publishing any values. If you need to publish within multiple
+    different paths, you will need multiple publishers.
 
-    For the keys within the path chosen, if the key names to be published
-    are alphanumeric, they may be accessed through dynamic properties by
-    setting the \a keys list.
+    For the keys within the path chosen, if the key names to be published are alphanumeric, they can
+    be accessed through dynamic properties by setting the \a keys list.
 
     Example:
     \code
@@ -91,9 +74,9 @@ QDeclarativeValueSpacePublisherQueueItem::QDeclarativeValueSpacePublisherQueueIt
     }
     \endcode
 
-    Alternatively, for key names that can't be mapped to properties, or for
-    key names shadowed by existing properties (like "value" or "path"), you
-    can also access the \a value property of the Publisher itself.
+    Alternatively, for key names that can't be mapped to properties, or for key names shadowed by
+    existing properties (like "value" or "path"), you can also access the \a value property of the
+    publisher itself.
 
     \code
     ValueSpacePublisher {
@@ -107,83 +90,44 @@ QDeclarativeValueSpacePublisherQueueItem::QDeclarativeValueSpacePublisherQueueIt
         }
     }
     \endcode
-
-    \ingroup qml-publishsubscribe
-
-    \sa QValueSpacePublisher
-    The ValueSpacePublisher element is part of the \bold{QtMobility.publishsubscribe 1.2} module.
 */
 
 QDeclarativeValueSpacePublisher::QDeclarativeValueSpacePublisher(QObject *parent)
-    : QObject(parent),
-      d(new QDeclarativeValueSpacePublisherMetaObject(this)),
-      m_hasSubscribers(false),
-      m_complete(false),
-      m_publisher(0),
-      m_pathSet(false)
+    : QObject(parent)
+    , metaObj(new QDeclarativeValueSpacePublisherMetaObject(this))
+    , hasSubscriber(false)
+    , publisher(0)
 {
+    d_ptr.data()->metaObject = metaObj;
 }
 
 QDeclarativeValueSpacePublisher::~QDeclarativeValueSpacePublisher()
 {
-    if (m_publisher)
-        delete m_publisher;
-}
-
-void QDeclarativeValueSpacePublisher::classBegin()
-{
-}
-
-void QDeclarativeValueSpacePublisher::componentComplete()
-{
-    if (m_pathSet) {
-        m_publisher = new QValueSpacePublisher(m_path, this);
-        connect(m_publisher, SIGNAL(interestChanged(QString,bool)),
-                this, SLOT(onInterestChanged(QString,bool)));
-    }
-    m_complete = true;
-    doQueue();
-}
-
-void QDeclarativeValueSpacePublisher::queueChange(const QString &subPath, const QVariant &val)
-{
-    m_queue << QDeclarativeValueSpacePublisherQueueItem(subPath, val);
-    if (m_publisher)
-        doQueue();
-}
-
-void QDeclarativeValueSpacePublisher::doQueue()
-{
-    foreach (QDeclarativeValueSpacePublisherQueueItem i, m_queue) {
-        m_publisher->setValue(i.subPath, i.value);
-    }
-    m_queue.clear();
+    d_ptr.data()->metaObject = 0;
+    delete metaObj;
 }
 
 /*!
     \qmlproperty string ValueSpacePublisher::path
 
-    This property holds the base path of the publisher.
-    This property is write-once -- after the first write, subsequent
-    writes will be ignored and produce a warning.
+    This property holds the base path of the publisher, and it should be written before publishing
+    any data. Note it can only be written once, and further writing has no effects.
   */
 QString QDeclarativeValueSpacePublisher::path() const
 {
-    return m_path;
+    if (publisher)
+        return publisher->path();
+    else
+        return QString::null;
 }
 
 void QDeclarativeValueSpacePublisher::setPath(const QString &path)
 {
-    if (m_pathSet) {
-        qmlInfo(this) << "Path has already been set";
-        return;
+    if (!publisher) {
+        publisher = new QValueSpacePublisher(path);
+        connect(publisher, SIGNAL(interestChanged(QString,bool)),
+                this, SLOT(onInterestChanged(QString,bool)));
     }
-
-    m_path = path;
-    startServer(true);
-    m_pathSet = true;
-    if (m_complete)
-        componentComplete();
 }
 
 /*!
@@ -193,25 +137,15 @@ void QDeclarativeValueSpacePublisher::setPath(const QString &path)
     path given through the \a path property.
     This property is write only.
 */
-void QDeclarativeValueSpacePublisher::setValue(const QVariant &val)
+void QDeclarativeValueSpacePublisher::setValue(const QVariant &value)
 {
-    queueChange("", val);
+    if (publisher)
+        publisher->setValue(QString::null, value);
 }
 
-/*!
-    \qmlproperty bool ValueSpacePublisher::server
-
-    This property can be used to force the Publisher to start the ValueSpace
-    server (if one is appropriate on the platform) before the \a path property
-    has been set.
-
-    This property is write only.
-*/
-void QDeclarativeValueSpacePublisher::startServer(const bool &really)
+QVariant QDeclarativeValueSpacePublisher::dummyValue() const
 {
-    if (really) {
-        QValueSpace::initValueSpaceServer();
-    }
+    return QVariant();
 }
 
 /*!
@@ -224,7 +158,7 @@ void QDeclarativeValueSpacePublisher::startServer(const bool &really)
 */
 bool QDeclarativeValueSpacePublisher::hasSubscribers() const
 {
-    return m_hasSubscribers;
+    return hasSubscriber;
 }
 
 /*!
@@ -235,31 +169,37 @@ bool QDeclarativeValueSpacePublisher::hasSubscribers() const
 */
 void QDeclarativeValueSpacePublisher::setKeys(const QStringList &keys)
 {
-    foreach (QString key, keys) {
-        d->addKey(key);
-        m_keys.append(key);
+    foreach (const QString &key, keys) {
+        if (key.contains(QRegExp(QString::fromUtf8("[^a-zA-Z0-9]")))
+            || key == QString::fromUtf8("value")
+            || key == QString::fromUtf8("path")
+            || key == QString::fromUtf8("keys")
+            || key == QString::fromUtf8("hasSubscribers")) {
+            continue;
+        }
+
+        metaObj->createProperty(key.toUtf8().constData(), "QVariant");
     }
-}
-
-QVariant QDeclarativeValueSpacePublisher::dummyValue() const
-{
-    return QVariant();
-}
-
-bool QDeclarativeValueSpacePublisher::dummyServer() const
-{
-    return false;
 }
 
 QStringList QDeclarativeValueSpacePublisher::keys() const
 {
-    return m_keys;
+    QStringList keys;
+    QList<QPair<QString, QVariant> > properties = metaObj->dynamicProperties.values();
+    for (QList<QPair<QString, QVariant> >::const_iterator i = properties.constBegin(); i != properties.constEnd(); ++i)
+        keys << (*i).first;
+    return keys;
 }
 
-void QDeclarativeValueSpacePublisher::onInterestChanged(QString /*path*/, bool state)
+/*!
+    \internal
+*/
+void QDeclarativeValueSpacePublisher::onInterestChanged(const QString &path, bool interested)
 {
-    m_hasSubscribers = state;
-    // TODO: pass this on to key properties
+    Q_UNUSED(path)
+
+    hasSubscriber = interested;
+    Q_EMIT subscribersChanged();
 }
 
 QT_END_NAMESPACE

@@ -53,43 +53,39 @@
 #ifndef QDECLARATIVEVALUESPACESUBSCRIBER_P_H
 #define QDECLARATIVEVALUESPACESUBSCRIBER_P_H
 
-#include <QObject>
+#include <qvaluespacesubscriber.h>
 #include <QtCore/qstringlist.h>
-#include "qvaluespacesubscriber.h"
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeValueSpaceSubscriberPrivate;
 class QDeclarativeValueSpaceSubscriber : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
-    Q_PROPERTY(QVariant value READ value NOTIFY contentsChanged)
     Q_PROPERTY(bool connected READ isConnected)
+    Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
     Q_PROPERTY(QStringList subPaths READ subPaths)
+    Q_PROPERTY(QVariant value READ value NOTIFY contentsChanged)
 
 public:
     QDeclarativeValueSpaceSubscriber();
     ~QDeclarativeValueSpaceSubscriber();
 
+    void setPath(QString path);
     QString path() const;
 
-    QVariant value(const QString &subPath = QString(), const QVariant &def=QVariant()) const;
+    QVariant value(const QString &subPath = QString(), const QVariant &def = QVariant()) const;
 
     QStringList subPaths() const;
 
     bool isConnected() const;
 
-public slots:
-    void setPath(QString path);
-
-signals:
+Q_SIGNALS:
     void contentsChanged();
     void pathChanged();
 
 private:
-    QDeclarativeValueSpaceSubscriberPrivate *d;
+    QValueSpaceSubscriber *d_ptr;
 };
 
 QT_END_NAMESPACE

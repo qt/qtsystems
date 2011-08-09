@@ -43,46 +43,18 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeValueSpaceSubscriberPrivate
-{
-public:
-    QDeclarativeValueSpaceSubscriberPrivate();
-    ~QDeclarativeValueSpaceSubscriberPrivate();
-
-    QValueSpaceSubscriber *subscriber;
-    // store our own copy, since the QVSS doesn't always seem
-    // to return the current path properly
-    QString path;
-};
-
-QDeclarativeValueSpaceSubscriberPrivate::QDeclarativeValueSpaceSubscriberPrivate() :
-    subscriber(0)
-{
-}
-
-QDeclarativeValueSpaceSubscriberPrivate::~QDeclarativeValueSpaceSubscriberPrivate()
-{
-    if (subscriber)
-        delete subscriber;
-}
-
-
 /*!
     \qmlclass ValueSpaceSubscriber QDeclarativeValueSpaceSubscriber
 
-    \brief The QValueSpaceSubscriber class allows applications to read and
-           subscribe to Value Space paths.
+    \brief The QValueSpaceSubscriber class allows applications to read and subscribe to Value Space.
 
     \ingroup qml-publishsubscribe
-
-    The ValueSpaceSubscriber element is part of the \bold {QtMobility.publishsubscribe 1.1} module.
 
     Each \l ValueSpaceSubscriber element represents a single value or path in the Value Space. The
     path is set using the \i path property.
 
-    Note that unlike the C++ class QValueSpaceSubscriber, the QML element has
-    no default path. A path must be set before the subscriber will connect
-    to the Value Space and begin receiving notifications.
+    Note that unlike the C++ class QValueSpaceSubscriber, the QML element has no default path. A path
+    must be set before the subscriber will connect to the Value Space and begin receiving notifications.
 
     \code
     ValueSpaceSubscriber {
@@ -91,7 +63,7 @@ QDeclarativeValueSpaceSubscriberPrivate::~QDeclarativeValueSpaceSubscriberPrivat
     }
     \endcode
 
-    The value is accessed using the \i value property.
+    The value is accessed using the \i value property:
 
     \code
     Text {
@@ -100,42 +72,38 @@ QDeclarativeValueSpaceSubscriberPrivate::~QDeclarativeValueSpaceSubscriberPrivat
     \endcode
 */
 
-QDeclarativeValueSpaceSubscriber::QDeclarativeValueSpaceSubscriber() :
-    d(new QDeclarativeValueSpaceSubscriberPrivate)
+QDeclarativeValueSpaceSubscriber::QDeclarativeValueSpaceSubscriber()
+    : d_ptr(0)
 {
 }
 
 QDeclarativeValueSpaceSubscriber::~QDeclarativeValueSpaceSubscriber()
 {
-    delete d;
 }
 
 /*!
     \qmlproperty string ValueSpaceSubscriber::path
 
-    This property holds the base path of the subscriber, and is read/write.
+    This property holds the base path of the subscriber, and it should be set before connecting to
+    any Value Space layers and receiving notifications.
 */
 void QDeclarativeValueSpaceSubscriber::setPath(QString path)
 {
-    if (d->subscriber) {
-        if (d->path == path)
-            return;
-        d->subscriber->setPath(path);
+    if (!d_ptr) {
+        d_ptr = new QValueSpaceSubscriber(path, this);
+        connect(d_ptr, SIGNAL(contentsChanged()), this, SIGNAL(contentsChanged()));
     } else {
-        d->subscriber = new QValueSpaceSubscriber(path);;
+        d_ptr->setPath(path);
+        Q_EMIT pathChanged();
     }
-
-    d->path = path;
-    emit pathChanged();
-
-    // re-connect the signal
-    connect(d->subscriber, SIGNAL(contentsChanged()),
-            this, SIGNAL(contentsChanged()));
 }
 
 QString QDeclarativeValueSpaceSubscriber::path() const
 {
-    return d->path;
+    if (d_ptr)
+        return d_ptr->path();
+    else
+        return QString::null;
 }
 
 /*!
@@ -146,9 +114,10 @@ QString QDeclarativeValueSpaceSubscriber::path() const
 */
 QVariant QDeclarativeValueSpaceSubscriber::value(const QString &subPath, const QVariant &def) const
 {
-    if (!d->subscriber)
+    if (d_ptr)
+        return d_ptr->value(subPath, def);
+    else
         return QVariant();
-    return d->subscriber->value(subPath, def);
 }
 
 /*!
@@ -158,9 +127,10 @@ QVariant QDeclarativeValueSpaceSubscriber::value(const QString &subPath, const Q
 */
 QStringList QDeclarativeValueSpaceSubscriber::subPaths() const
 {
-    if (!d->subscriber)
+    if (d_ptr)
+        return d_ptr->subPaths();
+    else
         return QStringList();
-    return d->subscriber->subPaths();
 }
 
 /*!
@@ -171,9 +141,10 @@ QStringList QDeclarativeValueSpaceSubscriber::subPaths() const
 */
 bool QDeclarativeValueSpaceSubscriber::isConnected() const
 {
-    if (!d->subscriber)
+    if (d_ptr)
+        return d_ptr->isConnected();
+    else
         return false;
-    return d->subscriber->isConnected();
 }
 
 QT_END_NAMESPACE

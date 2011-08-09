@@ -40,48 +40,55 @@
 ****************************************************************************/
 
 #include "qdeclarativevaluespacepublishermetaobject_p.h"
-#include "qdeclarativevaluespacepublisher_p.h"
-#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
-QDeclarativeValueSpacePublisherMetaObject::QDeclarativeValueSpacePublisherMetaObject(QObject * /*obj*/)
-//    : QDeclarativeOpenMetaObject(obj)
+QDeclarativeValueSpacePublisherMetaObject::QDeclarativeValueSpacePublisherMetaObject(QDeclarativeValueSpacePublisher *parent)
+    : metaObject(0)
+    , object(parent)
 {
+    metaObjectBuilder.setSuperClass(parent->metaObject());
+    metaObjectBuilder.setClassName(parent->metaObject()->className());
+    metaObjectBuilder.setFlags(QMetaObjectBuilder::DynamicMetaObject);
+    metaObject = metaObjectBuilder.toMetaObject();
+    signalOffset = metaObject->methodOffset();
+    propertyOffset = metaObject->propertyCount();
+    d = metaObject->d;
 }
 
-void QDeclarativeValueSpacePublisherMetaObject::addKey(const QString &key, bool /*interest*/)
+QDeclarativeValueSpacePublisherMetaObject::~QDeclarativeValueSpacePublisherMetaObject()
 {
-    if (key.contains(QRegExp("[^a-zA-Z0-9]")))
-        return;
-    if (key == "value" || key == "path" || key == "keys" || key == "hasSubscribers")
-        return;
-
-    QString keysubs = key;
-    keysubs.append("HasSubscribers");
-
-//    int pid = createProperty(key.toLatin1().constData(), "QVariant");
-//    int sid = createProperty(keysubs.toLatin1().constData(), "bool");
-//    m_keyProperties.insert(pid, key);
-//    m_subsProperties.insert(sid, interest);
+    qFree(metaObject);
 }
 
-void QDeclarativeValueSpacePublisherMetaObject::getValue(int id, void **a)
+int QDeclarativeValueSpacePublisherMetaObject::createProperty(const char *name, const char *type)
 {
-    if (m_subsProperties.contains(id)) {
-        bool subs = m_subsProperties.value(id);
-        *reinterpret_cast<bool*>(a[0]) = subs;
-    }
+    int id = metaObjectBuilder.propertyCount();
+    metaObjectBuilder.addSignal("__" + QByteArray::number(id) + "()");
+    metaObjectBuilder.addProperty(name, type, id);
+
+    qFree(metaObject);
+    metaObject = metaObjectBuilder.toMetaObject();
+    d = metaObject->d;
+
+    dynamicProperties.insert(id, QPair<QString, QVariant>(QString::fromUtf8(name), QVariant()));
+
+    return propertyOffset + id;
 }
 
-void QDeclarativeValueSpacePublisherMetaObject::setValue(int id, void ** /*a*/)
+int QDeclarativeValueSpacePublisherMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
-    if (m_keyProperties.contains(id)) {
-        //QString key = m_keyProperties.value(id);
-        //QVariant &v = *reinterpret_cast<QVariant*>(a[0]);
-
-//        QDeclarativeValueSpacePublisher *pub = qobject_cast<QDeclarativeValueSpacePublisher*>(object());
-//        pub->queueChange(key, v);
+    if ((c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty)
+        && id >= propertyOffset) {
+        if (c == QMetaObject::ReadProperty) {
+            *reinterpret_cast<QVariant*>(a[0]) = dynamicProperties[id - propertyOffset].second;
+        } else if (c == QMetaObject::WriteProperty) {
+            dynamicProperties[id - propertyOffset].second = *reinterpret_cast<QVariant*>(a[0]);
+            activate(object, signalOffset + id, 0);
+        }
+        return -1;
+    } else {
+        return object->qt_metacall(c, id, a);
     }
 }
 

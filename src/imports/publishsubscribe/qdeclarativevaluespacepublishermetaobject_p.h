@@ -53,30 +53,37 @@
 #ifndef QDECLARATIVEVALUESPACEPUBLISHERMETAOBJECT_H
 #define QDECLARATIVEVALUESPACEPUBLISHERMETAOBJECT_H
 
-#include <QHash>
-
-//#include "qdeclarativeopenmetaobject_p.h"
-#include "qvaluespace.h"
-#include "qvaluespacepublisher.h"
+#include "qdeclarativevaluespacepublisher_p.h"
+#include "qmetaobjectbuilder_p.h"
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
-//class QDeclarativeValueSpacePublisherMetaObject : public QDeclarativeOpenMetaObject
-class QDeclarativeValueSpacePublisherMetaObject
+// Copied from qobject_p.h
+struct QAbstractDynamicMetaObject : public QMetaObject
 {
+    virtual ~QAbstractDynamicMetaObject() {}
+    virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; }
+    virtual int createProperty(const char *, const char *) { return -1; }
+};
+// Copy end
 
-public:
-    QDeclarativeValueSpacePublisherMetaObject(QObject *obj);
+struct QDeclarativeValueSpacePublisherMetaObject : public QAbstractDynamicMetaObject
+{
+    QDeclarativeValueSpacePublisherMetaObject(QDeclarativeValueSpacePublisher *parent);
+    ~QDeclarativeValueSpacePublisherMetaObject();
 
-    virtual void getValue(int id, void **a);
-    virtual void setValue(int id, void **a);
+    int createProperty(const char *name, const char *type);
+    int metaCall(QMetaObject::Call c, int id, void **a);
 
-    void addKey(const QString &key, bool interest=false);
-
-    QHash<int, QString> m_keyProperties;
-    QHash<int, bool> m_subsProperties;
+    int signalOffset;
+    int propertyOffset;
+    QMetaObject *metaObject;
+    QMetaObjectBuilder metaObjectBuilder;
+    QObject *object;
+    QHash<int, QPair<QString, QVariant> > dynamicProperties;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QDECLARATIVEVALUESPACEPUBLISHERMETAOBJECT_H

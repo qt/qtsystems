@@ -53,77 +53,52 @@
 #ifndef QDECLARATIVEVALUESPACEPUBLISHER_H
 #define QDECLARATIVEVALUESPACEPUBLISHER_H
 
-#include <QHash>
-#include <QStringList>
-
-#include "qvaluespace.h"
-#include "qvaluespacepublisher.h"
-#include "qvaluespacesubscriber.h"
-
-#include <QDeclarativeListProperty>
-#include <QDeclarativeParserStatus>
+#include <qvaluespacepublisher.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeValueSpacePublisherMetaObject;
-class QDeclarativeValueSpacePublisherQueueItem;
 
-class QDeclarativeValueSpacePublisher : public QObject, public QDeclarativeParserStatus
+class QDeclarativeValueSpacePublisher : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QDeclarativeParserStatus)
 
-    Q_PROPERTY(QString path READ path WRITE setPath)
     Q_PROPERTY(bool hasSubscribers READ hasSubscribers NOTIFY subscribersChanged)
+    Q_PROPERTY(QString path READ path WRITE setPath)
     Q_PROPERTY(QStringList keys READ keys WRITE setKeys)
 
     // these should be write-only
     // but MSVC can't cope with write-only Q_PROPERTYs?
     Q_PROPERTY(QVariant value READ dummyValue WRITE setValue)
-    Q_PROPERTY(bool server READ dummyServer WRITE startServer)
 
 public:
-    QDeclarativeValueSpacePublisher(QObject *parent=0);
+    QDeclarativeValueSpacePublisher(QObject *parent = 0);
     ~QDeclarativeValueSpacePublisher();
-
-    QString path() const;
-    void setPath(const QString &path);
-
-    void setValue(const QVariant &val);
-    void startServer(const bool &really);
-    bool dummyServer() const;
-
-    QStringList keys() const;
-    QVariant dummyValue() const;
 
     bool hasSubscribers() const;
 
+    void setPath(const QString &path);
+    QString path() const;
+
     void setKeys(const QStringList &keys);
+    QStringList keys() const;
+    QVariant dummyValue() const;
 
-    void classBegin();
-    void componentComplete();
+    void setValue(const QVariant &value);
 
-signals:
+Q_SIGNALS:
     void subscribersChanged();
 
+private Q_SLOTS:
+    void onInterestChanged(const QString &path, bool interested);
+
 private:
-    QDeclarativeValueSpacePublisherMetaObject *d;
-    friend class QDeclarativeValueSpacePublisherMetaObject;
+    QDeclarativeValueSpacePublisherMetaObject *metaObj;
 
-    void queueChange(const QString &subPath, const QVariant &val);
-    void doQueue();
-
-    QList<QDeclarativeValueSpacePublisherQueueItem> m_queue;
-    bool m_hasSubscribers;
-    bool m_complete;
-    QValueSpacePublisher *m_publisher;
-    QString m_path;
-    QStringList m_keys;
-    bool m_pathSet;
-
-private slots:
-    void onInterestChanged(QString path, bool state);
-
+    bool hasSubscriber;
+    QValueSpacePublisher *publisher;
 };
 
 QT_END_NAMESPACE
