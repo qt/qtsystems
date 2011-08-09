@@ -47,6 +47,7 @@
 #endif // QT_NO_OFONO
 
 #include <QtCore/qdir.h>
+#include <QtCore/qprocess.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qtimer.h>
 
@@ -269,15 +270,13 @@ QString QDeviceInfoPrivate::model()
 
 QString QDeviceInfoPrivate::productName()
 {
-    if (productNameBuffer.isEmpty()) {
-        QFile file(QString::fromAscii("/etc/lsb-release"));
-        if (file.open(QIODevice::ReadOnly)) {
-            QTextStream textStream(&file);
-            while (!textStream.atEnd()) {
-                QString line = textStream.readLine();
-                if (line.contains(QString::fromAscii("DISTRIB_CODENAME")))
-                    productNameBuffer = line.split(QString::fromAscii("=")).at(1).simplified();
-            }
+    if (productNameBuffer.isEmpty() && QFile::exists(QString::fromAscii("/usr/bin/lsb_release"))) {
+        QProcess lsbRelease;
+        lsbRelease.start(QString::fromAscii("/usr/bin/lsb_release"),
+                         QStringList() << QString::fromAscii("-c"));
+        if (lsbRelease.waitForFinished()) {
+            QString buffer(QString::fromLocal8Bit(lsbRelease.readAllStandardOutput().constData()));
+            productNameBuffer = buffer.section(QChar::fromAscii('\t'), 1, 1).simplified();
         }
     }
     return productNameBuffer;
@@ -297,14 +296,26 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
     switch (type) {
     case QDeviceInfo::Os:
+        if (versionBuffer[0].isEmpty() && QFile::exists(QString::fromAscii("/usr/bin/lsb_release"))) {
+            QProcess lsbRelease;
+            lsbRelease.start(QString::fromAscii("/usr/bin/lsb_release"),
+                             QStringList() << QString::fromAscii("-r"));
+            if (lsbRelease.waitForFinished()) {
+                QString buffer(QString::fromLocal8Bit(lsbRelease.readAllStandardOutput().constData()));
+                versionBuffer[0] = buffer.section(QChar::fromAscii('\t'), 1, 1).simplified();
+            }
+        }
         if (versionBuffer[0].isEmpty()) {
-            QFile file(QString::fromAscii("/etc/lsb-release"));
-            if (file.open(QIODevice::ReadOnly)) {
-                QTextStream textStream(&file);
-                while (!textStream.atEnd()) {
-                    QString line = textStream.readLine();
-                    if (line.contains(QString::fromAscii("DISTRIB_RELEASE")))
-                        versionBuffer[0] = line.split(QString::fromAscii("=")).at(1).simplified();
+            QStringList releaseFies = QDir(QString::fromAscii("/etc/")).entryList(QStringList() << QString::fromAscii("*-release"));
+            foreach (const QString &file, releaseFies) {
+                QFile release(QString::fromAscii("/etc/") + file);
+                if (release.open(QIODevice::ReadOnly)) {
+                    QString all(QString::fromLocal8Bit(release.readAll().constData()));
+                    QRegExp regExp(QString::fromAscii("\\d+(\\.\\d+)*"));
+                    if (-1 != regExp.indexIn(all)) {
+                        versionBuffer[0] = regExp.cap(0);
+                        break;
+                    }
                 }
             }
         }

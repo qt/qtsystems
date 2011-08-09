@@ -120,8 +120,8 @@ QT_BEGIN_NAMESPACE
     \enum QDeviceInfo::Version
     This enum describes the version component.
 
-    \value Os                    Operating system version / platform ID. For Linux, it returns the
-                                 version of the distribution if any.
+    \value Os                    Operating system version. For Linux, it returns the version of the
+                                 distribution if any.
     \value Firmware              Version of (flashable) system as a whole. For Linux, it's the version
                                  of the kernel.
 */
