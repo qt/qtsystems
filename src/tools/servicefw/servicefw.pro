@@ -2,7 +2,7 @@ load(qt_module)
 
 TEMPLATE = app
 TARGET = servicefw
-DESTDIR = ../../../bin
+DESTDIR = $$QT.serviceframework.bins
 
 QT += serviceframework
 DEFINES += IGNORE_SERVICEMETADATA_EXPORT
