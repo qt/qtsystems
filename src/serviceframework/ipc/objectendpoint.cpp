@@ -163,7 +163,7 @@ public:
 };
 
 ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent)
-    : QObject(parent), dispatch(comm), service(0)
+    : QObject(parent), dispatch(comm), service(0), security(0)
 {
     Q_ASSERT(dispatch);
     d = new ObjectEndPointPrivate;
@@ -245,6 +245,12 @@ void ObjectEndPoint::newPackageReady()
         QServicePackage p = dispatch->nextPackage();
         if (!p.isValid())
             continue;
+
+        if (security && !security->isAuthorized(p.d->packageType, p.d->entry)) {
+            qWarning() << "Failed auth, trying to terminate connection";
+            this->disconnected();
+            return;
+        }
 
         switch (p.d->packageType) {
             case QServicePackage::ObjectCreation:
@@ -618,13 +624,18 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 {
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests()->contains(requestId) ) {
-        Response* response = openRequests()->value(requestId);
+//        Response* response = openRequests()->value(requestId);
         QEventLoop* loop = new QEventLoop( this );
         QTimer::singleShot(30000, loop, SLOT(quit()));
         connect(this, SIGNAL(pendingRequestFinished()), loop, SLOT(quit()));
         loop->exec();
         delete loop;
     }
+}
+
+void ObjectEndPoint::setServiceSecurity(QServiceSecurity *serviceSecurity)
+{
+    security = serviceSecurity;
 }
 
 #include "moc_objectendpoint_p.cpp"

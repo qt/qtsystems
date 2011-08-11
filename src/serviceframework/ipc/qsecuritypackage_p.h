@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,58 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef OBJECT_ENDPOINT_H
-#define OBJECT_ENDPOINT_H
+#ifndef QSECURITY_PACKAGE_H
+#define QSECURITY_PACKAGE_H
 
 #include "qserviceframeworkglobal.h"
-#include "ipcendpoint_p.h"
+#include <QExplicitlySharedDataPointer>
+#include <QSharedData>
+#include <QUuid>
+#include <QVariant>
 #include "qremoteserviceregister.h"
-#include "qservice.h"
-#include "qservicesecurity_p.h"
-#include <QPointer>
-#include <QHash>
 
 QT_BEGIN_NAMESPACE
 
-class ObjectEndPointPrivate;
-class ObjectEndPoint : public QObject
+class QDataStream;
+class QDebug;
+
+class QSecurityPackagePrivate;
+class Q_AUTOTEST_EXPORT QSecurityPackage
 {
-    Q_OBJECT
 public:
-    enum Type {
-        Service = 0,
-        Client
-    };
+    QSecurityPackage();
+    QSecurityPackage(const QSecurityPackage& other);
+    QSecurityPackage& operator=(const QSecurityPackage& other);
+    ~QSecurityPackage();
 
-    ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent = 0);
-    ~ObjectEndPoint();
-    QObject* constructProxy(const QRemoteServiceRegister::Entry& entry);
+    bool isValid() const;
 
-    void objectRequest(const QServicePackage& p);
-    void methodCall(const QServicePackage& p);
-    void propertyCall(const QServicePackage& p);
+    QUuid token() const;
+    void setToken(const QUuid &t);
 
-    QVariant invokeRemote(int metaIndex, const QVariantList& args, int returnType);
-    QVariant invokeRemoteProperty(int metaIndex, const QVariant& arg, int returnType, QMetaObject::Call c);
+    QExplicitlySharedDataPointer<QSecurityPackagePrivate> d;
 
-    void setServiceSecurity(QServiceSecurity *serviceSecurity);
+#ifndef QT_NO_DATASTREAM
+    friend QDataStream &operator<<(QDataStream &, const QSecurityPackage&);
+    friend QDataStream &operator>>(QDataStream &, QSecurityPackage&);
+#endif
 
-Q_SIGNALS:
-    void pendingRequestFinished();
+};
 
-public Q_SLOTS:
-    void newPackageReady();
-    void disconnected();
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &, const QSecurityPackage&);
+QDataStream &operator>>(QDataStream &, QSecurityPackage&);
+#endif
 
-private:
-    void waitForResponse(const QUuid& requestId);
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const QSecurityPackage&);
+#endif
 
-    QServiceIpcEndPoint* dispatch;
-    QPointer<QObject> service;
-    ObjectEndPointPrivate* d;
-    QServiceSecurity* security;
+class QSecurityPackagePrivate : public QSharedData
+{
+public:
+    QSecurityPackagePrivate()
+    {
+    }
+
+    QUuid token;
+
+    virtual void clean()
+    {
+        token = QUuid();
+    }
 };
 
 QT_END_NAMESPACE
 
-#endif //OBJECT_ENDPOINT_H
+#endif

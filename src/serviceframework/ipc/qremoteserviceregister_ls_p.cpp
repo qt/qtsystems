@@ -60,6 +60,9 @@
 
 #include <QCoreApplication>
 #include <QTextStream>
+
+#include "qsecuritypackage_p.h"
+#include "qservicesecurity_p.h"
 #endif
 
 #ifndef Q_OS_WIN
@@ -83,17 +86,32 @@ class LocalSocketEndPoint : public QServiceIpcEndPoint
 {
     Q_OBJECT
 public:
-    LocalSocketEndPoint(QLocalSocket* s, QObject* parent = 0)
-        : QServiceIpcEndPoint(parent), socket(s)
+    LocalSocketEndPoint(QLocalSocket* s, QServiceSecurity *sec, QObject* parent = 0)
+        : QServiceIpcEndPoint(parent),
+          socket(s),
+          securityService(sec)
     {
         Q_ASSERT(socket);
         socket->setParent(this);
-        connect(s, SIGNAL(readyRead()), this, SLOT(readIncoming()));
+
+        connect(s, SIGNAL(readyRead()), this, SLOT(readIncomingSecurity()));
         connect(s, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
         connect(s, SIGNAL(disconnected()), this, SLOT(ipcfault()));
 
+#ifdef QT_JSONDB
+        if (sec->getSessionType() == QServiceSecurity::Client) {
+            // write hello package
+            QByteArray block;
+            QDataStream out(&block, QIODevice::WriteOnly);
+            out.setVersion(QDataStream::Qt_4_6);
+            out << sec->getSecurityPackage();
+            socket->write(block);
+        }
+#endif
+
         if (socket->bytesAvailable())
-            QTimer::singleShot(0, this, SLOT(readIncoming()));
+            QTimer::singleShot(0, this, SLOT(readIncomingSecurity()));
+
     }
 
     ~LocalSocketEndPoint()
@@ -130,6 +148,35 @@ protected slots:
 
         emit readyRead();
     }
+    void readIncomingSecurity()
+    {
+        if (!securityService || !securityService->waitingOnToken()) {
+            disconnect(socket, SIGNAL(readyRead()), this, SLOT(readIncomingSecurity()));
+            connect(socket, SIGNAL(readyRead()), this, SLOT(readIncoming()));
+            readIncoming();
+            return;
+        }
+
+        QDataStream in(socket);
+        in.setVersion(QDataStream::Qt_4_6);
+        if (socket->bytesAvailable()) {
+            QSecurityPackage pkg;
+            in >> pkg;
+            if (!securityService->isTokenValid(pkg)) {
+                qWarning() << Q_FUNC_INFO << "FAILED AUTH, serivce didn't have a token, or client didn't send a valid one.";
+                qWarning() << Q_FUNC_INFO << "Token received was" << pkg.token().toString();
+                socket->disconnect();
+            }
+            else {
+                connect(socket, SIGNAL(readyRead()), this, SLOT(readIncoming()));
+                disconnect(socket, SIGNAL(readyRead()), this, SLOT(readIncomingSecurity()));
+                if (socket->bytesAvailable())
+                    readIncoming();
+            }
+        }
+    }
+
+protected slots:
     void ipcfault()
     {
         emit errorUnrecoverableIPCFault(QService::ErrorServiceNoLongerAvailable);
@@ -137,6 +184,8 @@ protected slots:
 
 private:
     QLocalSocket* socket;
+    QServiceSecurity *securityService;
+    QRemoteServiceRegisterLocalSocketPrivate *serviceRegPriv;
 };
 
 #ifdef QT_JSONDB
@@ -224,7 +273,6 @@ void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& i
 void QRemoteServiceRegisterLocalSocketPrivate::notionEvent(const QVariantMap &notion)
 {
 #ifdef QT_JSONDB
-    qDebug() << Q_FUNC_INFO << "Got" << notion.value(QLatin1String("notions"));
     if (notion.value(QLatin1String("notion")).toString() == QLatin1String("ServiceAuthorizationEvent")) {
         QString token = notion.value(QLatin1String("token")).toString();
         QStringList authorized = notion.value(QLatin1String("authorized")).toStringList();
@@ -292,8 +340,14 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
                 return;
             }
         }
-        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(s);
+        QServiceSecurity *sec = 0x0;
+#ifdef QT_JSONDB
+        sec = new QServiceSecurity(QServiceSecurity::Service, this);
+        sec->setAuthorizedClients(&authorizedClients);
+#endif
+        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(s, sec, this);
         ObjectEndPoint* endpoint = new ObjectEndPoint(ObjectEndPoint::Service, ipcEndPoint, this);
+        endpoint->setServiceSecurity(sec);
         Q_UNUSED(endpoint);
     }
 }
@@ -330,6 +384,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
 {
     QLocalSocket* socket = new QLocalSocket();
     socket->connectToServer(location);
+    QUuid secToken;
     if (!socket->waitForConnected()){
         if (!socket->isValid()) {
             QString path = location;
@@ -399,7 +454,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                     return false;
                 }
 
-                if(waiter->notion.value("notion") == QLatin1String("ServiceRequestEvent")) {
+                if (waiter->notion.value(QLatin1String("notion")) == QLatin1String("ServiceRequestEvent")) {
                     serviceRequestEventReceived = true;
                 }
                 else {
@@ -408,6 +463,8 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             }
 
             qDebug() << "Got ServiceRequestEvent" << waiter->notion;
+
+            secToken = waiter->notion.value(QLatin1String("token")).toString();
 
             socket->connectToServer(location);
             if (!socket->isValid()){
@@ -421,7 +478,14 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
         }
     }
     if (socket->isValid()){
-        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(socket);
+        QServiceSecurity *sec = new QServiceSecurity(QServiceSecurity::Client, socket);
+#ifdef QT_JSONDB
+        if (secToken.isNull()){
+            qWarning() << "No security token found, client will be refused connection";
+        }
+        sec->setAuthToken(secToken);
+#endif
+        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(socket, sec);
         ObjectEndPoint* endPoint = new ObjectEndPoint(ObjectEndPoint::Client, ipcEndPoint);
 
         QObject *proxy = endPoint->constructProxy(entry);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,21 +39,25 @@
 **
 ****************************************************************************/
 
-#ifndef OBJECT_ENDPOINT_H
-#define OBJECT_ENDPOINT_H
+#ifndef QSERVICE_SECURITY_H
+#define QSERVICE_SECURITY_H
 
 #include "qserviceframeworkglobal.h"
-#include "ipcendpoint_p.h"
+#include <QExplicitlySharedDataPointer>
+#include <QSharedData>
+#include <QUuid>
+#include <QVariant>
 #include "qremoteserviceregister.h"
-#include "qservice.h"
-#include "qservicesecurity_p.h"
-#include <QPointer>
-#include <QHash>
+#include "qsecuritypackage_p.h"
+#include "qservicepackage_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class ObjectEndPointPrivate;
-class ObjectEndPoint : public QObject
+class QDataStream;
+class QDebug;
+
+class QServiceSecurityPrivate;
+class Q_AUTOTEST_EXPORT QServiceSecurity : public QObject
 {
     Q_OBJECT
 public:
@@ -62,35 +66,49 @@ public:
         Client
     };
 
-    ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent = 0);
-    ~ObjectEndPoint();
-    QObject* constructProxy(const QRemoteServiceRegister::Entry& entry);
+    QServiceSecurity(QServiceSecurity::Type m, QObject *parent = NULL);
+    ~QServiceSecurity();
 
-    void objectRequest(const QServicePackage& p);
-    void methodCall(const QServicePackage& p);
-    void propertyCall(const QServicePackage& p);
+    Type getSessionType() const;
 
-    QVariant invokeRemote(int metaIndex, const QVariantList& args, int returnType);
-    QVariant invokeRemoteProperty(int metaIndex, const QVariant& arg, int returnType, QMetaObject::Call c);
+    void setAuthToken(const QUuid &token);
+    void setAuthorizedClients(QHash<QString, QStringList> *authorized);
 
-    void setServiceSecurity(QServiceSecurity *serviceSecurity);
+    Type isService() const;
+    bool isTokenValid(const QSecurityPackage &pkg);
 
-Q_SIGNALS:
-    void pendingRequestFinished();
+    bool isAuthorized(QServicePackage::Type type, const QRemoteServiceRegister::Entry &entry) const;
 
-public Q_SLOTS:
-    void newPackageReady();
-    void disconnected();
+    bool waitingOnToken() const;
+
+    QSecurityPackage getSecurityPackage() const;
+
+#ifndef QT_NO_DATASTREAM
+    friend QDataStream &operator<<(QDataStream &, const QServiceSecurity&);
+    friend QDataStream &operator>>(QDataStream &, QServiceSecurity&);
+#endif
 
 private:
-    void waitForResponse(const QUuid& requestId);
+    Q_DISABLE_COPY(QServiceSecurity)
 
-    QServiceIpcEndPoint* dispatch;
-    QPointer<QObject> service;
-    ObjectEndPointPrivate* d;
-    QServiceSecurity* security;
+    QServiceSecurityPrivate *d;
+};
+
+class QServiceSecurityPrivate
+{
+public:
+    QServiceSecurityPrivate()
+        : type(QServiceSecurity::Client)
+    {
+    }
+
+    QServiceSecurity::Type type;
+    QUuid token;
+    bool needToken;
+
+    QHash<QString, QStringList> *authorizedClients;
 };
 
 QT_END_NAMESPACE
 
-#endif //OBJECT_ENDPOINT_H
+#endif

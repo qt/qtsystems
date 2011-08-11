@@ -609,7 +609,7 @@ bool ServiceMetaData::processInterfaceElement(QXmlStreamReader &aXMLReader)
     if (!parseError) {
         const QString ident = aInterface.d->interfaceName
                                 + QString::number(aInterface.majorVersion())
-                                + "."
+                                + QLatin1String(".")
                                 + QString::number(aInterface.minorVersion());
         if (duplicates.contains(ident.toLower())) {
             latestError = ServiceMetaData::SFW_ERROR_DUPLICATED_INTERFACE;

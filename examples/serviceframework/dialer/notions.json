@@ -1,0 +1,7 @@
+{
+    "notion-file-version": 1,
+    "identifier": "com.nokia.qt.examples.dialer",
+    "instruct": [
+       { "action": "start" }
+    ]
+}
