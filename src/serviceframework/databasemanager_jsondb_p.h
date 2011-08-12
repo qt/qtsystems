@@ -61,15 +61,20 @@
 #include "qservicefilter.h"
 #include "dberror_p.h"
 
+#include <jsondb-global.h>
+Q_ADDON_JSONDB_BEGIN_NAMESPACE
+class JsonDbClient;
+Q_ADDON_JSONDB_END_NAMESPACE
+Q_USE_JSONDB_NAMESPACE
+
 #ifdef QT_SFW_SERVICEDATABASE_GENERATE
 #undef Q_AUTOTEST_EXPORT
 #define Q_AUTOTEST_EXPORT
 #endif
 
-class JsonDbClient;
-
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
+
 
 class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
 {

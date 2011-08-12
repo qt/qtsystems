@@ -51,6 +51,8 @@
 #include <QTimer>
 #include <QProcess>
 #include <QFile>
+#include <QCoreApplication>
+#include <QDir>
 
 #include <time.h>
 #include <sys/types.h>          /* See NOTES */
@@ -98,7 +100,7 @@ public:
         connect(s, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
         connect(s, SIGNAL(disconnected()), this, SLOT(ipcfault()));
 
-#ifdef QT_JSONDB
+#if defined(QT_JSONDB) && defined(QT_WAYLAND_PRESENT)
         if (sec->getSessionType() == QServiceSecurity::Client) {
             // write hello package
             QByteArray block;
@@ -341,7 +343,7 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
             }
         }
         QServiceSecurity *sec = 0x0;
-#ifdef QT_JSONDB
+#if defined(QT_JSONDB) && defined(QT_WAYLAND_PRESENT)
         sec = new QServiceSecurity(QServiceSecurity::Service, this);
         sec->setAuthorizedClients(&authorizedClients);
 #endif
@@ -424,6 +426,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                 qWarning() << "Server could not be started";
             }
 #else
+#ifdef QT_WAYLAND_PRESENT
             NotionClient *client = new NotionClient();
             NotionWaiter *waiter = new NotionWaiter(client);
             client->setActive(true);
@@ -474,12 +477,78 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
 
             delete waiter;
             delete client;
+#else /* QT_WAYLAND_PRESENT */
+            // XXX Work around for single process systems
+            qWarning() << "SFW Using single process hack to start service";
+            QStringList paths;
+            QString root = QCoreApplication::applicationDirPath() + QLatin1String("/../");
+            paths += root;
+            paths += root + QLatin1String("opt/mt/applications/");
+            paths += root + QLatin1String("applications/");
+            paths += QLatin1String("/opt/mt/applications/");
+            foreach (QString base, paths) {
+                QDir dir(base);
+                dir.setFilter(QDir::Dirs);
+                QFileInfoList list = dir.entryInfoList();
+                for (int i = 0; i < list.size(); i++){
+                    QFileInfo fileInfo = list.at(i);
+                    QFile info(fileInfo.filePath() + QLatin1String("/info.json"));
+                    if (info.exists() && info.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                        QString id;
+                        QString app;
+                        while (!info.atEnd()) {
+                            QByteArray line = info.readLine();
+                            QString l = QLatin1String(line.constData());
+                            if (l.contains(QLatin1String("Identifier"))) {
+                                l = l.simplified();
+                                id = l.mid(l.indexOf(QLatin1Char(':'))+3);
+                                id.chop(1);
+                            }
+                            else if (l.contains(QLatin1String("Application"))) {
+                                l = l.simplified();
+                                app = l.mid(l.indexOf(QLatin1Char(':'))+3);
+                                app.chop(1);
+                            }
+                        }
+                        if (id.contains(location)) {
+                            path = fileInfo.filePath() + QLatin1String("/") + app;
+                            goto done;
+                        }
+                    }
+                }
+            }
+done:
+
+            qWarning() << "SFW trying to start" << path;
+            qint64 pid = 0;
+            // Start the service as a detached process
+            if (QProcess::startDetached(path, QStringList(), QString(), &pid)){
+                int i;
+                socket->connectToServer(location);
+                for (i = 0; !socket->isValid() && i < 1000; i++){
+                    // Temporary hack till we can improve startup signaling
+                    struct timespec tm;
+                    tm.tv_sec = 0;
+                    tm.tv_nsec = 1000000;
+                    nanosleep(&tm, 0x0);
+                    socket->connectToServer(location);
+                    // keep trying for a while
+                }
+                if (!socket->isValid()){
+                    qWarning() << "Server failed to start within waiting period";
+                    return false;
+                }
+            }
+            else {
+                qWarning() << "Server could not be started";
+            }
+#endif
 #endif /* QT_JSONDB */
         }
     }
     if (socket->isValid()){
         QServiceSecurity *sec = new QServiceSecurity(QServiceSecurity::Client, socket);
-#ifdef QT_JSONDB
+#if defined(QT_JSONDB) && defined(QT_WAYLAND_PRESENT)
         if (secToken.isNull()){
             qWarning() << "No security token found, client will be refused connection";
         }

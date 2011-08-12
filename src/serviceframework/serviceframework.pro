@@ -18,7 +18,13 @@ contains(config_test_jsondb, yes) {
     LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
     LIBS += -L/opt/mt/lib -lmtcore -Wl,-rpath,/opt/mt/lib
     PKGCONFIG += mtcore
+    DEFINES += QT_ADDON_JSONDB_LIB
+    QT += jsondb jsondb-private
 
+}
+
+contains(config_test_wayland, yes) {
+    DEFINES += QT_WAYLAND_PRESENT
 }
 
 include(ipc/ipc.pri)

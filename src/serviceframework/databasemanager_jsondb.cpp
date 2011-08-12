@@ -42,8 +42,10 @@
 #include <QDebug>
 #include <QHash>
 
-#include <mtcore/jsondb-client.h>
-#include <mtcore/jsondb-strings.h>
+#include <private/jsondb-connection_p.h>
+#include <private/jsondb-strings_p.h>
+#include <mtcore/jsondb-constants.h>
+#include <jsondb-client.h>
 
 #include "databasemanager_jsondb_p.h"
 

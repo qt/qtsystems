@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <mtcore/jsondb-constants.h>
+#include <wayland-client.h>
 
 int main()
 {

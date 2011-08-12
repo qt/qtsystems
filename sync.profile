@@ -42,4 +42,5 @@
     "bluez" => {},
     "udev" => {},
     "jsondb" => {},
+    "wayland" => {}
 );
