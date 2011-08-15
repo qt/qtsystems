@@ -115,9 +115,9 @@ QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfoPrivate::availableTouchDevice
 
 #if defined(SM_DIGITIZER)
     int touchDevices = GetSystemMetrics(SM_DIGITIZER);
-    if (SM_DIGITIZER & NID_MULTI_INPUT)
+    if (touchDevices & NID_MULTI_INPUT)
         types |= QInputDeviceInfo::MultiTouch;
-    else if (SM_DIGITIZER > 0)
+    else if (touchDevices > 0)
         types |= QInputDeviceInfo::SingleTouch;
 #else
     if (GetSystemMetrics(SM_TABLETPC) > 0)

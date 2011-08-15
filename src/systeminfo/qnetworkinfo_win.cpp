@@ -70,6 +70,8 @@ int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
 
 int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
 {
+    Q_UNUSED(interface)
+
     switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
@@ -128,6 +130,8 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::currentNetworkMode()
 
 QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::NetworkMode mode, int interface)
 {
+    Q_UNUSED(interface)
+
     switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
@@ -149,6 +153,8 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
 
 QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
 {
+    Q_UNUSED(interface)
+
     switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
@@ -210,6 +216,8 @@ QString QNetworkInfoPrivate::locationAreaCode(int interface)
 
 QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int interface)
 {
+    Q_UNUSED(interface)
+
     switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:
@@ -229,6 +237,8 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
 
 QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int interface)
 {
+    Q_UNUSED(interface)
+
     switch (mode) {
     case QNetworkInfo::WlanMode:
     case QNetworkInfo::EthernetMode:

@@ -48,6 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
+static const QString REGISTRY_BIOS_PATH(QString::fromAscii("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS"));
+static const QString REGISTRY_CURRENT_VERSION_PATH(QString::fromAscii("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"));
+static const QString REGISTRY_MANUFACTURER_KEY(QString::fromAscii("SystemManufacturer"));
+static const QString REGISTRY_PRODUCTNAME_KEY(QString::fromAscii("SystemProductName"));
+static const QString REGISTRY_PRODUCTID_KEY(QString::fromAscii("ProductId"));
+
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     : q_ptr(parent)
 {
@@ -73,6 +79,11 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
     case QDeviceInfo::Nfc:
         return false;
     }
+}
+
+int QDeviceInfoPrivate::imeiCount()
+{
+    return -1;
 }
 
 QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
@@ -105,11 +116,6 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
     return QDeviceInfo::UnknownThermal;
 }
 
-int QDeviceInfoPrivate::imeiCount()
-{
-    return -1;
-}
-
 QString QDeviceInfoPrivate::imei(int interface)
 {
     Q_UNUSED(interface)
@@ -119,8 +125,8 @@ QString QDeviceInfoPrivate::imei(int interface)
 QString QDeviceInfoPrivate::manufacturer()
 {
     if (systemManufacturerName.isEmpty()) {
-        QSettings manufacturerSetting("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS", QSettings::NativeFormat);
-        systemManufacturerName = manufacturerSetting.value("SystemManufacturer").toString();
+        QSettings manufacturerSetting(REGISTRY_BIOS_PATH, QSettings::NativeFormat);
+        systemManufacturerName = manufacturerSetting.value(REGISTRY_MANUFACTURER_KEY).toString();
     }
     return systemManufacturerName;
 }
@@ -133,8 +139,8 @@ QString QDeviceInfoPrivate::model()
 QString QDeviceInfoPrivate::productName()
 {
     if (systemProductName.isEmpty()) {
-        QSettings productNameSetting("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS", QSettings::NativeFormat);
-        systemProductName = productNameSetting.value("SystemProductName").toString();
+        QSettings productNameSetting(REGISTRY_BIOS_PATH, QSettings::NativeFormat);
+        systemProductName = productNameSetting.value(REGISTRY_PRODUCTNAME_KEY).toString();
     }
     return systemProductName;
 }
@@ -142,8 +148,8 @@ QString QDeviceInfoPrivate::productName()
 QString QDeviceInfoPrivate::uniqueDeviceID()
 {
     if (deviceID.isEmpty()) {
-        QSettings deviceIDSetting("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", QSettings::NativeFormat);
-        deviceID = deviceIDSetting.value("ProductId").toString();
+        QSettings deviceIDSetting(REGISTRY_CURRENT_VERSION_PATH, QSettings::NativeFormat);
+        deviceID = deviceIDSetting.value(REGISTRY_PRODUCTID_KEY).toString();
     }
     return deviceID;
 }
@@ -156,8 +162,8 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
             OSVERSIONINFOEX versionInfo;
             versionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
             if (GetVersionEx((_OSVERSIONINFOW*)&versionInfo)) {
-                osVersion = QString::number(versionInfo.dwMajorVersion) + "." + QString::number(versionInfo.dwMinorVersion) + "."
-                            + QString::number(versionInfo.dwBuildNumber) + "." + QString::number(versionInfo.wServicePackMajor) + "."
+                osVersion = QString::number(versionInfo.dwMajorVersion) + QLatin1Char('.') + QString::number(versionInfo.dwMinorVersion) + QLatin1Char('.')
+                            + QString::number(versionInfo.dwBuildNumber) + QLatin1Char('.') + QString::number(versionInfo.wServicePackMajor) + QLatin1Char('.')
                             + QString::number(versionInfo.wServicePackMinor);
             }
         }

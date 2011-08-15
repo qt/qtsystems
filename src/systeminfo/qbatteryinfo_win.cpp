@@ -63,6 +63,7 @@ int QBatteryInfoPrivate::batteryCount()
 
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
+    Q_UNUSED(battery)
     return 0;
 }
 
@@ -71,7 +72,7 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
     Q_UNUSED(battery)
 
     SYSTEM_BATTERY_STATE state;
-    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == STATUS_SUCCESS)
+    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == 0)
         return state.MaxCapacity;
 
     return -1;
@@ -82,7 +83,7 @@ int QBatteryInfoPrivate::remainingCapacity(int battery)
     Q_UNUSED(battery)
 
     SYSTEM_BATTERY_STATE state;
-    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == STATUS_SUCCESS)
+    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == 0)
         return state.RemainingCapacity;
 
     return -1;
@@ -93,7 +94,7 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
     Q_UNUSED(battery)
 
     SYSTEM_BATTERY_STATE state;
-    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == STATUS_SUCCESS)
+    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == 0)
         return state.EstimatedTime;
 
     return -1;
