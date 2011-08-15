@@ -92,11 +92,6 @@ int QBatteryInfoPrivate::remainingCapacity(int battery)
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
 {
     Q_UNUSED(battery)
-
-    SYSTEM_BATTERY_STATE state;
-    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == 0)
-        return state.EstimatedTime;
-
     return -1;
 }
 
