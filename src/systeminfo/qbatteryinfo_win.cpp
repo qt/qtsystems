@@ -58,6 +58,14 @@ QBatteryInfoPrivate::~QBatteryInfoPrivate()
 
 int QBatteryInfoPrivate::batteryCount()
 {
+    SYSTEM_BATTERY_STATE state;
+    if (CallNtPowerInformation(SystemBatteryState, 0, 0, &state, sizeof(state)) == 0) {
+        if (state.BatteryPresent)
+            return 1;
+        else
+            return 0;
+    }
+
     return -1;
 }
 
