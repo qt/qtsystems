@@ -12,4 +12,10 @@ QT += publishsubscribe
     DEFINES += QT_NO_CONTEXTKIT
 }
 
+!contains(QT_CONFIG, jsondb) {
+    DEFINES += QT_NO_JSONDBLAYER
+} else {
+    QT += jsondb jsondb-private
+}
+
 SOURCES += tst_qvaluespace.cpp

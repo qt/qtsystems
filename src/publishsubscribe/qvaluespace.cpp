@@ -472,6 +472,21 @@ void QValueSpace::installLayer(LayerCreateFunc func)
 */
 
 /*!
+    \macro QVALUESPACE_JSONDB_LAYER
+    \relates QValueSpace
+
+    The UUID of the GConf layer as a QUuid.  The actual UUID value is
+    {a167384c-6acf-2738-c8d5-a088ac6ec2d6}.
+
+    This value can be passed to the constructor of QValueSpacePublisher or QValueSpaceSubscriber to
+    force the constructed object to only access the JSONDB layer.
+
+    You can test if the JSONDB layer is available by checking if the list returned by
+    QValueSpace::availableLayers() contains this value. The JSONDB layer is only available on Linux
+    platforms.
+*/
+
+/*!
     Returns a list of QUuids of all of the available layers.
 */
 QList<QUuid> QValueSpace::availableLayers()

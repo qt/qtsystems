@@ -41,6 +41,14 @@ unix {
             DEFINES += QT_NO_GCONFLAYER
         }
 
+        contains(config_test_jsondb, yes) {
+            QT += jsondb jsondb-private
+            PRIVATE_HEADERS += jsondblayer_p.h
+            SOURCES += jsondblayer.cpp
+        } else {
+            DEFINES += QT_NO_JSONDBLAYER
+        }
+
         contains(QT_CONFIG, dbus): {
             QT += dbus
 

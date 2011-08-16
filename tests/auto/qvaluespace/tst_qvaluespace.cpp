@@ -82,6 +82,9 @@ void tst_QValueSpace::tst_availableLayers()
     QVERIFY(layers.contains(QVALUESPACE_CONTEXTKITNONCORE_LAYER));
     QVERIFY(layers.contains(QVALUESPACE_CONTEXTKITCORE_LAYER));
 #endif
+#if !defined(QT_NO_JSONDBLAYER)
+    QVERIFY(layers.contains(QVALUESPACE_JSONDB_LAYER));
+#endif
 #elif defined(Q_OS_WIN)
     QVERIFY(layers.contains(QVALUESPACE_VOLATILEREGISTRY_LAYER));
     QVERIFY(layers.contains(QVALUESPACE_NONVOLATILEREGISTRY_LAYER));
