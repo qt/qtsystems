@@ -5,6 +5,7 @@ TARGET = servicefw
 DESTDIR = $$QT.serviceframework.bins
 
 QT += serviceframework
+QT -= gui
 DEFINES += IGNORE_SERVICEMETADATA_EXPORT
 INCLUDEPATH += ../../serviceframework
 
