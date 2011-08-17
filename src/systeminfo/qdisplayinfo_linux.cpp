@@ -42,12 +42,12 @@
 #include "qdisplayinfo_linux_p.h"
 
 #include <QtCore/qdir.h>
-#include <QtGui/qapplication.h>
-#include <QtGui/qdesktopwidget.h>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qdesktopwidget.h>
 #include <QtGui/qpixmap.h>
 
 #if defined(Q_WS_X11)
-#include <QtGui/qx11info_x11.h>
+#include <QtWidgets/qx11info_x11.h>
 #include <X11/extensions/Xrandr.h>
 #endif // Q_WS_X11
 

@@ -41,8 +41,8 @@
 
 #include "qdisplayinfo_win_p.h"
 
-#include <QtGui/qapplication.h>
-#include <QtGui/qdesktopwidget.h>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qdesktopwidget.h>
 #include <QtGui/qpixmap.h>
 
 QT_BEGIN_NAMESPACE
