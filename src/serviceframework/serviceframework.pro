@@ -23,7 +23,7 @@ contains(config_test_jsondb, yes) {
 
 }
 
-contains(config_test_wayland, yes) {
+!no_wayland: contains(config_test_wayland, yes) {
     DEFINES += QT_WAYLAND_PRESENT
 }
 
