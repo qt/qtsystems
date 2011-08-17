@@ -50,9 +50,9 @@ unix {
         }
 
         contains(QT_CONFIG, dbus): {
-            QT += dbus
-
             contains(config_test_contextkit, yes) {
+                QT += dbus
+
                 PRIVATE_HEADERS += contextkitlayer_p.h
                 SOURCES += contextkitlayer.cpp
 
