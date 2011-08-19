@@ -42,6 +42,7 @@
 #include "qstorageinfo_linux_p.h"
 
 #include <QtCore/qfile.h>
+#include <QtCore/qdir.h>
 #include <QtCore/qsocketnotifier.h>
 
 #include <errno.h>
@@ -52,10 +53,6 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
-
-#if !defined(QT_NO_BLKID)
-#include <blkid/blkid.h>
-#endif // QT_NO_BLKID
 
 #if !defined(QT_NO_UDISKS)
 #include <QtDBus/qdbusconnection.h>
@@ -118,38 +115,24 @@ qlonglong QStorageInfoPrivate::totalDiskSpace(const QString &drive)
 
 QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 {
-#if !defined(QT_NO_BLKID)
-    FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
-    mntent *entry = NULL;
-    QString uri;
-    while ((entry = getmntent(fsDescription)) != NULL) {
-        if (drive != QString::fromAscii(entry->mnt_dir))
-            continue;
-
-        int fd = open(entry->mnt_fsname, O_RDONLY);
-        if (fd == -1)
+    QFileInfoList fileinfolist = QDir(QString::fromAscii("/dev/disk/by-uuid/")).entryInfoList(QDir::NoDotAndDotDot);
+    if (!fileinfolist.isEmpty()) {
+        FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
+        mntent *entry = NULL;
+        QString uri;
+        while ((entry = getmntent(fsDescription)) != NULL) {
+            if (drive != QString::fromAscii(entry->mnt_dir))
+                continue;
+            int idx = fileinfolist.indexOf(QString::fromAscii(entry->mnt_fsname));
+            if (idx != -1)
+                uri = fileinfolist[idx].fileName();
             break;
-
-        uint64_t size;
-        const char *label;
-        blkid_probe probe = blkid_new_probe();
-        if (blkid_probe_set_request(probe, BLKID_PROBREQ_UUID) == 0
-            && ioctl(fd, BLKGETSIZE64, &size) == 0
-            && blkid_probe_set_device(probe, fd, 0, size) == 0
-            && blkid_do_safeprobe(probe) == 0
-            && blkid_probe_lookup_value(probe, "UUID", &label, NULL) == 0) {
-            uri = QString::fromAscii(label);
         }
-        blkid_free_probe(probe);
-        close(fd);
-        break;
+        endmntent(fsDescription);
+
+        if (!uri.isEmpty())
+            return uri;
     }
-
-    endmntent(fsDescription);
-
-    if (!uri.isEmpty())
-        return uri;
-#endif // QT_NO_BLKID
 
 #if !defined(QT_NO_UDISKS)
     QDBusReply<QList<QDBusObjectPath> > reply = QDBusConnection::systemBus().call(
