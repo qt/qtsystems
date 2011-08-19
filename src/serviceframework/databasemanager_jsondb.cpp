@@ -147,7 +147,7 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
     }
 
     QVariantMap query;
-    query.insert(kQuery, QString(QLatin1String("[?_type=\"Package\"][?identifier=\"%1\"]")).arg(service.location));
+    query.insert(kQuery, QString(QLatin1String("[?_type=\"com.nokia.mp.core.Package\"][?identifier=\"%1\"]")).arg(service.location));
     int id = db->find(query);
     if (!waitForResponse(id)) {
         qWarning() << "Can not find query the service registered as an Application with identifier" << service.location;
