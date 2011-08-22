@@ -40,11 +40,11 @@ win32 {
     }
 
     win32-msvc*: {
-        LIBS += -lUser32 -lGdi32 -lPowrProf
+        LIBS += -lUser32 -lGdi32 -lPowrProf -lBthprops -lWlanapi -lWs2_32 -lVfw32
     }
 
     win32-g++: {
-        LIBS += -luser32 -lgdi32 -lpowrprof
+        LIBS += -luser32 -lgdi32 -lpowrprof -lbthprops -lwlanapi -lws2_32 -lvfw32
     }
 
     PRIVATE_HEADERS += qscreensaver_win_p.h \

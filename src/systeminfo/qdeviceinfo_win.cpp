@@ -44,7 +44,11 @@
 
 #include <QtCore/qsettings.h>
 
+#include <Winsock2.h>
 #include <windows.h>
+#include <Vfw.h>
+#include <BluetoothAPIs.h>
+#include <Wlanapi.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -62,21 +66,81 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 {
     switch (feature) {
-    case QDeviceInfo::Bluetooth:
-    case QDeviceInfo::Camera:
-    case QDeviceInfo::FmRadio:
-    case QDeviceInfo::FmTransmitter:
-    case QDeviceInfo::Infrared:
-    case QDeviceInfo::Led:
-    case QDeviceInfo::MemoryCard:
-    case QDeviceInfo::Usb:
-    case QDeviceInfo::Vibration:
-    case QDeviceInfo::Wlan:
-    case QDeviceInfo::Sim:
-    case QDeviceInfo::Positioning:
+    case QDeviceInfo::Bluetooth: {
+        BLUETOOTH_DEVICE_SEARCH_PARAMS searchParameter;
+        searchParameter.dwSize = sizeof(BLUETOOTH_DEVICE_SEARCH_PARAMS);
+        searchParameter.fReturnAuthenticated = TRUE;
+        searchParameter.fReturnRemembered = TRUE;
+        searchParameter.fReturnUnknown = TRUE;
+        searchParameter.fReturnConnected = TRUE;
+        searchParameter.fIssueInquiry = TRUE;
+        searchParameter.cTimeoutMultiplier = 1;
+        searchParameter.hRadio = NULL;
+
+        BLUETOOTH_DEVICE_INFO deviceInfo;
+        HBLUETOOTH_DEVICE_FIND handle = BluetoothFindFirstDevice(&searchParameter, &deviceInfo);
+        if (handle) {
+            BluetoothFindDeviceClose(handle);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    case QDeviceInfo::Wlan: {
+        bool supportsWlan(false);
+        DWORD negotiatedVersion;
+        HANDLE handle;
+        if (ERROR_SUCCESS == WlanOpenHandle(1, NULL, &negotiatedVersion, &handle)) {
+            PWLAN_INTERFACE_INFO_LIST list;
+            if (ERROR_SUCCESS == WlanEnumInterfaces(handle, NULL, &list)) {
+                if (list->dwNumberOfItems > 0)
+                    supportsWlan = true;
+                WlanFreeMemory(list);
+            }
+            WlanCloseHandle(handle, NULL);
+        }
+        return supportsWlan;
+    }
+
     case QDeviceInfo::VideoOut:
-    case QDeviceInfo::Haptics:
-    case QDeviceInfo::Nfc:
+        return (GetSystemMetrics(SM_CMONITORS) > 0);
+
+    case QDeviceInfo::Infrared: {
+        WSADATA wsaData;
+        if (0 == WSAStartup(MAKEWORD(1,1), &wsaData)) {
+            SOCKET irdaSocket = socket(AF_IRDA, SOCK_STREAM, 0);
+            if (INVALID_SOCKET != irdaSocket) {
+                closesocket(irdaSocket);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    case QDeviceInfo::Camera: {
+        char name[256];
+        char version[256];
+        for (WORD i = 0; i < 10; i++) {
+            if (capGetDriverDescriptionA(i, name, 256, version, 256))
+                return true;
+        }
+        return false;
+    }
+
+//    not sure if we can use WDK, thus not implemented as of now
+//    case QDeviceInfo::MemoryCard:
+//    case QDeviceInfo::Usb:
+
+//    case QDeviceInfo::Led:
+//    case QDeviceInfo::Positioning:
+//    case QDeviceInfo::FmRadio:
+//    case QDeviceInfo::FmTransmitter:
+//    case QDeviceInfo::Vibration:
+//    case QDeviceInfo::Sim:
+//    case QDeviceInfo::Haptics:
+//    case QDeviceInfo::Nfc:
+    default:
         return false;
     }
 }
@@ -95,7 +159,12 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
     if (value)
         types |= QDeviceInfo::TouchOrKeyboardLock;
 
-    // TODO: check if the workstation is currently locked
+    HDESK desktop = OpenDesktopA("Default", 0, false, DESKTOP_SWITCHDESKTOP);
+    if (desktop) {
+        if (0 == SwitchDesktop(desktop))
+            types |= QDeviceInfo::PinLock;
+        CloseDesktop(desktop);
+    }
 
     return types;
 }
