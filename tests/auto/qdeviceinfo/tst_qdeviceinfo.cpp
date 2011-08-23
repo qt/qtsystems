@@ -49,32 +49,120 @@ class tst_QDeviceInfo : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
+
     void tst_imei();
     void tst_lockTypes();
+    void tst_version();
+    void tst_manufacturer();
+    void tst_model();
+    void tst_productName();
+    void tst_uniqueDeviceID();
+    void tst_hasFeature();
+    void tst_thermalState();
+
+private:
+    QDeviceInfo *deviceInfo;
+
 };
+
+void tst_QDeviceInfo::initTestCase()
+{
+    deviceInfo = new QDeviceInfo();
+}
+
+void tst_QDeviceInfo::cleanupTestCase()
+{
+    delete deviceInfo;
+}
 
 void tst_QDeviceInfo::tst_imei()
 {
-    QDeviceInfo deviceInfo;
-
-    int imeiCount = deviceInfo.imeiCount();
+    int imeiCount = deviceInfo->imeiCount();
     QVERIFY(imeiCount >= -1);
 
-    QVERIFY(deviceInfo.imei(-1).isEmpty());
-    QVERIFY(deviceInfo.imei(imeiCount).isEmpty());
+    QVERIFY(deviceInfo->imei(-1).isEmpty());
+    QVERIFY(deviceInfo->imei(imeiCount).isEmpty());
 
     QRegExp imeiPattern("(\\d{0,0}|\\d{15,15})");
     for (int i = 0; i < imeiCount; ++i)
-        QVERIFY(imeiPattern.exactMatch(deviceInfo.imei(i)));
+        QVERIFY(imeiPattern.exactMatch(deviceInfo->imei(i)));
 }
 
 void tst_QDeviceInfo::tst_lockTypes()
 {
-    QDeviceInfo deviceInfo;
-    QDeviceInfo::LockTypeFlags enabledLocks = deviceInfo.enabledLocks();
-    QDeviceInfo::LockTypeFlags activeLocks = deviceInfo.activatedLocks();
+    QDeviceInfo::LockTypeFlags enabledLocks = deviceInfo->enabledLocks();
+    QDeviceInfo::LockTypeFlags activeLocks = deviceInfo->activatedLocks();
     QVERIFY((activeLocks & enabledLocks) == activeLocks);
     QVERIFY((activeLocks | enabledLocks) == enabledLocks);
+}
+
+void tst_QDeviceInfo::tst_version()
+{
+    QRegExp osversion(QString::fromAscii("(\\d+(\\.\\d+)*)?"));
+    QVERIFY(osversion.exactMatch(deviceInfo->version(QDeviceInfo::Os)));
+
+    QRegExp firmwareversion(QString::fromAscii(".*"));
+    QVERIFY(firmwareversion.exactMatch(deviceInfo->version(QDeviceInfo::Firmware)));
+}
+
+void tst_QDeviceInfo::tst_manufacturer()
+{
+    QRegExp manufacturer(".*");
+    QVERIFY(manufacturer.exactMatch(deviceInfo->manufacturer()));
+}
+
+void tst_QDeviceInfo::tst_model()
+{
+    QRegExp model(".*");
+    QVERIFY(model.exactMatch(deviceInfo->model()));
+}
+
+void tst_QDeviceInfo::tst_productName()
+{
+    QRegExp productName(".*");
+    QVERIFY(productName.exactMatch(deviceInfo->productName()));
+}
+
+void tst_QDeviceInfo::tst_uniqueDeviceID()
+{
+    QRegExp uniqueId("\\d*");
+    QVERIFY(uniqueId.exactMatch(deviceInfo->uniqueDeviceID()));
+}
+
+void tst_QDeviceInfo::tst_hasFeature()
+{
+    QList<QDeviceInfo::Feature> featureList;
+    featureList << QDeviceInfo::Bluetooth
+                << QDeviceInfo::Camera
+                << QDeviceInfo::FmRadio
+                << QDeviceInfo::FmTransmitter
+                << QDeviceInfo::Haptics
+                << QDeviceInfo::Infrared
+                << QDeviceInfo::Led
+                << QDeviceInfo::MemoryCard
+                << QDeviceInfo::Positioning
+                << QDeviceInfo::Sim
+                << QDeviceInfo::Usb
+                << QDeviceInfo::Vibration
+                << QDeviceInfo::VideoOut
+                << QDeviceInfo::Wlan;
+
+    foreach (QDeviceInfo::Feature feature, featureList) {
+        bool isPresent = deviceInfo->hasFeature(feature);
+        QVERIFY(isPresent == true || isPresent == false);
+    }
+}
+
+void tst_QDeviceInfo::tst_thermalState()
+{
+    QDeviceInfo::ThermalState state = deviceInfo->thermalState();
+    QVERIFY(state == QDeviceInfo::UnknownThermal ||
+            state == QDeviceInfo::NormalThermal ||
+            state == QDeviceInfo::WarningThermal ||
+            state == QDeviceInfo::AlertThermal ||
+            state == QDeviceInfo::ErrorThermal);
 }
 
 QTEST_MAIN(tst_QDeviceInfo)
