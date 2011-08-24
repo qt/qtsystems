@@ -86,18 +86,22 @@ linux-* {
                qinputdeviceinfo_linux.cpp
 
     contains(QT_CONFIG, dbus): {
-        QT += dbus
-
         contains(config_test_ofono, yes) {
+            QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h
             SOURCES += qofonowrapper.cpp
         } else {
             DEFINES += QT_NO_OFONO
         }
 
-        !contains(config_test_udisks, yes): DEFINES += QT_NO_UDISKS
+        contains(config_test_udisks, yes): {
+            QT += dbus
+        } else: {
+            DEFINES += QT_NO_UDISKS
+        }
 
         contains(config_test_bluez, yes) {
+            QT += dbus
             CONFIG += link_pkgconfig
             PKGCONFIG += bluez
 
@@ -107,7 +111,7 @@ linux-* {
             DEFINES += QT_NO_BLUEZ
         }
     } else {
-        DEFINES += QT_NO_OFONO
+        DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_BLUEZ
     }
 
     contains(config_test_blkid, yes) {
