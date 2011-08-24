@@ -114,13 +114,6 @@ linux-* {
         DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_BLUEZ
     }
 
-    contains(config_test_blkid, yes) {
-        CONFIG += link_pkgconfig
-        PKGCONFIG += blkid
-    } else {
-        DEFINES += QT_NO_BLKID
-    }
-
     contains(config_test_udev, yes) {
         CONFIG += link_pkgconfig
         PKGCONFIG += udev

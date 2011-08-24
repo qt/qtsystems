@@ -38,7 +38,6 @@
 %configtests = (
     "gconf" => {},
     "contextkit" => {},
-    "blkid" => {},
     "bluez" => {},
     "udev" => {},
     "jsondb" => {},
