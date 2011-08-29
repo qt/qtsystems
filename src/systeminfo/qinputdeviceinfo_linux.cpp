@@ -47,9 +47,21 @@
 
 #include <QtCore/qdir.h>
 
-QT_BEGIN_NAMESPACE
+#include <linux/input.h>
 
+QT_BEGIN_NAMESPACE
 static const QString INPUT_SYSFS_PATH(QString::fromAscii("/sys/class/input/"));
+static const int LONGBITS (sizeof(unsigned long) << 3);
+
+static int numberOfLongs(ulong bits)
+{
+    return (bits + LONGBITS -1) / LONGBITS;
+}
+
+static bool testBit(ulong bits, const ulong* array)
+{
+    return (array[bits/LONGBITS] >> bits % LONGBITS) & 1;
+}
 
 QInputDeviceInfoPrivate::QInputDeviceInfoPrivate(QInputDeviceInfo *parent)
     : QObject(parent)
@@ -95,19 +107,17 @@ QInputDeviceInfo::InputDeviceTypes QInputDeviceInfoPrivate::availableInputDevice
 
     QInputDeviceInfo::InputDeviceTypes types(QInputDeviceInfo::UnknownInputDevice);
     foreach (const QString &dir, dirs) {
-        QFile deviceName(INPUT_SYSFS_PATH + dir + QString::fromAscii("/name"));
-        if (deviceName.open(QIODevice::ReadOnly)) {
-            QString value(QString::fromAscii(deviceName.readAll().data()));
-            if (value.contains(QString::fromAscii("keyboard"), Qt::CaseInsensitive)
-                || value.contains(QString::fromAscii("keypad"), Qt::CaseInsensitive)) {
-                types |= QInputDeviceInfo::Keys;
-            } else if (value.contains(QString::fromAscii("mouse"), Qt::CaseInsensitive)) {
-                types |= QInputDeviceInfo::Mouse;
-            } else if (value.contains(QString::fromAscii("touch"), Qt::CaseInsensitive)) {
-                types |= QInputDeviceInfo::Touch;
-            }
-        }
+        QStringList inputtypes = getTypesOfInputDevice(dir);
+        if (inputtypes.contains(QString::fromAscii("Key")) ||
+                inputtypes.contains(QString::fromAscii("Keyboard")))
+            types |= QInputDeviceInfo::Keys;
+        else if (inputtypes.contains(QString::fromAscii("Mouse")))
+            types |= QInputDeviceInfo::Mouse;
+        else if (inputtypes.contains(QString::fromAscii("TouchScreen")) ||
+                 inputtypes.contains(QString::fromAscii("TouchPad")))
+            types |= QInputDeviceInfo::Touch;
     }
+
     return types;
 }
 
@@ -119,14 +129,11 @@ QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
 
     QInputDeviceInfo::KeyboardTypes types(QInputDeviceInfo::UnknownKeyboard);
     foreach (const QString &dir, dirs) {
-        QFile deviceName(INPUT_SYSFS_PATH + dir + QString::fromAscii("/name"));
-        if (deviceName.open(QIODevice::ReadOnly)) {
-            QString value(QString::fromAscii(deviceName.readAll().data()));
-            if (value.contains(QString::fromAscii("keyboard"), Qt::CaseInsensitive))
-                types |= QInputDeviceInfo::FullQwertyKeyboard;
-            else if (value.contains(QString::fromAscii("keypad"), Qt::CaseInsensitive))
-                types |= QInputDeviceInfo::ITUKeypad;
-        }
+        QStringList inputtypes = getTypesOfInputDevice(dir);
+        if (inputtypes.contains(QString::fromAscii("Keyboard")))
+            types |= QInputDeviceInfo::FullQwertyKeyboard;
+        else if (inputtypes.contains(QString::fromAscii("TouchScreen")))
+            types |= QInputDeviceInfo::SoftwareKeyboard;
     }
 
     if (isWirelessKeyboardConnected())
@@ -143,15 +150,13 @@ QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfoPrivate::availableTouchDevice
 
     QInputDeviceInfo::TouchDeviceTypes types(QInputDeviceInfo::UnknownTouchDevice);
     foreach (const QString &dir, dirs) {
-        QFile deviceName(INPUT_SYSFS_PATH + dir + QString::fromAscii("/name"));
-        if (deviceName.open(QIODevice::ReadOnly)) {
-            QString value(QString::fromAscii(deviceName.readAll().data()));
-            if (value.contains(QString::fromAscii("multi touch"), Qt::CaseInsensitive))
-                types |= QInputDeviceInfo::MultiTouch;
-            else if (value.contains(QString::fromAscii("touch"), Qt::CaseInsensitive))
-                types |= QInputDeviceInfo::SingleTouch;
-        }
+        QStringList inputtypes = getTypesOfInputDevice(dir);
+        if (inputtypes.contains(QString::fromAscii("TouchPad")))
+            types |= QInputDeviceInfo::SingleTouch;
+        else if (inputtypes.contains(QString::fromAscii("TouchScreen")))
+            types |= QInputDeviceInfo::MultiTouch;
     }
+
     return types;
 }
 
@@ -185,6 +190,63 @@ void QInputDeviceInfoPrivate::disconnectNotify(const char *signal)
 #else
     Q_UNUSED(signal)
 #endif
+}
+
+QStringList QInputDeviceInfoPrivate::getTypesOfInputDevice(const QString &inputdir)
+{
+    QStringList inputtypes;
+    ulong absbits[numberOfLongs(ABS_MAX)];
+    ulong keybits[numberOfLongs(KEY_MAX)];
+    ulong relbits[numberOfLongs(REL_MAX)];
+
+    QFile absfile(INPUT_SYSFS_PATH + inputdir + QString::fromAscii("/capabilities/abs"));
+    if (absfile.open(QIODevice::ReadOnly)) {
+        QStringList datablocks = QString::fromAscii(absfile.readAll().data()).split(QString::fromAscii(" "));
+        int count = datablocks.count() - 1;
+        for (int i = count; i >= 0; i--) {
+            absbits[count - i] = datablocks[i].toULong(0, 16);
+        }
+    }
+    QFile keyfile(INPUT_SYSFS_PATH + inputdir + QString::fromAscii("/capabilities/key"));
+    if (keyfile.open(QIODevice::ReadOnly)) {
+        QStringList datablocks = QString::fromAscii(keyfile.readAll().data()).split(QString::fromAscii(" "));
+        int count = datablocks.count() - 1;
+        for (int i = count; i >= 0; i--) {
+            keybits[count - i] = datablocks[i].toULong(0, 16);
+        }
+    }
+    QFile relfile(INPUT_SYSFS_PATH + inputdir + QString::fromAscii("/capabilities/rel"));
+    if (relfile.open(QIODevice::ReadOnly)) {
+        QStringList datablocks = QString::fromAscii(relfile.readAll().data()).split(QString::fromAscii(" "));
+        int count = datablocks.count() - 1;
+        for (int i = count; i >= 0; i--) {
+            relbits[count - i] = datablocks[i].toULong(0, 16);
+        }
+    }
+
+    if (testBit(ABS_X, absbits) && testBit(ABS_Y, absbits)) {
+        if (testBit(BTN_TOOL_FINGER, keybits) && !testBit(BTN_TOOL_PEN, keybits))
+            inputtypes << QString::fromAscii("TouchPad");
+        else if (testBit(BTN_TOUCH, keybits))
+            inputtypes << QString::fromAscii("TouchScreen");
+        else if (testBit(BTN_MOUSE, keybits))
+            inputtypes << QString::fromAscii("Mouse");
+    }
+
+    if (testBit(REL_X, relbits) && testBit(REL_Y, relbits))
+        inputtypes << QString::fromAscii("Mouse");
+
+    ulong acc = 0;
+    for (ulong i = 0; i < BTN_MISC/LONGBITS; ++i)
+        acc |= keybits[i];
+    if (acc > 0)
+        inputtypes << QString::fromAscii("Key");
+
+    ulong mask = 0xFFFFFFFE;
+    if ((keybits[0] & mask) == mask)
+        inputtypes << QString::fromAscii("Keyboard");
+
+    return inputtypes;
 }
 
 QT_END_NAMESPACE

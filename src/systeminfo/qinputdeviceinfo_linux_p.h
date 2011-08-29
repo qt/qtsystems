@@ -54,6 +54,7 @@
 #define QINPUTDEVICEINFO_LINUX_P_H
 
 #include <qinputdeviceinfo.h>
+#include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
 
@@ -85,6 +86,8 @@ protected:
 private:
     QInputDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QInputDeviceInfo)
+
+    QStringList getTypesOfInputDevice(const QString &inputdir);
 
     bool watchWirelessKeyboard;
     bool wirelessKeyboardConnectedBuffer;
