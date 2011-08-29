@@ -483,9 +483,15 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             QStringList paths;
             QString root = QCoreApplication::applicationDirPath() + QLatin1String("/../");
             paths += root;
+            paths += root + QLatin1String("../opt/mt/applications/");
             paths += root + QLatin1String("opt/mt/applications/");
             paths += root + QLatin1String("applications/");
             paths += QLatin1String("/opt/mt/applications/");
+            if (getenv("APP_PATH")) {
+                qWarning() << "Found APP_PATH!";
+                paths += QString::fromLatin1(getenv("APP_PATH")).split(QChar::fromLatin1(':'));
+            }
+            qWarning() << "Will look in dirs" << paths;
             foreach (QString base, paths) {
                 QDir dir(base);
                 dir.setFilter(QDir::Dirs);
