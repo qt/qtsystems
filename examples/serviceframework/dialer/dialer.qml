@@ -66,14 +66,17 @@ import "content"
 //| ------------------- ---------------------- |
 //----------------------------------------------
 
-
 Rectangle {
     id: mainPage
     color: "white"
 
     property variant dialerObject: 0
+
     width: 320
-    height: 480
+    height: 460
+    anchors.top: parent.top
+    anchors.topMargin: 20
+
 
     DialerList {
         id: dialerList
