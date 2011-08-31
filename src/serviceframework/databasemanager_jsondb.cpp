@@ -376,8 +376,15 @@ QServiceInterfaceDescriptor DatabaseManager::interfaceDefault(const QString &int
     int id = db->find(query);
     if (!waitForResponse(id)) {
         qDebug() << "Did query" << query[kQuery].toString();
-        m_lastError.setError(DBError::NotFound, QLatin1String("Unable to find interface, or no default interface set."));
-        return QServiceInterfaceDescriptor();
+        query.clear();
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?identifier=\"%2\"]")
+                     .arg(JsonDbString::kTypeStr)
+                     .arg(interfaceName));
+        id = db->find(query);
+        if (!waitForResponse(id)) {
+            m_lastError.setError(DBError::NotFound, QLatin1String("Unable to find interface."));
+            return QServiceInterfaceDescriptor();
+        }
     }
 
     QList<QVariant> res = m_data.toMap()[kData].toList();

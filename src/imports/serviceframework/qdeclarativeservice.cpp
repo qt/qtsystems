@@ -113,18 +113,6 @@ void QDeclarativeService::setInterfaceName(const QString &interface)
 
     if (!isValid()) {
         qWarning() << "WARNING: No default service found for interface name: " << interface;
-        QStringList list = serviceManager->findServices(interface);
-        if (list.count() >= 1) {
-            qWarning() << "WARNING: Using first one found" << list;
-            QList<QServiceInterfaceDescriptor> id_list = serviceManager->findInterfaces(list[0]);
-            while (!id_list.isEmpty()) {
-                m_descriptor = id_list.takeFirst();
-                if (m_descriptor.interfaceName() == interface) {
-                    break;
-                }
-            }
-
-        }
     }
 }
 
