@@ -253,7 +253,7 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
 
     QVariantMap query;
     if (!filter.serviceName().isEmpty()) {
-        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?service=\"%2\"]")
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?name=\"%2\"]")
                      .arg(JsonDbString::kTypeStr)
                      .arg(filter.serviceName()));
     } else if (!filter.interfaceName().isEmpty()) {
@@ -271,7 +271,6 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
     QList<QVariant> list = m_data.toMap()[kData].toList();
     foreach (const QVariant &v, list) {
         QVariantMap vMap = v.toMap();
-        QString serviceName(vMap[QLatin1String("service")].toString());
         bool match = false;
         if (filter.interfaceName().isEmpty()) {
             match = true;
@@ -308,7 +307,7 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
                 QServiceInterfaceDescriptor interface;
                 interface.d = new QServiceInterfaceDescriptorPrivate;
                 interface.d->interfaceName = vMap[QLatin1String("identifier")].toString();
-                interface.d->serviceName = serviceName;
+                interface.d->serviceName = vMap[QLatin1String("name")].toString();
                 interface.d->major = vMap[QLatin1String("vermaj")].toInt();
                 interface.d->minor = vMap[QLatin1String("vermin")].toInt();
                 interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
@@ -349,7 +348,7 @@ QStringList DatabaseManager::getServiceNames(const QString &interfaceName, Datab
     QList<QVariant> res = m_data.toMap()[kData].toList();
     while (!res.empty()) {
         QMap<QString, QVariant> entry = res.takeFirst().toMap();
-        serviceNames.append(entry[QLatin1String("service")].toString());
+        serviceNames.append(entry[QLatin1String("name")].toString());
     }
     qDebug() << "Returning" << serviceNames;
     return serviceNames;

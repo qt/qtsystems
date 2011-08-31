@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     QRemoteServiceRegister* serviceRegister = new QRemoteServiceRegister();
     QRemoteServiceRegister::Entry uniqueEntry =
         serviceRegister->createEntry<RemoteDialer>(
-                "com.nokia.qt.examples.remotedialer", "com.nokia.qt.examples.Dialer", "1.1");
+                "VoipDialer", "com.nokia.qt.examples.Dialer", "1.1");
     uniqueEntry.setInstantiationType(QRemoteServiceRegister::PrivateInstance);
     serviceRegister->publishEntries("com.nokia.qt.examples.remotedialer");
     int res =  app.exec();
