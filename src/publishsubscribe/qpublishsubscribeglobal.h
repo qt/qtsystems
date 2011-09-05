@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtSystemKit module of the Qt Toolkit.
+** This file is part of the QtSystems module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -50,8 +50,8 @@
 // We mean it.
 //
 
-#ifndef QSYSTEMINFO_P_H
-#define QSYSTEMINFO_P_H
+#ifndef QPUBLISHSUBSCRIBEGLOBAL_H
+#define QPUBLISHSUBSCRIBEGLOBAL_H
 
 #include <QtCore/qglobal.h>
 
@@ -63,23 +63,23 @@
 #    if defined(QT_DLL)
 #      undef QT_DLL
 #    endif
-#    if defined(QT_BUILD_SYSTEMINFO_LIB)
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
+#    if defined(QT_BUILD_PUBLISHSUBSCRIBE_LIB)
+#      define Q_PUBLISHSUBSCRIBE_EXPORT Q_DECL_EXPORT
 #    else
-#      define Q_SYSTEMINFO_EXPORT Q_DECL_IMPORT
+#      define Q_PUBLISHSUBSCRIBE_EXPORT Q_DECL_IMPORT
 #    endif
 #  elif defined(QT_DLL)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
+#    define Q_PUBLISHSUBSCRIBE_EXPORT Q_DECL_EXPORT
 #  endif
 #endif
 
-#if !defined(Q_SYSTEMINFO_EXPORT)
+#if !defined(Q_PUBLISHSUBSCRIBE_EXPORT)
 #  if defined(QT_SHARED)
-#    define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
+#    define Q_PUBLISHSUBSCRIBE_EXPORT Q_DECL_EXPORT
 #  else
-#    define Q_SYSTEMINFO_EXPORT
+#    define Q_PUBLISHSUBSCRIBE_EXPORT
 #  endif
 #endif
 
-#endif // QSYSTEMINFO_P_H
+#endif // QPUBLISHSUBSCRIBEGLOBAL_H
 

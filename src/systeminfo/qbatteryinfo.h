@@ -42,7 +42,7 @@
 #ifndef QBATTERYINFO_H
 #define QBATTERYINFO_H
 
-#include "qsysteminfo_p.h"
+#include <qsysteminfoglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER

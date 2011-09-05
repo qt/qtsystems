@@ -12,12 +12,12 @@ DEFINES += QT_BUILD_PUBLISHSUBSCRIBE_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
-PUBLIC_HEADERS = qvaluespace.h \
+PUBLIC_HEADERS = qpublishsubscribeglobal.h \
+                 qvaluespace.h \
                  qvaluespacepublisher.h \
                  qvaluespacesubscriber.h
 
-PRIVATE_HEADERS = qpublishsubscribe_p.h \
-                  qvaluespace_p.h \
+PRIVATE_HEADERS = qvaluespace_p.h \
                   qvaluespacemanager_p.h \
                   qvaluespacesubscriber_p.h
 

@@ -42,7 +42,7 @@
 #ifndef QDEVICEPROFILE_H
 #define QDEVICEPROFILE_H
 
-#include "qsysteminfo_p.h"
+#include <qsysteminfoglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER

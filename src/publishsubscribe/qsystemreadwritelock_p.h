@@ -53,7 +53,7 @@
 #ifndef QSYSTEMREADWRITELOCK_P_H
 #define QSYSTEMREADWRITELOCK_P_H
 
-#include "qpublishsubscribe_p.h"
+#include <qpublishsubscribeglobal.h>
 #include <QString>
 
 QT_BEGIN_NAMESPACE

@@ -12,7 +12,8 @@ DEFINES += QT_BUILD_SYSTEMINFO_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
-PUBLIC_HEADERS = qdeviceinfo.h \
+PUBLIC_HEADERS = qsysteminfoglobal.h \
+                 qdeviceinfo.h \
                  qdisplayinfo.h \
                  qstorageinfo.h \
                  qscreensaver.h \
@@ -20,8 +21,6 @@ PUBLIC_HEADERS = qdeviceinfo.h \
                  qnetworkinfo.h \
                  qdeviceprofile.h \
                  qinputdeviceinfo.h
-
-PRIVATE_HEADERS = qsysteminfo_p.h
 
 SOURCES += qdeviceinfo.cpp \
            qdisplayinfo.cpp \

@@ -42,7 +42,7 @@
 #ifndef QINPUTDEVICEINFO_H
 #define QINPUTDEVICEINFO_H
 
-#include "qsysteminfo_p.h"
+#include <qsysteminfoglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER

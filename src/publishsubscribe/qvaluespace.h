@@ -42,7 +42,7 @@
 #ifndef QVALUESPACE_H
 #define QVALUESPACE_H
 
-#include "qpublishsubscribe_p.h"
+#include <qpublishsubscribeglobal.h>
 
 #include <QtCore/qlist.h>
 #include <QtCore/quuid.h>
