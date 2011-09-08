@@ -41,6 +41,7 @@
 
 #include <QDebug>
 #include <QHash>
+#include <QCryptographicHash>
 
 #include <private/jsondb-connection_p.h>
 #include <private/jsondb-strings_p.h>
@@ -87,6 +88,11 @@ QT_BEGIN_NAMESPACE
 const QLatin1String kQuery("query");
 const QLatin1String kData("data");
 
+
+static QString makeHash(const QString& interface, const QString& service, const QString& version) {
+    return QString::fromLatin1(QCryptographicHash::hash(QString(interface + service + version).toUtf8(), QCryptographicHash::Md4).toHex());
+}
+
 /*
    Constructor
 */
@@ -115,15 +121,17 @@ DatabaseManager::~DatabaseManager()
 bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope scope)
 {
     Q_UNUSED(scope)
-    qDebug() << ":!:" << __FUNCTION__;
+    m_lastError.setError(DBError::NoError);
+//    qDebug() << ":!:" << __FUNCTION__;
 
     // Check if a service is already registered with the given location
     QServiceInterfaceDescriptor interface;
     foreach (interface, service.interfaces) {
         QVariantMap query;
-        query.insert(kQuery, QString::fromLatin1("[?_type=\"interface\"][?identifier=\"%1\"][?service=\"%2\"]").arg(interface.interfaceName()).arg(service.location));
+        query.insert(kQuery, QString::fromLatin1("[?_type=\"com.nokia.mp.serviceframework.interface\"][?interface=\"%1\"][?location=\"%2\"]").arg(interface.interfaceName()).arg(service.location));
         int id = db->find(query);
         if (!waitForResponse(id)) {
+            qDebug() << "Db error" << m_lastError.text() << query;
             m_lastError.setError(DBError::InvalidDatabaseFile, QLatin1String("Cannot register service. Unable to contact database."));
             return false;
         }
@@ -146,28 +154,36 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
         }
     }
 
-    QVariantMap query;
-    query.insert(kQuery, QString(QLatin1String("[?_type=\"com.nokia.mp.core.Package\"][?identifier=\"%1\"]")).arg(service.location));
-    int id = db->find(query);
-    if (!waitForResponse(id)) {
-        qWarning() << "Can not find query the service registered as an Application with identifier" << service.location;
-        qWarning() << "Please check the info.json file is setup properly";
-    }
+//    QVariantMap query;
+//    query.insert(kQuery, QString(QLatin1String("[?_type=\"com.nokia.mp.core.Package\"][?identifier=\"%1\"]")).arg(service.location));
+//    int id = db->find(query);
+//    if (!waitForResponse(id)) {
+//        qWarning() << "Can not find query the service registered as an Application with identifier" << service.location;
+//        qWarning() << "Please check the info.json file is setup properly";
+//    }
 
-    if (m_data.toMap()[QLatin1String("length")].toInt() == 0){
-        qWarning() << "Can not find the service registered as an Application with identifier" << service.location;
-        qWarning() << "Please check the info.json file is setup properly";
-    }
+//    if (m_data.toMap()[QLatin1String("length")].toInt() == 0){
+//        qWarning() << "Can not find the service registered as an Application with identifier" << service.location;
+//        qWarning() << "Please check the info.json file is setup properly";
+//    }
 
     foreach (const QServiceInterfaceDescriptor &interface, service.interfaces) {
         QVariantMap interfaceData;
-        interfaceData.insert(JsonDbString::kTypeStr, QLatin1String("interface"));
-        interfaceData.insert(QLatin1String("identifier"), interface.interfaceName());
-        interfaceData.insert(QLatin1String("service"), service.location);
-        interfaceData.insert(QLatin1String("name"), service.name);
-        interfaceData.insert(QLatin1String("vermaj"), interface.majorVersion());
-        interfaceData.insert(QLatin1String("vermin"), interface.minorVersion());
-        interfaceData.insert(QLatin1String("description"), interface.attribute(QServiceInterfaceDescriptor::InterfaceDescription));
+        interfaceData.insert(JsonDbString::kTypeStr, QLatin1String("com.nokia.mp.serviceframework.interface"));
+        QString version = QString(QLatin1String("%1.%2")).arg(interface.majorVersion()).arg(interface.minorVersion());
+        interfaceData.insert(QLatin1String("identifier"), makeHash(interface.interfaceName(),
+                                                             service.name,
+                                                             version));
+        interfaceData.insert(QLatin1String("location"), service.location);
+        interfaceData.insert(QLatin1String("service"), service.name);
+        interfaceData.insert(QLatin1String("interface"), interface.interfaceName());
+        interfaceData.insert(QLatin1String("version"), QString(QLatin1String("%1.%2")).arg(interface.majorVersion()).arg(interface.minorVersion()));
+        if (interface.attribute(QServiceInterfaceDescriptor::InterfaceDescription).isValid())
+            interfaceData.insert(QLatin1String("description"), interface.attribute(QServiceInterfaceDescriptor::InterfaceDescription));
+        if (interface.attribute(QServiceInterfaceDescriptor::ServiceDescription).isValid())
+            interfaceData.insert(QLatin1String("servicedescription"), interface.attribute(QServiceInterfaceDescriptor::ServiceDescription));
+        if (interface.attribute(QServiceInterfaceDescriptor::ServiceType).isValid())
+            interfaceData.insert(QLatin1String("servicetype"), interface.attribute(QServiceInterfaceDescriptor::ServiceType));
         QString caps = interface.attribute(QServiceInterfaceDescriptor::Capabilities).toString();
         if (!caps.isEmpty())
             interfaceData.insert(QLatin1String("capabilities"), caps.split(QLatin1Char(',')));
@@ -198,11 +214,11 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
 bool DatabaseManager::unregisterService(const QString &serviceName, DbScope scope)
 {
     Q_UNUSED(scope)
-
-    qDebug() << ":!:" << __FUNCTION__;
+    m_lastError.setError(DBError::NoError);
+//    qDebug() << ":!:" << __FUNCTION__;
 
     QVariantMap query;
-    query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?service=\"%2\"]")
+    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?service=\"%2\"]")
                  .arg(JsonDbString::kTypeStr)
                  .arg(serviceName));
     int id = db->find(query);
@@ -248,20 +264,21 @@ bool DatabaseManager::serviceInitialized(const QString &serviceName, DbScope sco
 QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServiceFilter &filter, DbScope scope)
 {
     Q_UNUSED(scope)
-    qDebug() << ":!:" << __FUNCTION__;
+    m_lastError.setError(DBError::NoError);
+//    qDebug() << ":!:" << __FUNCTION__;
     QList<QServiceInterfaceDescriptor> descriptors;
 
     QVariantMap query;
     if (!filter.serviceName().isEmpty()) {
-        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?name=\"%2\"]")
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?service=\"%2\"]")
                      .arg(JsonDbString::kTypeStr)
                      .arg(filter.serviceName()));
     } else if (!filter.interfaceName().isEmpty()) {
-        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?identifier=\"%2\"]")
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?interface=\"%2\"]")
                      .arg(JsonDbString::kTypeStr)
                      .arg(filter.interfaceName()));
     } else {
-        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"]")
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"]")
                      .arg(JsonDbString::kTypeStr));
     }
     int id = db->find(query);
@@ -275,24 +292,24 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
         if (filter.interfaceName().isEmpty()) {
             match = true;
         }
-        else if (filter.interfaceName() == vMap[QLatin1String("identifier")].toString()) {
+        else if (filter.interfaceName() == vMap[QLatin1String("interface")].toString()) {
             match = true;
         }
 
-        if (filter.majorVersion() > 0) {
-            if ((filter.versionMatchRule() == QServiceFilter::MinimumVersionMatch && filter.majorVersion() <= vMap[QLatin1String("vermaj")].toInt()) ||
-               (filter.versionMatchRule() == QServiceFilter::ExactVersionMatch && filter.majorVersion() == vMap[QLatin1String("vermaj")].toInt()))
-                match = true;
-            else
+        if (filter.majorVersion() > 0 || filter.minorVersion() > 0) {
+            bool ok;
+            float versiondb = vMap[QLatin1String("version")].toString().toFloat(&ok);
+            if (!ok) {
                 match = false;
-        }
-
-        if (filter.minorVersion() > 0) {
-            if ((filter.versionMatchRule() == QServiceFilter::MinimumVersionMatch && filter.minorVersion() <= vMap[QLatin1String("vermin")].toInt()) ||
-               (filter.versionMatchRule() == QServiceFilter::ExactVersionMatch   && filter.minorVersion() == vMap[QLatin1String("vermin")].toInt()))
-                match = true;
-            else
-                match = false;
+            }
+            else {
+                float versionfl = QString(QLatin1String("%1.%2")).arg(filter.majorVersion()).arg(filter.minorVersion()).toFloat(&ok);
+                if ((filter.versionMatchRule() == QServiceFilter::MinimumVersionMatch && versionfl <= versiondb) ||
+                    (filter.versionMatchRule() == QServiceFilter::ExactVersionMatch && versionfl == versiondb))
+                    match = true;
+                else
+                    match = false;
+            }
         }
 
         if (!filter.capabilities().isEmpty()) {
@@ -306,13 +323,18 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
         if (match) {
                 QServiceInterfaceDescriptor interface;
                 interface.d = new QServiceInterfaceDescriptorPrivate;
-                interface.d->interfaceName = vMap[QLatin1String("identifier")].toString();
-                interface.d->serviceName = vMap[QLatin1String("name")].toString();
-                interface.d->major = vMap[QLatin1String("vermaj")].toInt();
-                interface.d->minor = vMap[QLatin1String("vermin")].toInt();
-                interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
-                interface.d->attributes[QServiceInterfaceDescriptor::Location] = vMap[QLatin1String("service")].toString();
-                interface.d->attributes[QServiceInterfaceDescriptor::ServiceDescription] = vMap[QLatin1String("description")].toString();
+                interface.d->interfaceName = vMap[QLatin1String("interface")].toString();
+                interface.d->serviceName = vMap[QLatin1String("service")].toString();
+                interface.d->major = vMap[QLatin1String("version")].toString().split(QLatin1String(".")).at(0).toInt();
+                interface.d->minor = vMap[QLatin1String("version")].toString().split(QLatin1String(".")).at(1).toInt();
+                if (vMap.contains(QLatin1String("servicetype")))
+                    interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = vMap[QLatin1String("servicetype")].toInt();
+                if (vMap.contains(QLatin1String("location")))
+                    interface.d->attributes[QServiceInterfaceDescriptor::Location] = vMap[QLatin1String("location")].toString();
+                if (vMap.contains(QLatin1String("description")))
+                    interface.d->attributes[QServiceInterfaceDescriptor::InterfaceDescription] = vMap[QLatin1String("description")].toString();
+                if (vMap.contains(QLatin1String("servicedescription")))
+                    interface.d->attributes[QServiceInterfaceDescriptor::ServiceDescription] = vMap[QLatin1String("servicedescription")].toString();
 
                 descriptors.append(interface);
             }
@@ -329,28 +351,29 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
 */
 QStringList DatabaseManager::getServiceNames(const QString &interfaceName, DatabaseManager::DbScope scope)
 {
-    qDebug() << ":!:" << __FUNCTION__ << interfaceName << scope;
-
+//    qDebug() << ":!:" << __FUNCTION__ << interfaceName << scope;
+    m_lastError.setError(DBError::NoError);
     QStringList serviceNames;
 
     // Check if a service is already registered with the given location
     QVariantMap query;
     if (interfaceName.isEmpty())
-        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"]").arg(JsonDbString::kTypeStr));
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"]").arg(JsonDbString::kTypeStr));
     else
-        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?identifier=\"%2\"]").arg(JsonDbString::kTypeStr).arg(interfaceName));
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?interface=\"%2\"]").arg(JsonDbString::kTypeStr).arg(interfaceName));
     int id = db->find(query);
     if (!waitForResponse(id)) {
-        qDebug() << "Found nothing";
+//        qDebug() << "Found nothing";
         return serviceNames;
     }
 
     QList<QVariant> res = m_data.toMap()[kData].toList();
     while (!res.empty()) {
         QMap<QString, QVariant> entry = res.takeFirst().toMap();
-        serviceNames.append(entry[QLatin1String("name")].toString());
+        serviceNames.append(entry[QLatin1String("service")].toString());
     }
-    qDebug() << "Returning" << serviceNames;
+    serviceNames.removeDuplicates();
+//    qDebug() << "Returning" << serviceNames;
     return serviceNames;
 
 }
@@ -365,47 +388,59 @@ QServiceInterfaceDescriptor DatabaseManager::interfaceDefault(const QString &int
 {
     Q_UNUSED(scope)
     Q_UNUSED(interfaceName)
-    qDebug() << ":!:" << __FUNCTION__ << "starting";
+    m_lastError.setError(DBError::NoError);
 
     // Mark all interface defaults as not the default
     QVariantMap query;
-    query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?identifier=\"%2\"][?default=\"1\"]")
+    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?interface=\"%2\"][?default=\"1\"]")
                  .arg(JsonDbString::kTypeStr)
                  .arg(interfaceName));
     int id = db->find(query);
     if (!waitForResponse(id)) {
         qDebug() << "Did query" << query[kQuery].toString();
-        query.clear();
-        query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?identifier=\"%2\"]")
-                     .arg(JsonDbString::kTypeStr)
-                     .arg(interfaceName));
-        id = db->find(query);
-        if (!waitForResponse(id)) {
-            m_lastError.setError(DBError::NotFound, QLatin1String("Unable to find interface."));
-            return QServiceInterfaceDescriptor();
-        }
+        m_lastError.setError(DBError::NotFound, QLatin1String("Unable to get response from jsondb."));
+        return QServiceInterfaceDescriptor();
     }
 
     QList<QVariant> res = m_data.toMap()[kData].toList();
 
     if (res.isEmpty()) {
-        m_lastError.setError(DBError::NotFound, QLatin1String("Error fetching interface data."));
-        return QServiceInterfaceDescriptor();
+        query.clear();
+        query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?interface=\"%2\"]")
+                     .arg(JsonDbString::kTypeStr)
+                     .arg(interfaceName));
+        id = db->find(query);
+        if (!waitForResponse(id)) {
+            m_lastError.setError(DBError::NotFound, QLatin1String("Error fetching interface data from jsondb, failed to get result."));
+            return QServiceInterfaceDescriptor();
+        }
+        res = m_data.toMap()[kData].toList();
+
+        if (res.isEmpty()) {
+            m_lastError.setError(DBError::NotFound, QLatin1String("Interface not found."));
+            return QServiceInterfaceDescriptor();
+        }
+
     }
 
     QMap<QString, QVariant> entry = res.takeFirst().toMap();
 
     QServiceInterfaceDescriptor interface;
     interface.d = new QServiceInterfaceDescriptorPrivate;
-    interface.d->interfaceName = entry[QLatin1String("identifier")].toString();
+    interface.d->interfaceName = entry[QLatin1String("interface")].toString();
     interface.d->serviceName = entry[QLatin1String("service")].toString();
-    interface.d->major = entry[QLatin1String("vermaj")].toInt();
-    interface.d->minor = entry[QLatin1String("vermin")].toInt();
-    interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
-    interface.d->attributes[QServiceInterfaceDescriptor::Location] = entry[QLatin1String("service")].toString();
-    interface.d->attributes[QServiceInterfaceDescriptor::ServiceDescription] = entry[QLatin1String("description")].toString();
-
-    qDebug() << "Found it";
+    interface.d->major = entry[QLatin1String("version")].toString().split(QLatin1String(".")).at(0).toInt();
+    interface.d->minor = entry[QLatin1String("version")].toString().split(QLatin1String(".")).at(1).toInt();
+    if (entry.contains(QLatin1String("servicetype")))
+        interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = entry[QLatin1String("servicetype")].toInt();
+    if (entry.contains(QLatin1String("location")))
+        interface.d->attributes[QServiceInterfaceDescriptor::Location] = entry[QLatin1String("location")].toString();
+    if (entry.contains(QLatin1String("description")))
+        interface.d->attributes[QServiceInterfaceDescriptor::InterfaceDescription] = entry[QLatin1String("description")].toString();
+    if (entry.contains(QLatin1String("servicedescription")))
+        interface.d->attributes[QServiceInterfaceDescriptor::ServiceDescription] = entry[QLatin1String("servicedescription")].toString();
+    if (entry.contains(QLatin1String("capabilities")))
+        interface.d->attributes[QServiceInterfaceDescriptor::Capabilities] = entry[QLatin1String("capabilities")].toString();
 
     return interface;
 }
@@ -431,7 +466,7 @@ bool lessThan(const QServiceInterfaceDescriptor &d1,
 bool DatabaseManager::setInterfaceDefault(const QString &serviceName, const
         QString &interfaceName, DbScope scope)
 {
-    qDebug() << ":!:" << __FUNCTION__;
+    m_lastError.setError(DBError::NoError);
     QList<QServiceInterfaceDescriptor> descriptors;
     QServiceFilter filter;
     filter.setServiceName(serviceName);
@@ -471,11 +506,11 @@ bool DatabaseManager::setInterfaceDefault(const QString &serviceName, const
 bool DatabaseManager::setInterfaceDefault(const QServiceInterfaceDescriptor &descriptor, DbScope scope)
 {
     Q_UNUSED(scope)
-    qDebug() << ":!:" << __FUNCTION__;
+    m_lastError.setError(DBError::NoError);
 
     // Mark all interface defaults as not the default
     QVariantMap query;
-    query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?identifier=\"%2\"]")
+    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?interface=\"%2\"]")
                  .arg(JsonDbString::kTypeStr)
                  .arg(descriptor.interfaceName()));
     int id = db->find(query);
@@ -499,12 +534,11 @@ bool DatabaseManager::setInterfaceDefault(const QServiceInterfaceDescriptor &des
 
     // Fetch the entry
     query.clear();
-    query.insert(kQuery, QString::fromLatin1("[?%1=\"interface\"][?identifier=\"%2\"][?service=\"%3\"][?vermaj=\"%4\"][?vermin=\"%5\"]")
+    QString version = QString(QLatin1String("%1.%2")).arg(descriptor.majorVersion()).arg(descriptor.minorVersion());
+    QString hash = makeHash(descriptor.interfaceName(), descriptor.serviceName(), version);
+    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?identifier=\"%2\"]")
                  .arg(JsonDbString::kTypeStr)
-                 .arg(descriptor.interfaceName())
-                 .arg(descriptor.serviceName())
-                 .arg(descriptor.majorVersion())
-                 .arg(descriptor.minorVersion()));
+                 .arg(hash));
     id = db->find(query);
     if (!waitForResponse(id)) {
         qDebug() << "Found nothing";
@@ -514,7 +548,8 @@ bool DatabaseManager::setInterfaceDefault(const QServiceInterfaceDescriptor &des
     res = m_data.toMap()[kData].toList();
 
     if (res.empty()){
-        qDebug() << "Can't find interface" << descriptor.interfaceName() << " and service " << descriptor.serviceName();
+        qDebug() << "Can't find interface" << hash << descriptor.interfaceName() << " and service " << descriptor.serviceName() <<
+                    "version" << descriptor.majorVersion() << descriptor.minorVersion();
         return false;
     }
     else if (res.count() > 1){
@@ -540,6 +575,7 @@ void DatabaseManager::setChangeNotificationsEnabled(DbScope scope, bool enabled)
 {
     Q_UNUSED(scope)
     Q_UNUSED(enabled)
+    m_lastError.setError(DBError::NoError);
     qDebug() << ":!:" << __FUNCTION__ << "warning: not implemented";
 }
 

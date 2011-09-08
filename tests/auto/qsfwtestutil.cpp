@@ -47,6 +47,23 @@
 #include <QDebug>
 #include <QCoreApplication>
 
+#ifdef QT_JSONDB
+#include <private/jsondb-connection_p.h>
+#include <private/jsondb-strings_p.h>
+#include <mtcore/jsondb-constants.h>
+#include <jsondb-client.h>
+#include <jsondb-global.h>
+#include <QSignalSpy>
+
+const QLatin1String kQuery("query");
+
+Q_ADDON_JSONDB_BEGIN_NAMESPACE
+class JsonDbClient;
+Q_ADDON_JSONDB_END_NAMESPACE
+Q_USE_JSONDB_NAMESPACE
+
+#endif
+
 void QSfwTestUtil::setupTempUserDb()
 {
     QSettings::setUserIniPath(tempUserDbDir());
@@ -115,6 +132,62 @@ void QSfwTestUtil::removeDirectory(const QString &path)
     dir.rmpath(path);
 }
 
+#if defined(QT_JSONDB)
+
+void QSfwTestUtil::clearDatabases_jsondb()
+{
+    JsonDbClient *db = new JsonDbClient();
+    QSignalSpy response(db, SIGNAL(response(int,QVariant)));
+    QSignalSpy error(db, SIGNAL(error(int,int,QString)));
+    bool waiting = true;
+
+    QList<QVariant> args;
+
+    QVariantMap query;
+    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"]")
+                 .arg(JsonDbString::kTypeStr));
+
+    db->find(query);
+    do {
+        QCoreApplication::processEvents();
+        if (response.count()){
+            args = response.first();
+            waiting = false;
+        }
+        if (error.count()) {
+            waiting = false;
+        }
+    } while (waiting);
+
+    if (args.isEmpty()) {
+        return;
+    }
+
+    QVariant v = args.at(1).value<QVariant>();
+    QVariantMap vm = v.toMap();
+
+    QList<QVariant> list = vm[QLatin1String("data")].toList();
+    if (list.isEmpty()) {
+        return;
+    }
+    foreach (const QVariant &v, list) {
+        QVariantMap x;
+        x.insert(QLatin1String("_uuid"), v.toMap()[QLatin1String("_uuid")]);
+        response.clear();
+        error.clear();
+        db->remove(x);
+        waiting = true;
+        do {
+            QCoreApplication::processEvents();
+            if (response.count() || error.count()) {
+                waiting = false;
+            }
+        } while (waiting);
+    }
+}
+
+#endif
+
 #if defined(Q_OS_SYMBIAN)
 #include <e32base.h>
 void QSfwTestUtil::removeDatabases_symbian()
@@ -144,3 +217,4 @@ void QSfwTestUtil::removeDatabases_symbian()
     QFile::remove(QDir::toNativeSeparators(dir.path() + QDir::separator() + dbName));
 }
 #endif
+

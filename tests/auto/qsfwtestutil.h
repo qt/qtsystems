@@ -61,6 +61,10 @@ public:
     static QString userDirectory();
     static QString systemDirectory();
 
+#if defined(QT_JSONDB)
+    static void clearDatabases_jsondb();
+#endif
+
 #if defined(Q_OS_SYMBIAN)
     static void removeDatabases_symbian();
 #endif

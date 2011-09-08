@@ -3,8 +3,17 @@ load(qttest_p4)
 QT = core sql serviceframework serviceframework-private
 CONFIG += parallel_test
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"
 
+contains(config_test_jsondb, yes) {
+    DEFINES += QT_JSONDB
+    INCLUDEPATH += $$[QT_INSTALL_PREFIX]/opt/mt/include /opt/mt/include
+    LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
+    LIBS += -L/opt/mt/lib -lmtcore -Wl,-rpath,/opt/mt/lib
+    PKGCONFIG += mtcore
+    DEFINES += QT_ADDON_JSONDB_LIB
+    QT += jsondb jsondb-private
+}
 
 # Input 
 HEADERS += sampleservice/sampleserviceplugin.h \
