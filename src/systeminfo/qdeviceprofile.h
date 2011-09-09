@@ -68,21 +68,15 @@ public:
     };
 
     QDeviceProfile(QObject *parent = 0);
-    QDeviceProfile(const QDeviceProfile &other);
-    QDeviceProfile &operator=(const QDeviceProfile &other);
     virtual ~QDeviceProfile();
 
-    static QDeviceProfile current();
-
-    Q_INVOKABLE bool vibrationActived() const;
+    Q_INVOKABLE bool isVibrationActivated() const;
     Q_INVOKABLE int messageRingtoneVolume() const;
     Q_INVOKABLE int voiceRingtoneVolume() const;
     Q_INVOKABLE QDeviceProfile::ProfileType profileType() const;
 
-Q_SIGNALS:
-    void currentProfileChanged(const QDeviceProfile &profile);
-
 private:
+    Q_DISABLE_COPY(QDeviceProfile)
     QDeviceProfilePrivate * const d_ptr;
     Q_DECLARE_PRIVATE(QDeviceProfile)
 };

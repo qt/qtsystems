@@ -47,10 +47,9 @@ class QDeviceProfilePrivate
 public:
     QDeviceProfilePrivate(QDeviceProfile *) {}
 
-    bool vibrationActived() { return false; }
+    bool isVibrationActivated() { return false; }
     int messageRingtoneVolume() { return -1; }
     int voiceRingtoneVolume() { return -1; }
-    QDeviceProfile current() { return QDeviceProfile(); }
     QDeviceProfile::ProfileType profileType() { return QDeviceProfile::UnknownProfile; }
 };
 QT_END_NAMESPACE
@@ -92,25 +91,6 @@ QDeviceProfile::QDeviceProfile(QObject *parent)
 }
 
 /*!
-    Constructs a QDeviceProfile object from \a other.
-*/
-QDeviceProfile::QDeviceProfile(const QDeviceProfile &other)
-    : QObject(0)
-    , d_ptr(new QDeviceProfilePrivate(this))
-{
-    Q_UNUSED(other)
-}
-
-/*!
-    Assigns \a other to this profile and returns a reference to this profile.
-*/
-QDeviceProfile &QDeviceProfile::operator=(const QDeviceProfile &other)
-{
-    Q_UNUSED(other)
-    return *this;
-}
-
-/*!
     Destroys the object
 */
 QDeviceProfile::~QDeviceProfile()
@@ -121,9 +101,9 @@ QDeviceProfile::~QDeviceProfile()
 /*!
     Returns the whether the vibration is active for this profile.
 */
-bool QDeviceProfile::vibrationActived() const
+bool QDeviceProfile::isVibrationActivated() const
 {
-    return d_ptr->vibrationActived();
+    return d_ptr->isVibrationActivated();
 }
 
 /*!
@@ -150,16 +130,6 @@ int QDeviceProfile::voiceRingtoneVolume() const
 QDeviceProfile::ProfileType QDeviceProfile::profileType() const
 {
     return d_ptr->profileType();
-}
-
-/*!
-    Returns the currently activated profile. If this information is unknown, or error occurs, a profile
-    of type UnknownProfile is returned.
-*/
-QDeviceProfile QDeviceProfile::current()
-{
-    QDeviceProfilePrivate priv(0);
-    return priv.current();
 }
 
 QT_END_NAMESPACE
