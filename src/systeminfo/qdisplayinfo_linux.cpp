@@ -42,8 +42,6 @@
 #include "qdisplayinfo_linux_p.h"
 
 #include <QtCore/qdir.h>
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qdesktopwidget.h>
 #include <QtGui/qpixmap.h>
 
 #if defined(Q_WS_X11)
@@ -187,21 +185,21 @@ QDisplayInfo::Orientation QDisplayInfoPrivate::orientation(int screen)
 
 void QDisplayInfoPrivate::connectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
-        watchOrientation = true;
-        int count = qApp->desktop()->screenCount();
-        for (int i = 0; i < count; ++i)
-            currentOrientation[i] = getOrientation(i);
-        connect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
+    if (strcmp(signal, SIGNAL(orientationChanged(int,QDisplayInfo::Orientation))) == 0) {
+//        watchOrientation = true;
+//        int count = QGuiApplication::screens().size();
+//        for (int i = 0; i < count; ++i)
+//            currentOrientation[i] = getOrientation(i);
+//        connect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
     }
 }
 
 void QDisplayInfoPrivate::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
-        watchOrientation = false;
-        currentOrientation.clear();
-        disconnect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
+    if (strcmp(signal, SIGNAL(orientationChanged(int,QDisplayInfo::Orientation))) == 0) {
+//        watchOrientation = false;
+//        currentOrientation.clear();
+//        disconnect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
     }
 }
 

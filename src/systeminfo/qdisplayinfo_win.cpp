@@ -41,8 +41,8 @@
 
 #include "qdisplayinfo_win_p.h"
 
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qdesktopwidget.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
 #include <QtGui/qpixmap.h>
 
 QT_BEGIN_NAMESPACE
@@ -67,7 +67,7 @@ int QDisplayInfoPrivate::brightness(int screen)
 int QDisplayInfoPrivate::colorDepth(int screen)
 {
     if (hDC == NULL)
-        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
     return GetDeviceCaps(hDC, LOGPIXELSX);
 }
 
@@ -80,28 +80,28 @@ int QDisplayInfoPrivate::contrast(int screen)
 int QDisplayInfoPrivate::dpiX(int screen)
 {
     if (hDC == NULL)
-        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
     return GetDeviceCaps(hDC, LOGPIXELSX);
 }
 
 int QDisplayInfoPrivate::dpiY(int screen)
 {
     if (hDC == NULL)
-        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
     return GetDeviceCaps(hDC, LOGPIXELSY);
 }
 
 int QDisplayInfoPrivate::physicalHeight(int screen)
 {
     if (hDC == NULL)
-        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
     return GetDeviceCaps(hDC, VERTSIZE);
 }
 
 int QDisplayInfoPrivate::physicalWidth(int screen)
 {
     if (hDC == NULL)
-        hDC = GetDC(qApp->desktop()->screen(screen)->winId());
+        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
     return GetDeviceCaps(hDC, HORZSIZE);
 }
 

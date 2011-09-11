@@ -6,7 +6,7 @@ QPRO_PWD = $PWD
 CONFIG += module
 MODULE_PRI = ../../modules/qt_systeminfo.pri
 
-QT = core gui network widgets
+QT = core gui network
 
 DEFINES += QT_BUILD_SYSTEMINFO_LIB QT_MAKEDLL
 

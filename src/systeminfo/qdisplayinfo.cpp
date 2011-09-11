@@ -41,8 +41,7 @@
 
 #include <qdisplayinfo.h>
 
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qdesktopwidget.h>
+#include <QtGui/qguiapplication.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qdisplayinfo_linux_p.h"
@@ -132,7 +131,7 @@ QDisplayInfo::~QDisplayInfo()
 */
 int QDisplayInfo::brightness(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return -1;
     return d_ptr->brightness(screen);
 }
@@ -143,7 +142,7 @@ int QDisplayInfo::brightness(int screen) const
 */
 int QDisplayInfo::colorDepth(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return -1;
     return d_ptr->colorDepth(screen);
 }
@@ -154,7 +153,7 @@ int QDisplayInfo::colorDepth(int screen) const
 */
 int QDisplayInfo::contrast(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return -1;
     return d_ptr->contrast(screen);
 }
@@ -165,7 +164,7 @@ int QDisplayInfo::contrast(int screen) const
 */
 int QDisplayInfo::dpiX(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return -1;
     return d_ptr->dpiX(screen);
 }
@@ -176,7 +175,7 @@ int QDisplayInfo::dpiX(int screen) const
 */
 int QDisplayInfo::dpiY(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return -1;
     return d_ptr->dpiY(screen);
 }
@@ -187,7 +186,7 @@ int QDisplayInfo::dpiY(int screen) const
 */
 int QDisplayInfo::physicalHeight(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return -1;
     return d_ptr->physicalHeight(screen);
 }
@@ -198,7 +197,7 @@ int QDisplayInfo::physicalHeight(int screen) const
 */
 int QDisplayInfo::physicalWidth(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return -1;
     return d_ptr->physicalWidth(screen);
 }
@@ -208,7 +207,7 @@ int QDisplayInfo::physicalWidth(int screen) const
 */
 QDisplayInfo::BacklightState QDisplayInfo::backlightState(int screen) const
 {
-    if (screen < 0 || screen >= QApplication::desktop()->screenCount())
+    if (screen < 0 || screen >= QGuiApplication::screens().size())
         return QDisplayInfo::BacklightUnknown;
     return d_ptr->backlightState(screen);
 }
@@ -218,18 +217,7 @@ QDisplayInfo::BacklightState QDisplayInfo::backlightState(int screen) const
 */
 QDisplayInfo::Orientation QDisplayInfo::orientation(int screen) const
 {
-    QDisplayInfo::Orientation orient = d_ptr->orientation(screen);
-    if (orient != QDisplayInfo::OrientationUnknown) {
-        return orient;
-    } else {
-        QWidget *widget = qApp->desktop()->screen(screen);
-        if (widget->width() > widget->height())
-            return QDisplayInfo::Landscape;
-        else if (widget->width() < widget->height())
-            return QDisplayInfo::Portrait;
-        else
-            return QDisplayInfo::OrientationUnknown;
-    }
+    return d_ptr->orientation(screen);
 }
 
 /*!

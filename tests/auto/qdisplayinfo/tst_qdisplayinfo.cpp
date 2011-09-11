@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/qdesktopwidget.h>
+#include <QtGui/qguiapplication.h>
 #include <QtTest/QtTest>
 
 #include "qdisplayinfo.h"
@@ -65,7 +65,7 @@ void tst_QDisplayInfo::tst_brightness()
     QDisplayInfo displayInfo;
 
     QVERIFY(-1 == displayInfo.brightness(-1));
-    QVERIFY(-1 == displayInfo.brightness(QApplication::desktop()->screenCount()));
+    QVERIFY(-1 == displayInfo.brightness(QGuiApplication::screens().size()));
 }
 
 void tst_QDisplayInfo::tst_contrast()
@@ -73,7 +73,7 @@ void tst_QDisplayInfo::tst_contrast()
     QDisplayInfo displayInfo;
 
     QVERIFY(-1 == displayInfo.contrast(-1));
-    QVERIFY(-1 == displayInfo.contrast(QApplication::desktop()->screenCount()));
+    QVERIFY(-1 == displayInfo.contrast(QGuiApplication::screens().size()));
 }
 
 void tst_QDisplayInfo::tst_colorDepth()
@@ -81,7 +81,7 @@ void tst_QDisplayInfo::tst_colorDepth()
     QDisplayInfo displayInfo;
 
     QVERIFY(-1 == displayInfo.colorDepth(-1));
-    QVERIFY(-1 == displayInfo.colorDepth(QApplication::desktop()->screenCount()));
+    QVERIFY(-1 == displayInfo.colorDepth(QGuiApplication::screens().size()));
 }
 
 void tst_QDisplayInfo::tst_dpiX()
@@ -89,7 +89,7 @@ void tst_QDisplayInfo::tst_dpiX()
     QDisplayInfo displayInfo;
 
     QVERIFY(-1 == displayInfo.dpiX(-1));
-    QVERIFY(-1 == displayInfo.dpiX(QApplication::desktop()->screenCount()));
+    QVERIFY(-1 == displayInfo.dpiX(QGuiApplication::screens().size()));
 }
 
 void tst_QDisplayInfo::tst_dpiY()
@@ -97,7 +97,7 @@ void tst_QDisplayInfo::tst_dpiY()
     QDisplayInfo displayInfo;
 
     QVERIFY(-1 == displayInfo.dpiY(-1));
-    QVERIFY(-1 == displayInfo.dpiY(QApplication::desktop()->screenCount()));
+    QVERIFY(-1 == displayInfo.dpiY(QGuiApplication::screens().size()));
 }
 
 void tst_QDisplayInfo::tst_physicalHeight()
@@ -105,7 +105,7 @@ void tst_QDisplayInfo::tst_physicalHeight()
     QDisplayInfo displayInfo;
 
     QVERIFY(-1 == displayInfo.physicalHeight(-1));
-    QVERIFY(-1 == displayInfo.physicalHeight(QApplication::desktop()->screenCount()));
+    QVERIFY(-1 == displayInfo.physicalHeight(QGuiApplication::screens().size()));
 }
 
 void tst_QDisplayInfo::tst_physicalWidth()
@@ -113,7 +113,7 @@ void tst_QDisplayInfo::tst_physicalWidth()
     QDisplayInfo displayInfo;
 
     QVERIFY(-1 == displayInfo.physicalWidth(-1));
-    QVERIFY(-1 == displayInfo.physicalWidth(QApplication::desktop()->screenCount()));
+    QVERIFY(-1 == displayInfo.physicalWidth(QGuiApplication::screens().size()));
 }
 
 QTEST_MAIN(tst_QDisplayInfo)
