@@ -818,7 +818,7 @@ void tst_QServiceManager::loadInterface_descriptor()
 
 void tst_QServiceManager::loadInterface_descriptor_data()
 {
-    QSKIP("broken in qt5", SkipAll);
+//    QSKIP("broken in qt5", SkipAll);
     QTest::addColumn<QServiceInterfaceDescriptor>("descriptor");
     QTest::addColumn<QString>("className");
 
@@ -1278,9 +1278,6 @@ void tst_QServiceManager::interfaceDefault()
 
 void tst_QServiceManager::serviceAdded()
 {
-#ifdef QT_JSONDB
-    QSKIP("Notification not enabled in jsondb", SkipAll);
-#endif
     QFETCH(QByteArray, xml);
     QFETCH(QString, serviceName);
     QFETCH(QService::Scope, scope_modify);
@@ -1371,7 +1368,7 @@ void tst_QServiceManager::serviceAdded_data()
 
     QByteArray file1Data = file1.readAll();
 
-#if defined (Q_OS_SYMBIAN)
+#if defined (Q_OS_SYMBIAN) || defined(QT_JSONDB)
     // Symbian implementation hard-codes (ignores) scopes for everything, do not test mixed-scope stuff
     QTest::newRow("SampleService, user scope") << file1Data << "SampleService"
             << QService::SystemScope << QService::SystemScope << true;
@@ -1394,9 +1391,6 @@ void tst_QServiceManager::serviceAdded_data()
 
 void tst_QServiceManager::serviceRemoved()
 {
-#ifdef QT_JSONDB
-    QSKIP("Notification not enabled in jsondb", SkipAll);
-#endif
     QFETCH(QByteArray, xml);
     QFETCH(QString, serviceName);
     QFETCH(QService::Scope, scope_modify);

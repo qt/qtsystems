@@ -107,6 +107,8 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
     private slots:
         void handleResponse( int id, const QVariant& data );
         void handleError( int id, int code, const QString& message );
+        void handleDisconnect();
+        void handleNotified(const QString&, const QVariant&, const QString&);
 
     private:
         JsonDbClient *db;
@@ -114,6 +116,9 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
         int m_id;
         QVariant m_data;
         QEventLoop m_eventLoop;
+        bool m_notenabled;
+        QString m_notuuid;
+        QHash<QString, int> m_services;
 
     private:
         bool waitForResponse(int id);

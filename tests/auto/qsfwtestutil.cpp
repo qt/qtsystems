@@ -137,8 +137,13 @@ void QSfwTestUtil::removeDirectory(const QString &path)
 void QSfwTestUtil::clearDatabases_jsondb()
 {
     JsonDbClient *db = new JsonDbClient();
+    if (!db->isConnected()) {
+        qWarning() << "Failed to connect to jsondb, expect mass failure";
+        return;
+    }
     QSignalSpy response(db, SIGNAL(response(int,QVariant)));
     QSignalSpy error(db, SIGNAL(error(int,int,QString)));
+    QSignalSpy discon(db, SIGNAL(disconnected()));
     bool waiting = true;
 
     QList<QVariant> args;
@@ -154,7 +159,7 @@ void QSfwTestUtil::clearDatabases_jsondb()
             args = response.first();
             waiting = false;
         }
-        if (error.count()) {
+        if (error.count() || discon.count()) {
             waiting = false;
         }
     } while (waiting);
@@ -179,7 +184,7 @@ void QSfwTestUtil::clearDatabases_jsondb()
         waiting = true;
         do {
             QCoreApplication::processEvents();
-            if (response.count() || error.count()) {
+            if (response.count() || error.count() || discon.count()) {
                 waiting = false;
             }
         } while (waiting);

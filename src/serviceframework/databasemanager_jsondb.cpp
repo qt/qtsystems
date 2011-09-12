@@ -96,19 +96,28 @@ static QString makeHash(const QString& interface, const QString& service, const 
 /*
    Constructor
 */
-DatabaseManager::DatabaseManager(): db(new JsonDbClient(this))
+DatabaseManager::DatabaseManager(): db(new JsonDbClient(this)), m_notenabled(false)
 {
     connect(db, SIGNAL(response(int,const QVariant&)),
         this, SLOT(handleResponse(int,const QVariant&)));
     connect(db, SIGNAL(error(int,int,const QString&)),
         this, SLOT(handleError(int,int,const QString&)));
+    connect(db, SIGNAL(disconnected()),
+            this, SLOT(handleDisconnect()));
+    connect(db, SIGNAL(notified(QString,QVariant,QString)),
+            this, SLOT(handleNotified(QString,QVariant,QString)));
+
 }
+
 
 /*
    Destructor
 */
 DatabaseManager::~DatabaseManager()
 {
+    if (m_notenabled) {
+        setChangeNotificationsEnabled(DatabaseManager::SystemScope, false);
+    }
 }
 
 /*
@@ -122,7 +131,6 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
 {
     Q_UNUSED(scope)
     m_lastError.setError(DBError::NoError);
-//    qDebug() << ":!:" << __FUNCTION__;
 
     // Check if a service is already registered with the given location
     QServiceInterfaceDescriptor interface;
@@ -248,11 +256,50 @@ bool DatabaseManager::unregisterService(const QString &serviceName, DbScope scop
   */
 bool DatabaseManager::serviceInitialized(const QString &serviceName, DbScope scope)
 {
+    qDebug() << Q_FUNC_INFO;
     Q_UNUSED(scope)
-    Q_UNUSED(serviceName)
-    qDebug() << ":!:" << __FUNCTION__;
-    qDebug() << "Not implemented";
-    return false;
+    m_lastError.setError(DBError::NoError);
+
+    // Mark all interface defaults as not the default
+    QVariantMap query;
+    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?service=\"%2\"]")
+                 .arg(JsonDbString::kTypeStr)
+                 .arg(serviceName));
+
+    qDebug() << "Doing" << query << serviceName;
+
+    int id = db->find(query);
+    if (!waitForResponse(id)) {
+        qDebug() << "Did query" << query[kQuery].toString();
+        m_lastError.setError(DBError::NotFound, QLatin1String("Unable to get response from jsondb."));
+        return false;
+    }
+
+    QList<QVariant> res = m_data.toMap()[kData].toList();
+
+    if (res.isEmpty()) {
+        m_lastError.setError(DBError::NotFound, QLatin1String("Unable to find service"));
+        return false;
+    }
+
+    while (!res.isEmpty()) {
+
+        QVariantMap entry = res.takeFirst().toMap();
+
+        qDebug() << entry;
+
+        if (entry.contains(QLatin1String(SERVICE_INITIALIZED_ATTR))) {
+            entry.remove(QLatin1String(SERVICE_INITIALIZED_ATTR));
+
+            int id = db->update(entry);
+            if (!waitForResponse(id)) {
+                qDebug() << "Failed to update interface entry" << entry.value(QLatin1String("service")).toString() << entry.value(QLatin1String("interface")).toString();
+                return false;
+            }
+        }
+
+    }
+    return true;
 }
 
 /*
@@ -351,7 +398,7 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
 */
 QStringList DatabaseManager::getServiceNames(const QString &interfaceName, DatabaseManager::DbScope scope)
 {
-//    qDebug() << ":!:" << __FUNCTION__ << interfaceName << scope;
+    Q_UNUSED(scope)
     m_lastError.setError(DBError::NoError);
     QStringList serviceNames;
 
@@ -387,7 +434,6 @@ QStringList DatabaseManager::getServiceNames(const QString &interfaceName, Datab
 QServiceInterfaceDescriptor DatabaseManager::interfaceDefault(const QString &interfaceName, DbScope scope)
 {
     Q_UNUSED(scope)
-    Q_UNUSED(interfaceName)
     m_lastError.setError(DBError::NoError);
 
     // Mark all interface defaults as not the default
@@ -574,9 +620,45 @@ bool DatabaseManager::setInterfaceDefault(const QServiceInterfaceDescriptor &des
 void DatabaseManager::setChangeNotificationsEnabled(DbScope scope, bool enabled)
 {
     Q_UNUSED(scope)
-    Q_UNUSED(enabled)
+
+    if (m_notenabled && enabled)
+        return;
+
     m_lastError.setError(DBError::NoError);
-    qDebug() << ":!:" << __FUNCTION__ << "warning: not implemented";
+
+    m_notenabled = enabled;
+
+    if (enabled) {
+        QVariantMap attrib;
+        QVariantList list;
+        attrib.insert(JsonDbString::kTypeStr, JsonDbString::kNotificationTypeStr);
+        attrib.insert(JsonDbString::kQueryStr,
+                      QString(QLatin1String("[?_type=\"com.nokia.mp.serviceframework.interface\"]")));
+        list.append(JsonDbString::kCreateStr);
+        list.append(JsonDbString::kRemoveStr);
+        attrib.insert(JsonDbString::kActionsStr, list);
+
+        int id = db->create(attrib);
+        if (!waitForResponse(id)) {
+            qDebug() << "Got error create" << m_lastError.text();
+        }
+        m_notuuid = m_data.toMap().value(QLatin1String("_uuid")).toString();
+    }
+    else {
+        QVariantMap attrib;
+        attrib.insert(JsonDbString::kTypeStr, JsonDbString::kNotificationTypeStr);
+        attrib.insert(JsonDbString::kQueryStr,
+                      QString(QLatin1String("[?_uuid=\"%1\"]")).arg(m_notuuid));
+
+        int id = db->remove(attrib);
+        if (!waitForResponse(id)) {
+            qDebug() << "Got error remove" << m_lastError.text();
+        }
+
+        m_services.clear();
+        m_notuuid.clear();
+    }
+
 }
 
 void DatabaseManager::handleResponse(int id, const QVariant& data)
@@ -598,9 +680,17 @@ void DatabaseManager::handleError(int id, int code, const QString& message)
     }
 }
 
+void DatabaseManager::handleDisconnect()
+{
+    m_data.clear();
+    m_lastError.setError(DBError::DatabaseNotOpen, QLatin1String("Db connection terminated"));
+    m_eventLoop.exit(0);
+}
+
 bool DatabaseManager::waitForResponse(int id)
 {
-    if (m_lastError.code() != DBError::NoError)
+    if ((!db->isConnected()) ||
+        (m_lastError.code() != DBError::NoError))
         return false;
 
     m_id = id;
@@ -608,6 +698,36 @@ bool DatabaseManager::waitForResponse(int id)
 
     return m_lastError.code() == DBError::NoError;
 }
+
+void DatabaseManager::handleNotified( const QString& notify_uuid,
+                                    const QVariant& object,
+                                    const QString& action )
+{
+    Q_UNUSED(notify_uuid)
+
+    if (!m_notenabled || notify_uuid != m_notuuid)
+        return;
+
+    QVariantMap map = object.toMap();
+    QString service = map.value(QLatin1String("service")).toString();
+
+    if (action == QLatin1String("create")) {
+        if (!m_services.contains(service)) {
+            emit serviceAdded(map.value(QLatin1String("service")).toString(), DatabaseManager::SystemScope);
+        }
+        m_services.insert(service, m_services.value(service)+1);
+    }
+    else if (action == QLatin1String("remove")) {
+        if (m_services.value(service) == 1) {
+            emit serviceRemoved(map.value(QLatin1String("service")).toString(), DatabaseManager::SystemScope);
+            m_services.remove(service);
+        }
+        else {
+            m_services.insert(service, m_services.value(service)-1);
+        }
+    }
+}
+
 
 #include "moc_databasemanager_jsondb_p.cpp"
 
