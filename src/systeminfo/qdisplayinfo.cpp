@@ -41,8 +41,8 @@
 
 #include <qdisplayinfo.h>
 
-#include <QtGui/qapplication.h>
-#include <QtGui/qdesktopwidget.h>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qdesktopwidget.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qdisplayinfo_linux_p.h"

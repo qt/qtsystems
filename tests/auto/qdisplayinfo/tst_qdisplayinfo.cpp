@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qdesktopwidget.h>
+#include <QtWidgets/qdesktopwidget.h>
 #include <QtTest/QtTest>
 
 #include "qdisplayinfo.h"
