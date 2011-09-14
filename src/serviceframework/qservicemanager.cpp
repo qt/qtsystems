@@ -222,7 +222,7 @@ private slots:
     QServiceInterfaceDescriptor. For a more detailed explanation of services and how they relate to
     interface and their implementations please see QServiceInterfaceDescriptor.
 
-    \sa QServicePluginInterface, QServiceContext, QAbstractSecuritySession
+    \sa QServicePluginInterface
 */
 
 /*!
@@ -358,19 +358,11 @@ QList<QServiceInterfaceDescriptor> QServiceManager::findInterfaces(const QString
 }
 
 /*!
-    Loads and returns the interface specified by \a interfaceName, as
-    provided by the default service for this interface, using the given
-    \a context and \a session. \a context and \a session object are owned
-    by the caller of this function.
+    Loads and returns the interface specified by \a interfaceName.
 
     The caller takes ownership of the returned pointer.
 
     This function returns a null pointer if the requested service cannot be found.
-
-    The security session object is not mandatory. If the session pointer is null,
-    the service manager will not perform any checks. Therefore it is assumed that
-    the service manager client is trusted as it controls whether service capabilities
-    are enforced during service loading.
 
     \sa setInterfaceDefault(), interfaceDefault()
     \since 1.0
@@ -381,18 +373,12 @@ QObject* QServiceManager::loadInterface(const QString& interfaceName)
 }
 
 /*!
-    Loads and returns the interface specified by \a descriptor using the
-    given \a context and \a session. \a context and \a session object are owned
-    by the caller of this function.
+    Loads and returns the interface specified by \a descriptor.
 
     The caller takes ownership of the returned pointer.
 
     This function returns a null pointer if the requested service cannot be found.
 
-    The security session object is not mandatory. If the session pointer is null,
-    the service manager will not perform any checks. Therefore it is assumed that
-    the service manager client is trusted as it controls whether service capabilities
-    are enforced during service loading.
     \since 1.0
 */
 QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descriptor)
@@ -487,12 +473,11 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
 }
 
 /*!
-    \fn T* QServiceManager::loadLocalTypedInterface(const QString& interfaceName, QServiceContext* context, QAbstractSecuritySession* session)
+    \fn T* QServiceManager::loadLocalTypedInterface(const QString& interfaceName)
 
     Loads the service object implementing \a interfaceName,
-    as provided by the default service for this interface, using the given
-    \a context and \a session. \a context and \a session object are owned
-    by the caller of this function. The template class must be derived from QObject.
+    as provided by the default service for this interface.
+    The template class must be derived from QObject.
 
     If \a interfaceName is not a known interface the returned pointer will be null.
 
@@ -503,22 +488,16 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
 
     The caller takes ownership of the returned pointer.
 
-    The security session object is not mandatory. If the session pointer is null,
-    the service manager will not perform any checks. Therefore it is assumed that
-    the service manager client is trusted as it controls whether service capabilities
-    are enforced during service loading.
-
     \sa setInterfaceDefault(), interfaceDefault()
     \since 1.0
 */
 
 
 /*!
-    \fn T* QServiceManager::loadLocalTypedInterface(const QServiceInterfaceDescriptor& serviceDescriptor, QServiceContext* context, QAbstractSecuritySession* session)
+    \fn T* QServiceManager::loadLocalTypedInterface(const QServiceInterfaceDescriptor& serviceDescriptor)
 
-    Loads the service object identified by \a serviceDescriptor
-    using the given \a context and \a session. \a context and \a session object are owned
-    by the caller of this function. The template class must be derived from QObject.
+    Loads the service object identified by \a serviceDescriptor.
+    The template class must be derived from QObject.
 
     If the \a serviceDescriptor is not valid the returned pointer will be null.
 
@@ -529,10 +508,6 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
 
     The caller takes ownership of the returned pointer.
 
-    The security session object is not mandatory. If the session pointer is null,
-    the service manager will not perform any checks. Therefore it is assumed that
-    the service manager client is trusted as it controls whether service capabilities
-    are enforced during service loading.
     \since 1.0
 */
 

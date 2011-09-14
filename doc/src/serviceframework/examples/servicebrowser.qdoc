@@ -1,0 +1,124 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example servicebrowser
+    \title Service Browser Example
+
+    This example shows how to use the Service Framework to:
+
+    \list
+    \o Register and unregister services
+    \o Find available services
+    \o Find the interfaces that are implemented by a service
+    \o Look up the attributes for an interface implementation using the meta-object system
+    \o Set a default interface implementation
+    \endlist
+
+    \image servicebrowser.png Screenshot of the Service Browser example
+
+    The application window is split into three panes.
+
+    The top-left pane shows all the services that are registered within the
+    Service Framework.
+
+    The bottom-left pane shows the interfaces implemented by the service selected in the top-left pane. Each entry in this list shows:
+
+    \list
+    \o The name and version of the implemented interface
+    \o The service that provides this implementation (in brackets)
+    \o Whether the implementation is the default for its interface
+    \endlist
+
+    The right-hand pane shows the attributes of an interface implementation that are invokable through the Qt meta-object system. Such attributes include signals, slots, properties and methods marked with the \c Q_INVOKABLE macro. If the "Selected implementation" radio button is checked, this view shows the attributes of the selected implementation in the bottom-left pane; otherwise, it shows the attributes of the \e default implementation for the interface of the selected implementation.
+
+
+    \section1 ServiceBrowser Class Definition
+
+    The ServiceBrowser class inherits from QWidget. It has several slots for reloading the lists in the three information panes, and for changing the default implementation for an interface.
+
+    \quotefromfile servicebrowser/servicebrowser.h
+    \skipto class ServiceBrowser
+    \printuntil private:
+    \dots
+    \skipto }
+    \printline }
+
+
+    \section1 ServiceBrowser Class Implementation
+
+    \quotefromfile servicebrowser/servicebrowser.cpp
+    \skipto ServiceBrowser::ServiceBrowser
+    \printuntil }
+
+    The constructor registers the projects in
+    the \c examples/ directory. It also calls \c reloadServicesList() to show
+    these two newly registered services in the top-left pane.
+
+    \quotefromfile servicebrowser/servicebrowser.cpp
+    \skipto ServiceBrowser::reloadServicesList
+    \printuntil }
+
+    When the services list in the top-left pane needs to be refreshed, we call QServiceManager::findServices() to get a QStringList of all services that are currently registered with the service framework.
+
+    \quotefromfile servicebrowser/servicebrowser.cpp
+    \skipto ServiceBrowser::reloadInterfaceImplementationsList
+    \printuntil {
+    \skipto findInterfaces
+    \dots
+    \dots
+    \printuntil }
+    \dots
+    \skipto }
+    \printline }
+
+    To create the list of interface implementations in the bottom-left pane, we call QServiceManager::findInterfaces() to get a list of QServiceInterfaceDescriptor objects. If a particular service has been selected in the top-left pane, we call QServiceManager::findInterfaces() with the name of that service as the argument, so that it will only return the interface implementations provided by that service. Otherwise, it is called with no argument to retrieve a list of all implementations provided by all registered services.
+
+    The example maps each entry in the interface implementations list to its corresponding QServiceInterfaceDescriptor object using the QListWidgetItem::setData() method.
+
+    Note how we also call QServiceManager::defaultServiceInterface() to determine whether an interface implementation is the default for that interface.
+
+    \quotefromfile servicebrowser/servicebrowser.cpp
+    \skipto ServiceBrowser::reloadAttributesList
+    \printto attributesListWidget->clear()
+    \dots
+
+    The \c reloadAttributesList() method creates the list in the right-hand pane that shows the attributes of an interface implementation that can be invoked through the Qt meta-object system.
+
+    QServiceManager::loadInterface() is called to get an instance of the identified interface implementation. This method finds the corresponding service plugin and returns the QObject instance provided by the service plugin's QServicePluginInterface::createInstance() method.
+
+    \quotefromfile servicebrowser/servicebrowser.cpp
+    \skipto ServiceBrowser::reloadAttributesList
+    \skipto QMetaObject
+    \dots
+    \printto setDefaultInterfaceImplementation
+
+    Call QObject::metaObject() on the implementation instance to get a QMetaObject instance that reveals the dynamically invokable attributes for the instance. These attributes include properties, signals, slots, and methods marked with the Q_INVOKABLE macro. Call QMetaObject::method() to get information about a signal, slot or invokable method, and QMetaObject::property() to access a property of the instance.
+
+    When you know the name of the method you wish to invoke, call QMetaObject::invoke() or QMetaMethod::invoke() to invoke it dynamically. Similarly, QMetaProperty::read() and QMetaProperty::write() can be used to read and modify the value of a property.
+
+*/

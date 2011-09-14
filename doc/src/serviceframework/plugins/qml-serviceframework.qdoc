@@ -1,0 +1,160 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \group qml-serviceframework
+    \title QML Service Framework Plugin
+    QML Support for the QtMobility Project Service Framework API.
+*/
+
+/*!
+    \page qml-serviceframework.html
+
+    \title Service Framework QML Plugin
+
+    \brief A QML plugin for the QtMobility Project Service Framework API.
+
+    \section1 Overview
+
+    The Service Framework API in the QtMobility Project gives developers a mechanism for
+    discovering and instantiating arbitrary services. The QML Service Framework Plugin
+    enables accessing services in a very easy and simple manner by allowing users to
+    declare a service or find a list of services using QML.
+
+    \section1 Elements
+    The service framework QML plugin provides two elements that allow access to
+    registered services via QML script. In general, the QML plugin can only discover
+    and load pre-registered services and does not support any run-time registration or
+    unregistration of services. The servicefw tool can be used to register services
+    to the service framework system prior to running any QML script utilising this
+    plugin. The two available elements are in the subsequent sections.
+
+    \section2 Service
+    The \l Service element provides QML with functionality reflecting the
+    QServiceInterfaceDescriptor class which represents the details of a single service
+    registered on the service framework system. This element also allows the service to
+    be loaded so that it will return a QObject reference of the instantiated service
+    object. If this element is used on its own and not in conjunction to the ServiceList
+    element below, it will represent the default interface at the specified interface
+    name, which is the most convenient use-case of the QML plugin. The code snippet below
+    demonstrates a typical way to load an interface in QML.
+
+    \qml
+    import QtQuick 2.0
+    import Qt.serviceframework 5.0
+
+    // ...
+    property variant myObject: 0
+
+    Service {
+        id: myService
+        interfaceName: "com.nokia.qt.examples.ExampleService"
+
+        Component.onCompleted: {
+            myObject = myService.serviceObject;
+        }
+    }
+    \endqml
+
+    In the above code we use a variant to store the QObject reference provided by the
+    Service::serviceObject. In this case it will be an instance of the default service
+    found at the interface address "com.nokia.qt.examples.ExampleService". The code
+    inside the QML component element is recommended so that the variable \e myObject
+    holds a valid object instance which can be used throughout the entire QML script.
+
+    This element also provides several readable properties about the service interface.
+    A useful one is the Service::valid property which will help debug if the system
+    has found a valid default interface descriptor at the specified interface name. The
+    plugin also allows connecting to signals provided by the service. Here is a typical
+    example of receiving service signals within QML for the above code.
+
+    \qml
+    Connections {
+        target: myObject
+        ignoreUnknownSignals: true
+
+        onMySignal: {
+            // do something
+        }
+    }
+    \endqml
+
+    Note the usage of the ignoreUnkownSignals attribute which is useful for ignoring
+    uknown signals, especially in the case where Service::serviceObject has not been
+    called yet or provides an invalid interface.
+
+    Once a valid service instance has been obtained its methods and properties can be
+    called and accessed as if it were normal QObject in QML. The service framework
+    example \l{dialer}{Declarative Dialer Example} demonstrates the use
+    of the QML plugin.
+
+    \section2 ServiceList
+    The \l ServiceList element provides QML with functionality reflecting the
+    QServiceFilter class which provides a list of \l Service elements. A very specific
+    service list element can be defined by using the following code.
+
+    \qml
+    ServiceList {
+        id: myServiceList
+        serviceName: "MyExampleService"
+        interfaceName: "com.nokia.qt.examples.ExampleService"
+        versionMatch: ServiceList.Exact
+        majorVersion: 1
+        minorVersion: 3
+    }
+    \endqml
+
+    If the ServiceList::serviceName is not supplied the filter will search with a default
+    empty string as the service name, meaning all interfaces will be returned regardless
+    of the service name. Similarly if no ServiceList::versionMatch is provided the filter
+    will search with a minimum version match rule.
+
+    The actual QDeclarativeListProperty of \l Service elements can be obtained by reading
+    the ServiceList::services property which searches based on the filter values. This
+    list model can then be used in a list view element.
+
+    \qml
+    ListView {
+        id: myListView
+        model: myServiceList.services
+        delegate: myDelegate
+        // ...
+    }
+    \endqml
+
+    The service framework example \l{dialer}{Declarative Dialer Example} better
+    demonstrates the use of ServiceList coupled with the \l Service element to search
+    and select a service instance to implement the QML dialer application.
+
+    \section1 Examples
+    \list
+        \o \l{dialer}{Declarative Serviceframework Dialer Example}
+    \endlist
+
+    \section1 QML Elements
+    \annotatedlist qml-serviceframework
+*/

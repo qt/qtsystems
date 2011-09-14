@@ -9,14 +9,14 @@ SOURCES += \
            remotedialerservice.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialer
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS remotedialer.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialer
+target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerserviec
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS remotedialerservice.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerservice
 xml.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/xmldata
 xml.files = remotedialerservice.xml
 contains(config_test_jsondb, yes) {
-    info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
-    info.files = info.json notions.json
+    info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerservice
+    info.files = info.json interfaces.json
 }
 INSTALLS += target sources xml info
 

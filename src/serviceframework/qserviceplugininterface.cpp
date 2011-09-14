@@ -68,12 +68,9 @@ QServicePluginInterface::~QServicePluginInterface()
 }
 
 /*!
-    \fn QObject* QServicePluginInterface::createInstance(const QServiceInterfaceDescriptor& descriptor, QServiceContext* context,
-                                    QAbstractSecuritySession* securitySession)
+    \fn QObject* QServicePluginInterface::createInstance(const QServiceInterfaceDescriptor& descriptor)
 
-    Creates a new instance of the service specified by \a descriptor. The service
-    may use the given \a context and \a securitySession. \a context and \a securitySession object are owned
-    by the client of the service.
+    Creates a new instance of the service specified by \a descriptor.
 
     This function returns a null pointer if the plug-in doesn't
     support the given \a descriptor.

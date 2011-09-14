@@ -66,11 +66,11 @@ QT_BEGIN_NAMESPACE
     version. Subsequent versions of the same interface must be binary compatible to previous versions
     of the same interface.
 
-    In the above example service A and B implement the interface \i com.nokia.qt.x.
+    In the above example service A and B implement the interface \e com.nokia.qt.x.
     In fact Service A provides two different implementations for the very same interface.
     This is indicated by the changed minor version number. Although Service B is
     using the same interface it's implementation actually utilizes the second version of
-    the interface \i com.nokia.qt.x. Binary compatibility guarantees that clients
+    the interface \e com.nokia.qt.x. Binary compatibility guarantees that clients
     who know version 1 can utilize version 2. If an existing interface has to be changed
     in a non-compatible way a new interface (name) is required.
 
@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     identifies a service implementation on a device. Interface names follow
     the java namespace convention.
 
-    The namespace \i com.nokia.qt.* is reserved for future Qt development.
+    The namespace \e com.nokia.qt.* is reserved for future Qt development.
 
     \sa QServiceFilter, QServiceManager
 */

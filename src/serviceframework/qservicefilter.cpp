@@ -342,7 +342,7 @@ int QServiceFilter::minorVersion() const
 
     The filter only matches implementations which have the custom attribute
     \a key with the given \a value. Such constraints are specified via the
-    \i{<customproperty>} tag within the service xml.
+    \e{<customproperty>} tag within the service xml.
 
     \sa customAttribute(), clearCustomAttribute()
     \since 1.0
@@ -414,7 +414,7 @@ QStringList QServiceFilter::customAttributes() const
     searches for services. The capabilities are matched according
     to the given \a rule.
 
-    \sa capabilities(), QAbstractSecuritySession
+    \sa capabilities()
     \since 1.0
 */
 void QServiceFilter::setCapabilities(QServiceFilter::CapabilityMatchRule rule, const QStringList& capabilities )
@@ -432,7 +432,7 @@ void QServiceFilter::setCapabilities(QServiceFilter::CapabilityMatchRule rule, c
     capabilities and thus enabling clients to query for services
     for which they have the required capabilties.
 
-    \sa setCapabilities(), capabilityMatchRule(), QAbstractSecuritySession
+    \sa setCapabilities(), capabilityMatchRule()
     \since 1.0
 */
 QStringList QServiceFilter::capabilities() const
@@ -460,7 +460,6 @@ QServiceFilter::CapabilityMatchRule QServiceFilter::capabilityMatchRule() const
     to the stream.
     \since 1.0
 */
-
 QDataStream &operator<<(QDataStream &out, const QServiceFilter &sf)
 {
     const quint32 magicNumber = 0x78AFAFA;
