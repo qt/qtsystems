@@ -1,0 +1,82 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example battery-charge
+    \title Accessing Publish and Subscribe from QML
+
+    This examples shows how to access published context values from within QML.  The example
+    consists of two programs.  The first, battery-publisher, is a standard Qt Widgets application
+    to emulate a battery for the sole purpose of demonstrating the second program.  It publishes
+    the keys
+
+    \code
+        /power/battery/charge
+        /power/battery/charging
+    \endcode
+
+    and provides controls for modifying their values.
+
+    \image battery-publisher.png
+
+    The second program, battery-subscriber, is implemented in  pure QML.  It has the following
+    features: A rectangular area representing the percent charge of the battery.  It indicates a
+    low battery state by changing the color to red, it is green otherwise.  An animation is shown
+    to indicate that the battery is being recharged.
+
+    \image battery-subscriber.png
+
+    \section2 Battery Subscriber
+
+    First, import the plugin library that provides the ValueSpaceSubscriber QML element.
+
+    \snippet battery-charge/battery-subscriber/battery-subscriber.qml 4
+
+    Two ValueSpaceSubscriber instances are created, one for each of the battery values.  We give
+    each object a unique id so that we can reference it from elsewhere in the QML.  We set the
+    \e path properties to the Value Space path of the keys.
+
+    \snippet battery-charge/battery-subscriber/battery-subscriber.qml 0
+
+    The default state of the rectangle used to visualize the battery charge uses the \e charge
+    property of our BatteryCharge class in the expression for its height.
+
+    \snippet battery-charge/battery-subscriber/battery-subscriber.qml 1
+
+    When the battery charge changes the height of the rectangle will automatically change.
+
+    Next we define two additional states.  The \e low state is entered when the battery charge
+    drops below 25% and the battery is not being recharged.  When in this state the color is set to
+    red.
+
+    \snippet battery-charge/battery-subscriber/battery-subscriber.qml 2
+
+    The \e charging state is entered when the battery is being recharged.  When in this state a
+    particle effect animation is enabled.
+
+    \snippet battery-charge/battery-subscriber/battery-subscriber.qml 3
+*/

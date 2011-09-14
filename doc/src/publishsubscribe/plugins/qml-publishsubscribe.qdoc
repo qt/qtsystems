@@ -1,0 +1,95 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \group qml-publishsubscribe
+    \title QML Publish and Subscribe API Plugin
+    QML Support for the Qt Publish and Subscribe API.
+*/
+
+/*!
+    \page qml-publishsubscribe.html
+    \title Publish and Subscribe QML Plugin
+    \brief A QML plugin for the Qt Publish and Subscribe API.
+
+    \section1 Overview
+
+    The Publish and Subscribe QML API enables QML applications to access
+    values stored in the Value Space from QML. The publish/subscribe features
+    therefore allow an easy means of publishing and receiving events and data.
+
+    \note Although the Publish Subscribe plugin simplifies the process of creating
+    and receiving notifications, various platforms may require special actions
+    to be taken before the Publisher and Subscribers are created.
+
+    \section2 Publisher
+
+    The \l ValueSpacePublisher element allows us to publish key-value pairs
+    of data to a known path. The "known path" is really the "key" of a key/value
+    pair. The path has the form of a directory structure
+    path with the keys acting as files at the end of the path. The process
+    is that the developer declares a \l ValueSpacePublisher element and then
+    with a given path defines a list of known keys. For example
+
+    \qml
+    ValueSpacePublisher {
+        id: battery
+        path: "/power/battery"
+        keys: ["charge", "charging"]
+    }
+    \endqml
+
+    To publish a value the key need only be set to the value. Here we see
+    that the key is expressed as the last name in the path with dot notation
+    followed by the key name.
+
+    \qml
+        battery.charge = 50
+        battery.charging = true
+    \endqml
+
+    \section2 Subscriber
+
+    The \l ValueSpaceSubscriber element also defines the path to the
+    key/value. For each \e key a different \l ValueSpaceSubscriber needs to be
+    declared. In the above example where we used the keys 'charge' and 'charging'
+    we will need subscribers for each key
+
+    \snippet ../../examples/publishsubscribe/battery-charge/battery-subscriber/battery-subscriber.qml 0
+
+    Now the values being published can be read and used
+
+    \snippet ../../examples/publishsubscribe/battery-charge/battery-subscriber/battery-subscriber.qml 2
+
+    \section1 QML Elements
+    \annotatedlist qml-publishsubscribe
+
+    \section1 Examples
+    \list
+        \o \l {battery-charge}{Accessing Publish and Subscribe from QML}
+    \endlist
+*/

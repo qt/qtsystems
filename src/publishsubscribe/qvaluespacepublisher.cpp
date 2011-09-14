@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
     \class QValueSpacePublisher
     \brief The QValueSpacePublisher class allows applications to publish values in the Value Space.
     \inmodule QtSystems
+    \ingroup publishsubscribe
 
     When multiple Value Space layers are available QValueSpacePublisher only publishes values to
     the layer with the highest order.  The layers that QValueSpacePublisher can access can be

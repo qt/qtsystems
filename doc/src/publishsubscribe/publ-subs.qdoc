@@ -1,0 +1,230 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+/*!
+\module QtPublishSubscribe
+\title  QtPublishSubscribe Module
+\brief  The Publish and Subscribe API, containing Value Space, enables
+applications to read item values, navigate through and subscribe
+to change notifications.
+
+*/
+
+
+/*!
+\page publ-subs.html
+
+\title Publish and Subscribe
+\brief The Publish and Subscribe API, containing Value Space, enables
+applications to read item values, navigate through and subscribe
+to change notifications.
+
+\ingroup technology-apis
+
+The Publish and Subscribe API enables applications to read item values,
+navigate through and subscribe to change notifications.
+
+\tableofcontents
+
+\section1 Overview
+
+The Qt Value Space unifies various sources of hierarchical data into a
+single consistent model.  Conceptually the Value Space is a hierarchical tree
+of which each node or leaf can optionally contain a QVariant value.  A
+serialized version of a simple example Value Space might look like this.
+
+\code
+/Device/Buttons = 3
+/Device/Buttons/1/Name = Menu
+/Device/Buttons/1/Usable = true
+/Device/Buttons/2/Name = Select
+/Device/Buttons/2/Usable = false
+/Device/Buttons/3/Name = Back
+/Device/Buttons/3/Usable = true
+\endcode
+
+Existing values within the Value Space are accessed through the QValueSpaceSubscriber class.  This
+class provides a means to read values, receive change notifications for a given path and navigate
+through the Value Space.
+
+New values are added to the Value Space via the QValueSpacePublisher class.  This class allows
+applications to publish values and receive interest notifications when applications connect to a
+path.  Interest notifications can be used to refrain from updating values in the Value Space when
+there are no interested parties.
+
+Nodes in the Value Space can be thought of as representing schema objects.
+Obviously this is a conceptual differentiation and not a physical one, as
+internally the Value Space is treated as one large tree.  By applying
+structured schema to the space "explore-ability" is increased.  For example,
+the \c {/Device/Buttons} schema can be defined as containing a value
+representing the number of mappable buttons on a device, and a sub-item for
+each adhering to the \c {MappableButton} schema.  The \c {MappableButton}
+schema itself may be defined as containing two attributes \c {Name} and
+\c {Usable}.  Change notification is modeled in this fashion also.  Were the
+\c {/Device/Buttons/1/Name} item to change, the \c {/Device/Buttons/1} item
+would also be marked as changed, and so on up the tree.  This allows, for example,
+subscribers to \c {/Device/Buttons} to be notified when anything "button" related changes.
+
+Internally, the Value Space consists of an arbitrary number of data source trees, or layers, which
+are stacked on top of each other to form the final unified view.  If a "higher" layer contains an
+item, it shadows the value of items in the layers below it.  Consider the Value Space item
+\c {/Device/Buttons}.  If two layers contained this item, the value in the layer with the higher
+layer order would shadow that with the lower layer order.  However, if only the layer with the
+lower order contained this item, it would be visible through the QValueSpaceSubscriber class, even
+if the higher order layer contained sub-items such as \c {/Device/Buttons/1}.  That is, layer
+shadowing occurs by value not by path.
+
+Layer order is fixed and is defined in the layer implementation.
+
+The following Value Space layers are available:
+
+\table
+    \header
+        \o Layer
+        \o Description
+    \row
+        \o Volatile Registry Layer
+        \o The Volatile Registry layer provides a non-permanent Value Space backing store using
+           volatile keys stored in the Windows' registry.  The Volatile Registry layer is only
+           available on Windows platforms.
+           The Volatile Registry layer has an order of 0x1000.
+    \row
+        \o Non-volatile Registry Layer
+        \o The Non-volatile Registry layer provides a permanent Value Space backing store using
+           keys stored in the Windows' registry.  The Non-volatile Registry layer is only available
+           on Windows platforms.
+           The Non-volatile Registry layer has an order of 0.
+    \row
+        \o \l{ContextKit Layer}
+        \o The ContextKit layer provides a non-permanent Value Space backing store using
+           ContextKit. This layer is only available on Linux where the ContextKit is available.
+           The ContextKit layer has an order of 0.
+    \row
+        \o \l{GConf Layer}
+        \o The GConf Layer provides a permanent Value Space backing store using GConf. This
+           layer is only available on Linux where the GConf is available.
+           The GConf Layer has an order of 0.
+\endtable
+
+The Value Space has support for both client/server and peer-to-peer layer architectures.  If a
+layer that uses a client/server architecture is used and a server process is not provided by the
+underlying system it will be necessary to start one.  This can be done by calling
+QValueSpace::initValueSpaceServer() prior to any other use of the Value Space.
+
+\section1 Detailed Layer Descriptions
+
+\section2 GConf Layer
+
+Publish and Subscribe API can be used to access the GConf configuration system.
+
+\section3 \bold{Limitations of GConf Layer}
+
+GConf can natively store only a limited set of QVariant data types. These types are Bool, Int, Double,
+String, StringList and List. When publishing other data types the values are automatically serialized
+and stored to GConf as BASE64 encoded strings. When reading these values they are automatically
+converted back to the original data types. The serialization/deserialization is transparent operation
+to the API user but may cause interoperatibility issues with native applications that access the same
+data directly.
+
+\section2 ContextKit Layer
+
+Publish and Subscribe can be used to access both "core" and "non-core" values in the ContextKit Registry.
+The backend by default will look for a "core" property in the registry first (dot-separated), and then
+fall back to a "non-core" property (slash-separated) if a "core" one is not found.
+
+You can force the selection of one or the other path scheme by passing the flags
+QValueSpace::PermanentLayer and QValueSpace::TransientLayer to the constructors of QValueSpaceSubscriber
+and QValueSpacePublisher along with the path name.
+
+\section3 \bold{Organization and application name}
+
+ContextKit requires providers to register with a valid DBus service name in order to publish values.
+The ContextKit Layer automatically builds this name from QCoreApplication::organizationDomain() and
+QCoreApplication::applicationName(). In order to publish, you will need to set these
+values in your application. They are not necessary if your application only subscribes and does not
+publish.
+
+\code
+QCoreApplication::setOrganizationDomain("example.com");
+QCoreApplication::setApplicationName("Test Application");
+// will register with 'com.example.Test-Application'
+\endcode
+
+\section3 \bold{Declaring Value Space Paths Using Property Declaration Files}
+
+ContextKit also requires that an entry be present in the ContextKit Registry on the system before
+subscribers will be able to find an advertised property. The Registry is a set of XML files, normally
+saved in \c /usr/share/contextkit/providers with the \c .context file extension.
+
+For example, the following \c .context file describes a simple example service:
+\code
+<?xml version="1.0"?>
+<provider bus="session" service="com.example.Test-Application">
+  <key name="/com/example/test/value" />
+</provider>
+\endcode
+
+Note: 1) The \c service attribute must match the organization domain and application name set above.
+2) The \c bus attribute must be "session", i.e. you can only use the session bus.
+
+For more detailed information, please refer to
+\l{http://maemo.gitorious.org/maemo-af/contextkit/blobs/master/doc/context-providers.txt}{How to provide context properties}.
+
+\section3 \bold{Limitations of ContextKit Layer}
+
+Similar to both the Symbian and Gconf backends, ContextKit supports only a limited range of QVariant data
+types. Types not supported are serialized in a manner transparent to the API user, but interoperatibility
+with native ContextKit subscribers may be impacted as a result.
+
+\section1 Examples
+
+\section2 Publish and Subscribe
+
+In the example \l {publish-subscribe}{Publish and Subscribe} the Value Space is used as a method of
+communicating changes in one dialog (the publisher) to another dialog (the subscriber).
+
+\section2 Battery Charging - Accessing Publish and Subscribe from QML
+
+In the example \l {battery-charge}{Accessing Publish and Subscribe from QML} the Publish and
+Subscribe concept is now extended to make the publisher an input of the level of charge in a
+battery.  A slider on the publisher dialog represents the modifiable level of charge.  The Value
+Space acts as a communications medium between the publisher dialog and the subscriber graphical
+battery animation. The battery is implemented in QML and C++ with Value Space supplying the
+charge level for the animation to represent.
+
+\section1 Namespaces and Classes
+
+\section2 C++ Classes
+
+\annotatedlist publishsubscribe
+
+\section2 QML Elements
+
+\annotatedlist qml-publishsubscribe
+
+*/

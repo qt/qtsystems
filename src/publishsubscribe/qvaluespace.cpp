@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAbstractValueSpaceLayer class provides support for adding new logical data layers
            to the Qt Value Space.
     \inmodule QtSystems
+    \ingroup publishsubscribe
     \internal
 
     To create a new layer in the Value Space subclass this class and reimplement all of the virtual
@@ -67,7 +68,7 @@ QT_BEGIN_NAMESPACE
     This macro installs a new Value Space layer, specifyed by \a className.
 
     The method \c {className *className::instance()} must exist and return a pointer to an instance
-    of the layer to install. This method will only be invoked \i {after} QApplication has been
+    of the layer to install. This method will only be invoked \e {after} QApplication has been
     constructed, making it safe to use any Qt class in your layer's constructor.
 
     This macro can only be used once for any given class and it should be used where the
@@ -89,7 +90,7 @@ QT_BEGIN_NAMESPACE
     Value Space layers are initialized in either a "Server" or a "Client" context.  There is only
     a single server in the Value Space architecture, and its layers are always initialized before
     any clients.  This distinction allows layers to implement Client/Server architecture
-    \i {if required}. If not, layers are free to treat Server and Client contexts identically.
+    \e {if required}. If not, layers are free to treat Server and Client contexts identically.
 
     \value Server The layer is being initialized in the "server" context.
     \value Client The layer is being initialized in the "client" context.
