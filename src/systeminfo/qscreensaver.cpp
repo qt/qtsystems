@@ -64,6 +64,8 @@ QT_BEGIN_NAMESPACE
     \class QScreenSaver
     \inmodule QtSystems
     \brief The QScreenSaver class provides various information of the screen saver.
+
+    \ingroup systeminfo
 */
 
 /*!

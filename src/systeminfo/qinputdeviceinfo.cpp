@@ -68,6 +68,7 @@ QT_BEGIN_NAMESPACE
     \class QInputDeviceInfo
     \inmodule QtSystems
     \brief The QInputDeviceInfo class provides various information of the input devices.
+    \ingroup systeminfo
 */
 
 /*!

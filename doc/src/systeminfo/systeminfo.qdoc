@@ -1,0 +1,65 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \group systeminfo
+    \title System Information Classes
+
+    A set of APIs that provides various system information.
+ */
+
+/*!
+    \page systeminfo.html
+    \ingroup technology-apis
+
+    \title Qt System Information
+    \brief A set of APIs that provides various system information.
+
+
+    \tableofcontents
+
+    \section1 System Information
+
+    The System Information API provides various system information,
+    including battery, network, screen saver, storage, etc.
+
+    \section1 Main Classes
+    \annotatedlist systeminfo
+
+    \section1 QML Elements
+    \annotatedlist qml-systeminfo
+
+    \section1 Examples
+    \section2 System Information Example
+    The \l{sysinfo}{System Information} example demonstrates how an
+    application can very easily access the system information of the
+    device.
+
+    \section2 System Information QML Example
+    The System Info QML example demonstrates how an application can
+    very easily access the system information of the device.
+*/

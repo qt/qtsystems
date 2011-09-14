@@ -78,6 +78,8 @@ QT_BEGIN_NAMESPACE
     \inmodule QtSystems
     \brief The QNetworkInfo class provides various information of the network status.
 
+    \ingroup systeminfo
+
     To support the cases where one has multiple interfaces / modems for the same network mode, you
     can specify which interface you refer to. For those cases, the 'interface' parameter is the index
     of the interface, starting from 0.

@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
     \class QBatteryInfo
     \inmodule QtSystems
     \brief The QBatteryInfo class provides various information of the battery.
+    \ingroup systeminfo
 
     Note that on some platforms, listening to the signals could lead to a heavy CPU usage. Therefore,
     you are strongly suggested to disconnect the signals when no longer needed in your application.

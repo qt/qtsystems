@@ -75,6 +75,7 @@ QT_BEGIN_NAMESPACE
     \class QDisplayInfo
     \inmodule QtSystems
     \brief The QDisplayInfo class provides various information of the display.
+    \ingroup systeminfo
 */
 
 /*!
