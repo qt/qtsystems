@@ -379,6 +379,58 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
   return new QRemoteServiceRegisterLocalSocketPrivate(parent);
 }
 
+#ifdef QT_WAYLAND_PRESENT
+static QUuid doAuth(const QString &location) {
+    QUuid secToken;
+    NotionClient *client = new NotionClient();
+    NotionWaiter *waiter = new NotionWaiter(client);
+    client->setActive(true);
+
+    QVariantMap notion;
+    notion.insert(QLatin1String("notion"), QLatin1String("ServiceRequest"));
+    notion.insert(QLatin1String("service"), location);
+    client->send(notion);
+
+
+    bool serviceRequestEventReceived = false;
+
+    while(!serviceRequestEventReceived) {
+        waiter->wait(30000);
+
+        if(!waiter->errorNotion.isEmpty() &&
+                (waiter->errorNotion == QLatin1String("ServiceRequest"))) {
+            qWarning() << "Error on ServiceRequest!" << waiter->errorText;
+            delete waiter;
+            delete client;
+            return false;
+        }
+
+        if(waiter->waitingOnNotion == true) {
+            qWarning() << "Notions failed to return within waiting period";
+            delete waiter;
+            delete client;
+            return false;
+        }
+
+        if (waiter->notion.value(QLatin1String("notion")) == QLatin1String("ServiceRequestEvent")) {
+            serviceRequestEventReceived = true;
+        }
+        else {
+            waiter->reset();
+        }
+    }
+
+    qDebug() << "Got ServiceRequestEvent" << waiter->notion;
+
+    secToken = waiter->notion.value(QLatin1String("token")).toString();
+
+    delete waiter;
+    delete client;
+
+    return secToken;
+}
+#endif
+
 /*
     Creates endpoint on client side.
 */
@@ -387,6 +439,11 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
     QLocalSocket* socket = new QLocalSocket();
     socket->connectToServer(location);
     QUuid secToken;
+
+#ifdef QT_WAYLAND_PRESENT
+    secToken = doAuth(location);
+#endif
+
     if (!socket->waitForConnected()){
         if (!socket->isValid()) {
             QString path = location;
@@ -427,47 +484,8 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             }
 #else
 #ifdef QT_WAYLAND_PRESENT
-            NotionClient *client = new NotionClient();
-            NotionWaiter *waiter = new NotionWaiter(client);
-            client->setActive(true);
 
-            QVariantMap notion;
-            notion.insert(QLatin1String("notion"), QLatin1String("ServiceRequest"));
-            notion.insert(QLatin1String("service"), location);
-            client->send(notion);
-
-
-            bool serviceRequestEventReceived = false;
-
-            while(!serviceRequestEventReceived) {
-                waiter->wait(30000);
-
-                if(!waiter->errorNotion.isEmpty() &&
-                        (waiter->errorNotion == QLatin1String("ServiceRequest"))) {
-                    qWarning() << "Error on ServiceRequest!" << waiter->errorText;
-                    delete waiter;
-                    delete client;
-                    return false;
-                }
-
-                if(waiter->waitingOnNotion == true) {
-                    qWarning() << "Notions failed to return within waiting period";
-                    delete waiter;
-                    delete client;
-                    return false;
-                }
-
-                if (waiter->notion.value(QLatin1String("notion")) == QLatin1String("ServiceRequestEvent")) {
-                    serviceRequestEventReceived = true;
-                }
-                else {
-                    waiter->reset();
-                }
-            }
-
-            qDebug() << "Got ServiceRequestEvent" << waiter->notion;
-
-            secToken = waiter->notion.value(QLatin1String("token")).toString();
+            secToken = doAuth(location);
 
             socket->connectToServer(location);
             if (!socket->isValid()){
@@ -475,8 +493,6 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                 return false;
             }
 
-            delete waiter;
-            delete client;
 #else /* QT_WAYLAND_PRESENT */
             // XXX Work around for single process systems
             qWarning() << "SFW Using single process hack to start service";
