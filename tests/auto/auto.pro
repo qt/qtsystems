@@ -13,4 +13,4 @@ SUBDIRS += qdeviceinfo \
 #           qmetaobjectbuilder #(requires test symbols)
 #           servicedatabase    #(requires test symbols)
 
-contains(config_test_jsondb, yes): SUBDIRS += qvaluespace_jsondb
+# contains(config_test_jsondb, yes): SUBDIRS += qvaluespace_jsondb
