@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += qdeviceinfo \
-           qdisplayinfo \
+#           qdisplayinfo \
            qstorageinfo \
            qbatteryinfo \
            qvaluespace \
