@@ -12,7 +12,7 @@ DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
-contains(config_test_jsondb, yes) {
+jsondb|contains(config_test_jsondb, yes) {
     DEFINES += QT_NO_DBUS QT_JSONDB
     INCLUDEPATH += $$[QT_INSTALL_PREFIX]/opt/mt/include /opt/mt/include
     LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
