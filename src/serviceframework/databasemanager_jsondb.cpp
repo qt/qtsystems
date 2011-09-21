@@ -132,11 +132,19 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
     Q_UNUSED(scope)
     m_lastError.setError(DBError::NoError);
 
-    // Check if a service is already registered with the given location
+    // Check if a service is already registered
     QServiceInterfaceDescriptor interface;
+
     foreach (interface, service.interfaces) {
+
+        QString version = QString(QLatin1String("%1.%2")).arg(interface.majorVersion()).arg(interface.minorVersion());
+
+        QString hash = makeHash(interface.interfaceName(),
+                                service.name,
+                                version);
+
         QVariantMap query;
-        query.insert(kQuery, QString::fromLatin1("[?_type=\"com.nokia.mp.serviceframework.interface\"][?interface=\"%1\"][?location=\"%2\"]").arg(interface.interfaceName()).arg(service.location));
+        query.insert(kQuery, QString::fromLatin1("[?_type=\"com.nokia.mp.serviceframework.interface\"][?identifier=\"%2\"]").arg(hash));
         int id = db->find(query);
         if (!waitForResponse(id)) {
             qDebug() << "Db error" << m_lastError.text() << query;
@@ -145,7 +153,7 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
         }
         QList<QVariant> res = m_data.toMap()[kData].toList();
         if (!res.empty()) {
-            QString alreadyRegisteredService = res.first().toMap().value(QLatin1String("0")).toString();
+            QString alreadyRegisteredService = res.first().toMap().value(QLatin1String("service")).toString();
             qDebug() << "Location: " << service.location;
             qDebug() << "Results" << m_data;
             const QString errorText = QLatin1String("Cannot register service \"%1\". Service \"%2\" is already "

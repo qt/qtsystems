@@ -125,7 +125,6 @@ Item {
         anchors.top: numberPad.top
         anchors.left: numberPad.right
         anchors.leftMargin: 5
-        hoverColor: "red"
         color: "crimson"
         onClicked: {
             dialString = ""
@@ -149,7 +148,6 @@ Item {
         anchors.leftMargin: 5
         anchors.topMargin: 4
         color: "mediumseagreen"
-        hoverColor: "lightgreen"
         onClicked: {
             if (dialString != "") {
                 dial(dialString)

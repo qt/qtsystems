@@ -251,7 +251,7 @@ QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiatio
     }
     \endcode
 
-    By default all entries are created as \l QRemoteServiceRegister::GlobalInstance
+    By default all entries are created as \l QRemoteServiceRegister::PrivateInstance
     types. This can be changed by calling QRemoteServiceRegister::Entry::setInstantiationType()
     on the entry. Once the service register has been published the associated service entries
     can no longer be changed.

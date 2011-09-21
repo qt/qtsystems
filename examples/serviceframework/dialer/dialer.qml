@@ -40,9 +40,6 @@
 
 import QtQuick 2.0
 import Qt.serviceframework 5.0
-import com.nokia.components 1.0
-import SPhone 1.0
-import SPhoneLib.JsonDB 1.0
 import "content"
 
 
@@ -160,7 +157,7 @@ Rectangle {
         anchors.top: parent.top
         onDial: {
             if (activeCall === false) {
-                if (dialerList.dialService != 0) {
+                if (dialerObject != 0) {
                     dialerList.allowselction = false;
                     var o = dialerObject;
                     status.text = "Dialing " + numberToDial +"...";
@@ -189,7 +186,11 @@ Rectangle {
 
         Component.onCompleted: {
             dialerObject = defaultService.serviceObject;
-            console.log(dialerObject);
+
+            serviceDetails.text = "Default dial service:" + "\n   " +
+                                   defaultService.serviceName +
+                                   " (" + defaultService.majorVersion +
+                                   "." + defaultService.minorVersion + ")";
         }
     }
 
@@ -199,7 +200,6 @@ Rectangle {
         ignoreUnknownSignals: true
 
         onStateChanged: {
-            console.log("State changed");
             if (dialScreen.currentDialer.state == 1) {
                 status.text += "\nRinging";
             }

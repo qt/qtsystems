@@ -394,10 +394,10 @@ static QUuid doAuth(const QString &location) {
 
     bool serviceRequestEventReceived = false;
 
-    while(!serviceRequestEventReceived) {
+    while (!serviceRequestEventReceived) {
         waiter->wait(30000);
 
-        if(!waiter->errorNotion.isEmpty() &&
+        if (!waiter->errorNotion.isEmpty() &&
                 (waiter->errorNotion == QLatin1String("ServiceRequest"))) {
             qWarning() << "Error on ServiceRequest!" << waiter->errorText;
             delete waiter;
@@ -405,7 +405,7 @@ static QUuid doAuth(const QString &location) {
             return false;
         }
 
-        if(waiter->waitingOnNotion == true) {
+        if (waiter->waitingOnNotion == true) {
             qWarning() << "Notions failed to return within waiting period";
             delete waiter;
             delete client;

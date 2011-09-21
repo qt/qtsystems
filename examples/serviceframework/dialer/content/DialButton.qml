@@ -47,8 +47,7 @@ Item {
     height: 25
     property alias buttonText: innerText.text;
     property alias color: rectangleButton.color
-    property color hoverColor: "lightsteelblue"
-    property color pressColor: "slategray"
+    property color pressColor: "lightsteelblue"
     signal clicked
 
     Rectangle {
@@ -68,13 +67,6 @@ Item {
 
     states: [
         State {
-            name: "Hovering"
-            PropertyChanges {
-                target: rectangleButton
-                color: hoverColor
-            }
-        },
-        State {
             name: "Pressed"
             PropertyChanges {
                 target: rectangleButton
@@ -86,27 +78,15 @@ Item {
 
     transitions: [
         Transition {
-            from: ""; to: "Hovering"
-            ColorAnimation { duration: 100 }
-        },
-        Transition {
             from: "*"; to: "Pressed"
-            ColorAnimation { duration: 10 }
+            ColorAnimation { duration: 100 }
         }
     ]
 
     MouseArea {
-        hoverEnabled: true
         anchors.fill: dialButton
-        onEntered: { dialButton.state='Hovering'}
-        onExited: { dialButton.state=''}
         onClicked: { dialButton.clicked();}
         onPressed: { dialButton.state="Pressed" }
-        onReleased: {
-            if (containsMouse)
-            dialButton.state="Hovering";
-            else
-            dialButton.state="";
-        }
+        onReleased: { dialButton.state=""; }
     }
 }

@@ -191,6 +191,7 @@ void ObjectEndPoint::disconnected()
     if (d->endPointType == Service) {
         InstanceManager::instance()->removeObjectInstance(d->entry, d->serviceInstanceId);
     }
+    emit pendingRequestFinished();
     // deleteLater on symbian does not function properly from disconnect()
     // maybe disconnect comes in on a thread?  Call from timer works.
     QTimer::singleShot(0, this, SLOT(deleteLater()));
@@ -273,6 +274,11 @@ void ObjectEndPoint::propertyCall(const QServicePackage& p)
     if (p.d->responseType == QServicePackage::NotAResponse) {
         //service side
         Q_ASSERT(d->endPointType == ObjectEndPoint::Service);
+
+        if (!service) { // ingore everything until the service is created
+            qWarning() << Q_FUNC_INFO << "dropping a property call since the object hasn't completed construction";
+            return;
+        }
 
         QByteArray data = p.d->payload.toByteArray();
         QDataStream stream(&data, QIODevice::ReadOnly);
@@ -395,6 +401,12 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
 
 void ObjectEndPoint::methodCall(const QServicePackage& p)
 {
+    if (!service) // ingore everything until the service is created
+    {
+        qWarning() << Q_FUNC_INFO << "dropping a method call or signal since the object hasn't completed construction";
+        return;
+    }
+
     if (p.d->responseType == QServicePackage::NotAResponse ) {
         //service side if slot invocation
         //client side if signal emission (isSignal==true)
