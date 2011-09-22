@@ -59,7 +59,7 @@ symbian {
         qsfwdatabasemanagerserver.exe
     QtServiceFrameworkDeployment.path = /sys/bin
     DEPLOYMENT += QtServiceFrameworkDeployment
-} else:contains(config_test_jsondb, yes) {
+} else:jsondb|contains(config_test_jsondb, yes) {
     SOURCES += databasemanager_jsondb.cpp
     PRIVATE_HEADERS += databasemanager_jsondb_p.h
 } else {
