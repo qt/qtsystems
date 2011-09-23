@@ -58,6 +58,7 @@ class QDeclarativeService : public QObject {
     Q_PROPERTY(int minorVersion READ minorVersion NOTIFY minorVersionChanged)
     Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
     Q_PROPERTY(QObject* serviceObject READ serviceObject NOTIFY serviceObjectChanged)
+    Q_PROPERTY(QString error READ lastError NOTIFY error)
 
 public:
     QDeclarativeService();
@@ -71,6 +72,7 @@ public:
     QString serviceName() const;
     int majorVersion() const;
     int minorVersion() const;
+    QString lastError() const;
 
     bool isValid() const;
     QObject* serviceObject();
@@ -83,10 +85,16 @@ Q_SIGNALS:
     void majorVersionChanged();
     void minorVersionChanged();
 
+    void error(const QString &errorString);
+
+private slots:
+    void IPCFault(QService::UnrecoverableIPCError);
+
 private:
-    QObject* serviceInstance;
+    QPointer<QObject> serviceInstance;
     QServiceManager* serviceManager;
     QServiceInterfaceDescriptor m_descriptor;
+    QString m_error;
 };
 
 
@@ -134,6 +142,15 @@ public:
     virtual void classBegin();
     virtual void componentComplete();
 
+Q_SIGNALS:
+    void resultsChanged();
+    void servicesChanged(const QDeclarativeListProperty<QDeclarativeService>&);
+    void serviceNameChanged();
+    void interfaceNameChanged();
+    void minorVersionChanged();
+    void majorVersionChanged();
+    void versionMatchChanged();
+
 private:
     QList<QDeclarativeService *> m_services;
     QServiceManager* serviceManager;
@@ -151,14 +168,6 @@ private:
     static QDeclarativeService* s_at(QDeclarativeListProperty<QDeclarativeService> *prop, int index);
     static void s_clear(QDeclarativeListProperty<QDeclarativeService> *prop);
 
-Q_SIGNALS:
-    void resultsChanged();
-    void servicesChanged(const QDeclarativeListProperty<QDeclarativeService>&);
-    void serviceNameChanged();
-    void interfaceNameChanged();
-    void minorVersionChanged();
-    void majorVersionChanged();
-    void versionMatchChanged();
 
 };
 

@@ -179,4 +179,10 @@ Rectangle {
         minorVersion: 0
     }
     //! [5]
+
+    Connections {
+        target: dialerList.dialService
+        ignoreUnknownSignals: true
+        onError: ipcFailure(errorString);
+    }
 }

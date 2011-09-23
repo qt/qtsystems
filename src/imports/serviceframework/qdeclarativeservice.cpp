@@ -181,10 +181,47 @@ QObject* QDeclarativeService::serviceObject()
 
     if (isValid()) {
         serviceInstance = serviceManager->loadInterface(m_descriptor);
+        if (!serviceInstance) {
+            emit error(QLatin1String("Failed to create object"));
+            return serviceInstance;
+        }
+        connect(serviceInstance, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                this, SLOT(IPCFault(QService::UnrecoverableIPCError)));
+        m_error.clear();
         return serviceInstance;
     } else {
         return 0;
     }
+}
+
+QString QDeclarativeService::lastError() const
+{
+    return m_error;
+}
+
+void QDeclarativeService::IPCFault(QService::UnrecoverableIPCError errorValue)
+{
+    switch (errorValue) {
+    default:
+    case QService::ErrorUnknown:
+        m_error = QLatin1String("IPC Error: Unkown Error");
+        break;
+    case QService::ErrorServiceNoLongerAvailable:
+        m_error = QLatin1String("IPC Error: Service no longer available");
+        break;
+    case QService::ErrorOutofMemory:
+        m_error = QLatin1String("IPC Error: Out of memory");
+        break;
+    case QService::ErrorPermissionDenied:
+        m_error = QLatin1String("IPC Error: Permission Denied");
+        break;
+    case QService::ErrorInvalidArguments:
+        m_error = QLatin1String("IPC Error: Invalid Arguments");
+        break;
+    }
+    emit error(m_error);
+    serviceInstance->deleteLater();
+    serviceInstance = 0;
 }
 
 /*!
@@ -340,10 +377,8 @@ void QDeclarativeServiceList::updateFilterResults()
 
 
     QList<QServiceInterfaceDescriptor> list = serviceManager->findInterfaces(filter);
-    qDebug() << "Found num services" << list.count();
     for (int i = 0; i < list.size(); i++) {
-        QDeclarativeService *service;
-        service = new QDeclarativeService();
+        QDeclarativeService *service = new QDeclarativeService();
         service->setInterfaceDesc(list.at(i));
         m_services.append(service);
     }
@@ -359,7 +394,6 @@ void QDeclarativeServiceList::updateFilterResults()
 */
 QDeclarativeListProperty<QDeclarativeService> QDeclarativeServiceList::services()
 {
-
     return QDeclarativeListProperty<QDeclarativeService>(this,
             0,
             s_append,

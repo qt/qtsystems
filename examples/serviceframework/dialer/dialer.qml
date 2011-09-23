@@ -113,6 +113,15 @@ Rectangle {
                                "." + dialerList.dialService.minorVersion + ")";
     }
 
+    function ipcFailure(errorString)
+    {
+        console.log("Got IPC error from SFW " + errorString);
+        dialScreen.activeCall = false;
+        status.text = "";
+        serviceDetails.text = errorString;
+        dialerList.allowselction = true;
+    }
+
     Text {
         id: serviceDetails
         text: "Service:"
@@ -160,7 +169,7 @@ Rectangle {
                 if (dialerObject != 0) {
                     dialerList.allowselction = false;
                     var o = dialerObject;
-                    status.text = "Dialing " + numberToDial +"...";
+                    status.text = "Dialing " + numberToDial + "...";
                     dialScreen.currentDialer = o;
                     o.dialNumber(numberToDial);
                     activeCall = true;
@@ -183,6 +192,8 @@ Rectangle {
     Service {
         id: defaultService
         interfaceName: "com.nokia.qt.examples.Dialer"
+
+        onError: ipcFailure(errorString);
 
         Component.onCompleted: {
             dialerObject = defaultService.serviceObject;
