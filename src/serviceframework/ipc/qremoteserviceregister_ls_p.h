@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 class ObjectEndPoint;
-#ifdef QT_JSONDB
+#ifdef QT_ADDON_JSONDB_LIB
 class NotionClient;
 #else
 class NotionClient

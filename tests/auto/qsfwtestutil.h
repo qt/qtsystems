@@ -61,7 +61,7 @@ public:
     static QString userDirectory();
     static QString systemDirectory();
 
-#if defined(QT_JSONDB)
+#if defined(QT_ADDON_JSONDB_LIB)
     static void clearDatabases_jsondb();
 #endif
 

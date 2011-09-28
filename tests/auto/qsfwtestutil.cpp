@@ -47,7 +47,7 @@
 #include <QDebug>
 #include <QCoreApplication>
 
-#ifdef QT_JSONDB
+#ifdef QT_ADDON_JSONDB_LIB
 #include <private/jsondb-connection_p.h>
 #include <private/jsondb-strings_p.h>
 #include <mtcore/jsondb-constants.h>
@@ -132,7 +132,7 @@ void QSfwTestUtil::removeDirectory(const QString &path)
     dir.rmpath(path);
 }
 
-#if defined(QT_JSONDB)
+#if defined(QT_ADDON_JSONDB_LIB)
 
 void QSfwTestUtil::clearDatabases_jsondb()
 {

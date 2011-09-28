@@ -13,13 +13,10 @@ DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 load(qt_module_config)
 
 jsondb|contains(config_test_jsondb, yes) {
-    DEFINES += QT_NO_DBUS QT_JSONDB
-    INCLUDEPATH += $$[QT_INSTALL_PREFIX]/opt/mt/include /opt/mt/include
-    LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
-    LIBS += -L/opt/mt/lib -lmtcore -Wl,-rpath,/opt/mt/lib
+    DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
     PKGCONFIG += mtcore
-    DEFINES += QT_ADDON_JSONDB_LIB
-    QT += jsondb jsondb-private
+    LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
+    QT += jsondb-private
 
 }
 

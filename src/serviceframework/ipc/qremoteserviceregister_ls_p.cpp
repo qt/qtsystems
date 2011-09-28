@@ -57,14 +57,15 @@
 #include <time.h>
 #include <sys/types.h>          /* See NOTES */
 
-#ifdef QT_JSONDB
+#ifdef QT_ADDON_JSONDB_LIB
 #include <mtcore/notion-client.h>
-
 #include <QCoreApplication>
 #include <QTextStream>
-
 #include "qsecuritypackage_p.h"
 #include "qservicesecurity_p.h"
+#ifndef QT_WAYLAND_PRESENT
+#include <QtAddOnJsonDb/QtAddOnJsonDb>
+#endif
 #endif
 
 #ifndef Q_OS_WIN
@@ -100,7 +101,7 @@ public:
         connect(s, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
         connect(s, SIGNAL(disconnected()), this, SLOT(ipcfault()));
 
-#if defined(QT_JSONDB) && defined(QT_WAYLAND_PRESENT)
+#if defined(QT_ADDON_JSONDB_LIB) && defined(QT_WAYLAND_PRESENT)
         if (sec->getSessionType() == QServiceSecurity::Client) {
             // write hello package
             QByteArray block;
@@ -190,7 +191,7 @@ private:
     QRemoteServiceRegisterLocalSocketPrivate *serviceRegPriv;
 };
 
-#ifdef QT_JSONDB
+#ifdef QT_ADDON_JSONDB_LIB
 
 class NotionWaiter : public QObject
 {
@@ -249,6 +250,93 @@ private:
         NotionClient *client;
 };
 
+#ifndef QT_WAYLAND_PRESENT
+Q_USE_JSONDB_NAMESPACE
+
+class JsonDbWaiter : public QObject
+{
+    Q_OBJECT
+public:
+    JsonDbWaiter(QObject *parent = 0)
+        :
+          QObject(parent),
+          m_id(-1),
+          db(new JsonDbClient)
+    {
+        loop = new QEventLoop(this);
+        timer = new QTimer(this);
+
+        connect(timer, SIGNAL(timeout()), loop, SLOT(quit()));
+
+        connect(db, SIGNAL(response(int,const QVariant&)),
+            this, SLOT(handleResponse(int,const QVariant&)));
+        connect(db, SIGNAL(error(int,int,const QString&)),
+            this, SLOT(handleError(int,int,const QString&)));
+        connect(db, SIGNAL(disconnected()),
+                this, SLOT(handleDisconnect()));
+
+    }
+    ~JsonDbWaiter() { delete db; }
+
+    void reset() {
+        m_id = -1;
+        timer->stop();
+        result.clear();
+        errorText.clear();
+    }
+
+    int wait(int ms) {
+        timer->setInterval(ms);
+        timer->start();
+        int res = loop->exec();
+        timer->stop();
+        return res;
+    }
+
+    int find(const QVariant &v) {
+        reset();
+        m_id = db->find(v);
+        return wait(3000);
+    }
+
+    QVariantMap result;
+    QString errorText;
+    int m_id;
+
+
+protected slots:
+    void handleResponse( int id, const QVariant& data ) {
+        if (id == m_id) {
+            result = data.toMap();
+            loop->exit(0);
+        }
+    }
+
+    void handleError( int id, int code, const QString& message )
+    {
+            Q_UNUSED(code)
+
+            if (id == m_id) {
+                result.clear();
+                errorText = message;
+                loop->exit(1);
+            }
+    }
+
+    void handleDisconnect()
+    {
+        result.clear();
+        errorText = QLatin1String("Jsondb Connection Reset");
+        loop->exit(1);
+    }
+
+private:
+        QEventLoop *loop;
+        QTimer *timer;
+        JsonDbClient *db;
+};
+#endif
+
 #endif
 
 QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPrivate(QObject* parent)
@@ -261,7 +349,7 @@ void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& i
 {
     createServiceEndPoint(ident);
 
-#ifdef QT_JSONDB    
+#ifdef QT_ADDON_JSONDB_LIB
     connect(notionClient, SIGNAL(notionEvent(QVariantMap)), this, SLOT(notionEvent(QVariantMap)));
     notionClient->setActive(true);
 
@@ -274,7 +362,7 @@ void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& i
 
 void QRemoteServiceRegisterLocalSocketPrivate::notionEvent(const QVariantMap &notion)
 {
-#ifdef QT_JSONDB
+#ifdef QT_ADDON_JSONDB_LIB
     if (notion.value(QLatin1String("notion")).toString() == QLatin1String("ServiceAuthorizationEvent")) {
         QString token = notion.value(QLatin1String("token")).toString();
         QStringList authorized = notion.value(QLatin1String("authorized")).toStringList();
@@ -343,7 +431,7 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
             }
         }
         QServiceSecurity *sec = 0x0;
-#if defined(QT_JSONDB) && defined(QT_WAYLAND_PRESENT)
+#if defined(QT_ADDON_JSONDB_LIB) && defined(QT_WAYLAND_PRESENT)
         sec = new QServiceSecurity(QServiceSecurity::Service, this);
         sec->setAuthorizedClients(&authorizedClients);
 #endif
@@ -449,7 +537,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             QString path = location;
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
             // If we have autotests enable, check for the service in .
-#ifndef QT_JSONDB
+#ifndef QT_ADDON_JSONDB_LIB
 #ifdef QT_BUILD_UNITTESTS
             QFile file("./" + path);
             if (file.exists()){
@@ -496,52 +584,32 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
 #else /* QT_WAYLAND_PRESENT */
             // XXX Work around for single process systems
             qWarning() << "SFW Using single process hack to start service";
-            QStringList paths;
-            QString root = QCoreApplication::applicationDirPath() + QLatin1String("/../");
-            paths += root;
-            paths += root + QLatin1String("../opt/mt/applications/");
-            paths += root + QLatin1String("opt/mt/applications/");
-            paths += root + QLatin1String("applications/");
-            paths += QLatin1String("/opt/mt/applications/");
-            if (getenv("APP_PATH")) {
-                qWarning() << "Found APP_PATH!";
-                paths += QString::fromLatin1(getenv("APP_PATH")).split(QChar::fromLatin1(':'));
-            }
-            qWarning() << "Will look in dirs" << paths;
-            foreach (QString base, paths) {
-                QDir dir(base);
-                dir.setFilter(QDir::Dirs);
-                QFileInfoList list = dir.entryInfoList();
-                for (int i = 0; i < list.size(); i++){
-                    QFileInfo fileInfo = list.at(i);
-                    QFile info(fileInfo.filePath() + QLatin1String("/info.json"));
-                    if (info.exists() && info.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                        QString id;
-                        QString app;
-                        while (!info.atEnd()) {
-                            QByteArray line = info.readLine();
-                            QString l = QLatin1String(line.constData());
-                            if (l.contains(QLatin1String("Identifier"))) {
-                                l = l.simplified();
-                                id = l.mid(l.indexOf(QLatin1Char(':'))+3);
-                                id.chop(1);
-                            }
-                            else if (l.contains(QLatin1String("Application"))) {
-                                l = l.simplified();
-                                app = l.mid(l.indexOf(QLatin1Char(':'))+3);
-                                app.chop(1);
-                            }
-                        }
-                        if (id.contains(location)) {
-                            path = fileInfo.filePath() + QLatin1String("/") + app;
-                            goto done;
-                        }
-                    }
-                }
-            }
-done:
+            JsonDbWaiter waiter;
 
-            qWarning() << "SFW trying to start" << path;
+            QVariantMap query;
+            query.insert(QLatin1String("query"), QString::fromLatin1("[?_type=\"com.nokia.mp.core.Package\"][?identifier=\"%2\"]").arg(location));
+            if (waiter.find(query)) {
+                qWarning() << "Can't find db entry for" << location << waiter.errorText;
+                return false;
+            }
+            QList<QVariant> res = waiter.result[QLatin1String("data")].toList();
+            if (res.empty()) {
+                qWarning() << "Got no results back looking for" << location;
+                return false;
+            }
+            QVariantMap entry = res.takeFirst().toMap();
+            if (!res.isEmpty()) {
+                qWarning() << "Found more than one option/registered package at" << location << "using the first one";
+            }
+            QString url = entry.value(QLatin1String("url")).toString();
+            QString app = entry.value(QLatin1String("application")).toString();
+            qDebug() << "App: " << app << "URL: " << url;
+            QUrl u(url);
+            QString p = u.toLocalFile();
+            qDebug() << "Path" << p;
+            path = p + QLatin1String("/") + app;
+
+            qDebug() << "SFW trying to start" << path;
             qint64 pid = 0;
             // Start the service as a detached process
             if (QProcess::startDetached(path, QStringList(), QString(), &pid)){
@@ -565,12 +633,12 @@ done:
                 qWarning() << "Server could not be started";
             }
 #endif
-#endif /* QT_JSONDB */
+#endif /* QT_ADDON_JSONDB_LIB */
         }
     }
     if (socket->isValid()){
         QServiceSecurity *sec = new QServiceSecurity(QServiceSecurity::Client, socket);
-#if defined(QT_JSONDB) && defined(QT_WAYLAND_PRESENT)
+#if defined(QT_ADDON_JSONDB_LIB) && defined(QT_WAYLAND_PRESENT)
         if (secToken.isNull()){
             qWarning() << "No security token found, client will be refused connection";
         }
