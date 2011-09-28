@@ -62,7 +62,7 @@ int QDisplayInfoPrivate::brightness(int screen)
 {
     QString sysfsPath(QString::fromAscii("/sys/class/backlight/"));
     const QStringList dirs = QDir(sysfsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    if (dirs.size() < screen + 1)
+    if (dirs.size() <= screen)
         return -1;
 
     bool ok = false;

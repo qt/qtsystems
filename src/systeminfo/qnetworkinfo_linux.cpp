@@ -128,9 +128,12 @@ QNetworkInfo::CellDataTechnology QNetworkInfoPrivate::currentCellDataTechnology(
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->currentCellDataTechnology(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->currentCellDataTechnology(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -158,22 +161,22 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
-        if (dir.isEmpty())
-            break;
-        QNetworkInterface interface = QNetworkInterface::interfaceFromName(dir);
-        if (interface.isValid())
-            return interface;
+        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        if (interface < dirs.size()) {
+            QNetworkInterface networkInterface = QNetworkInterface::interfaceFromName(dirs.at(interface));
+            if (networkInterface.isValid())
+                return networkInterface;
+        }
         break;
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
-        if (dir.isEmpty())
-            break;
-        QNetworkInterface interface = QNetworkInterface::interfaceFromName(dir);
-        if (interface.isValid())
-            return interface;
+        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK);
+        if (interface < dirs.size()) {
+            QNetworkInterface networkInterface = QNetworkInterface::interfaceFromName(dirs.at(interface));
+            if (networkInterface.isValid())
+                return networkInterface;
+        }
         break;
     }
 
@@ -196,9 +199,12 @@ QString QNetworkInfoPrivate::cellId(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->cellId(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->cellId(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -212,9 +218,12 @@ QString QNetworkInfoPrivate::currentMobileCountryCode(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->currentMcc(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->currentMcc(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -228,9 +237,12 @@ QString QNetworkInfoPrivate::currentMobileNetworkCode(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->currentMnc(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->currentMnc(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -244,9 +256,12 @@ QString QNetworkInfoPrivate::homeMobileCountryCode(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->homeMcc(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->homeMcc(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -260,9 +275,12 @@ QString QNetworkInfoPrivate::homeMobileNetworkCode(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->homeMnc(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->homeMnc(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -276,9 +294,12 @@ QString QNetworkInfoPrivate::imsi(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->imsi(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->imsi(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -292,9 +313,12 @@ QString QNetworkInfoPrivate::locationAreaCode(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->lac(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->lac(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
@@ -306,22 +330,22 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
-        if (dir.isEmpty())
-            break;
-        QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/address"));
-        if (carrier.open(QIODevice::ReadOnly))
-            return QString::fromAscii(carrier.readAll().simplified().data());
+        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        if (interface < dirs.size()) {
+            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/address"));
+            if (carrier.open(QIODevice::ReadOnly))
+                return QString::fromAscii(carrier.readAll().simplified().data());
+        }
         break;
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
-        if (dir.isEmpty())
-            break;
-        QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/address"));
-        if (carrier.open(QIODevice::ReadOnly))
-            return QString::fromAscii(carrier.readAll().simplified().data());
+        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK);
+        if (interface < dirs.size()) {
+            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/address"));
+            if (carrier.open(QIODevice::ReadOnly))
+                return QString::fromAscii(carrier.readAll().simplified().data());
+        }
         break;
     }
 
@@ -672,9 +696,12 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
-            QString modem = ofonoWrapper->allModems().at(interface);
-            if (!modem.isEmpty() && ofonoWrapper->networkMode(modem) == mode)
-                return ofonoWrapper->signalStrength(modem);
+            QStringList modems = ofonoWrapper->allModems();
+            if (interface < modems.size()) {
+                QString modem = ofonoWrapper->allModems().at(interface);
+                if (!modem.isEmpty())
+                    return ofonoWrapper->signalStrength(modem);
+            }
         }
 #endif // QT_NO_OFONO
         break;
@@ -765,27 +792,27 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
-        if (dir.isEmpty())
-            return QNetworkInfo::UnknownStatus;
-        QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/carrier"));
-        if (carrier.open(QIODevice::ReadOnly)) {
-            char state;
-            if (carrier.read(&state, 1) == 1 && state == '1')
-                return QNetworkInfo::HomeNetwork;
+        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        if (interface < dirs.size()) {
+            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/carrier"));
+            if (carrier.open(QIODevice::ReadOnly)) {
+                char state;
+                if (carrier.read(&state, 1) == 1 && state == '1')
+                    return QNetworkInfo::HomeNetwork;
+            }
         }
         return QNetworkInfo::NoNetworkAvailable;
     }
 
     case QNetworkInfo::EthernetMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).at(interface);
-        if (dir.isEmpty())
-            return QNetworkInfo::UnknownStatus;
-        QFile carrier(NETWORK_SYSFS_PATH + dir + QString::fromAscii("/carrier"));
-        if (carrier.open(QIODevice::ReadOnly)) {
-            char state;
-            if (carrier.read(&state, 1) == 1 && state == '1')
-                return QNetworkInfo::HomeNetwork;
+        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK);
+        if (interface < dirs.size()) {
+            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/carrier"));
+            if (carrier.open(QIODevice::ReadOnly)) {
+                char state;
+                if (carrier.read(&state, 1) == 1 && state == '1')
+                    return QNetworkInfo::HomeNetwork;
+            }
         }
         return QNetworkInfo::NoNetworkAvailable;
     }
@@ -829,9 +856,12 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
-            QString modem = ofonoWrapper->allModems().at(interface);
-            if (!modem.isEmpty() && ofonoWrapper->networkMode(modem) == mode)
-                return ofonoWrapper->networkStatus(modem);
+            QStringList modems = ofonoWrapper->allModems();
+            if (interface < modems.size()) {
+                QString modem = ofonoWrapper->allModems().at(interface);
+                if (!modem.isEmpty())
+                    return ofonoWrapper->networkStatus(modem);
+            }
     }
 #endif
         break;
@@ -848,26 +878,26 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        const QString dir = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).at(interface);
-        if (dir.isEmpty())
-            break;
-        int sock = socket(PF_INET, SOCK_DGRAM, 0);
-        if (sock > 0) {
-            char buffer[IW_ESSID_MAX_SIZE + 1];
-            iwreq iwInfo;
+        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        if (interface < dirs.size()) {
+            int sock = socket(PF_INET, SOCK_DGRAM, 0);
+            if (sock > 0) {
+                char buffer[IW_ESSID_MAX_SIZE + 1];
+                iwreq iwInfo;
 
-            iwInfo.u.essid.pointer = (caddr_t)&buffer;
-            iwInfo.u.essid.length = IW_ESSID_MAX_SIZE + 1;
-            iwInfo.u.essid.flags = 0;
+                iwInfo.u.essid.pointer = (caddr_t)&buffer;
+                iwInfo.u.essid.length = IW_ESSID_MAX_SIZE + 1;
+                iwInfo.u.essid.flags = 0;
 
-            strncpy(iwInfo.ifr_name, dir.toLocal8Bit().data(), IFNAMSIZ);
+                strncpy(iwInfo.ifr_name, dirs.at(interface).toLocal8Bit().data(), IFNAMSIZ);
 
-            if (ioctl(sock, SIOCGIWESSID, &iwInfo) == 0) {
+                if (ioctl(sock, SIOCGIWESSID, &iwInfo) == 0) {
+                    close(sock);
+                    return QString::fromAscii((const char *)iwInfo.u.essid.pointer);
+                }
+
                 close(sock);
-                return QString::fromAscii((const char *)iwInfo.u.essid.pointer);
             }
-
-            close(sock);
         }
         break;
     }
@@ -915,9 +945,12 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
-            QString modem = ofonoWrapper->allModems().at(interface);
-            if (!modem.isEmpty())
-                return ofonoWrapper->operatorName(modem);
+            QStringList modems = ofonoWrapper->allModems();
+            if (interface < modems.size()) {
+                QString modem = ofonoWrapper->allModems().at(interface);
+                if (!modem.isEmpty())
+                    return ofonoWrapper->operatorName(modem);
+            }
         }
 #endif // QT_NO_OFONO
         break;

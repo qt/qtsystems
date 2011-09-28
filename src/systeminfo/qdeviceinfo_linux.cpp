@@ -238,9 +238,12 @@ QString QDeviceInfoPrivate::imei(int interface)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QString modem = ofonoWrapper->allModems().at(interface);
-        if (!modem.isEmpty())
-            return ofonoWrapper->imei(modem);
+        QStringList modems = ofonoWrapper->allModems();
+        if (interface < modems.size()) {
+            QString modem = ofonoWrapper->allModems().at(interface);
+            if (!modem.isEmpty())
+                return ofonoWrapper->imei(modem);
+        }
     }
 #else
     Q_UNUSED(interface)
