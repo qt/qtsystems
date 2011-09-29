@@ -62,14 +62,14 @@ QT_BEGIN_NAMESPACE
     \sa ServiceList
 */
 QDeclarativeService::QDeclarativeService()
-    : serviceInstance(0)
+    : m_serviceInstance(0), m_componentComplete(false)
 {
-    serviceManager = new QServiceManager();
+    m_serviceManager = new QServiceManager();
 }
 
 QDeclarativeService::~QDeclarativeService()
 {
-    delete serviceInstance;
+    delete m_serviceInstance;
 }
 
 /*!
@@ -90,10 +90,10 @@ void QDeclarativeService::setInterfaceDesc(const QServiceInterfaceDescriptor &de
 
     m_descriptor = desc;
 
-    if (serviceInstance)
-        delete serviceInstance;
+    if (m_serviceInstance)
+        delete m_serviceInstance;
 
-    serviceInstance = 0;
+    m_serviceInstance = 0;
 }
 
 QServiceInterfaceDescriptor QDeclarativeService::interfaceDesc() const
@@ -109,11 +109,8 @@ QServiceInterfaceDescriptor QDeclarativeService::interfaceDesc() const
 */
 void QDeclarativeService::setInterfaceName(const QString &interface)
 {
-    m_descriptor = serviceManager->interfaceDefault(interface);
-
-    if (!isValid()) {
-        qWarning() << "WARNING: No default service found for interface name: " << interface;
-    }
+   m_interface = interface;
+   updateDescriptor();
 }
 
 QString QDeclarativeService::interfaceName() const
@@ -138,6 +135,11 @@ QString QDeclarativeService::serviceName() const
         return "No Service";
 }
 
+void QDeclarativeService::setServiceName(const QString &service)
+{
+    m_service = service;
+}
+
 /*!
     \qmlproperty int Service::majorVersion
 
@@ -150,6 +152,12 @@ int QDeclarativeService::majorVersion() const
         return m_descriptor.majorVersion();
     else
         return 0;
+}
+
+void QDeclarativeService::setMajorVersion(int version)
+{
+    m_major = version;
+    updateDescriptor();
 }
 
 /*!
@@ -166,6 +174,12 @@ int QDeclarativeService::minorVersion() const
         return 0;
 }
 
+void QDeclarativeService::setMinorVersion(int version)
+{
+    m_minor = version;
+    updateDescriptor();
+}
+
 /*!
     \qmlproperty QObject* Service::serviceObject
 
@@ -175,24 +189,31 @@ int QDeclarativeService::minorVersion() const
 */
 QObject* QDeclarativeService::serviceObject()
 {
-    if (serviceInstance) {
-        return serviceInstance;
+    if (m_serviceInstance) {
+        return m_serviceInstance;
     }
 
     if (isValid()) {
-        serviceInstance = serviceManager->loadInterface(m_descriptor);
-        if (!serviceInstance) {
+        m_serviceInstance = m_serviceManager->loadInterface(m_descriptor);
+        if (!m_serviceInstance) {
             emit error(QLatin1String("Failed to create object"));
-            return serviceInstance;
+            return m_serviceInstance;
         }
-        connect(serviceInstance, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+        connect(m_serviceInstance, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                 this, SLOT(IPCFault(QService::UnrecoverableIPCError)));
         m_error.clear();
-        return serviceInstance;
+        return m_serviceInstance;
     } else {
         return 0;
     }
 }
+
+/*!
+  \qmlproperty QString Service::error
+
+  This property holds the last error the was received, if any
+
+  */
 
 QString QDeclarativeService::lastError() const
 {
@@ -220,8 +241,60 @@ void QDeclarativeService::IPCFault(QService::UnrecoverableIPCError errorValue)
         break;
     }
     emit error(m_error);
-    serviceInstance->deleteLater();
-    serviceInstance = 0;
+    m_serviceInstance->deleteLater();
+    m_serviceInstance = 0;
+}
+
+void QDeclarativeService::updateDescriptor()
+{
+    if (!m_componentComplete)
+        return;
+
+    if (m_interface.isEmpty())
+        return;
+
+    QServiceInterfaceDescriptor new_desc;
+
+    if (m_minor == 0 && m_major == 0 && m_service.isEmpty()){
+        new_desc = m_serviceManager->interfaceDefault(m_interface);
+    }
+    else {
+        QServiceFilter filter;
+        if (!m_service.isEmpty())
+            filter.setServiceName(m_service);
+
+
+        if (m_minor != 0 || m_major != 0) {
+            const QString version = QString::number(m_major) + "." + QString::number(m_minor);
+            filter.setInterface(m_interface, version);
+        }
+
+        QList<QServiceInterfaceDescriptor> list = m_serviceManager->findInterfaces(filter);
+        if (!list.isEmpty())
+            new_desc = list.takeFirst();
+    }
+
+    if (new_desc != m_descriptor) {
+        m_descriptor = new_desc;
+        if (m_serviceInstance)
+            emit serviceObjectChanged();
+    }
+
+    if (!isValid()) {
+        qWarning() << "WARNING: No service found for interface name: " << m_interface << m_service << m_major << m_minor;
+    }
+
+}
+
+void QDeclarativeService::classBegin()
+{
+
+}
+
+void QDeclarativeService::componentComplete()
+{
+    m_componentComplete = true;
+    updateDescriptor();
 }
 
 /*!

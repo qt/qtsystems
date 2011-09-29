@@ -50,12 +50,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeService : public QObject {
+class QDeclarativeService : public QObject, public QDeclarativeParserStatus {
     Q_OBJECT
     Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
-    Q_PROPERTY(QString serviceName READ serviceName NOTIFY serviceNameChanged)
-    Q_PROPERTY(int majorVersion READ majorVersion NOTIFY majorVersionChanged)
-    Q_PROPERTY(int minorVersion READ minorVersion NOTIFY minorVersionChanged)
+    Q_PROPERTY(QString serviceName READ serviceName WRITE setServiceName NOTIFY serviceNameChanged)
+    Q_PROPERTY(int majorVersion READ majorVersion WRITE setMajorVersion NOTIFY majorVersionChanged)
+    Q_PROPERTY(int minorVersion READ minorVersion WRITE setMinorVersion NOTIFY minorVersionChanged)
     Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
     Q_PROPERTY(QObject* serviceObject READ serviceObject NOTIFY serviceObjectChanged)
     Q_PROPERTY(QString error READ lastError NOTIFY error)
@@ -70,12 +70,19 @@ public:
     void setInterfaceName(const QString& interface);
     QString interfaceName() const;
     QString serviceName() const;
+    void setServiceName(const QString &service);
     int majorVersion() const;
+    void setMajorVersion(int version);
     int minorVersion() const;
+    void setMinorVersion(int version);
     QString lastError() const;
 
     bool isValid() const;
     QObject* serviceObject();
+
+    //Derived from QDeclarativeParserStatus
+    virtual void classBegin();
+    virtual void componentComplete();
 
 Q_SIGNALS:
     void validChanged();
@@ -91,10 +98,21 @@ private slots:
     void IPCFault(QService::UnrecoverableIPCError);
 
 private:
-    QPointer<QObject> serviceInstance;
-    QServiceManager* serviceManager;
+    void updateDescriptor();
+
+    QPointer<QObject> m_serviceInstance;
+    QServiceManager* m_serviceManager;
+
     QServiceInterfaceDescriptor m_descriptor;
+
+    int m_minor;
+    int m_major;
+    QString m_service;
+    QString m_interface;
+
     QString m_error;
+
+    bool m_componentComplete;
 };
 
 
