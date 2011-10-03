@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SFW version="1.1">
+<service>
+    <name>IPCExampleService</name>
+    <ipcaddress>qt_sfw_example_ipc_unittest</ipcaddress>
+    <description>Example service demoing IPC based services</description>
+    <interface>
+        <name>com.nokia.qt.ipcunittest</name>
+        <version>3.8</version>
+        <description>Misc test code that tests failures and edge cases</description>
+        <capabilities></capabilities>
+    </interface>
+     <interface>
+         <name>com.nokia.qt.ipcunittest</name>
+         <version>3.7</version>
+         <description>Creation Failure Test Case Private</description>
+         <capabilities></capabilities>
+     </interface>
+     <interface>
+         <name>com.nokia.qt.ipcunittest</name>
+         <version>3.6</version>
+         <description>Creation Failure Test Case Global</description>
+         <capabilities></capabilities>
+     </interface>
+    <interface>
+        <name>com.nokia.qt.ipcunittest</name>
+        <version>3.5</version>
+        <description>Unspecified</description>
+        <capabilities></capabilities>
+    </interface>
+    <interface>
+        <name>com.nokia.qt.ipcunittest</name>
+        <version>3.4</version>
+        <description>Unspecified</description>
+        <capabilities></capabilities>
+    </interface>
+</service>
+</SFW>

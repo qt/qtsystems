@@ -538,12 +538,12 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
             // If we have autotests enable, check for the service in .
 #ifndef QT_ADDON_JSONDB_LIB
-#ifdef QT_BUILD_UNITTESTS
+#ifdef QT_BUILD_INTERNAL
             QFile file("./" + path);
             if (file.exists()){
                 path.prepend("./");
             }
-#endif /* QT_BUILD_UNITTESTS */
+#endif /* QT_BUILD_INTERNAL */
             qint64 pid = 0;
             // Start the service as a detached process
             if (QProcess::startDetached(path, QStringList(), QString(), &pid)){

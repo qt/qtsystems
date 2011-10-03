@@ -259,7 +259,10 @@ bool QRemoteServiceRegisterDBusPrivate::createServiceEndPoint(const QString& ide
 
             iface = new QDBusInterface(serviceName, path, QString(), QDBusConnection::sessionBus());
             if (!iface->isValid()) {
-                qWarning() << "Cannot connect to remote service" << serviceName << path;;
+                qWarning() << "createServiceEndPoint: Cannot connect to remote service" << serviceName << path;;
+                qWarning() << QString::fromLatin1("%1 %2 %3").arg(iface->lastError().name()).
+                                                              arg(iface->lastError().message()).
+                                                              arg(iface->lastError().type());
                 continue;
             }
 
@@ -326,10 +329,16 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
 
     // Dummy call to autostart the service if not running
     connection.call(QDBusMessage::createMethodCall(serviceName, path, QString(), QStringLiteral("q_autostart")));
+    qWarning() << QString::fromLatin1("%1 %2 %3").arg(connection.lastError().name()).
+                                                  arg(connection.lastError().message()).
+                                                  arg(connection.lastError().type());
 
     QDBusInterface *iface = new QDBusInterface(serviceName, path, QString(), QDBusConnection::sessionBus());
     if (!iface->isValid()) {
-        qWarning() << "Cannot connect to remote service" << serviceName << path;
+        qWarning() << "ProxyForService: Cannot connect to remote service" << serviceName << path;
+        qWarning() << QString::fromLatin1("%1 %2 %3").arg(iface->lastError().name()).
+                                                      arg(iface->lastError().message()).
+                                                      arg(iface->lastError().type());
         return 0;
     }
 

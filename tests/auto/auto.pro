@@ -9,6 +9,7 @@ SUBDIRS += qdeviceinfo \
            qservicefilter \
            qserviceinterfacedescriptor \
            qservicemanager \
+           qservicemanager_ipc \
            qservicemetadata \
            servicedeletion
 #           qmetaobjectbuilder #(requires test symbols)

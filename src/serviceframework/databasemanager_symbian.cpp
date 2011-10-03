@@ -46,7 +46,7 @@
 #include "servicedatabase.cpp"
 #else //defined(__WINS__) && !defined(SYMBIAN_EMULATOR_SUPPORTS_PERPROCESS_WSD)
 
-#ifdef QT_BUILD_UNITTESTS
+#ifdef QT_BUILD_INTERNAL
 #include "servicedatabase.cpp"
 #endif
 
