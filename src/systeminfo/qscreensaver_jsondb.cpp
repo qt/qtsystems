@@ -39,66 +39,71 @@
 **
 ****************************************************************************/
 
-#include <qscreensaver.h>
+#include "qscreensaver_jsondb_p.h"
 
-#if defined(QT_JSONDB)
-#  include "qscreensaver_jsondb_p.h"
-#elif defined(Q_OS_LINUX)
-#  include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
+#include <QtCore/qtimer.h>
+#include <QtCore/QDebug>
 
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QT_END_NAMESPACE
-#endif
+#include <mtcore/notion-client.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystems
-    \brief The QScreenSaver class provides various information of the screen saver.
-*/
+static const int NOTION_DURATION (25);
 
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
+QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
+    , q_ptr(parent)
+    , notionclient(new NotionClient())
+    , timer(0)
+    , isScreenSaverEnabled(false)
 {
 }
 
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
+QScreenSaverPrivate::~QScreenSaverPrivate()
 {
-    delete d_ptr;
+    delete timer;
+    delete notionclient;
 }
 
-/*!
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
+bool QScreenSaverPrivate::screenSaverEnabled()
 {
-    return d_ptr->screenSaverEnabled();
+    if (isScreenSaverEnabled)
+        return true;
+    else
+        return false;
 }
 
-/*!
-    Set the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
+void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-    d_ptr->setScreenSaverEnabled(enabled);
+    if (enabled) {
+        notionclient->mediaPlaying(true, NOTION_DURATION);
+        if (timer == 0) {
+            timer = new QTimer(this);
+            timer->setInterval((NOTION_DURATION - 2) * 1000);
+            connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+        }
+        if (!timer->isActive()) {
+            timer->start();
+        }
+        isScreenSaverEnabled = true;
+
+    } else {
+        if (timer != 0) {
+            if (timer->isActive()) {
+                timer->stop();
+            }
+            delete timer;
+            timer = 0;
+        }
+        notionclient->mediaPlaying(false);
+        isScreenSaverEnabled = false;
+    }
+}
+
+void QScreenSaverPrivate::onTimeout()
+{
+    notionclient->mediaPlaying(true, NOTION_DURATION);
+    timer->start();
 }
 
 QT_END_NAMESPACE

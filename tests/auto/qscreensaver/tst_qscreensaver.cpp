@@ -39,66 +39,29 @@
 **
 ****************************************************************************/
 
-#include <qscreensaver.h>
+#include <QtCore/QString>
+#include <QtTest/QtTest>
 
-#if defined(QT_JSONDB)
-#  include "qscreensaver_jsondb_p.h"
-#elif defined(Q_OS_LINUX)
-#  include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
+#include "qscreensaver.h"
+
+QT_USE_NAMESPACE
+
+class tst_QScreenSaver : public QObject
 {
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
+    Q_OBJECT
 
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
+private slots:
+    void tst_screensaver();
 };
-QT_END_NAMESPACE
-#endif
 
-QT_BEGIN_NAMESPACE
-
-/*!
-    \class QScreenSaver
-    \inmodule QtSystems
-    \brief The QScreenSaver class provides various information of the screen saver.
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
+void tst_QScreenSaver::tst_screensaver()
 {
+    QScreenSaver screensaver;
+
+    screensaver.setScreenSaverEnabled(true);
+    screensaver.setScreenSaverEnabled(false);
+    QVERIFY(screensaver.screenSaverEnabled() == false);
 }
 
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
-{
-    delete d_ptr;
-}
-
-/*!
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
-{
-    return d_ptr->screenSaverEnabled();
-}
-
-/*!
-    Set the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
-}
-
-QT_END_NAMESPACE
+QTEST_APPLESS_MAIN(tst_QScreenSaver);
+#include "tst_qscreensaver.moc"

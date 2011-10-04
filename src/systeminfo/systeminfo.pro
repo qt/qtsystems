@@ -68,10 +68,10 @@ x11 {
 }
 
 linux-* {
+
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
                        qstorageinfo_linux_p.h \
-                       qscreensaver_linux_p.h \
                        qbatteryinfo_linux_p.h \
                        qnetworkinfo_linux_p.h \
                        qinputdeviceinfo_linux_p.h
@@ -79,10 +79,23 @@ linux-* {
     SOURCES += qdeviceinfo_linux.cpp \
                qdisplayinfo_linux.cpp \
                qstorageinfo_linux.cpp \
-               qscreensaver_linux.cpp \
                qbatteryinfo_linux.cpp \
                qnetworkinfo_linux.cpp \
                qinputdeviceinfo_linux.cpp
+
+    !contains(QT_CONFIG, jsondb): {
+        PRIVATE_HEADERS += qscreensaver_linux_p.h
+        SOURCES += qscreensaver_linux.cpp
+
+    } else {
+        PRIVATE_HEADERS += qscreensaver_jsondb_p.h
+        SOURCES += qscreensaver_jsondb.cpp
+
+        DEFINES += QT_JSONDB  QT_ADDON_JSONDB_LIB
+        PKGCONFIG += mtcore
+        LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
+        QT += jsondb-private
+    }
 
     contains(QT_CONFIG, dbus): {
         contains(config_test_ofono, yes) {
