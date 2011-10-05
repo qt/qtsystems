@@ -233,7 +233,7 @@ bool QRemoteServiceRegisterDBusPrivate::createServiceEndPoint(const QString& ide
 
     // Registers the service and session object on DBus if needed
     for (int i=0; i<list.size(); i++) {
-        QString serviceName = "com.nokia.qtmobility.sfw." + list[i].serviceName();
+        QString serviceName = QStringLiteral("com.nokia.qtmobility.sfw.") + list.at(i).serviceName();
         QDBusReply<bool> reply = connection.interface()->isServiceRegistered(serviceName);
         if (reply.value())
             continue;
@@ -249,15 +249,15 @@ bool QRemoteServiceRegisterDBusPrivate::createServiceEndPoint(const QString& ide
         QObject::connect(session, SIGNAL(newConnection(int,int)),
                 this, SLOT(processIncoming(int,int)));
 
-        QString path = "/" + list[i].interfaceName() + "/" + ident;
-        path.replace(QLatin1String("."), QLatin1String("/"));
+        QString path = QLatin1Char('/') + list.at(i).interfaceName() + QLatin1Char('/') + ident;
+        path.replace(QLatin1Char('.'), QLatin1Char('/'));
         if (!connection.objectRegisteredAt(path)) {
             if (!connection.registerObject(path, session)) {
                 qWarning() << "Cannot register service session to DBus:" << path;
                 continue;
             }
 
-            iface = new QDBusInterface(serviceName, path, QLatin1String(""), QDBusConnection::sessionBus());
+            iface = new QDBusInterface(serviceName, path, QString(), QDBusConnection::sessionBus());
             if (!iface->isValid()) {
                 qWarning() << "Cannot connect to remote service" << serviceName << path;;
                 continue;
@@ -314,9 +314,9 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 */
 QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegister::Entry& entry, const QString& location)
 {
-    const QString serviceName = "com.nokia.qtmobility.sfw." + entry.serviceName();
-    QString path = "/" + entry.interfaceName() + "/" + location;
-    path.replace(QLatin1String("."), QLatin1String("/"));
+    const QString serviceName = QStringLiteral("com.nokia.qtmobility.sfw.") + entry.serviceName();
+    QString path = QLatin1Char('/') + entry.interfaceName() + QLatin1Char('/') + location;
+    path.replace(QLatin1Char('.'), QLatin1Char('/'));
 
     QDBusConnection connection = QDBusConnection::sessionBus();
     if (!connection.isConnected()) {
@@ -325,9 +325,9 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
     }
 
     // Dummy call to autostart the service if not running
-    connection.call(QDBusMessage::createMethodCall(serviceName, path, QLatin1String(""), QLatin1String("q_autostart")));
+    connection.call(QDBusMessage::createMethodCall(serviceName, path, QString(), QStringLiteral("q_autostart")));
 
-    QDBusInterface *iface = new QDBusInterface(serviceName, path, QLatin1String(""), QDBusConnection::sessionBus());
+    QDBusInterface *iface = new QDBusInterface(serviceName, path, QString(), QDBusConnection::sessionBus());
     if (!iface->isValid()) {
         qWarning() << "Cannot connect to remote service" << serviceName << path;
         return 0;

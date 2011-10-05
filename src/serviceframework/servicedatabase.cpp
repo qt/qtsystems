@@ -234,7 +234,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
     QString locationPrefix = service.location;
     int type = service.interfaces[0].d->attributes[QServiceInterfaceDescriptor::ServiceType].toInt();
     if (type == QService::InterProcess)
-        locationPrefix = SERVICE_IPC_PREFIX + service.location;
+        locationPrefix = QLatin1String(SERVICE_IPC_PREFIX) + service.location;
 
 #ifndef QT_SFW_SERVICEDATABASE_USE_SECURITY_TOKEN
     Q_UNUSED(securityToken);
@@ -365,7 +365,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
     bindValues.append(serviceID);
     bindValues.append(QLatin1String(SERVICE_DESCRIPTION_KEY));
     if (service.description.isNull())
-        bindValues.append(QLatin1String(""));
+        bindValues.append(QLatin1String("")); // This relies on !QString::isNull().
     else
         bindValues.append(service.description);
 
@@ -717,13 +717,13 @@ bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfa
         ++iter;
     }
 
-    //add custom attributes
+    // add custom attributes
     QHash<QString, QString>::const_iterator customIter = interface.d->customAttributes.constBegin();
     while (customIter!=interface.d->customAttributes.constEnd()) {
         bindValues.clear();
         bindValues.append(interfaceID);
-        //to avoid key clashes use separate c_ namespace ->is this sufficient?
-        bindValues.append(QVariant("c_"+customIter.key()));
+        // to avoid key clashes use separate c_ namespace ->is this sufficient?
+        bindValues.append(QVariant(QStringLiteral("c_") + customIter.key()));
         bindValues.append(customIter.value());
         if (!executeQuery(query, statement, bindValues)) {
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
@@ -774,7 +774,7 @@ bool ServiceDatabase::executeQuery(QSqlQuery *query, const QString &statement, c
             QString parameters;
             if (bindValues.count() > 0) {
                 for (int i = 0; i < bindValues.count(); ++i) {
-                    parameters.append(QLatin1String("\n\t[") + QString::number(i) + "]: " + bindValues.at(i).toString());
+                    parameters.append(QStringLiteral("\n\t[") + QString::number(i) + QStringLiteral("]: ") + bindValues.at(i).toString());
                 }
             } else {
                 parameters = QLatin1String("None");

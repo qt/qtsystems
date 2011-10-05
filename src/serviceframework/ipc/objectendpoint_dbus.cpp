@@ -187,9 +187,9 @@ void ObjectEndPoint::disconnected(const QString& clientId, const QString& instan
 void ObjectEndPoint::unregisterObjectDBus(const QRemoteServiceRegister::Entry& entry, const QUuid& id)
 {
     uint hash = qHash(id.toString());
-    QString objPath = "/" + entry.interfaceName() + "/" + entry.version() +
-        "/" + QString::number(hash);
-    objPath.replace(QLatin1String("."), QLatin1String("/"));
+    QString objPath = QLatin1Char('/') + entry.interfaceName() + QLatin1Char('/') + entry.version() +
+        QLatin1Char('/') + QString::number(hash);
+    objPath.replace(QLatin1Char('.'), QLatin1Char('/'));
     QDBusConnection::sessionBus().unregisterObject(objPath, QDBusConnection::UnregisterTree);
 }
 
@@ -327,17 +327,17 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         response->isFinished = true;
 
         // Create DBUS interface by using a hash of the service instance ID
-        QString serviceName = "com.nokia.qtmobility.sfw." + p.d->entry.serviceName();
+        QString serviceName = QStringLiteral("com.nokia.qtmobility.sfw.") + p.d->entry.serviceName();
         uint hash = qHash(d->serviceInstanceId.toString());
-        QString objPath = "/" + p.d->entry.interfaceName() + "/" + p.d->entry.version() + "/" + QString::number(hash);
-        objPath.replace(QLatin1String("."), QLatin1String("/"));
+        QString objPath = QLatin1Char('/') + p.d->entry.interfaceName() + QLatin1Char('/') + p.d->entry.version() + QLatin1Char('/') + QString::number(hash);
+        objPath.replace(QLatin1Char('.'), QLatin1Char('/'));
 
 #ifdef DEBUG
         qDebug() << "Client Interface ObjectPath:" << objPath;
 #endif
         // Instantiate our DBus interface and its corresponding signals object
         if (!iface)
-            iface = new QDBusInterface(serviceName, objPath, QLatin1String(""), QDBusConnection::sessionBus(), this);
+            iface = new QDBusInterface(serviceName, objPath, QString(), QDBusConnection::sessionBus(), this);
         signalsObject = new QServiceMetaObjectDBus(iface, true);
 
         // Wake up waiting proxy construction code
@@ -364,10 +364,10 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         }
 
         // DBus registration path uses a hash of the service instance ID
-        QString serviceName = "com.nokia.qtmobility.sfw." + p.d->entry.serviceName();
+        QString serviceName = QStringLiteral("com.nokia.qtmobility.sfw.") + p.d->entry.serviceName();
         uint hash = qHash(d->serviceInstanceId.toString());
-        QString objPath = "/" + p.d->entry.interfaceName() + "/" + p.d->entry.version() + "/" + QString::number(hash);
-        objPath.replace(QLatin1String("."), QLatin1String("/"));
+        QString objPath = QLatin1Char('/') + p.d->entry.interfaceName() + QLatin1Char('/') + p.d->entry.version() + QLatin1Char('/') + QString::number(hash);
+        objPath.replace(QLatin1Char('.'), QLatin1Char('/'));
 
         QServiceMetaObjectDBus *serviceDBus = new QServiceMetaObjectDBus(service);
         QDBusConnection::sessionBus().registerObject(objPath, serviceDBus, QDBusConnection::ExportAllContents);
