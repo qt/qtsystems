@@ -608,6 +608,10 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             QString p = u.toLocalFile();
             qDebug() << "Path" << p;
             path = p + QLatin1String("/") + app;
+            if (!QFile::exists(path) && QFile::exists(app)) {
+                qDebug() << "Absolute path, using app only" << app;
+                path = app;
+            }
 
             qDebug() << "SFW trying to start" << path;
             qint64 pid = 0;
