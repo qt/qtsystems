@@ -1,5 +1,5 @@
 TARGET  = declarative_serviceframework
-TARGETPATH = Qt/serviceframework
+TARGETPATH = QtServiceFramework
 
 include(qserviceframeworkimport.pri)
 

@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import QtQuick 2.0
-import Qt.serviceframework 5.0
+import QtServiceFramework 5.0
 import "content"
 
 

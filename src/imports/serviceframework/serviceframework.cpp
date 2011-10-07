@@ -53,7 +53,9 @@ class QServiceDeclarativeModule : public QDeclarativeExtensionPlugin
 public:
     virtual void registerTypes(const char *uri)
     {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.serviceframework"));
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtServiceFramework"));
+
+        // @uri QtServiceFramework 5.0
 
         qmlRegisterType<QDeclarativeService>(uri, 5, 0, "Service");
         qmlRegisterType<QDeclarativeServiceList>(uri, 5, 0, "ServiceList");
