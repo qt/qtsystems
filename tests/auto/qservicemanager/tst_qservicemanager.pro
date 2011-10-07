@@ -1,6 +1,7 @@
-load(qttest_p4)
+TARGET = tst_qservicemanager
+CONFIG += testcase
 
-QT = core sql serviceframework serviceframework-private
+QT = core sql serviceframework serviceframework-private testlib
 CONFIG += parallel_test
 
 DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"

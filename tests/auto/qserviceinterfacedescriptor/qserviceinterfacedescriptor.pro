@@ -1,6 +1,7 @@
-load(qttest_p4)
+TARGET = tst_qserviceinterfacedescriptor
+CONFIG += testcase
 
-QT += serviceframework serviceframework-private
+QT += serviceframework serviceframework-private testlib
 CONFIG += parallel_test
 
 SOURCES += tst_qserviceinterfacedescriptor.cpp

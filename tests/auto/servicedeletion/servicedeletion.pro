@@ -1,8 +1,9 @@
-load(qttest_p4)
+TARGET = tst_servicedeletion
+CONFIG += testcase
 
 CONFIG += core servoiceframewok
 
-QT = core serviceframework
+QT = core serviceframework testlib
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 

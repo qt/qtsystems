@@ -1,4 +1,5 @@
-load(qttest_p4)
+TARGET = tst_qservicemetadata
+CONFIG += testcase
 
 wince* {
     DEFINES+= TESTDATA_DIR=\\\".\\\"
@@ -9,7 +10,7 @@ wince* {
 
 CONFIG += parallel_test
 
-QT += serviceframework serviceframework-private
+QT += serviceframework serviceframework-private testlib
 
 # Input 
 SOURCES += tst_servicemetadata.cpp

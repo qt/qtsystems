@@ -1,6 +1,7 @@
-load(qttest_p4)
+TARGET = tst_qremoteserviceregister
+CONFIG += testcase
 
-QT = core serviceframework
+QT = core serviceframework testlib
 
 SOURCES += tst_qremoteserviceregister.cpp
 HEADERS += service.h

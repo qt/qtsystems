@@ -1,8 +1,9 @@
-load(qttest_p4)
+TARGET = tst_qservicefilter
+CONFIG += testcase
 
 SOURCES += tst_qservicefilter.cpp
 
-QT += serviceframework
+QT += serviceframework testlib
 
 CONFIG += parallel_test
 

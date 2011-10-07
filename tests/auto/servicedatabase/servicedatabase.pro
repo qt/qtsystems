@@ -1,6 +1,7 @@
-load(qttest_p4)
+TARGET = tst_servicedatabase
+CONFIG += testcase
 
-QT = core sql serviceframework serviceframework-private
+QT = core sql serviceframework serviceframework-private testlib
 
 symbian {
     addFiles.sources = testdata/*
