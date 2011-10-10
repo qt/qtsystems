@@ -60,9 +60,10 @@
 #include <QSet>
 #include "qserviceinterfacedescriptor.h"
 
-#ifdef SERVICE_XML_GENERATOR
-#undef Q_AUTOTEST_EXPORT
-#define Q_AUTOTEST_EXPORT
+#if defined(IGNORE_SERVICEMETADATA_EXPORT) || defined(SERVICE_XML_GENERATOR)
+#  define SERVICEMETADATA_EXPORT
+#else
+#  define SERVICEMETADATA_EXPORT Q_AUTOTEST_EXPORT
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -71,7 +72,7 @@ class QIODevice;
 // FORWARD DECLARATIONS
 class QServiceInterfaceDescriptor;
 
-class ServiceMetaDataResults
+class SERVICEMETADATA_EXPORT ServiceMetaDataResults
 {
 public:
     ServiceMetaDataResults() {}
@@ -95,15 +96,11 @@ public:
 };
 
 #ifndef QT_NO_DATASTREAM
-Q_AUTOTEST_EXPORT QDataStream &operator<<(QDataStream &, const ServiceMetaDataResults &);
-Q_AUTOTEST_EXPORT QDataStream &operator>>(QDataStream &, ServiceMetaDataResults &);
+SERVICEMETADATA_EXPORT QDataStream &operator<<(QDataStream &, const ServiceMetaDataResults &);
+SERVICEMETADATA_EXPORT QDataStream &operator>>(QDataStream &, ServiceMetaDataResults &);
 #endif
 
-#ifdef IGNORE_SERVICEMETADATA_EXPORT
-  class ServiceMetaData
-#else
-  class Q_AUTOTEST_EXPORT ServiceMetaData
-#endif
+class SERVICEMETADATA_EXPORT ServiceMetaData
 {
 public:
 

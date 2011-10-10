@@ -185,9 +185,8 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
     return QDeviceInfo::UnknownThermal;
 }
 
-QString QDeviceInfoPrivate::imei(int interface)
+QString QDeviceInfoPrivate::imei(int /* interfaceNumber */)
 {
-    Q_UNUSED(interface)
     return QString();
 }
 
@@ -239,8 +238,9 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
         return osVersion;
 
     case QDeviceInfo::Firmware:
-        return QString();
-    };
+        break;
+    }
+    return QString();
 }
 
 QT_END_NAMESPACE

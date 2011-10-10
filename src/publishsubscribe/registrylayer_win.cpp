@@ -46,6 +46,9 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC(NonVolatileRegistryLayer, nonVolatileRegistryLayer)
 QVALUESPACE_AUTO_INSTALL_LAYER(NonVolatileRegistryLayer)
 
+Q_GLOBAL_STATIC(VolatileRegistryLayer, volatileRegistryLayer)
+QVALUESPACE_AUTO_INSTALL_LAYER(VolatileRegistryLayer)
+
 void CALLBACK qVolatileRegistryLayerCallback(PVOID lpParameter, BOOLEAN)
 {
     QMetaObject::invokeMethod(volatileRegistryLayer(), "emitHandleChanged", Qt::QueuedConnection,

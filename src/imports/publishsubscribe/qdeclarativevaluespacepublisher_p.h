@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeValueSpacePublisherMetaObject;
+struct QDeclarativeValueSpacePublisherMetaObject;
 
 class QDeclarativeValueSpacePublisher : public QObject
 {

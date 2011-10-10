@@ -67,7 +67,7 @@ public:
     QDeviceInfo::LockTypeFlags activatedLocks();
     QDeviceInfo::LockTypeFlags enabledLocks();
     QDeviceInfo::ThermalState thermalState();
-    QString imei(int interface);
+    QString imei(int interfaceNumber);
     QString manufacturer();
     QString model();
     QString productName();

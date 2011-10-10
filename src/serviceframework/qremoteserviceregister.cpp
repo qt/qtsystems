@@ -431,14 +431,14 @@ QRemoteServiceRegister::Entry QRemoteServiceRegister::createEntry(const QString&
 
 
 #ifndef QT_NO_DATASTREAM
-QDataStream& operator>>(QDataStream& s, QRemoteServiceRegister::Entry& entry) {
+Q_SERVICEFW_EXPORT QDataStream& operator>>(QDataStream& s, QRemoteServiceRegister::Entry& entry) {
     //for now we only serialize version, iface and service name
     //needs to sync with qHash and operator==
     s >> entry.d->service >> entry.d->iface >> entry.d->ifaceVersion;
     return s;
 }
 
-QDataStream& operator<<(QDataStream& s, const QRemoteServiceRegister::Entry& entry) {
+Q_SERVICEFW_EXPORT QDataStream& operator<<(QDataStream& s, const QRemoteServiceRegister::Entry& entry) {
     //for now we only serialize version, iface and service name
     //needs to sync with qHash and operator==
     s << entry.d->service << entry.d->iface << entry.d->ifaceVersion;

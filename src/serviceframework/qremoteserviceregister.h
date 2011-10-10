@@ -142,8 +142,8 @@ inline uint qHash(const QRemoteServiceRegister::Entry& e) {
 }
 
 #ifndef QT_NO_DATASTREAM
-QDataStream& operator>>(QDataStream& s, QRemoteServiceRegister::Entry& entry);
-QDataStream& operator<<(QDataStream& s, const QRemoteServiceRegister::Entry& entry);
+Q_SERVICEFW_EXPORT QDataStream& operator>>(QDataStream& s, QRemoteServiceRegister::Entry& entry);
+Q_SERVICEFW_EXPORT QDataStream& operator<<(QDataStream& s, const QRemoteServiceRegister::Entry& entry);
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM

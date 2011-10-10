@@ -68,7 +68,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator<<(QDataStream &out, const ServiceMetaDataResults &r)
+SERVICEMETADATA_EXPORT QDataStream &operator<<(QDataStream &out, const ServiceMetaDataResults &r)
 {
     out << r.type << r.name << r.location;
     out << r.description << r.interfaces << r.latestInterfaces;
@@ -76,7 +76,7 @@ QDataStream &operator<<(QDataStream &out, const ServiceMetaDataResults &r)
     return out;
 }
 
-QDataStream &operator>>(QDataStream &in, ServiceMetaDataResults &r)
+SERVICEMETADATA_EXPORT QDataStream &operator>>(QDataStream &in, ServiceMetaDataResults &r)
 {
     in >> r.type >> r.name >> r.location;
     in >> r.description >> r.interfaces >> r.latestInterfaces;

@@ -38,17 +38,16 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QApplication>
-#include "qmlapplicationviewer.h"
+#include <QtDeclarative/QSGView>
+#include <QtGui/QGuiApplication>
+#include <QtCore/QUrl>
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
-    QmlApplicationViewer viewer;
-    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
-    viewer.setMainQmlFile(QLatin1String("dialer.qml"));
-    viewer.showExpanded();
-
+    QSGView viewer;
+    viewer.setSource(QUrl::fromLocalFile(QStringLiteral("dialer.qml")));
+    viewer.show();
     return app.exec();
 }

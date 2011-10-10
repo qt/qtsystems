@@ -49,6 +49,10 @@ QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
 {
 }
 
+QNetworkInfoPrivate::~QNetworkInfoPrivate()
+{
+}
+
 int QNetworkInfoPrivate::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
 {
     switch (mode) {

@@ -1,4 +1,4 @@
-QT = core serviceframework declarative qtquick1
+QT = core gui serviceframework declarative
 win32: CONFIG += console
 mac:CONFIG -= app_bundle
 
@@ -39,8 +39,3 @@ else {
 symbian {
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
 }
-
-# Please do not modify the following two lines. Required for deployment.
-include(qmlapplicationviewer/qmlapplicationviewer.pri)
-# installs into /usr/loca/bin, bad idea, deployment rules are above
-#qtcAddDeployment()

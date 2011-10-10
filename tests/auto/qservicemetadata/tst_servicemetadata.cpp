@@ -44,11 +44,13 @@
 #include <QtTest/QtTest>
 #include <QtCore>
 #define private public
+#define SERVICE_XML_GENERATOR
 #include <qserviceinterfacedescriptor.h>
 #include <private/qserviceinterfacedescriptor_p.h>
 #if !defined(Q_CC_MINGW)
     #include "../../../src/serviceframework/qserviceinterfacedescriptor.cpp"
 #endif
+#define IGNORE_SERVICEMETADATA_EXPORT
 #include "private/servicemetadata_p.h"
 #if !defined(Q_CC_MINGW)
     #include "../../../src/serviceframework/servicemetadata.cpp"
