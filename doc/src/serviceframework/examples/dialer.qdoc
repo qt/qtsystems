@@ -30,6 +30,8 @@
 
 \title Service Framework using QML Example
 
+\ingroup serviceframework-examples
+
 \bold {Execution}
 
 This example requires the example dialer services to be registered in order
