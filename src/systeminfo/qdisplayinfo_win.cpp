@@ -49,13 +49,11 @@ QT_BEGIN_NAMESPACE
 
 QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
     : q_ptr(parent)
-    , hDC(NULL)
 {
 }
 
 QDisplayInfoPrivate::~QDisplayInfoPrivate()
 {
-    ReleaseDC(NULL, hDC);
 }
 
 int QDisplayInfoPrivate::brightness(int screen)
@@ -64,57 +62,16 @@ int QDisplayInfoPrivate::brightness(int screen)
     return -1;
 }
 
-int QDisplayInfoPrivate::colorDepth(int screen)
-{
-    if (hDC == NULL)
-        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
-    return GetDeviceCaps(hDC, LOGPIXELSX);
-}
-
 int QDisplayInfoPrivate::contrast(int screen)
 {
     Q_UNUSED(screen)
     return -1;
 }
 
-int QDisplayInfoPrivate::dpiX(int screen)
-{
-    if (hDC == NULL)
-        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
-    return GetDeviceCaps(hDC, LOGPIXELSX);
-}
-
-int QDisplayInfoPrivate::dpiY(int screen)
-{
-    if (hDC == NULL)
-        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
-    return GetDeviceCaps(hDC, LOGPIXELSY);
-}
-
-int QDisplayInfoPrivate::physicalHeight(int screen)
-{
-    if (hDC == NULL)
-        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
-    return GetDeviceCaps(hDC, VERTSIZE);
-}
-
-int QDisplayInfoPrivate::physicalWidth(int screen)
-{
-    if (hDC == NULL)
-        hDC = GetDC(QGuiApplication::topLevelWindows().at(screen)->winId());
-    return GetDeviceCaps(hDC, HORZSIZE);
-}
-
 QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
 {
     Q_UNUSED(screen)
     return QDisplayInfo::BacklightUnknown;
-}
-
-QDisplayInfo::Orientation QDisplayInfoPrivate::orientation(int screen)
-{
-    Q_UNUSED(screen)
-    return QDisplayInfo::OrientationUnknown;
 }
 
 QT_END_NAMESPACE

@@ -42,6 +42,8 @@
 #include <qdisplayinfo.h>
 
 #include <QtGui/qguiapplication.h>
+#include <QtGui/qscreen.h>
+#include <QtGui/qplatformscreen_qpa.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qdisplayinfo_linux_p.h"
@@ -62,7 +64,7 @@ public:
     int physicalHeight(int) { return -1; }
     int physicalWidth(int) { return -1; }
     QDisplayInfo::BacklightState backlightState(int) { return QDisplayInfo::BacklightUnknown; }
-    QDisplayInfo::Orientation orientation(int) { return QDisplayInfo::OrientationUnknown; }
+    Qt::ScreenOrientation orientation(int) { return Qt::UnknownOrientation; }
 };
 QT_END_NAMESPACE
 #endif
@@ -86,24 +88,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QDisplayInfo::Orientation
-    This enum describes the orientation of the window system. Note that if the UI of an application
-    is rotated through methods other than talking with the window system, its orientation can't be
-    correctly reported by QDisplayInfo.
-
-    For orientation of the display, please refer to QOrientationSensor and QOrientationReading in
-    the QtSensors module.
-
-    \value OrientationUnknown   The orientation is unknown.
-    \value Landscape            The orientation is landscape, i.e. the width is bigger than the height.
-    \value Portrait             The orientation is portrait, i.e. the height is bigger than the width.
-    \value InvertedLandscape    Landscape, but inverted.
-    \value InvertedPortrait     Portrait, but inverted.
-*/
-
-
-/*!
-    \fn void QDisplayInfo::orientationChanged(int screen, QDisplayInfo::DisplayOrientation orientation)
+    \fn void QDisplayInfo::orientationChanged(int screen, Qt::ScreenOrientation orientation)
 
     This signal is emitted when the orientation of the \a screen has changed to \a orientation.
 */
@@ -136,15 +121,23 @@ int QDisplayInfo::brightness(int screen) const
     return d_ptr->brightness(screen);
 }
 
+static inline const QScreen *screenAt(int number)
+{
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    if (number >= 0 && number < screens.size())
+        return screens.at(number);
+    return 0;
+}
+
 /*!
     Returns the color depth of the given \a screen, in bits per pixel. -1 is returned if not
     available or on error.
 */
 int QDisplayInfo::colorDepth(int screen) const
 {
-    if (screen < 0 || screen >= QGuiApplication::screens().size())
-        return -1;
-    return d_ptr->colorDepth(screen);
+    if (const QScreen *qScreen = screenAt(screen))
+        return qScreen->depth();
+    return -1;
 }
 
 /*!
@@ -164,9 +157,9 @@ int QDisplayInfo::contrast(int screen) const
 */
 int QDisplayInfo::dpiX(int screen) const
 {
-    if (screen < 0 || screen >= QGuiApplication::screens().size())
-        return -1;
-    return d_ptr->dpiX(screen);
+    if (const QScreen *qScreen = screenAt(screen))
+        return qRound(qScreen->logicalDotsPerInchX());
+    return -1;
 }
 
 /*!
@@ -175,9 +168,9 @@ int QDisplayInfo::dpiX(int screen) const
 */
 int QDisplayInfo::dpiY(int screen) const
 {
-    if (screen < 0 || screen >= QGuiApplication::screens().size())
-        return -1;
-    return d_ptr->dpiY(screen);
+    if (const QScreen *qScreen = screenAt(screen))
+        return qRound(qScreen->logicalDotsPerInchY());
+    return -1;
 }
 
 /*!
@@ -186,9 +179,9 @@ int QDisplayInfo::dpiY(int screen) const
 */
 int QDisplayInfo::physicalHeight(int screen) const
 {
-    if (screen < 0 || screen >= QGuiApplication::screens().size())
-        return -1;
-    return d_ptr->physicalHeight(screen);
+    if (const QScreen *qScreen = screenAt(screen))
+        return qRound(qScreen->physicalSize().height());
+    return -1;
 }
 
 /*!
@@ -197,9 +190,9 @@ int QDisplayInfo::physicalHeight(int screen) const
 */
 int QDisplayInfo::physicalWidth(int screen) const
 {
-    if (screen < 0 || screen >= QGuiApplication::screens().size())
-        return -1;
-    return d_ptr->physicalWidth(screen);
+    if (const QScreen *qScreen = screenAt(screen))
+        return qRound(qScreen->physicalSize().width());
+    return -1;
 }
 
 /*!
@@ -215,9 +208,11 @@ QDisplayInfo::BacklightState QDisplayInfo::backlightState(int screen) const
 /*!
     Returns the orientation of the given \a screen.
 */
-QDisplayInfo::Orientation QDisplayInfo::orientation(int screen) const
+Qt::ScreenOrientation QDisplayInfo::orientation(int screen) const
 {
-    return d_ptr->orientation(screen);
+    if (const QScreen *qScreen = screenAt(screen))
+        return qScreen->currentOrientation();
+    return Qt::UnknownOrientation;
 }
 
 /*!

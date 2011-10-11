@@ -55,8 +55,6 @@
 
 #include <qdisplayinfo.h>
 
-#include <windows.h>
-
 QT_BEGIN_NAMESPACE
 
 class QDisplayInfoPrivate
@@ -66,20 +64,12 @@ public:
     ~QDisplayInfoPrivate();
 
     int brightness(int screen);
-    int colorDepth(int screen);
     int contrast(int screen);
-    int dpiX(int screen);
-    int dpiY(int screen);
-    int physicalHeight(int screen);
-    int physicalWidth(int screen);
     QDisplayInfo::BacklightState backlightState(int screen);
-    QDisplayInfo::Orientation orientation(int screen);
 
 private:
     QDisplayInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDisplayInfo)
-
-    HDC hDC;
 };
 
 QT_END_NAMESPACE

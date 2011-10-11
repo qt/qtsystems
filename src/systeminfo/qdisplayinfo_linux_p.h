@@ -55,8 +55,6 @@
 
 #include <qdisplayinfo.h>
 
-#include <QtCore/qmap.h>
-
 QT_BEGIN_NAMESPACE
 
 class QDisplayInfoPrivate : public QObject
@@ -67,33 +65,20 @@ public:
     QDisplayInfoPrivate(QDisplayInfo *parent);
 
     int brightness(int screen);
-    int colorDepth(int screen);
     int contrast(int screen);
-    int dpiX(int screen);
-    int dpiY(int screen);
-    int physicalHeight(int screen);
-    int physicalWidth(int screen);
     QDisplayInfo::BacklightState backlightState(int screen);
-    QDisplayInfo::Orientation orientation(int screen);
 
 Q_SIGNALS:
-    void orientationChanged(int screen, QDisplayInfo::Orientation orientation);
+    void orientationChanged(int screen, Qt::ScreenOrientation orientation);
 
 protected:
     void connectNotify(const char *signal);
     void disconnectNotify(const char *signal);
 
-private Q_SLOTS:
-    void onDesktopWidgetResized(int screen);
 
 private:
     QDisplayInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDisplayInfo)
-
-    QDisplayInfo::Orientation getOrientation(int screen);
-
-    bool watchOrientation;
-    QMap<int, QDisplayInfo::Orientation> currentOrientation;
 };
 
 QT_END_NAMESPACE

@@ -55,7 +55,6 @@ class Q_SYSTEMINFO_EXPORT QDisplayInfo : public QObject
     Q_OBJECT
 
     Q_ENUMS(BacklightState)
-    Q_ENUMS(Orientation)
 
 public:
     enum BacklightState {
@@ -63,14 +62,6 @@ public:
         BacklightOff,
         BacklightDimmed,
         BacklightOn
-    };
-
-    enum Orientation {
-        OrientationUnknown = 0,
-        Landscape,
-        Portrait,
-        InvertedLandscape,
-        InvertedPortrait
     };
 
     QDisplayInfo(QObject *parent = 0);
@@ -84,10 +75,10 @@ public:
     Q_INVOKABLE int physicalHeight(int screen) const;
     Q_INVOKABLE int physicalWidth(int screen) const;
     Q_INVOKABLE QDisplayInfo::BacklightState backlightState(int screen) const;
-    Q_INVOKABLE QDisplayInfo::Orientation orientation(int screen) const;
+    Q_INVOKABLE Qt::ScreenOrientation orientation(int screen) const;
 
 Q_SIGNALS:
-    void orientationChanged(int screen, QDisplayInfo::Orientation orientation);
+    void orientationChanged(int screen, Qt::ScreenOrientation orientation);
 
 protected:
     void connectNotify(const char *signal);
