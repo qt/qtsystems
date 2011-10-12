@@ -40,7 +40,15 @@
 ****************************************************************************/
 
 #include "qdeviceinfo_linux_p.h"
-#include "qscreensaver_linux_p.h"
+
+#if defined(Q_OS_LINUX)
+#  if !defined(QT_NO_JSONDB)
+#    include "qjsondbwrapper_p.h"
+#    include "qscreensaver_jsondb_p.h"
+#  else
+#    include "qscreensaver_linux_p.h"
+#  endif //QT_NO_JSONDB
+#endif
 
 #if !defined(QT_NO_OFONO)
 #include "qofonowrapper_p.h"
@@ -64,6 +72,9 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     , q_ptr(parent)
     , watchThermalState(false)
     , timer(0)
+#if !defined(QT_NO_JSONDB)
+    , jsondbWrapper(0)
+#endif // QT_NO_JSONDB
 #if !defined(QT_NO_OFONO)
     , ofonoWrapper(0)
 #endif // QT_NO_OFONO
@@ -287,10 +298,17 @@ QString QDeviceInfoPrivate::productName()
 QString QDeviceInfoPrivate::uniqueDeviceID()
 {
     if (uniqueDeviceIDBuffer.isEmpty()) {
+#if !defined(QT_NO_JSONDB)
+        if (!jsondbWrapper)
+            jsondbWrapper = new QJsonDbWrapper(this);
+        uniqueDeviceIDBuffer = jsondbWrapper->getUniqueDeviceID();
+#else
         QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/product_uuid"));
         if (file.open(QIODevice::ReadOnly))
-            modelBuffer = QString::fromAscii(file.readAll().simplified().data());
+            uniqueDeviceIDBuffer = QString::fromAscii(file.readAll().simplified().data());
+#endif // QT_NO_JSONDB
     }
+
     return uniqueDeviceIDBuffer;
 }
 

@@ -50,75 +50,46 @@
 // We mean it.
 //
 
-#ifndef QDEVICEINFO_LINUX_P_H
-#define QDEVICEINFO_LINUX_P_H
+#ifndef QJSONDBWRAPPER_P_H
+#define QJSONDBWRAPPER_P_H
 
-#include <qdeviceinfo.h>
+#include <QObject>
+#include <QMap>
+
+#include <jsondb-global.h>
+
+Q_ADDON_JSONDB_BEGIN_NAMESPACE
+class JsonDbClient;
+Q_ADDON_JSONDB_END_NAMESPACE
+Q_USE_JSONDB_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-class QTimer;
-
-#if !defined(QT_NO_JSONDB)
-class QJsonDbWrapper;
-#endif // QT_NO_JSONDB
-
-#if !defined(QT_NO_OFONO)
-class QOfonoWrapper;
-#endif // QT_NO_OFONO
-
-class QDeviceInfoPrivate : public QObject
+class QJsonDbWrapper : public QObject
 {
     Q_OBJECT
-
 public:
-    QDeviceInfoPrivate(QDeviceInfo *parent);
+    QJsonDbWrapper(QObject *parent = 0);
+    virtual ~QJsonDbWrapper();
 
-    bool hasFeature(QDeviceInfo::Feature feature);
-    int imeiCount();
-    QDeviceInfo::LockTypeFlags activatedLocks();
-    QDeviceInfo::LockTypeFlags enabledLocks();
-    QDeviceInfo::ThermalState thermalState();
-    QString imei(int interface);
-    QString manufacturer();
-    QString model();
-    QString productName();
-    QString uniqueDeviceID();
-    QString version(QDeviceInfo::Version type);
+    // DeviceInfo Interface
+    QString getUniqueDeviceID();
 
 Q_SIGNALS:
-    void thermalStateChanged(QDeviceInfo::ThermalState state);
-
-protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void responseAvailable();
 
 private Q_SLOTS:
-    void onTimeout();
+    void onError(int, int, QString);
+    void onResponse(int reqId, const QVariant& response);
+    void onTimerExpired();
 
 private:
-    QDeviceInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QDeviceInfo)
+    QVariant getProperty(const QString objectType, const QString property);
 
-    bool watchThermalState;
-    QDeviceInfo::ThermalState currentThermalState;
-    QString manufacturerBuffer;
-    QString modelBuffer;
-    QString productNameBuffer;
-    QString uniqueDeviceIDBuffer;
-    QString versionBuffer[2];
-    QTimer *timer;
-
-    QDeviceInfo::ThermalState getThermalState();
-
-#if !defined(QT_NO_JSONDB)
-    QJsonDbWrapper *jsondbWrapper;
-#endif // QT_NO_JSONDB
-#if !defined(QT_NO_OFONO)
-    QOfonoWrapper *ofonoWrapper;
-#endif // QT_NO_OFONO
+    JsonDbClient *jsonclient;
+    QMap<int,QVariant> responses;
 };
 
 QT_END_NAMESPACE
 
-#endif // QDEVICEINFO_LINUX_P_H
+#endif // QJSONDBWRAPPER_P_H

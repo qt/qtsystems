@@ -41,10 +41,12 @@
 
 #include <qscreensaver.h>
 
-#if defined(QT_JSONDB)
-#  include "qscreensaver_jsondb_p.h"
-#elif defined(Q_OS_LINUX)
-#  include "qscreensaver_linux_p.h"
+#if defined(Q_OS_LINUX)
+#  if !defined(QT_NO_JSONDB)
+#    include "qscreensaver_jsondb_p.h"
+#  else
+#    include "qscreensaver_linux_p.h"
+#  endif // QT_NO_JSONDB
 #elif defined(Q_OS_WIN)
 #  include "qscreensaver_win_p.h"
 #else

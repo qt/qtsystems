@@ -87,14 +87,17 @@ linux-* {
         PRIVATE_HEADERS += qscreensaver_linux_p.h
         SOURCES += qscreensaver_linux.cpp
 
+        DEFINES += QT_NO_JSONDB
     } else {
-        PRIVATE_HEADERS += qscreensaver_jsondb_p.h
-        SOURCES += qscreensaver_jsondb.cpp
+        PRIVATE_HEADERS += qjsondbwrapper_p.h \
+                           qscreensaver_jsondb_p.h
 
-        DEFINES += QT_JSONDB  QT_ADDON_JSONDB_LIB
+        SOURCES += qjsondbwrapper.cpp \
+                   qscreensaver_jsondb.cpp
+
+        QT += jsondb
         PKGCONFIG += mtcore
         LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
-        QT += jsondb-private
     }
 
     contains(QT_CONFIG, dbus): {

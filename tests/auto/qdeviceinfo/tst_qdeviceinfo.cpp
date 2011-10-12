@@ -127,7 +127,7 @@ void tst_QDeviceInfo::tst_productName()
 
 void tst_QDeviceInfo::tst_uniqueDeviceID()
 {
-    QRegExp uniqueId("\\d*");
+    QRegExp uniqueId("[A-Fa-f\\d-]*");
     QVERIFY(uniqueId.exactMatch(deviceInfo->uniqueDeviceID()));
 }
 
