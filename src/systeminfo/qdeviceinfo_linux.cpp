@@ -227,9 +227,8 @@ int QDeviceInfoPrivate::imeiCount()
             ofonoWrapper = new QOfonoWrapper(this);
         return ofonoWrapper->allModems().size();
     }
-#else
-    return -1;
 #endif
+    return -1;
 }
 
 QString QDeviceInfoPrivate::imei(int interface)
@@ -239,7 +238,7 @@ QString QDeviceInfoPrivate::imei(int interface)
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
         QStringList modems = ofonoWrapper->allModems();
-        if (interface < modems.size()) {
+        if (interface >= 0 && interface < modems.size()) {
             QString modem = ofonoWrapper->allModems().at(interface);
             if (!modem.isEmpty())
                 return ofonoWrapper->imei(modem);
