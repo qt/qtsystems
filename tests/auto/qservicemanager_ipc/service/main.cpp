@@ -386,6 +386,16 @@ public slots:
         m_hash = qHash(output);
     }
 
+    void testSlotWithData(QByteArray data)
+    {
+        m_data = data;
+    }
+
+    QByteArray testInvoableWithReturnData()
+    {
+        return m_data;
+    }
+
     void testIpcFailure() {
       qApp->exit(0); // exit to show failure
     }
@@ -395,6 +405,7 @@ private:
     Priority m_priority;
     ServiceFlags m_flags;
     uint m_hash;
+    QByteArray m_data;
 };
 
 class FailureTestServiceCreation : public QObject

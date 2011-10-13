@@ -92,7 +92,9 @@ public:
     LocalSocketEndPoint(QLocalSocket* s, QServiceSecurity *sec, QObject* parent = 0)
         : QServiceIpcEndPoint(parent),
           socket(s),
-          securityService(sec)
+          securityService(sec),
+          pending_bytes(0)
+
     {
         Q_ASSERT(socket);
         socket->setParent(this);
@@ -100,6 +102,8 @@ public:
         connect(s, SIGNAL(readyRead()), this, SLOT(readIncomingSecurity()));
         connect(s, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
         connect(s, SIGNAL(disconnected()), this, SLOT(ipcfault()));
+        connect(s, SIGNAL(error(QLocalSocket::LocalSocketError)),
+                this, SLOT(socketError(QLocalSocket::LocalSocketError)));
 
 #if defined(QT_ADDON_JSONDB_LIB) && defined(QT_WAYLAND_PRESENT)
         if (sec->getSessionType() == QServiceSecurity::Client) {
@@ -134,19 +138,57 @@ protected:
         QDataStream out(&block, QIODevice::WriteOnly);
         out.setVersion(QDataStream::Qt_4_6);
         out << package;
-        socket->write(block);
+
+        QByteArray sizeblock;
+        QDataStream outsize(&sizeblock, QIODevice::WriteOnly);
+        outsize.setVersion(QDataStream::Qt_4_6);
+
+        quint32 size = block.length();
+        outsize << size;
+
+        int bytes = socket->write(sizeblock);
+        if (bytes != sizeof(quint32)) {
+            qWarning() << "Failed to write length";
+            socket->close();
+            return;
+        }
+        bytes = socket->write(block);
+        if (bytes != block.length()){
+            qWarning() << "Can't send package, socket error" << block.length() << bytes;
+            socket->close();
+            return;
+        }
     }
 
 protected slots:
     void readIncoming()
     {
-        QDataStream in(socket);
-        in.setVersion(QDataStream::Qt_4_6);
-
         while (socket->bytesAvailable()) {
-            QServicePackage package;
-            in >> package;
-            incoming.enqueue(package);
+
+            if (pending_bytes == 0) { /* New packet */
+                QDataStream in_size(socket);
+                quint32 size;
+                in_size >> pending_bytes;
+                pending_buf.clear();
+            }
+
+            if (pending_bytes) { /* read any new data and add to buffer */
+                int readsize = pending_bytes;
+                if (socket->bytesAvailable() < readsize) {
+                    readsize = socket->bytesAvailable();
+                }
+                pending_buf.append(socket->read(readsize));
+                pending_bytes -= readsize;
+            }
+
+            if (pending_bytes == 0 && !pending_buf.isEmpty()) {
+                QDataStream in(pending_buf);
+                in.setVersion(QDataStream::Qt_4_6);
+                QServicePackage package;
+                in >> package;
+                incoming.enqueue(package);
+                pending_buf.clear();
+            }
         }
 
         emit readyRead();
@@ -179,6 +221,11 @@ protected slots:
         }
     }
 
+    void socketError(QLocalSocket::LocalSocketError err)
+    {
+//        qWarning() << "Socket error!" << err << socket->errorString();
+    }
+
 protected slots:
     void ipcfault()
     {
@@ -189,6 +236,8 @@ private:
     QLocalSocket* socket;
     QServiceSecurity *securityService;
     QRemoteServiceRegisterLocalSocketPrivate *serviceRegPriv;
+    QByteArray pending_buf;
+    quint32 pending_bytes;
 };
 
 #ifdef QT_ADDON_JSONDB_LIB

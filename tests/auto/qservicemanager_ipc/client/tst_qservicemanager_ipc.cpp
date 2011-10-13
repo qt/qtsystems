@@ -122,6 +122,9 @@ private slots:
     void verifyUniqueEnumerator();
     void verifyUniqueEnumerator_data();
 
+    void verifyLargeDataTransfer();
+    void verifyLargeDataTransfer_data();
+
     void sharedTestService();
     void uniqueTestService();
 
@@ -561,8 +564,8 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
     QVERIFY(mo->superClass());
     QCOMPARE(mo->superClass()->className(), "QObject");
     // TODO adding the ipc failure signal seems to break these
-    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 22); // 17+1 added signal for error signal added by library
-    QCOMPARE(mo->methodCount(), 26); //21 meta functions available + 1 signal
+    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 24); // 23+1 added signal for error signal added by library
+    QCOMPARE(mo->methodCount(), 28); //21 meta functions available + 1 signal
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
@@ -1065,6 +1068,36 @@ void tst_QServiceManager_IPC::verifyServiceClass()
     QVERIFY2(registerObject->quitOnLastInstanceClosed() == true, "must transition back to true");
 
     delete registerObject;
+}
+
+void tst_QServiceManager_IPC::verifyLargeDataTransfer()
+{
+    QFETCH(QByteArray, data);
+
+    QMetaObject::invokeMethod(serviceUnique, "testSlotWithData",
+                              Q_ARG(QByteArray, data));
+    QByteArray ret_data;
+    QMetaObject::invokeMethod(serviceUnique, "testInvoableWithReturnData", Q_RETURN_ARG(QByteArray, ret_data));
+
+    QVERIFY2(data.length() == ret_data.length(), "Returned data from the service is not the same length as data sent");
+    QVERIFY2(data == ret_data, "Returned data from service does not match");
+}
+
+void tst_QServiceManager_IPC::verifyLargeDataTransfer_data()
+{
+    QTest::addColumn<QByteArray>("data");
+
+    QTest::newRow("Trivial") << QByteArray("c");
+    QTest::newRow("1k") << QByteArray(1024, 'A');
+    QTest::newRow("2k") << QByteArray(2048, 'A');
+    QTest::newRow("4k") << QByteArray(4096, 'A');
+    QTest::newRow("8k") << QByteArray(8192, 'A');
+    QTest::newRow("16k") << QByteArray(16384, 'A');
+    QTest::newRow("32k") << QByteArray(32768, 'A');
+    QTest::newRow("64k") << QByteArray(65536, 'A');
+    QTest::newRow("128k") << QByteArray(131072, 'A');
+    QTest::newRow("1 megabyte") << QByteArray(1048576, 'A');
+    QTest::newRow("Free mem") << QByteArray("");
 }
 
 void tst_QServiceManager_IPC::testIpcFailure()
