@@ -14,10 +14,9 @@ load(qt_module_config)
 
 jsondb|contains(config_test_jsondb, yes) {
     DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
-    PKGCONFIG += mtcore
+    PKGCONFIG += mtcore QtAddOnJsonDb
     LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
-    QT += jsondb-private
-
+    QT += jsondb jsondb-private
 }
 
 !no_wayland: contains(config_test_wayland, yes) {
