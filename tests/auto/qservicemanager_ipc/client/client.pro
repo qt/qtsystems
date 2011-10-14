@@ -1,6 +1,7 @@
-load(qttest_p4)
+TARGET = tst_client
+CONFIG += testcase
 
-QT += serviceframework
+QT += serviceframework testlib
 
 CONFIG -= app_bundle
 
