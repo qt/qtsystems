@@ -48,11 +48,9 @@
 #include <QCoreApplication>
 
 #ifdef QT_ADDON_JSONDB_LIB
-#include <private/jsondb-connection_p.h>
-#include <private/jsondb-strings_p.h>
-#include <mtcore/jsondb-constants.h>
 #include <jsondb-client.h>
 #include <jsondb-global.h>
+#include <private/jsondb-strings_p.h>
 #include <QSignalSpy>
 
 const QLatin1String kQuery("query");

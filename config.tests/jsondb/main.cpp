@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <mtcore/jsondb-constants.h>
+#include <jsondb-client.h>
 
 int main()
 {
