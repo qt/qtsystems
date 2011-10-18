@@ -318,19 +318,19 @@ void QOfonoWrapper::disconnectNotify(const char *signal)
 void QOfonoWrapper::onOfonoModemAdded(const QDBusObjectPath &path)
 {
     allModemPaths.append(path.path());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::GsmMode, allModemPaths.size());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::CdmaMode, allModemPaths.size());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, allModemPaths.size());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::LteMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::GsmMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::CdmaMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::LteMode, allModemPaths.size());
 }
 
 void QOfonoWrapper::onOfonoModemRemoved(const QDBusObjectPath &path)
 {
     allModemPaths.removeOne(path.path());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::GsmMode, allModemPaths.size());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::CdmaMode, allModemPaths.size());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, allModemPaths.size());
-    Q_EMIT networkInterfaceCountChanged(QNetworkInfo::LteMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::GsmMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::CdmaMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, allModemPaths.size());
+    emit networkInterfaceCountChanged(QNetworkInfo::LteMode, allModemPaths.size());
 }
 
 void QOfonoWrapper::onOfonoPropertyChanged(const QString &property, const QDBusVariant &value)
@@ -341,21 +341,21 @@ void QOfonoWrapper::onOfonoPropertyChanged(const QString &property, const QDBusV
     int interface = allModems().indexOf(message().path());
 
     if (property == QString::fromUtf8("MobileCountryCode"))
-        Q_EMIT currentMobileCountryCodeChanged(interface, value.variant().toString());
+        emit currentMobileCountryCodeChanged(interface, value.variant().toString());
     else if (property == QString::fromUtf8("MobileNetworkCode"))
-        Q_EMIT currentMobileNetworkCodeChanged(interface, value.variant().toString());
+        emit currentMobileNetworkCodeChanged(interface, value.variant().toString());
     else if (property == QString::fromUtf8("CellId"))
-        Q_EMIT cellIdChanged(interface, value.variant().toString());
+        emit cellIdChanged(interface, value.variant().toString());
     else if (property == QString::fromUtf8("Technology"))
-        Q_EMIT currentCellDataTechnologyChanged(interface, technologyStringToEnum(value.variant().toString()));
+        emit currentCellDataTechnologyChanged(interface, technologyStringToEnum(value.variant().toString()));
     else if (property == QString::fromUtf8("LocationAreaCode"))
-        Q_EMIT locationAreaCodeChanged(interface, value.variant().toString());
+        emit locationAreaCodeChanged(interface, value.variant().toString());
     else if (property == QString::fromUtf8("Name"))
-        Q_EMIT networkNameChanged(technologyToMode(currentTechnology(message().path())), interface, value.variant().toString());
+        emit networkNameChanged(technologyToMode(currentTechnology(message().path())), interface, value.variant().toString());
     else if (property == QString::fromUtf8("Strength"))
-        Q_EMIT networkSignalStrengthChanged(technologyToMode(currentTechnology(message().path())), interface, value.variant().toInt());
+        emit networkSignalStrengthChanged(technologyToMode(currentTechnology(message().path())), interface, value.variant().toInt());
     else if (property == QString::fromUtf8("Status"))
-        Q_EMIT networkStatusChanged(technologyToMode(currentTechnology(message().path())), interface, statusStringToEnum(value.variant().toString()));
+        emit networkStatusChanged(technologyToMode(currentTechnology(message().path())), interface, statusStringToEnum(value.variant().toString()));
 }
 
 QNetworkInfo::CellDataTechnology QOfonoWrapper::technologyStringToEnum(const QString &technology)

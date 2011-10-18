@@ -199,7 +199,7 @@ void QDeclarativeValueSpacePublisher::onInterestChanged(const QString &path, boo
     Q_UNUSED(path)
 
     hasSubscriber = interested;
-    Q_EMIT subscribersChanged();
+    emit subscribersChanged();
 }
 
 QT_END_NAMESPACE

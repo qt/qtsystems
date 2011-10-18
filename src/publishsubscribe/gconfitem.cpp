@@ -371,7 +371,7 @@ void GConfItem::set(const QVariant &val)
                 g_error_free(error);
             } else if (priv->value != val) {
                 priv->value = val;
-                Q_EMIT valueChanged();
+                emit valueChanged();
             }
 
         } else {
@@ -407,7 +407,7 @@ void GConfItem::recursiveUnset()
             g_error_free(error);
         } else {
             priv->value = QVariant();
-            Q_EMIT valueChanged();
+            emit valueChanged();
         }
     }
 }
@@ -470,7 +470,7 @@ void GConfItem::update_value(bool emit_signal, const QString &key, const QVarian
     QVariant new_value;
 
     if (emit_signal)
-        Q_EMIT subtreeChanged(key, value);
+        emit subtreeChanged(key, value);
 
     withClient(client) {
         GError *error = NULL;
@@ -491,7 +491,7 @@ void GConfItem::update_value(bool emit_signal, const QString &key, const QVarian
     if (new_value != priv->value) {
         priv->value = new_value;
         if (emit_signal)
-            Q_EMIT valueChanged();
+            emit valueChanged();
     }
 }
 

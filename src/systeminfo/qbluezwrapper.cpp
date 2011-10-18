@@ -153,7 +153,7 @@ void QBluezWrapper::onBluezPropertyChanged(const QString &property, const QDBusV
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
                 QDBusMessage::createMethodCall(BLUEZ_SERVICE, message().path(), BLUEZ_DEVICE_INTERFACE, GET_PROPERTIES));
     if (reply.isValid() && reply.value().value(QString::fromAscii("Class")).toInt() == BLUEZ_INPUT_DEVICE_CLASS)
-        Q_EMIT wirelessKeyboardConnected(value.variant().toBool());
+        emit wirelessKeyboardConnected(value.variant().toBool());
 }
 
 QStringList QBluezWrapper::allDevices()

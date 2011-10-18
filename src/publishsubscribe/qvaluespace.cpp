@@ -271,7 +271,7 @@ QT_BEGIN_NAMESPACE
 */
 void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publisher, const QString &path, bool interested)
 {
-    Q_EMIT publisher->interestChanged(path, interested);
+    emit publisher->interestChanged(path, interested);
 }
 
 /*!

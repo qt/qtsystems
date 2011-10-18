@@ -239,7 +239,7 @@ void QBatteryInfoPrivate::onTimeout()
         value = getBatteryCount();
         if (batteryCounts != value) {
             batteryCounts = value;
-            Q_EMIT batteryCountChanged(value);
+            emit batteryCountChanged(value);
         }
     }
 
@@ -248,7 +248,7 @@ void QBatteryInfoPrivate::onTimeout()
             value = getCurrentFlow(i);
             if (currentFlows.value(i) != value) {
                 currentFlows[i] = value;
-                Q_EMIT currentFlowChanged(i, value);
+                emit currentFlowChanged(i, value);
             }
         }
 
@@ -256,7 +256,7 @@ void QBatteryInfoPrivate::onTimeout()
             value = getVoltage(i);
             if (voltages.value(i) != value) {
                 voltages[i] = value;
-                Q_EMIT voltageChanged(i, value);
+                emit voltageChanged(i, value);
             }
         }
 
@@ -264,7 +264,7 @@ void QBatteryInfoPrivate::onTimeout()
             value = getRemainingCapacity(i);
             if (remainingCapacities.value(i) != value) {
                 remainingCapacities[i] = value;
-                Q_EMIT remainingCapacityChanged(i, value);
+                emit remainingCapacityChanged(i, value);
             }
         }
 
@@ -272,7 +272,7 @@ void QBatteryInfoPrivate::onTimeout()
             value = getRemainingChargingTime(i);
             if (remainingChargingTimes.value(i) != value) {
                 remainingChargingTimes[i] = value;
-                Q_EMIT remainingChargingTimeChanged(i, value);
+                emit remainingChargingTimeChanged(i, value);
             }
         }
 
@@ -280,7 +280,7 @@ void QBatteryInfoPrivate::onTimeout()
             QBatteryInfo::ChargerType charger = getChargerType();
             if (currentChargerType != charger) {
                 currentChargerType = charger;
-                Q_EMIT chargerTypeChanged(charger);
+                emit chargerTypeChanged(charger);
             }
         }
 
@@ -288,7 +288,7 @@ void QBatteryInfoPrivate::onTimeout()
             QBatteryInfo::ChargingState state = getChargingState(i);
             if (chargingStates.value(i) != state) {
                 chargingStates[i] = state;
-                Q_EMIT chargingStateChanged(i, state);
+                emit chargingStateChanged(i, state);
             }
         }
     }

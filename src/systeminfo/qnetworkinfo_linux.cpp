@@ -533,14 +533,14 @@ void QNetworkInfoPrivate::onUdevChanged()
                 ++networkInterfaceCounts[QNetworkInfo::EthernetMode];
             else if (0 == strcmp(udev_device_get_action(udevDevice), "remove"))
                 --networkInterfaceCounts[QNetworkInfo::EthernetMode];
-            Q_EMIT networkInterfaceCountChanged(QNetworkInfo::EthernetMode,
+            emit networkInterfaceCountChanged(QNetworkInfo::EthernetMode,
                                                 networkInterfaceCounts[QNetworkInfo::EthernetMode]);
         } else if (sysname.startsWith(QString::fromUtf8("wlan"))) {
             if (0 == strcmp(udev_device_get_action(udevDevice), "add"))
                 ++networkInterfaceCounts[QNetworkInfo::WlanMode];
             else if (0 == strcmp(udev_device_get_action(udevDevice), "remove"))
                 --networkInterfaceCounts[QNetworkInfo::WlanMode];
-            Q_EMIT networkInterfaceCountChanged(QNetworkInfo::WlanMode,
+            emit networkInterfaceCountChanged(QNetworkInfo::WlanMode,
                                                 networkInterfaceCounts[QNetworkInfo::WlanMode]);
         }
     }
@@ -559,7 +559,7 @@ void QNetworkInfoPrivate::onTimeout()
             int value = getNetworkInterfaceCount(mode);
             if (networkInterfaceCounts.value(mode) != value) {
                 networkInterfaceCounts[mode] = value;
-                Q_EMIT networkInterfaceCountChanged(mode, value);
+                emit networkInterfaceCountChanged(mode, value);
             }
         }
     }
@@ -569,7 +569,7 @@ void QNetworkInfoPrivate::onTimeout()
         QNetworkInfo::NetworkMode value = getCurrentNetworkMode();
         if (currentMode != value) {
             currentMode = value;
-            Q_EMIT currentNetworkModeChanged(value);
+            emit currentNetworkModeChanged(value);
         }
     }
 
@@ -586,7 +586,7 @@ void QNetworkInfoPrivate::onTimeout()
                 QPair<QNetworkInfo::NetworkMode, int> key(mode, i);
                 if (networkSignalStrengths.value(key) != value) {
                     networkSignalStrengths[key] = value;
-                    Q_EMIT networkSignalStrengthChanged(mode, i, value);
+                    emit networkSignalStrengthChanged(mode, i, value);
                 }
             }
 
@@ -595,7 +595,7 @@ void QNetworkInfoPrivate::onTimeout()
                 QPair<QNetworkInfo::NetworkMode, int> key(mode, i);
                 if (networkStatuses.value(key) != value) {
                     networkStatuses[key] = value;
-                    Q_EMIT networkStatusChanged(mode, i, value);
+                    emit networkStatusChanged(mode, i, value);
                 }
             }
 
@@ -604,7 +604,7 @@ void QNetworkInfoPrivate::onTimeout()
                 QPair<QNetworkInfo::NetworkMode, int> key(mode, i);
                 if (networkNames.value(key) != value) {
                     networkNames[key] = value;
-                    Q_EMIT networkNameChanged(mode, i, value);
+                    emit networkNameChanged(mode, i, value);
                 }
             }
         }

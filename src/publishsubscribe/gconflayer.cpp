@@ -410,7 +410,7 @@ void GConfLayer::notifyChanged(const QString &key, const QVariant & /*value*/)
 {
     foreach (GConfHandle *handle, m_monitoringHandles.values()) {
         if (key.startsWith(handle->path))
-            Q_EMIT handleChanged(Handle(handle));
+            emit handleChanged(Handle(handle));
     }
 }
 

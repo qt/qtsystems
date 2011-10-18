@@ -310,12 +310,12 @@ void QStorageInfoPrivate::onInotifyActivated()
 
         foreach (const QString &drive, oldLogicalDrives) {
             if (!logicalDrives.contains(drive))
-                Q_EMIT logicalDriveChanged(drive, false);
+                emit logicalDriveChanged(drive, false);
         }
 
         foreach (const QString &drive, logicalDrives) {
             if (!oldLogicalDrives.contains(drive))
-                Q_EMIT logicalDriveChanged(drive, true);
+                emit logicalDriveChanged(drive, true);
         }
     }
 }

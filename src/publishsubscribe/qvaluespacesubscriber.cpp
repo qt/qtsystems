@@ -116,7 +116,7 @@ void QValueSpaceSubscriberPrivateProxy::handleChanged(quintptr handle)
 
     for (int i = 0; i < readers.count(); ++i) {
         if (readers.at(i).first == layer && readers.at(i).second == handle) {
-            Q_EMIT changed();
+            emit changed();
             return;
         }
     }

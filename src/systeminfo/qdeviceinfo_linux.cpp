@@ -369,7 +369,7 @@ void QDeviceInfoPrivate::onTimeout()
         QDeviceInfo::ThermalState newState = getThermalState();
         if (newState != currentThermalState) {
             currentThermalState = newState;
-            Q_EMIT thermalStateChanged(currentThermalState);
+            emit thermalStateChanged(currentThermalState);
         }
     }
 }
