@@ -55,7 +55,7 @@ QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     , q_ptr(parent)
     , notionclient(new NotionClient())
     , timer(0)
-    , isScreenSaverEnabled(false)
+    , isScreenSaverEnabled(true)
 {
 }
 
@@ -67,15 +67,12 @@ QScreenSaverPrivate::~QScreenSaverPrivate()
 
 bool QScreenSaverPrivate::screenSaverEnabled()
 {
-    if (isScreenSaverEnabled)
-        return true;
-    else
-        return false;
+    return isScreenSaverEnabled;
 }
 
 void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-    if (enabled) {
+    if (!enabled) {
         notionclient->mediaPlaying(true, NOTION_DURATION);
         if (timer == 0) {
             timer = new QTimer(this);
@@ -85,7 +82,7 @@ void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
         if (!timer->isActive()) {
             timer->start();
         }
-        isScreenSaverEnabled = true;
+        isScreenSaverEnabled = false;
 
     } else {
         if (timer != 0) {
@@ -96,7 +93,7 @@ void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
             timer = 0;
         }
         notionclient->mediaPlaying(false);
-        isScreenSaverEnabled = false;
+        isScreenSaverEnabled = true;
     }
 }
 
