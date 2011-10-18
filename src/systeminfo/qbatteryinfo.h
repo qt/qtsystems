@@ -86,7 +86,7 @@ public:
     QBatteryInfo(QObject *parent = 0);
     virtual ~QBatteryInfo();
 
-    Q_INVOKABLE int batteryCount() const;
+    int batteryCount() const;
     Q_INVOKABLE int currentFlow(int battery) const;
     Q_INVOKABLE int maximumCapacity(int battery) const;
     Q_INVOKABLE int remainingCapacity(int battery) const;
