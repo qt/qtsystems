@@ -6,7 +6,7 @@ CONFIG += parallel_test
 
 DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"
 
-contains(config_test_jsondb, yes) {
+contains(config_test_jsondb, yes)|jsondb {
     INCLUDEPATH += $$[QT_INSTALL_PREFIX]/opt/mt/include /opt/mt/include
     LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
     LIBS += -L/opt/mt/lib -lmtcore -Wl,-rpath,/opt/mt/lib

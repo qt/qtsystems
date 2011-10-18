@@ -7,7 +7,7 @@ mac {
 
 DESTDIR = ../client  #service must be in same dir as client binary
 
-contains(jsondb_enabled, yes) {
+jsondb|contains(jsondb_enabled, yes) {
     DEFINES += QT_JSONDB
 } else {
     contains(QT_CONFIG,dbus):DEFINES+=SFW_USE_DBUS_BACKEND

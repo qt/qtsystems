@@ -10,14 +10,18 @@ OTHER_FILES += \
 content/DialButton.qml \
 content/DialScreen.qml \
 content/DialerList.qml \
-dialer.qml
+content/qmldir \
+content/call.png \
+content/hangup.png \
+dialer.qml \
+icon.png
 
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS dialer.pro
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS $$OTHER_FILES dialer.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
-contains(config_test_jsondb, yes) {
+jsondb|contains(config_test_jsondb, yes) {
     info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
     info.files = info.json
 }
