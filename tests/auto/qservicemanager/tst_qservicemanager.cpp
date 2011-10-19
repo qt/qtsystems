@@ -433,10 +433,10 @@ void tst_QServiceManager::findServices_data()
 void tst_QServiceManager::findServices_scope()
 {
 #if defined(Q_OS_SYMBIAN)
-    QSKIP("There is no difference between user and system scope in symbian", SkipAll);
+    QSKIP("There is no difference between user and system scope in symbian");
 #endif
 #if defined(QT_JSONDB)
-    QSKIP("There is no difference between user and system scope with jsondb", SkipAll);
+    QSKIP("There is no difference between user and system scope with jsondb");
 #endif
     QFETCH(QService::Scope, scope_add);
     QFETCH(QService::Scope, scope_find);
@@ -706,10 +706,10 @@ void tst_QServiceManager::findInterfaces_filter_data()
 void tst_QServiceManager::findInterfaces_scope()
 {
 #if defined(Q_OS_SYMBIAN)
-    QSKIP("There is no difference between user and system scope in symbian", SkipAll);
+    QSKIP("There is no difference between user and system scope in symbian");
 #endif
 #if defined(QT_JSONDB)
-    QSKIP("There is no difference between user and system scope with jsondb", SkipAll);
+    QSKIP("There is no difference between user and system scope with jsondb");
 #endif
     QFETCH(QService::Scope, scope_add);
     QFETCH(QService::Scope, scope_find);
@@ -818,7 +818,7 @@ void tst_QServiceManager::loadInterface_descriptor()
 
 void tst_QServiceManager::loadInterface_descriptor_data()
 {
-//    QSKIP("broken in qt5", SkipAll);
+//    QSKIP("broken in qt5");
     QTest::addColumn<QServiceInterfaceDescriptor>("descriptor");
     QTest::addColumn<QString>("className");
 

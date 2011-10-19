@@ -1520,7 +1520,7 @@ bool ServiceDatabaseUnitTest::unregisterService(const QString &serviceName, cons
 
 void ServiceDatabaseUnitTest::securityTokens() {
 #ifndef QT_SFW_SERVICEDATABASE_USE_SECURITY_TOKEN
-    QSKIP("Security tokens are not enabled (currently only enabled on Symbian).", SkipAll);
+    QSKIP("Security tokens are not enabled (currently only enabled on Symbian).");
 #endif
     // Clear databases just in case
     database.close();

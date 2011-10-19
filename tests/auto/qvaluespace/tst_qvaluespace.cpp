@@ -72,7 +72,7 @@ void tst_QValueSpace::tst_availableLayers()
     QList<QUuid> layers = QValueSpace::availableLayers();
 
     if (layers.size() == 0)
-        QSKIP("No value space layer available, thus skip all the test cases.", SkipAll);
+        QSKIP("No value space layer available, thus skip all the test cases.");
 
 #if defined(Q_OS_LINUX)
 #if !defined(QT_NO_GCONFLAYER)
@@ -104,7 +104,7 @@ void tst_QValueSpace::tst_PublisherPath_data()
 void tst_QValueSpace::tst_PublisherPath()
 {
     if (QValueSpace::availableLayers().size() == 0)
-        QSKIP("No value space layer available, thus skip all the test cases.", SkipAll);
+        QSKIP("No value space layer available, thus skip all the test cases.");
 
     QFETCH(QString, path);
 
@@ -126,7 +126,7 @@ void tst_QValueSpace::tst_PublishSubscribe_data()
 void tst_QValueSpace::tst_PublishSubscribe()
 {
     if (QValueSpace::availableLayers().size() == 0)
-        QSKIP("No value space layer available, thus skip all the test cases.", SkipAll);
+        QSKIP("No value space layer available, thus skip all the test cases.");
 
     QFETCH(QString, path);
     QFETCH(QString, name);

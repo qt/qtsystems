@@ -241,7 +241,7 @@ Q_DECLARE_METATYPE(QRemoteServiceRegister::Entry);
 
 void tst_QRemoteServiceRegister::tst_instanceClosed()
 {
-    QSKIP("This test does not pass yet", SkipAll);
+    QSKIP("This test does not pass yet");
 
     qRegisterMetaType<QRemoteServiceRegister::Entry>("QRemoteServiceRegister::Entry");
     if(!servicePublished)
