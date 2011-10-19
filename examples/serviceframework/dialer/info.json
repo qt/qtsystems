@@ -6,7 +6,7 @@
         "DisplayName": "Test Dialer",
         "Subcategory": "internet",
         "Version": "1.0",
-        "Identifier": "com.nokia.qt.examples.dialer",
+        "Identifier": "com.nokia.mt.qt.examples.dialer",
         "MainQML": "dialer.qml"
     }
 }

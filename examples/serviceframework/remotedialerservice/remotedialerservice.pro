@@ -9,7 +9,7 @@ SOURCES += \
            remotedialerservice.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerserviec
+target.path =  $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerservice
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS remotedialerservice.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerservice
 xml.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/xmldata
