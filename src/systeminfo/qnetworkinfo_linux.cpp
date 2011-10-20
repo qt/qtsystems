@@ -68,6 +68,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <linux/wireless.h>
+#include <unistd.h>
 
 QT_BEGIN_NAMESPACE
 

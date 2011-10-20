@@ -53,6 +53,7 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
+#include <unistd.h>
 
 #if !defined(QT_NO_UDEV)
 #include <qudevwrapper_p.h>
