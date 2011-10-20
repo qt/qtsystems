@@ -240,7 +240,6 @@ bool lessThan(const QServiceInterfaceDescriptor &d1,
     When referring to a user scope database it means the
     user database only.
 
-    \since 1.0
 */
 
 /*

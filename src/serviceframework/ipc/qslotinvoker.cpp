@@ -50,7 +50,6 @@
     \internal
 
     \brief The QSlotInvoker class provides an interface for invoking slots with explicit arguments
-    \since 1.1
 
     IPC mechanisms need to intercept protocol messages and convert them into
     slot invocations, but it is generally impractical to create explicit code
@@ -89,7 +88,6 @@ public:
 /*!
     Create a slot invoker that can invoke \a member on \a receiver.
     The object will be attached to \a parent, if present.
-    \since 1.1
 */
 QSlotInvoker::QSlotInvoker( QObject *receiver, const QByteArray &member,
                             QObject *parent )
@@ -144,7 +142,6 @@ QSlotInvoker::~QSlotInvoker()
 
 /*!
     Returns true if the member is present on the object.
-    \since 1.1
 */
 bool QSlotInvoker::memberPresent() const
 {
@@ -155,7 +152,6 @@ bool QSlotInvoker::memberPresent() const
     Returns true if the member can be invoked with \a numArgs arguments.
     That is, the receiver has not been destroyed, the member is present,
     and it requires \a numArgs or less arguments.
-    \since 1.1
 */
 bool QSlotInvoker::canInvoke( int numArgs ) const
 {
@@ -166,7 +162,6 @@ bool QSlotInvoker::canInvoke( int numArgs ) const
 
 /*!
     Returns the object that will receive slot invocations.
-    \since 1.1
 */
 QObject *QSlotInvoker::receiver() const
 {
@@ -175,7 +170,6 @@ QObject *QSlotInvoker::receiver() const
 
 /*!
     Returns the member that will receiver slot invocations.
-    \since 1.1
 */
 QByteArray QSlotInvoker::member() const
 {
@@ -184,7 +178,6 @@ QByteArray QSlotInvoker::member() const
 
 /*!
     Returns the parameter types associated with this member.
-    \since 1.1
 */
 int *QSlotInvoker::parameterTypes() const
 {
@@ -193,7 +186,6 @@ int *QSlotInvoker::parameterTypes() const
 
 /*!
     Returns the number of parameter types associated with this member.
-    \since 1.1
 */
 int QSlotInvoker::parameterTypesCount() const
 {
@@ -209,7 +201,6 @@ int QSlotInvoker::parameterTypesCount() const
     If it is possible that the slot may throw an exception,
     it is the responsibility of the caller to catch and
     handle the exception.
-    \since 1.1
 */
 QVariant QSlotInvoker::invoke( const QList<QVariant>& args )
 {

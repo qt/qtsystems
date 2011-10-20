@@ -57,12 +57,10 @@ QT_BEGIN_NAMESPACE
 
     A registration entry can then be published for discovery by remote clients.
 
-    \since 1.1
 */
 
 /*!
     Constructs a null registration entry.
-    \since 1.1
 */
 QRemoteServiceRegister::Entry::Entry()
 {
@@ -71,7 +69,6 @@ QRemoteServiceRegister::Entry::Entry()
 
 /*!
     Constructs the registration entry that is a copy of \a other.
-    \since 1.1
 */
 QRemoteServiceRegister::Entry::Entry(const Entry& other)
     : d(other.d)
@@ -80,7 +77,6 @@ QRemoteServiceRegister::Entry::Entry(const Entry& other)
 
 /*!
     Destroys the registration entry.
-    \since 1.1
 */
 QRemoteServiceRegister::Entry::~Entry()
 {
@@ -91,7 +87,6 @@ QRemoteServiceRegister::Entry::~Entry()
 
     Returns true if the serviceName(), interfaceName() and version() point to
     a valid QServiceInterfaceDescriptor, otherwise false.
-    \since 1.1
 */
 bool QRemoteServiceRegister::Entry::isValid() const
 {
@@ -103,7 +98,6 @@ bool QRemoteServiceRegister::Entry::isValid() const
 
 /*!
     Returns true if this font is equal to \a other; otherwise false.
-    \since 1.1
 */
 bool QRemoteServiceRegister::Entry::operator==(const Entry& other) const
 {
@@ -114,7 +108,6 @@ bool QRemoteServiceRegister::Entry::operator==(const Entry& other) const
 
 /*!
     Returns true if this font is different from \a other; otherwise false.
-    \since 1.1
 */
 bool QRemoteServiceRegister::Entry::operator!=(const Entry& other) const
 {
@@ -123,7 +116,6 @@ bool QRemoteServiceRegister::Entry::operator!=(const Entry& other) const
 
 /*!
     Assigns \a other to this registration entry and returns a reference to it.
-    \since 1.1
 */
 QRemoteServiceRegister::Entry &QRemoteServiceRegister::Entry::operator=(const Entry& other)
 {
@@ -137,7 +129,6 @@ QRemoteServiceRegister::Entry &QRemoteServiceRegister::Entry::operator=(const En
     This should correspond to the interface name from the service XML description.
 
     \sa serviceName(), version()
-    \since 1.1
 */
 QString QRemoteServiceRegister::Entry::interfaceName() const
 {
@@ -150,7 +141,6 @@ QString QRemoteServiceRegister::Entry::interfaceName() const
     This should correspond to the service name from the service XML description.
 
     \sa interfaceName(), version()
-    \since 1.1
 */
 QString QRemoteServiceRegister::Entry::serviceName() const
 {
@@ -163,7 +153,6 @@ QString QRemoteServiceRegister::Entry::serviceName() const
     This should correspond to the interface version from the service XML description.
 
     \sa interfaceName(), serviceName()
-    \since 1.1
 */
 QString QRemoteServiceRegister::Entry::version() const
 {
@@ -180,7 +169,6 @@ const QMetaObject * QRemoteServiceRegister::Entry::metaObject() const
 
     If this is not explicitly called, the default instance \a type for the registration entry
     is QRemoteServiceRegister::PrivateInstance.
-    \since 1.1
 */
 void QRemoteServiceRegister::Entry::setInstantiationType(QRemoteServiceRegister::InstanceType type)
 {
@@ -189,7 +177,6 @@ void QRemoteServiceRegister::Entry::setInstantiationType(QRemoteServiceRegister:
 
 /*!
     Returns the QRemoteServiceRegister::InstanceType of the registration entry.
-    \since 1.1
 */
 QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiationType() const
 {
@@ -201,7 +188,6 @@ QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiatio
     \inmodule QtServiceFramework
     \ingroup servicefw
     \brief The QRemoteServiceRegister class manages instances of remote service objects.
-    \since 1.1
 
     This class registers and publishes IPC based service objects. It owns the service's
     objects and uess the platform specific IPC mechanism to publish the service.
@@ -276,7 +262,6 @@ QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiatio
     entry the closed instance belonged to.
 
     \sa allInstancesClosed()
-    \since 1.1
 */
 
 /*!
@@ -286,7 +271,6 @@ QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiatio
     that the last connected client has either shutdown or released the loaded service object.
 
     \sa instanceClosed()
-    \since 1.1
 */
 
 /*!
@@ -303,7 +287,6 @@ QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiatio
 
 /*!
     Creates a service register instance with the given \a parent.
-    \since 1.1
 */
 QRemoteServiceRegister::QRemoteServiceRegister(QObject* parent)
     : QObject(parent)
@@ -333,7 +316,6 @@ QRemoteServiceRegister::~QRemoteServiceRegister()
     rendezvous feature to fail.
 
     \sa createEntry()
-    \since 1.1
 */
 void QRemoteServiceRegister::publishEntries(const QString& ident)
 {
@@ -344,7 +326,6 @@ void QRemoteServiceRegister::publishEntries(const QString& ident)
     \property QRemoteServiceRegister::quitOnLastInstanceClosed
 
     \brief Terminate the service when all clients have closed all objects. Default value is true.
-    \since 1.1
 */
 bool QRemoteServiceRegister::quitOnLastInstanceClosed() const
 {
@@ -390,7 +371,6 @@ void QRemoteServiceRegister::setQuitOnLastInstanceClosed(bool quit)
     }
     \endcode
 
-    \since 1.1
 */
 QRemoteServiceRegister::SecurityFilter QRemoteServiceRegister::setSecurityFilter(QRemoteServiceRegister::SecurityFilter filter)
 {
@@ -405,7 +385,6 @@ QRemoteServiceRegister::SecurityFilter QRemoteServiceRegister::setSecurityFilter
     discoverable.
 
     \sa publishEntries()
-    \since 1.1
 */
 QRemoteServiceRegister::Entry QRemoteServiceRegister::createEntry(const QString& serviceName, const QString& interfaceName, const QString& version, QRemoteServiceRegister::CreateServiceFunc cptr, const QMetaObject* meta)
 {

@@ -321,7 +321,6 @@ QValueSpaceSubscriber::~QValueSpaceSubscriber()
     space with the new \a path.
 
     Calling this function disconnects all signal/slot connections.
-    \since 1.0
 */
 void QValueSpaceSubscriber::setPath(const QString &path)
 {

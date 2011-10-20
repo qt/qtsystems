@@ -88,7 +88,6 @@ SERVICEMETADATA_EXPORT QDataStream &operator>>(QDataStream &in, ServiceMetaDataR
 /*
     \class ServiceMetaData
 
-    \since 1.0
 
     Utility class (used by service database) that offers support for
     parsing metadata service xml registry file during service registration. \n

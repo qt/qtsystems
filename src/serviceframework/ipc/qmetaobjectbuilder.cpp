@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
     \class QMetaObjectBuilder
     \internal
     \brief The QMetaObjectBuilder class supports building QMetaObject objects at runtime.
-    \since 1.1
 
 */
 

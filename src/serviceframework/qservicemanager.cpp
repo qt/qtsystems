@@ -206,7 +206,6 @@ private slots:
     \inmodule QtServiceFramework
     \brief The QServiceManager class enables the loading of service plugins
     and the (de)registration of services.
-    \since 1.0
 
     A service is a stand-alone component that can be used by multiple clients.
     Each service implementation must derive from QObject. Clients request a
@@ -253,7 +252,6 @@ private slots:
     notifications about services added in the user scope.
 
     \sa addService()
-    \since 1.0
 */
 
 /*!
@@ -267,7 +265,6 @@ private slots:
     notifications about services removed in the user scope.
 
     \sa removeService()
-    \since 1.0
 */
 
 /*!
@@ -285,7 +282,6 @@ QServiceManager::QServiceManager(QObject *parent)
 
 /*!
     Creates a service manager with the given \a scope and \a parent.
-    \since 1.0
 */
 QServiceManager::QServiceManager(QService::Scope scope, QObject *parent)
     : QObject(parent),
@@ -304,7 +300,6 @@ QServiceManager::~QServiceManager()
 
 /*!
     Returns the scope used for registering and searching of services.
-    \since 1.0
 */
 QService::Scope QServiceManager::scope() const
 {
@@ -315,7 +310,6 @@ QService::Scope QServiceManager::scope() const
     Returns a list of the services that provide the interface specified by
     \a interfaceName. If \a interfaceName is empty, this function returns
     a list of all available services in this manager's scope.
-    \since 1.0
 */
 QStringList QServiceManager::findServices(const QString& interfaceName) const
 {
@@ -329,7 +323,6 @@ QStringList QServiceManager::findServices(const QString& interfaceName) const
 
 /*!
     Returns a list of the interfaces that match the specified \a filter.
-    \since 1.0
 */
 QList<QServiceInterfaceDescriptor> QServiceManager::findInterfaces(const QServiceFilter& filter) const
 {
@@ -347,7 +340,6 @@ QList<QServiceInterfaceDescriptor> QServiceManager::findInterfaces(const QServic
     Returns a list of the interfaces provided by the service named
     \a serviceName. If \a serviceName is empty, this function returns
     a list of all available interfaces in this manager's scope.
-    \since 1.0
 */
 QList<QServiceInterfaceDescriptor> QServiceManager::findInterfaces(const QString& serviceName) const
 {
@@ -365,7 +357,6 @@ QList<QServiceInterfaceDescriptor> QServiceManager::findInterfaces(const QString
     This function returns a null pointer if the requested service cannot be found.
 
     \sa setInterfaceDefault(), interfaceDefault()
-    \since 1.0
 */
 QObject* QServiceManager::loadInterface(const QString& interfaceName)
 {
@@ -379,7 +370,6 @@ QObject* QServiceManager::loadInterface(const QString& interfaceName)
 
     This function returns a null pointer if the requested service cannot be found.
 
-    \since 1.0
 */
 QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descriptor)
 {
@@ -489,7 +479,6 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
     The caller takes ownership of the returned pointer.
 
     \sa setInterfaceDefault(), interfaceDefault()
-    \since 1.0
 */
 
 
@@ -508,7 +497,6 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
 
     The caller takes ownership of the returned pointer.
 
-    \since 1.0
 */
 
 /*!
@@ -524,7 +512,6 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
     versions that the new plugin implements.
 
     \sa removeService(), setInterfaceDefault()
-    \since 1.0
 */
 bool QServiceManager::addService(const QString& xmlFilePath)
 {
@@ -556,7 +543,6 @@ bool QServiceManager::addService(const QString& xmlFilePath)
     service manager instance.
 
     \sa removeService(), setInterfaceDefault()
-    \since 1.0
 */
 bool QServiceManager::addService(QIODevice *device)
 {
@@ -617,7 +603,6 @@ bool QServiceManager::addService(QIODevice *device)
     service manager instance.
 
     \sa addService()
-    \since 1.0
 */
 bool QServiceManager::removeService(const QString& serviceName)
 {
@@ -672,7 +657,6 @@ bool QServiceManager::removeService(const QString& serviceName)
 
     \bold {Note:} When in system scope, the \a service must be a system-wide
     service rather than a user-specific service; otherwise, this will fail.
-    \since 1.0
 */
 bool QServiceManager::setInterfaceDefault(const QString &service, const QString &interfaceName)
 {
@@ -702,7 +686,6 @@ bool QServiceManager::setInterfaceDefault(const QString &service, const QString 
     \bold {Note:} When in system scope, the \a descriptor must refer to a
     system-wide service rather than a user-specific service; otherwise, this
     will fail.
-    \since 1.0
 */
 bool QServiceManager::setInterfaceDefault(const QServiceInterfaceDescriptor& descriptor)
 {
@@ -718,7 +701,6 @@ bool QServiceManager::setInterfaceDefault(const QServiceInterfaceDescriptor& des
 
 /*!
     Returns the default interface implementation for the given \a interfaceName.
-    \since 1.0
 */
 QServiceInterfaceDescriptor QServiceManager::interfaceDefault(const QString& interfaceName) const
 {
@@ -735,7 +717,6 @@ QServiceInterfaceDescriptor QServiceManager::interfaceDefault(const QString& int
 
 /*!
     Returns the type of error that last occurred.
-    \since 1.0
 */
 QServiceManager::Error QServiceManager::error() const
 {
@@ -744,7 +725,6 @@ QServiceManager::Error QServiceManager::error() const
 
 /*!
     \internal
-    \since 1.0
 */
 void QServiceManager::connectNotify(const char *signal)
 {
@@ -758,7 +738,6 @@ void QServiceManager::connectNotify(const char *signal)
 
 /*!
     \internal
-    \since 1.0
 */
 void QServiceManager::disconnectNotify(const char *signal)
 {

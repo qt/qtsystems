@@ -52,7 +52,6 @@ Q_GLOBAL_STATIC(InstanceManager, typeRegister);
     \internal
 
     Returns the instance manager for the service process
-    \since 1.1
 */
 InstanceManager* InstanceManager::instance()
 {
@@ -87,7 +86,6 @@ InstanceManager::~InstanceManager()
     \internal
 
     Adds an entry to the map of service identifiers
-    \since 1.1
 */
 bool InstanceManager::addType(const QRemoteServiceRegister::Entry& e)
 {
@@ -109,7 +107,6 @@ bool InstanceManager::addType(const QRemoteServiceRegister::Entry& e)
     \internal
 
     Returns the metaobject of a registered service object identified by its \a entry
-    \since 1.1
 */
 const QMetaObject* InstanceManager::metaObject(const QRemoteServiceRegister::Entry& entry) const
 {
@@ -125,7 +122,6 @@ const QMetaObject* InstanceManager::metaObject(const QRemoteServiceRegister::Ent
    \internal
 
    Returns a list of all the registered entries
-    \since 1.1
 */
 QList<QRemoteServiceRegister::Entry> InstanceManager::allEntries() const
 {
@@ -139,7 +135,6 @@ QList<QRemoteServiceRegister::Entry> InstanceManager::allEntries() const
     Instance manager takes ownership of service instance. Returns a null pointer
     if \a entry cannot be mapped to a known meta object. The \a instanceId will
     contain the unique ID for the new service instance.
-    \since 1.1
 */
 QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Entry& entry, QUuid& instanceId)
 {
@@ -184,7 +179,6 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
     using the \a entry as the key.
 
     Emits instanceClosed() and allInstancesClosed() if no more instances are open
-    \since 1.1
 */
 void InstanceManager::removeObjectInstance(const QRemoteServiceRegister::Entry& entry, const QUuid& instanceId)
 {
@@ -226,7 +220,6 @@ void InstanceManager::removeObjectInstance(const QRemoteServiceRegister::Entry& 
     \internal
 
     Provides a count of how many global and private instances are currently open
-    \since 1.1
 */
 int InstanceManager::totalInstances() const
 {
