@@ -31,8 +31,6 @@ SOURCES += qdeviceinfo.cpp \
            qdeviceprofile.cpp \
            qinputdeviceinfo.cpp
 
-!win32:!embedded:!qpa:!mac:!symbian: CONFIG += x11
-
 win32 {
     contains(CONFIG, release) {
        CONFIG -= console
