@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/QSGView>
+#include <QtDeclarative/QQuickView>
 #include <QtGui/QGuiApplication>
 #include <QtCore/QUrl>
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QSGView viewer;
+    QQuickView viewer;
     viewer.setSource(QUrl::fromLocalFile(QStringLiteral("dialer.qml")));
     viewer.show();
     return app.exec();
