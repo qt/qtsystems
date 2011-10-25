@@ -1,6 +1,6 @@
-TEMPLATE      = subdirs
-SUBDIRS       = \
-                serviceframework
+TEMPLATE = subdirs
+
+!without-sericeframework: SUBDIRS += serviceframework
 
 # install
 sources.files = README *.pro

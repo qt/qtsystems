@@ -1,10 +1,6 @@
 TEMPLATE = subdirs
-SUBDIRS += qdeviceinfo \
-#           qdisplayinfo \
-           qstorageinfo \
-           qscreensaver \
-           qbatteryinfo \
-           qvaluespace \
+
+SERVICEFRAMEWORK = \
            qremoteserviceregister \
            qservicefilter \
            qserviceinterfacedescriptor \
@@ -15,4 +11,20 @@ SUBDIRS += qdeviceinfo \
 #           qmetaobjectbuilder #(requires test symbols)
 #           servicedatabase    #(requires test symbols)
 
-# jsondb|contains(config_test_jsondb, yes): SUBDIRS += qvaluespace_jsondb
+
+SYSTEMINFO = \
+           qdeviceinfo \
+#           qdisplayinfo \
+           qstorageinfo \
+           qscreensaver \
+           qbatteryinfo \
+
+PUBLISHSUBSCRIBE += \
+           qvaluespace \
+
+# jsondb|contains(config_test_jsondb, yes): PUBLISHSUBSCRIBE += qvaluespace_jsondb
+
+
+!without-publishsubscribe: SUBDIRS += $$PUBLISHSUBSCRIBE
+!without-systeminfo: SUBDIRS += $$SYSTEMINFO
+!without-serviceframework: SUBDIRS += $$SERVICEFRAMEWORK

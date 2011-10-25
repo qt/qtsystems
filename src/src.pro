@@ -1,3 +1,8 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS = systeminfo publishsubscribe serviceframework imports tools
+
+!without-systeminfo: SUBDIRS += systeminfo
+!without-publishsubscribe: SUBDIRS += publishsubscribe
+!without-serviceframework: SUBDIRS += serviceframework
+
+SUBDIRS += imports tools
