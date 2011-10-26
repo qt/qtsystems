@@ -100,6 +100,7 @@ private slots:
 
 private:
     void updateDescriptor();
+    void setServiceObject(QObject *object);
 
     QPointer<QObject> m_serviceInstance;
     QServiceManager* m_serviceManager;

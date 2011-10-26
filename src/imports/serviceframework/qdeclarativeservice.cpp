@@ -92,8 +92,7 @@ void QDeclarativeService::setInterfaceDesc(const QServiceInterfaceDescriptor &de
 
     if (m_serviceInstance)
         delete m_serviceInstance;
-
-    m_serviceInstance = 0;
+    setServiceObject(0);
 }
 
 QServiceInterfaceDescriptor QDeclarativeService::interfaceDesc() const
@@ -194,11 +193,13 @@ QObject* QDeclarativeService::serviceObject()
     }
 
     if (isValid()) {
-        m_serviceInstance = m_serviceManager->loadInterface(m_descriptor);
+        QObject *object = m_serviceManager->loadInterface(m_descriptor);
+        setServiceObject(object);
         if (!m_serviceInstance) {
             emit error(QLatin1String("Failed to create object"));
             return m_serviceInstance;
         }
+        emit serviceObjectChanged();
         connect(m_serviceInstance, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                 this, SLOT(IPCFault(QService::UnrecoverableIPCError)));
         m_error.clear();
@@ -242,7 +243,7 @@ void QDeclarativeService::IPCFault(QService::UnrecoverableIPCError errorValue)
     }
     emit error(m_error);
     m_serviceInstance->deleteLater();
-    m_serviceInstance = 0;
+    setServiceObject(0);
 }
 
 void QDeclarativeService::updateDescriptor()
@@ -283,7 +284,14 @@ void QDeclarativeService::updateDescriptor()
     if (!isValid()) {
         qWarning() << "WARNING: No service found for interface name: " << m_interface << m_service << m_major << m_minor;
     }
+}
 
+void QDeclarativeService::setServiceObject(QObject *object)
+{
+    if (m_serviceInstance != object) {
+        m_serviceInstance = object;
+        emit serviceObjectChanged();
+    }
 }
 
 void QDeclarativeService::classBegin()
