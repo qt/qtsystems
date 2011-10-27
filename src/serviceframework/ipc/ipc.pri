@@ -1,4 +1,7 @@
 INCLUDEPATH += ipc
+
+QT += core-private
+
 symbian {
     PRIVATE_HEADERS += ipc/qremoteserviceregister_s60_p.h \
         ipc/objectendpoint_p.h
@@ -35,8 +38,7 @@ PRIVATE_HEADERS += ipc/qslotinvoker_p.h \
     ipc/proxyobject_p.h \
     ipc/ipcendpoint_p.h \
     ipc/qremoteserviceregister_p.h \
-    ipc/qremoteserviceregisterentry_p.h \
-    ipc/qmetaobjectbuilder_p.h
+    ipc/qremoteserviceregisterentry_p.h
 
 SOURCES += ipc/qslotinvoker.cpp \
     ipc/qsignalintercepter.cpp \
@@ -46,8 +48,7 @@ SOURCES += ipc/qslotinvoker.cpp \
     ipc/qservicesecurity.cpp \
     ipc/proxyobject.cpp \
     ipc/ipcendpoint.cpp \
-    ipc/qremoteserviceregister_p.cpp \
-    ipc/qmetaobjectbuilder.cpp
+    ipc/qremoteserviceregister_p.cpp
 
 OTHER_FILES += \
     ipc/json-schema.txt

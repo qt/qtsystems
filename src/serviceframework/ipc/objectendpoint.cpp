@@ -41,7 +41,7 @@
 
 #include "objectendpoint_p.h"
 #include "instancemanager_p.h"
-#include "qmetaobjectbuilder_p.h"
+#include <private/qmetaobjectbuilder_p.h>
 #include "proxyobject_p.h"
 #include "qsignalintercepter_p.h"
 #include <QTimer>

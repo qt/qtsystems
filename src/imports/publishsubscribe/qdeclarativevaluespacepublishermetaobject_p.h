@@ -54,7 +54,7 @@
 #define QDECLARATIVEVALUESPACEPUBLISHERMETAOBJECT_H
 
 #include "qdeclarativevaluespacepublisher_p.h"
-#include "qmetaobjectbuilder_p.h"
+#include <private/qmetaobjectbuilder_p.h>
 #include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE

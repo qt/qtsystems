@@ -8,7 +8,6 @@ SERVICEFRAMEWORK = \
            qservicemanager_ipc \
            qservicemetadata \
            servicedeletion
-#           qmetaobjectbuilder #(requires test symbols)
 #           servicedatabase    #(requires test symbols)
 
 
