@@ -43,7 +43,6 @@ arbitrary services.
 \brief A set of Qt APIs to that allows clients to discover and instantiate
 arbitrary services.
 
-\ingroup mobility
 \ingroup technology-apis
 
 The Qt Service Framework allows clients to discover and instantiate
@@ -470,7 +469,7 @@ falls back on QLocalSocket for inter-process communication.
 
 \section2 D-Bus Services
 
-The QtDBus module is used to provide IPC in correspondance to the Qt Service
+The QtDBus module is used to provide IPC in correspondence to the Qt Service
 Framework architecture and provides access to signals, slots, invokable methods
 and properties.
 
@@ -488,12 +487,12 @@ example of this, using the previous sample XML description, is provided below.
 
 \section3 Limitations
 
-When using interger types for arguments to signals and slots,
+When using integer types for arguments to signals and slots,
 bass types as defined by http://doc.trolltech.com/4.7/qdbustypesystem.html.
 For example, quint64 is generally equivalent to qulonglong, but
 all unsigned 64 bit values must be defined as qulonglong or they will
 not work with the dbus implementation. For more details and the current
-state of the limitation please refer to bug QTMOBLITY-1694 available at
+state of the limitation please refer to bug QTMOBILITY-1694 available at
 http://bugreports.qt.nokia.com/browse/QTMOBILITY-1694.
 
 A current known limitation for Qt Service Framework using QtDBus for IPC is
