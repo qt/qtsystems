@@ -60,7 +60,7 @@ class QSystemInfoDeclarativeModule : public QDeclarativeExtensionPlugin
 public:
     virtual void registerTypes(const char *uri)
     {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.systeminfo"));
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtSystemInfo"));
 
         int major = 5;
         int minor = 0;

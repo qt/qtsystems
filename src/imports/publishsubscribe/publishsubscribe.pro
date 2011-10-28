@@ -1,5 +1,5 @@
 TARGET  = declarative_publishsubscribe
-TARGETPATH = Qt/publishsubscribe
+TARGETPATH = QtPublishSubscribe
 
 include(qpublishsubscribeimport.pri)
 target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH

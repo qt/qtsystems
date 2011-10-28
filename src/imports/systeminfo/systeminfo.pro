@@ -1,5 +1,5 @@
 TARGET  = declarative_systeminfo
-TARGETPATH = Qt/systeminfo
+TARGETPATH = QtSystemInfo
 include(qsysteminfoimport.pri)
 target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 DESTDIR = $$QT.systeminfo.imports/$$TARGETPATH

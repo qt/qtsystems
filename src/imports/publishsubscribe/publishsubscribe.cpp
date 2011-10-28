@@ -53,7 +53,7 @@ class QSubscriberDeclarativeModule : public QDeclarativeExtensionPlugin
 public:
     virtual void registerTypes(const char *uri)
     {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.publishsubscribe"));
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtPublishSubscribe"));
 
         int major = 5;
         int minor = 0;
