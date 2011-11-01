@@ -10,7 +10,10 @@ DESTDIR = ../client  #service must be in same dir as client binary
 jsondb|contains(jsondb_enabled, yes) {
     DEFINES += QT_JSONDB
 } else {
-    contains(QT_CONFIG,dbus):DEFINES+=SFW_USE_DBUS_BACKEND
+    contains(QT_CONFIG,dbus): {
+        QT += dbus
+        DEFINES+=SFW_USE_DBUS_BACKEND
+    }
 }
 
 QT += serviceframework serviceframework-private

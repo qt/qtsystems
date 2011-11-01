@@ -81,12 +81,7 @@ linux-* {
                qnetworkinfo_linux.cpp \
                qinputdeviceinfo_linux.cpp
 
-    !contains(QT_CONFIG, jsondb): {
-        PRIVATE_HEADERS += qscreensaver_linux_p.h
-        SOURCES += qscreensaver_linux.cpp
-
-        DEFINES += QT_NO_JSONDB
-    } else {
+    jsondb {
         PRIVATE_HEADERS += qjsondbwrapper_p.h \
                            qscreensaver_jsondb_p.h
 
@@ -96,6 +91,11 @@ linux-* {
         QT += jsondb
         PKGCONFIG += mtcore
         LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
+    } else {
+        PRIVATE_HEADERS += qscreensaver_linux_p.h
+        SOURCES += qscreensaver_linux.cpp
+
+        DEFINES += QT_NO_JSONDB
     }
 
     contains(QT_CONFIG, dbus): {
