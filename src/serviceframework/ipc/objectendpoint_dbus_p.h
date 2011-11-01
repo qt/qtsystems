@@ -78,6 +78,8 @@ public:
     QVariant invokeRemote(int metaIndex, const QVariantList& args, int returnType);
     QVariant invokeRemoteProperty(int metaIndex, const QVariant& arg, int returnType, QMetaObject::Call c);
 
+    void setLookupTable(int *local, int *remote);
+
 Q_SIGNALS:
     void pendingRequestFinished();
 
@@ -96,6 +98,9 @@ private:
 
     QDBusInterface *iface;
     QServiceMetaObjectDBus *signalsObject;
+    int *localToRemote;
+    int *remoteToLocal;
+
 };
 
 QT_END_NAMESPACE

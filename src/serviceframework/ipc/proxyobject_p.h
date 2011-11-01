@@ -54,8 +54,25 @@
 
 QT_BEGIN_NAMESPACE
 
+class QServiceProxyBasePrivate;
+class QServiceProxyBase : public QObject
+{
+    //Note: Do not put Q_OBJECT here
+public:
+    QServiceProxyBase(ObjectEndPoint* endpoint, QObject* parent = 0);
+    virtual ~QServiceProxyBase();
+
+    // provide custom Q_OBJECT implementation
+    virtual const QMetaObject* metaObject() const;
+    int qt_metacall(QMetaObject::Call c, int id, void **a);
+    void *qt_metacast(const char* className);
+
+private:
+    QServiceProxyBasePrivate* d;
+};
+
 class QServiceProxyPrivate;
-class QServiceProxy : public QObject
+class QServiceProxy : public QServiceProxyBase
 {
     //TODO make inherit from QRemoteService
     //Note: Do not put Q_OBJECT here
@@ -70,7 +87,6 @@ public:
 
 private:
     QServiceProxyPrivate* d;
-    QVector<bool> localSignals;
 };
 
 

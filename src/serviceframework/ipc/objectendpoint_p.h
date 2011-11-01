@@ -75,6 +75,8 @@ public:
 
     void setServiceSecurity(QServiceSecurity *serviceSecurity);
 
+    void setLookupTable(int *local, int *remote);
+
 Q_SIGNALS:
     void pendingRequestFinished();
 
@@ -89,6 +91,8 @@ private:
     QPointer<QObject> service;
     ObjectEndPointPrivate* d;
     QServiceSecurity* security;
+    int *localToRemote;
+    int *remoteToLocal;
 };
 
 QT_END_NAMESPACE

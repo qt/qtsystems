@@ -163,7 +163,8 @@ public:
 };
 
 ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent)
-    : QObject(parent), dispatch(comm), service(0), security(0)
+    : QObject(parent), dispatch(comm), service(0), security(0), localToRemote(0),
+      remoteToLocal(0)
 {
     Q_ASSERT(dispatch);
     d = new ObjectEndPointPrivate;
@@ -418,6 +419,9 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
         stream >> metaIndex;
         stream >> args;
 
+        if (remoteToLocal)
+            metaIndex = remoteToLocal[metaIndex];
+
         QMetaMethod method = service->metaObject()->method(metaIndex);
         const bool isSignal = (method.methodType() == QMetaMethod::Signal);
         const int returnType = QMetaType::type(method.typeName());
@@ -643,6 +647,12 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
         loop->exec();
         delete loop;
     }
+}
+
+void ObjectEndPoint::setLookupTable(int *local, int *remote)
+{
+    localToRemote = local;
+    remoteToLocal = remote;
 }
 
 void ObjectEndPoint::setServiceSecurity(QServiceSecurity *serviceSecurity)

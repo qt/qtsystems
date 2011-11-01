@@ -76,12 +76,14 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
 #include <stdlib.h>
 #endif
 
+#ifndef QTRY_VERIFY
 #define QTRY_VERIFY(a)                       \
     for (int _i = 0; _i < 5000; _i += 100) {    \
         if (a) break;                  \
         QTest::qWait(100);                      \
     }                                           \
     QVERIFY(a)
+#endif
 
 QT_USE_NAMESPACE
 Q_DECLARE_METATYPE(QServiceFilter);
@@ -369,8 +371,8 @@ void tst_QServiceManager_IPC::verifySharedServiceObject()
     const QMetaObject* mo = serviceShared->metaObject();
     QCOMPARE(mo->className(), "SharedTestService");
     QVERIFY(mo->superClass());
-    QCOMPARE(mo->superClass()->className(), "QObject");
-    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 19);
+    QCOMPARE(mo->superClass()->className(), "QServiceProxyBase");
+    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 18);
     QCOMPARE(mo->methodCount(), 23); //20 meta functions available
     //actual function presence will be tested later
 
@@ -562,9 +564,9 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
     const QMetaObject* mo = serviceUnique->metaObject();
     QCOMPARE(mo->className(), "UniqueTestService");
     QVERIFY(mo->superClass());
-    QCOMPARE(mo->superClass()->className(), "QObject");
+    QCOMPARE(mo->superClass()->className(), "QServiceProxyBase");
     // TODO adding the ipc failure signal seems to break these
-    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 24); // 23+1 added signal for error signal added by library
+    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 23); // 23+1 added signal for error signal added by library
     QCOMPARE(mo->methodCount(), 28); //21 meta functions available + 1 signal
     //actual function presence will be tested later
 

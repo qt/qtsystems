@@ -53,16 +53,21 @@ public:
     QByteArray metadata;
     QMetaObject* meta;
     ObjectEndPoint* endPoint;
+    int *localToRemote;
+    int *remoteToLocal;
+
 };
 
 QServiceProxy::QServiceProxy(const QByteArray& metadata, ObjectEndPoint* endPoint, QObject* parent)
-    : QObject(parent)
+    : QServiceProxyBase(endPoint, parent)
 {
     Q_ASSERT(endPoint);
     d = new QServiceProxyPrivate();
     d->metadata = metadata;
     d->meta = 0;
     d->endPoint = endPoint;
+    d->localToRemote = 0;
+    d->remoteToLocal = 0;
 
     QDataStream stream(d->metadata);
     QMetaObjectBuilder builder;
@@ -72,18 +77,35 @@ QServiceProxy::QServiceProxy(const QByteArray& metadata, ObjectEndPoint* endPoin
     if (stream.status() != QDataStream::Ok) {
         qWarning() << "Invalid metaObject for service received";
     } else {
-        QMetaMethodBuilder b = builder.addSignal("errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)");
+        QMetaObjectBuilder sup;
 
-        // After all methods are filled in, otherwise qvector won't be big enough
-        localSignals.fill(false, builder.methodCount());
-        localSignals.replace(b.index(), true); // Call activate locally
+        QMetaObject *remote = builder.toMetaObject();
 
-        d->meta = builder.toMetaObject();
+        builder.setSuperClass(QServiceProxyBase::metaObject());
+
+        QMetaObject *local = builder.toMetaObject();
+
+        d->remoteToLocal = new int[local->methodCount()];
+        d->localToRemote = new int[local->methodCount()];
+
+        for (int i = 0; i < local->methodCount(); i++){
+            const QMetaMethod m = local->method(i);
+            int r = remote->indexOfMethod(m.signature());
+            d->localToRemote[i] = r;
+            if (r > 0)
+                d->remoteToLocal[r] = i;
+        }
+
+        d->meta = local;
+
+        endPoint->setLookupTable(d->localToRemote, d->remoteToLocal);
     }
 }
 
 QServiceProxy::~QServiceProxy()
 {
+    delete[] d->remoteToLocal;
+    delete[] d->localToRemote;
     if (d->meta)
         qFree(d->meta);
     delete d;
@@ -97,16 +119,12 @@ const QMetaObject* QServiceProxy::metaObject() const
 
 int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
-    id = QObject::qt_metacall(c, id, a);
+    id = QServiceProxyBase::qt_metacall(c, id, a);
     if (id < 0 || !d->meta)
         return id;
 
-    if (localSignals.at(id)){
-      QMetaObject::activate(this, d->meta, id, a);
-      return id;
-    }
-
     if (c == QMetaObject::InvokeMetaMethod) {
+
         const int mcount = d->meta->methodCount() - d->meta->methodOffset();
         const int metaIndex = id + d->meta->methodOffset();
 
@@ -142,13 +160,13 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 
         //QVariant looks the same as Void type. we need to distinguish them
         if (returnType == QMetaType::Void && strcmp(method.typeName(),"QVariant") ) {
-            d->endPoint->invokeRemote(metaIndex, args, returnType);
+            d->endPoint->invokeRemote(d->localToRemote[metaIndex], args, returnType);
         } else {
             //TODO: ugly but works
             //add +1 if we have a variant return type to avoid triggering of void
             //code path
             //invokeRemote() parameter list needs review
-            QVariant result = d->endPoint->invokeRemote(metaIndex, args,
+            QVariant result = d->endPoint->invokeRemote(d->localToRemote[metaIndex], args,
                     returnType==0 ? returnType+1: returnType);
             if (result.type() != QVariant::Invalid){
                 if (returnType != 0 && strcmp(method.typeName(),"QVariant")) {
@@ -221,7 +239,72 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 void *QServiceProxy::qt_metacast(const char* className)
 {
     if (!className) return 0;
+    //this object should not be castable to anything but it's super type
+    return QServiceProxyBase::qt_metacast(className);
+}
+
+class QServiceProxyBasePrivate
+{
+public:
+    QServiceProxy *p;
+    QMetaObject* meta;
+    ObjectEndPoint* endPoint;
+    int ipcfailure;
+};
+
+QServiceProxyBase::QServiceProxyBase(ObjectEndPoint *endpoint, QObject *parent)
+    : QObject(parent), d(0)
+{
+
+    d = new QServiceProxyBasePrivate();
+    d->meta = 0;
+    d->endPoint = endpoint;
+    d->ipcfailure = -1;
+
+    QMetaObjectBuilder sup;
+    sup.setClassName("QServiceProxyBase");
+    QMetaMethodBuilder b = sup.addSignal("errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)");
+    d->ipcfailure = b.index();
+    d->meta = sup.toMetaObject();
+
+}
+
+QServiceProxyBase::~QServiceProxyBase()
+{
+    if (d->meta)
+        qFree(d->meta);
+    delete d;
+}
+
+//provide custom Q_OBJECT implementation
+const QMetaObject* QServiceProxyBase::metaObject() const
+{
+    return d->meta;
+}
+
+void *QServiceProxyBase::qt_metacast(const char* className)
+{
+    if (!className) return 0;
     //this object should not be castable to anything but QObject
     return QObject::qt_metacast(className);
 }
+
+int QServiceProxyBase::qt_metacall(QMetaObject::Call c, int id, void **a)
+{
+    id = QObject::qt_metacall(c, id, a);
+    if (id < 0 || !d->meta)
+        return id;
+
+    if (c == QMetaObject::InvokeMetaMethod) {
+        // ipcfailure is the local offset, so is id
+        if (id == d->ipcfailure) {
+            QMetaObject::activate(this, d->meta, d->ipcfailure, a);
+        }
+
+        const int mcount = d->meta->methodCount() - d->meta->methodOffset();
+        id-=mcount;
+    }
+    return id;
+}
+
 QT_END_NAMESPACE

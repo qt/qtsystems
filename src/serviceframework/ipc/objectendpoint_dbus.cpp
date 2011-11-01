@@ -260,7 +260,7 @@ QObject* ObjectEndPoint::constructProxy(const QRemoteServiceRegister::Entry& ent
 
                         ServiceSignalIntercepter *intercept =
                             new ServiceSignalIntercepter((QObject*)signalsObject, signal, this);
-                        intercept->setMetaIndex(i);
+                        intercept->setMetaIndex(localToRemote[i]);
                     } else {
                         QObject::connect(iface, signal.constData(), service, signal.constData());
                     }
@@ -293,6 +293,12 @@ void ObjectEndPoint::newPackageReady()
             qWarning() << "Unknown package type received.";
         }
     }
+}
+
+void ObjectEndPoint::setLookupTable(int *local, int *remote)
+{
+    localToRemote = local;
+    remoteToLocal = remote;
 }
 
 /*!
@@ -582,7 +588,7 @@ QVariant ObjectEndPoint::toDBusVariant(const QByteArray& type, const QVariant& a
 */
 QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, int returnType)
 {
-    QMetaMethod method = service->metaObject()->method(metaIndex);
+    QMetaMethod method = service->metaObject()->method(remoteToLocal[metaIndex]);
 
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
 
@@ -629,7 +635,7 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
         }
 
         // Activate the service proxy signal call
-        QMetaObject::activate(service, metaIndex, a.data());
+        QMetaObject::activate(service, remoteToLocal[metaIndex], a.data());
         return QVariant();
     }
 
