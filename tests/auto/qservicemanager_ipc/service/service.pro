@@ -7,13 +7,15 @@ mac {
 
 DESTDIR = ../client  #service must be in same dir as client binary
 
-jsondb|contains(jsondb_enabled, yes) {
-    DEFINES += QT_JSONDB
-} else {
-    contains(QT_CONFIG,dbus): {
-        QT += dbus
-        DEFINES+=SFW_USE_DBUS_BACKEND
+jsondb|contains(QT_CONFIG, jsondb): {
+    mtcore|contains(config_test_mtcore, yes): {
+        DEFINES += QT_JSONDB
     }
+}
+
+!contains(DEFINES, QT_JSONDB):contains(QT_CONFIG,dbus): {
+    QT += dbus
+    DEFINES+=SFW_USE_DBUS_BACKEND
 }
 
 QT += serviceframework serviceframework-private

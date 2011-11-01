@@ -35,7 +35,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS $$QML_MISC_FILES dialer.
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
 qmlsources.files = $$QML_CONTENT_FILES
 qmlsources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer/content
-jsondb {
+mtcore|contains(config_test_mtcore, yes) {
     info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
     info.files = info.json
 }

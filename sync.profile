@@ -40,6 +40,6 @@
     "contextkit" => {},
     "bluez" => {},
     "udev" => {},
-    "jsondb" => {},
+    "mtcore" => {},
     "wayland" => {}
 );

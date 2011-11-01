@@ -81,7 +81,7 @@ linux-* {
                qnetworkinfo_linux.cpp \
                qinputdeviceinfo_linux.cpp
 
-    jsondb {
+    contains(QT_CONFIG, jsondb): contains(config_test_mtcore, yes): {
         PRIVATE_HEADERS += qjsondbwrapper_p.h \
                            qscreensaver_jsondb_p.h
 

@@ -10,13 +10,15 @@ QT = core sql script
 
 DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
+
 load(qt_module_config)
 
-jsondb {
-    DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
-    PKGCONFIG += mtcore QtAddOnJsonDb
-    LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
-    QT += jsondb jsondb-private
+jsondb|contains(QT_CONFIG, jsondb): {
+    mtcore|contains(config_test_mtcore, yes): {
+        DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
+        PKGCONFIG += mtcore QtAddOnJsonDb
+        QT += jsondb jsondb-private
+    }
 }
 
 !no_wayland: contains(config_test_wayland, yes) {
@@ -55,7 +57,7 @@ symbian {
         qsfwdatabasemanagerserver.exe
     QtServiceFrameworkDeployment.path = /sys/bin
     DEPLOYMENT += QtServiceFrameworkDeployment
-} else:jsondb {
+} else: contains(DEFINES, QT_ADDON_JSONDB_LIB): {
     SOURCES += databasemanager_jsondb.cpp
     PRIVATE_HEADERS += databasemanager_jsondb_p.h
 } else {

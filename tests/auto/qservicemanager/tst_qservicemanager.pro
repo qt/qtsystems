@@ -6,13 +6,12 @@ CONFIG += parallel_test
 
 DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"
 
-jsondb {
-    INCLUDEPATH += $$[QT_INSTALL_PREFIX]/opt/mt/include /opt/mt/include
-    LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
-    LIBS += -L/opt/mt/lib -lmtcore -Wl,-rpath,/opt/mt/lib
-    PKGCONFIG += mtcore
-    DEFINES += QT_ADDON_JSONDB_LIB
-    QT += jsondb jsondb-private
+jsondb|contains(QT_CONFIG, jsondb): {
+    mtcore|contains(config_test_mtcore, yes): {
+        PKGCONFIG += mtcore
+        DEFINES += QT_ADDON_JSONDB_LIB
+        QT += jsondb jsondb-private
+    }
 }
 
 # Input 
