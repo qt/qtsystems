@@ -12,7 +12,7 @@ module_qtsystems_tests.depends = module_qtsystems_src
 }
 
 module_qtsystems_examples.subdir = examples
-module_qtsystems_examples.target = module-qtsystems-exampels
+module_qtsystems_examples.target = module-qtsystems-examples
 module_qtsystems_examples.depends = module_qtsystems_src
 !contains(QT_BUILD_PARTS,examples):!with-examples {
     module_qtsystems_examples.CONFIG = no_default_target no_default_install
