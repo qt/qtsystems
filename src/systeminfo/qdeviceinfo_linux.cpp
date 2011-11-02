@@ -41,18 +41,15 @@
 
 #include "qdeviceinfo_linux_p.h"
 
-#if defined(Q_OS_LINUX)
-#  if !defined(QT_NO_JSONDB)
-#    include "qjsondbwrapper_p.h"
-#    include "qscreensaver_jsondb_p.h"
-#  else
-#    include "qscreensaver_linux_p.h"
-#  endif //QT_NO_JSONDB
-#endif
+#if !defined(QT_NO_JSONDB)
+#include "qjsondbwrapper_p.h"
+#endif // QT_NO_JSONDB
 
 #if !defined(QT_NO_OFONO)
 #include "qofonowrapper_p.h"
 #endif // QT_NO_OFONO
+
+#include "qscreensaver_linux_p.h"
 
 #include <QtCore/qdir.h>
 #include <QtCore/qprocess.h>

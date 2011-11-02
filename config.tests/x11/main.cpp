@@ -39,51 +39,10 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
 
-#ifndef QSCREENSAVER_JSONDB_P_H
-#define QSCREENSAVER_JSONDB_P_H
+#include <X11/Xlib.h>
 
-#include <qscreensaver.h>
-
-QT_BEGIN_NAMESPACE
-
-class NotionClient;
-class QTimer;
-
-class QScreenSaverPrivate : public QObject
+int main()
 {
-    Q_OBJECT
-
-public:
-    QScreenSaverPrivate(QScreenSaver *parent);
-    ~QScreenSaverPrivate();
-
-    bool screenSaverEnabled();
-    void setScreenSaverEnabled(bool enabled);
-
-private Q_SLOTS:
-    void onTimeout();
-
-private:
-    QScreenSaver *const q_ptr;
-    Q_DECLARE_PUBLIC(QScreenSaver)
-
-    NotionClient *notionclient;
-    QTimer *timer;
-
-    bool isScreenSaverEnabled;
-};
-
-QT_END_NAMESPACE
-
-#endif // QSCREENSAVER_JSONDB_P_H
+    return 0;
+}

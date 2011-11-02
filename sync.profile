@@ -41,5 +41,6 @@
     "bluez" => {},
     "udev" => {},
     "mtcore" => {},
-    "wayland" => {}
+    "wayland" => {},
+    "x11" => {}
 );

@@ -61,41 +61,43 @@ win32 {
                qnetworkinfo_win.cpp
 }
 
-x11 {
-    LIBS += -lXrandr -lX11
-}
-
 linux-* {
-
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
                        qstorageinfo_linux_p.h \
                        qbatteryinfo_linux_p.h \
                        qnetworkinfo_linux_p.h \
-                       qinputdeviceinfo_linux_p.h
+                       qinputdeviceinfo_linux_p.h \
+                       qscreensaver_linux_p.h
 
     SOURCES += qdeviceinfo_linux.cpp \
                qdisplayinfo_linux.cpp \
                qstorageinfo_linux.cpp \
                qbatteryinfo_linux.cpp \
                qnetworkinfo_linux.cpp \
-               qinputdeviceinfo_linux.cpp
+               qinputdeviceinfo_linux.cpp \
+               qscreensaver_linux.cpp
 
-    contains(QT_CONFIG, jsondb): contains(config_test_mtcore, yes): {
-        PRIVATE_HEADERS += qjsondbwrapper_p.h \
-                           qscreensaver_jsondb_p.h
+    x11|contains(config_test_x11, yes): {
+        CONFIG += link_pkgconfig
+        PKGCONFIG += x11
+    } else: {
+        DEFINES += QT_NO_X11
+    }
 
-        SOURCES += qjsondbwrapper.cpp \
-                   qscreensaver_jsondb.cpp
-
+    contains(QT_CONFIG, jsondb): {
         QT += jsondb
-        PKGCONFIG += mtcore
-        LIBS += -L$$[QT_INSTALL_PREFIX]/opt/mt/lib -lmtcore -Wl,-rpath,$$[QT_INSTALL_PREFIX]/opt/mt/lib
-    } else {
-        PRIVATE_HEADERS += qscreensaver_linux_p.h
-        SOURCES += qscreensaver_linux.cpp
+        PRIVATE_HEADERS += qjsondbwrapper_p.h
+        SOURCES += qjsondbwrapper.cpp
+    } else: {
+        DEFINES += QT_NO_JSONDB QT_NO_MTCORE
+    }
 
-        DEFINES += QT_NO_JSONDB
+    mtcore|contains(config_test_mtcore, yes): {
+        CONFIG += link_pkgconfig
+        PKGCONFIG += mtcore
+    } else: {
+        DEFINES += QT_NO_MTCORE
     }
 
     contains(QT_CONFIG, dbus): {

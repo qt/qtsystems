@@ -55,19 +55,45 @@
 
 #include <qscreensaver.h>
 
+#if !defined(QT_NO_MTCORE)
+class NotionClient;
+
+QT_BEGIN_NAMESPACE
+class QTimer;
+QT_END_NAMESPACE
+#endif // QT_NO_MTCORE
+
 QT_BEGIN_NAMESPACE
 
 class QScreenSaverPrivate
+#if !defined(QT_NO_MTCORE)
+    : public QObject
+#endif // QT_NO_MTCORE
 {
+#if !defined(QT_NO_MTCORE)
+    Q_OBJECT
+#endif // QT_NO_MTCORE
 public:
     QScreenSaverPrivate(QScreenSaver *parent);
 
     bool screenSaverEnabled();
     void setScreenSaverEnabled(bool enabled);
 
+#if !defined(QT_NO_MTCORE)
+private Q_SLOTS:
+    void onTimeout();
+#endif // QT_NO_MTCORE
+
 private:
     QScreenSaver * const q_ptr;
     Q_DECLARE_PUBLIC(QScreenSaver)
+
+#if !defined(QT_NO_MTCORE)
+    NotionClient *notionClient;
+    QTimer *timer;
+    bool isScreenSaverEnabled;
+    static const int notionDuration;
+#endif // QT_NO_MTCORE
 };
 
 QT_END_NAMESPACE

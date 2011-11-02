@@ -41,30 +41,44 @@
 
 #include "qscreensaver_linux_p.h"
 
-#if defined(Q_WS_X11)
-#include <QtWidgets/qx11info_x11.h>
+#if !defined(QT_NO_MTCORE)
+#include <mtcore/notion-client.h>
+#include <QtCore/qtimer.h>
+#endif // QT_NO_MTCORE
+
+#if !defined(QT_NO_X11)
 #include <X11/Xlib.h>
-#endif // Q_WS_X11
+#endif // QT_NO_X11
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_MTCORE)
+const int QScreenSaverPrivate::notionDuration(25);
+#endif // QT_NO_MTCORE
+
 QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     : q_ptr(parent)
+#if !defined(QT_NO_MTCORE)
+    , notionClient(0)
+    , timer(0)
+    , isScreenSaverEnabled(true)
+#endif // QT_NO_MTCORE
 {
 }
 
 bool QScreenSaverPrivate::screenSaverEnabled()
 {
-#if defined(Q_WS_X11)
+#if !defined(QT_NO_MTCORE)
+    return isScreenSaverEnabled;
+#elif !defined(QT_NO_X11)
     int timeout = 0;
     int interval = 0;
     int preferBlanking = 0;
     int allowExposures = 0;
-    XGetScreenSaver(QX11Info::display(), &timeout, &interval, &preferBlanking, &allowExposures);
-    if (timeout > 0)
-        return true;
-    else
-        return false;
+    Display *display = XOpenDisplay(0);
+    XGetScreenSaver(display, &timeout, &interval, &preferBlanking, &allowExposures);
+    XCloseDisplay(display);
+    return (timeout > 0);
 #else
     return false;
 #endif
@@ -72,20 +86,50 @@ bool QScreenSaverPrivate::screenSaverEnabled()
 
 void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-#if defined(Q_WS_X11)
+#if !defined(QT_NO_MTCORE)
+    if (enabled) {
+        if (notionClient && timer) {
+            notionClient->mediaPlaying(false);
+            timer->stop();
+        }
+        isScreenSaverEnabled = true;
+    } else {
+        if (!notionClient)
+            notionClient = new NotionClient(this);
+        if (!timer) {
+            timer = new QTimer(this);
+            timer->setInterval((notionDuration - 2) * 1000);
+            connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+        }
+        if (!timer->isActive())
+            timer->start();
+        onTimeout();
+        isScreenSaverEnabled = false;
+    }
+#elif !defined(QT_NO_X11)
     int timeout = 0;
     int interval = 0;
     int preferBlanking = 0;
     int allowExposures = 0;
-    XGetScreenSaver(QX11Info::display(), &timeout, &interval, &preferBlanking, &allowExposures);
+    Display *display = XOpenDisplay(0);
+    XGetScreenSaver(display, &timeout, &interval, &preferBlanking, &allowExposures);
 
     if (enabled && timeout > 0)
-        XSetScreenSaver(QX11Info::display(), -1, interval, preferBlanking, allowExposures);
+        XSetScreenSaver(display, -1, interval, preferBlanking, allowExposures);
     else if (!enabled && timeout != 0)
-        XSetScreenSaver(QX11Info::display(), 0, interval, preferBlanking, allowExposures);
+        XSetScreenSaver(display, 0, interval, preferBlanking, allowExposures);
+
+    XCloseDisplay(display);
 #else
     Q_UNUSED(enabled)
 #endif
 }
+
+#if !defined(QT_NO_MTCORE)
+void QScreenSaverPrivate::onTimeout()
+{
+    notionClient->mediaPlaying(true, notionDuration);
+}
+#endif // QT_NO_MTCORE
 
 QT_END_NAMESPACE
