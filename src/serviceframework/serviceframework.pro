@@ -16,7 +16,8 @@ load(qt_module_config)
 jsondb|contains(QT_CONFIG, jsondb): {
     mtcore|contains(config_test_mtcore, yes): {
         DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
-        PKGCONFIG += mtcore QtAddOnJsonDb
+        CONFIG += link_pkgconfig
+        PKGCONFIG += mtcore
         QT += jsondb jsondb-private
     }
 }

@@ -8,6 +8,7 @@ DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"
 
 jsondb|contains(QT_CONFIG, jsondb): {
     mtcore|contains(config_test_mtcore, yes): {
+        CONFIG += link_pkgconfig
         PKGCONFIG += mtcore
         DEFINES += QT_ADDON_JSONDB_LIB
         QT += jsondb jsondb-private
