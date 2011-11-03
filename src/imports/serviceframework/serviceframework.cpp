@@ -53,7 +53,10 @@ class QServiceDeclarativeModule : public QDeclarativeExtensionPlugin
 public:
     virtual void registerTypes(const char *uri)
     {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtServiceFramework"));
+        //Q_ASSERT(QLatin1String(uri) == QLatin1String("QtServiceFramework"));
+        if (QLatin1String(uri) != QLatin1String("QtServiceFramework")) {
+            qWarning("!!! Using deprecated name for QtServiceFramework module.  Rename all imports to QtServiceFramework. This will break shortly. !!!");
+        }
 
         // @uri QtServiceFramework 5.0
 
