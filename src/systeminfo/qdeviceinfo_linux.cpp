@@ -261,9 +261,15 @@ QString QDeviceInfoPrivate::imei(int interface)
 QString QDeviceInfoPrivate::manufacturer()
 {
     if (manufacturerBuffer.isEmpty()) {
-        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/sys_vendor"));
-        if (file.open(QIODevice::ReadOnly))
-            manufacturerBuffer = QString::fromAscii(file.readAll().simplified().data());
+        QStringList paths;
+        paths << QStringLiteral("/sys/kernel/info/make") << QStringLiteral("/sys/devices/virtual/dmi/id/sys_vendor");
+        foreach (const QString &path, paths) {
+            QFile file(path);
+            if (file.open(QIODevice::ReadOnly)) {
+                manufacturerBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
+                break;
+            }
+        }
     }
     return manufacturerBuffer;
 }
@@ -271,19 +277,30 @@ QString QDeviceInfoPrivate::manufacturer()
 QString QDeviceInfoPrivate::model()
 {
     if (modelBuffer.isEmpty()) {
-        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/product_name"));
-        if (file.open(QIODevice::ReadOnly))
-            modelBuffer = QString::fromAscii(file.readAll().simplified().data());
+        QStringList paths;
+        paths << QStringLiteral("/sys/kernel/info/model") << QStringLiteral("/sys/devices/virtual/dmi/id/product_name");
+        foreach (const QString &path, paths) {
+            QFile file(path);
+            if (file.open(QIODevice::ReadOnly)) {
+                modelBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
+                break;
+            }
+        }
     }
     return modelBuffer;
 }
 
 QString QDeviceInfoPrivate::productName()
 {
-    if (productNameBuffer.isEmpty() && QFile::exists(QString::fromAscii("/usr/bin/lsb_release"))) {
+    if (productNameBuffer.isEmpty()) {
+        QFile file(QStringLiteral("/sys/kernel/info/type"));
+        if (file.open(QIODevice::ReadOnly))
+            productNameBuffer = QString::fromLocal8Bit((file.readAll().simplified().data()));
+    }
+    if (productNameBuffer.isEmpty()) {
         QProcess lsbRelease;
-        lsbRelease.start(QString::fromAscii("/usr/bin/lsb_release"),
-                         QStringList() << QString::fromAscii("-c"));
+        lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
+                         QStringList() << QStringLiteral("-c"));
         if (lsbRelease.waitForFinished()) {
             QString buffer(QString::fromLocal8Bit(lsbRelease.readAllStandardOutput().constData()));
             productNameBuffer = buffer.section(QChar::fromAscii('\t'), 1, 1).simplified();
