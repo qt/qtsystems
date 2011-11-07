@@ -11,4 +11,9 @@ INSTALLS += qmldir
 
 QT += declarative systeminfo
 
-SOURCES += qsysteminfo.cpp
+HEADERS += \
+    qdeclarativenetworkinfo_p.h
+
+SOURCES += \
+    qdeclarativenetworkinfo.cpp \
+    qsysteminfo.cpp
