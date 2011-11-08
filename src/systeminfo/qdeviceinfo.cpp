@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     \value Sim            Subscriber identity module (SIM) feature.
     \value Positioning    Positioning feature, e.g. Global Positioning System (GPS).
     \value VideoOut       Video out feature.
-    \value Haptics        Haptics feature.
+    \value Haptics        Haptics feature, the platform can provide audio and/or visual and/or vibration feedback.
     \value Nfc            Near Field Communication (NFC) feature.
 */
 
