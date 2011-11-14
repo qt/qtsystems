@@ -125,6 +125,7 @@ class QDeclarativeServiceList : public QObject, public QDeclarativeParserStatus 
     Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
     Q_PROPERTY(int majorVersion READ majorVersion WRITE setMajorVersion NOTIFY majorVersionChanged)
     Q_PROPERTY(int minorVersion READ minorVersion WRITE setMinorVersion NOTIFY minorVersionChanged)
+    Q_PROPERTY(bool dynamicUpdates READ dynamicUpdates WRITE setDynamicUpdates NOTIFY dynamicUpdatesChanged)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeService> services READ services NOTIFY resultsChanged)
 
     Q_PROPERTY(MatchRule versionMatch READ versionMatch WRITE setVersionMatch NOTIFY versionMatchChanged)
@@ -153,6 +154,9 @@ public:
     void setMajorVersion(int major);
     int majorVersion() const;
 
+    void setDynamicUpdates(bool updates);
+    bool dynamicUpdates() const;
+
     void setVersionMatch(QDeclarativeServiceList::MatchRule match);
     QDeclarativeServiceList::MatchRule versionMatch() const;
 
@@ -170,9 +174,15 @@ Q_SIGNALS:
     void minorVersionChanged();
     void majorVersionChanged();
     void versionMatchChanged();
+    void dynamicUpdatesChanged();
+
+protected slots:
+    void servicesAddedRemoved();
+    void updateFilterResults();
 
 private:
     QList<QDeclarativeService *> m_services;
+    QList<QServiceInterfaceDescriptor> m_currentList;
     QServiceManager* serviceManager;
     QString m_service;
     QString m_interface;
@@ -180,8 +190,7 @@ private:
     int m_minor;
     QDeclarativeServiceList::MatchRule m_match;
     bool m_componentComplete;
-
-    void updateFilterResults();
+    bool m_dynamicUpdates;
 
     static void s_append(QDeclarativeListProperty<QDeclarativeService> *prop, QDeclarativeService *service);
     static int s_count(QDeclarativeListProperty<QDeclarativeService> *prop);

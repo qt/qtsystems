@@ -417,6 +417,36 @@ int QDeclarativeServiceList::minorVersion() const
     return m_minor;
 }
 
+void QDeclarativeServiceList::setDynamicUpdates(bool updates)
+{
+    if (updates == false) {
+        disconnect(this, SLOT(servicesAddedRemoved()));
+    }
+    else {
+        connect(serviceManager, SIGNAL(serviceAdded(QString,QService::Scope)),
+                this, SLOT(servicesAddedRemoved()));
+        connect(serviceManager, SIGNAL(serviceRemoved(QString,QService::Scope)),
+                this, SLOT(servicesAddedRemoved()));
+    }
+
+    if (m_dynamicUpdates != updates)
+        emit dynamicUpdatesChanged();
+
+    m_dynamicUpdates = updates;
+}
+
+void QDeclarativeServiceList::servicesAddedRemoved()
+{
+    qDebug() << Q_FUNC_INFO;
+    // invoke in another event loop run
+    QMetaObject::invokeMethod(this, "updateFilterResults", Qt::QueuedConnection);
+}
+
+bool QDeclarativeServiceList::dynamicUpdates() const
+{
+    return m_dynamicUpdates;
+}
+
 /*!
     \qmlproperty enumeration ServiceList::versionMatch
 
@@ -447,17 +477,31 @@ void QDeclarativeServiceList::updateFilterResults()
     const QString version = QString::number(m_major) + "." + QString::number(m_minor);
 
     QServiceFilter filter;
-    filter.setServiceName(m_service);
+
+    if (!m_service.isEmpty())
+        filter.setServiceName(m_service);
+
     if (m_match == QDeclarativeServiceList::Exact)
         filter.setInterface(m_interface, version, QServiceFilter::ExactVersionMatch);
-    else
+    else if (!m_interface.isEmpty())
         filter.setInterface(m_interface, version);
+
+    qDebug() << Q_FUNC_INFO << filter.serviceName() << filter.interfaceName() << filter.majorVersion() << filter.minorVersion();
+
+    QList<QServiceInterfaceDescriptor> list = serviceManager->findInterfaces(filter);
+
+    qDebug() << Q_FUNC_INFO << list.count() << m_currentList.count();
+
+    if (list == m_currentList) {
+        qDebug() << Q_FUNC_INFO << "no change";
+        return;
+    }
+
+    m_currentList = list;
 
     while (m_services.count()) //for now we refresh the entire list
         delete m_services.takeFirst();
 
-
-    QList<QServiceInterfaceDescriptor> list = serviceManager->findInterfaces(filter);
     for (int i = 0; i < list.size(); i++) {
         QDeclarativeService *service = new QDeclarativeService();
         service->setInterfaceDesc(list.at(i));
