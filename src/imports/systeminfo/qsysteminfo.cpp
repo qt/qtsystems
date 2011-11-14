@@ -42,7 +42,7 @@
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
 
-#include <qbatteryinfo.h>
+#include "qdeclarativebatteryinfo_p.h"
 #include <qdeviceinfo.h>
 #include <qdeviceprofile.h>
 #include <qdisplayinfo.h>
@@ -64,7 +64,7 @@ public:
 
         int major = 5;
         int minor = 0;
-        qmlRegisterType<QBatteryInfo>(uri, major, minor, "BatteryInfo");
+        qmlRegisterType<QDeclarativeBatteryInfo>(uri, major, minor, "BatteryInfo");
         qmlRegisterType<QDeviceInfo>(uri, major, minor, "DeviceInfo");
         qmlRegisterType<QDeviceProfile>(uri, major, minor, "DeviceProfile");
         qmlRegisterType<QDisplayInfo>(uri, major, minor, "DisplayInfo");

@@ -87,12 +87,12 @@ public:
     virtual ~QBatteryInfo();
 
     int batteryCount() const;
-    Q_INVOKABLE int currentFlow(int battery) const;
-    Q_INVOKABLE int maximumCapacity(int battery) const;
-    Q_INVOKABLE int remainingCapacity(int battery) const;
-    Q_INVOKABLE int remainingChargingTime(int battery) const;
-    Q_INVOKABLE int voltage(int battery) const;
-    Q_INVOKABLE QBatteryInfo::ChargingState chargingState(int battery) const;
+    int currentFlow(int battery) const;
+    int maximumCapacity(int battery) const;
+    int remainingCapacity(int battery) const;
+    int remainingChargingTime(int battery) const;
+    int voltage(int battery) const;
+    QBatteryInfo::ChargingState chargingState(int battery) const;
 
     QBatteryInfo::ChargerType chargerType() const;
     QBatteryInfo::EnergyUnit energyUnit() const;

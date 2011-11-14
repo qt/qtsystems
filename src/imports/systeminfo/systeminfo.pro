@@ -12,8 +12,10 @@ INSTALLS += qmldir
 QT += declarative systeminfo
 
 HEADERS += \
+    qdeclarativebatteryinfo_p.h \
     qdeclarativenetworkinfo_p.h
 
 SOURCES += \
+    qdeclarativebatteryinfo.cpp \
     qdeclarativenetworkinfo.cpp \
     qsysteminfo.cpp
