@@ -78,10 +78,10 @@ public:
     };
 
     enum EnergyUnit {
-            UnitUnknown = 0,
-            UnitmAh,
-            UnitmWh
-        };
+        UnitUnknown = 0,
+        UnitmAh,
+        UnitmWh
+    };
 
     QBatteryInfo(QObject *parent = 0);
     virtual ~QBatteryInfo();
