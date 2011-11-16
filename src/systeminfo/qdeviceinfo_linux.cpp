@@ -169,6 +169,11 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 
     case QDeviceInfo::Positioning:
         // TODO: find the kernel interface for this
+#if !defined(QT_NO_JSONDB)
+        if (!jsondbWrapper)
+            jsondbWrapper = new QJsonDbWrapper(this);
+        return jsondbWrapper->hasFeaturePositioning();
+#endif
         return false;
 
     case QDeviceInfo::VideoOut: {
@@ -205,11 +210,22 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 
 QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
 {
+#if !defined(QT_NO_JSONDB)
+        if (!jsondbWrapper)
+            jsondbWrapper = new QJsonDbWrapper(this);
+        return jsondbWrapper->getActivatedLocks();
+#endif
     return QDeviceInfo::NoLock;
 }
 
 QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::enabledLocks()
 {
+#if !defined(QT_NO_JSONDB)
+        if (!jsondbWrapper)
+            jsondbWrapper = new QJsonDbWrapper(this);
+        return jsondbWrapper->getEnabledLocks();
+#endif
+
     QDeviceInfo::LockTypeFlags enabledLocks = QDeviceInfo::NoLock;
 
     QScreenSaverPrivate screenSaver(0);
@@ -369,6 +385,16 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 
 void QDeviceInfoPrivate::connectNotify(const char *signal)
 {
+#if !defined(QT_NO_JSONDB)
+    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
+            || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
+        if (!jsondbWrapper)
+            jsondbWrapper = new QJsonDbWrapper(this);
+        connect(jsondbWrapper, signal, this, signal, Qt::UniqueConnection);
+        return;
+    }
+#endif // // QT_NO_JSONDB
+
     if (timer == 0) {
         timer = new QTimer;
         timer->setInterval(2000);
@@ -386,6 +412,15 @@ void QDeviceInfoPrivate::connectNotify(const char *signal)
 
 void QDeviceInfoPrivate::disconnectNotify(const char *signal)
 {
+#if !defined(QT_NO_JSONDB)
+    if ((strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
+         || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
+            && jsondbWrapper) {
+        disconnect(jsondbWrapper, signal, this, signal);
+        return;
+    }
+#endif // // QT_NO_JSONDB
+
     if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
         watchThermalState = false;
         currentThermalState = QDeviceInfo::UnknownThermal;

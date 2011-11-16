@@ -87,6 +87,10 @@ public:
     QString version(QDeviceInfo::Version type);
 
 Q_SIGNALS:
+#if !defined(QT_NO_JSONDB)
+    void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
+    void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
+#endif // QT_NO_JSONDB
     void thermalStateChanged(QDeviceInfo::ThermalState state);
 
 protected:

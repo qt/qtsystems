@@ -53,8 +53,11 @@
 #ifndef QJSONDBWRAPPER_P_H
 #define QJSONDBWRAPPER_P_H
 
+#include <qdeviceinfo.h>
+
 #include <QObject>
 #include <QMap>
+#include <QVariant>
 
 #include <jsondb-global.h>
 
@@ -64,6 +67,8 @@ Q_ADDON_JSONDB_END_NAMESPACE
 Q_USE_JSONDB_NAMESPACE
 
 QT_BEGIN_NAMESPACE
+class QTimer;
+class QEventLoop;
 
 class QJsonDbWrapper : public QObject
 {
@@ -73,21 +78,45 @@ public:
     virtual ~QJsonDbWrapper();
 
     // DeviceInfo Interface
+    QDeviceInfo::LockTypeFlags getActivatedLocks();
+    QDeviceInfo::LockTypeFlags getEnabledLocks();
+    bool hasFeaturePositioning();
     QString getUniqueDeviceID();
 
 Q_SIGNALS:
-    void responseAvailable();
+    void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
+    void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
 
 private Q_SLOTS:
-    void onError(int, int, QString);
-    void onResponse(int reqId, const QVariant& response);
+    void onError(int reqId, int code, const QString& message);
+    void onResponse(int reqId, const QVariant &response);
     void onTimerExpired();
+    void onNotification(const QString &uuid, const QVariant &notification, const QString &action);
 
 private:
-    QVariant getProperty(const QString objectType, const QString property);
+    QVariant getSystemPropertyValue(const QString &objectType, const QString &property);
+    QVariant getSystemSettingValue(const QString &settingId, const QString &setting);
+    bool hasSystemObject(const QString &objectType);
+    QString registerOnChanges(const QString &objectType);
+    bool unregisterOnChanges(const QString &uuid);
+    bool waitForResponse();
 
     JsonDbClient *jsonclient;
     QMap<int,QVariant> responses;
+
+    QEventLoop *waitLoop;
+    QTimer *timer;
+    bool watchActivatedLocks;
+    bool watchEnabledLocks;
+
+    QString uuidSecurityLockNotifier;
+
+    QDeviceInfo::LockTypeFlags activatedLocks;
+    QDeviceInfo::LockTypeFlags enabledLocks;
 };
 
 QT_END_NAMESPACE
