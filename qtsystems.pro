@@ -7,8 +7,9 @@ module_qtsystems_src.target = module-qtsystems-src
 module_qtsystems_tests.subdir = tests
 module_qtsystems_tests.target = module-qtsystems-tests
 module_qtsystems_tests.depends = module_qtsystems_src
+module_qtsystems_tests.CONFIG = no_default_install
 !contains(QT_BUILD_PARTS,tests):!with-tests {
-    module_qtsystems_tests.CONFIG = no_default_target no_default_install
+    module_qtsystems_tests.CONFIG += no_default_target
 }
 
 module_qtsystems_examples.subdir = examples
