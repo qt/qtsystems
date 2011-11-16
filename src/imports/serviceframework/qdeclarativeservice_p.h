@@ -85,6 +85,8 @@ public:
     virtual void classBegin();
     virtual void componentComplete();
 
+    bool operator== ( const QServiceInterfaceDescriptor& other ) const;
+
 Q_SIGNALS:
     void validChanged();
     void serviceObjectChanged();
@@ -125,7 +127,7 @@ class QDeclarativeServiceList : public QObject, public QDeclarativeParserStatus 
     Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
     Q_PROPERTY(int majorVersion READ majorVersion WRITE setMajorVersion NOTIFY majorVersionChanged)
     Q_PROPERTY(int minorVersion READ minorVersion WRITE setMinorVersion NOTIFY minorVersionChanged)
-    Q_PROPERTY(bool dynamicUpdates READ dynamicUpdates WRITE setDynamicUpdates NOTIFY dynamicUpdatesChanged)
+    Q_PROPERTY(bool monitorServiceRegistrations READ monitorServiceRegistrations WRITE setMonitorServiceRegistrations NOTIFY monitorServiceRegistrationsChanged)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeService> services READ services NOTIFY resultsChanged)
 
     Q_PROPERTY(MatchRule versionMatch READ versionMatch WRITE setVersionMatch NOTIFY versionMatchChanged)
@@ -154,8 +156,8 @@ public:
     void setMajorVersion(int major);
     int majorVersion() const;
 
-    void setDynamicUpdates(bool updates);
-    bool dynamicUpdates() const;
+    void setMonitorServiceRegistrations(bool updates);
+    bool monitorServiceRegistrations() const;
 
     void setVersionMatch(QDeclarativeServiceList::MatchRule match);
     QDeclarativeServiceList::MatchRule versionMatch() const;
@@ -174,11 +176,12 @@ Q_SIGNALS:
     void minorVersionChanged();
     void majorVersionChanged();
     void versionMatchChanged();
-    void dynamicUpdatesChanged();
+    void monitorServiceRegistrationsChanged();
 
 protected slots:
     void servicesAddedRemoved();
     void updateFilterResults();
+    void updateServiceList();
 
 private:
     QList<QDeclarativeService *> m_services;

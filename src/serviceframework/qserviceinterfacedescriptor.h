@@ -111,6 +111,11 @@ private:
 #endif
 };
 
+inline uint qHash(const QServiceInterfaceDescriptor &desc)
+{
+    return qHash(desc.serviceName()) + qHash(desc.interfaceName()) + desc.majorVersion() * 7 + desc.minorVersion() * 7;
+}
+
 #ifndef QT_NO_DATASTREAM
 Q_SERVICEFW_EXPORT QDataStream &operator<<(QDataStream &, const QServiceInterfaceDescriptor &);
 Q_SERVICEFW_EXPORT QDataStream &operator>>(QDataStream &, QServiceInterfaceDescriptor &);
