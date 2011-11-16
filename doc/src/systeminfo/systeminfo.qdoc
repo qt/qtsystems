@@ -34,18 +34,76 @@
 
 /*!
     \page systeminfo.html
-    \ingroup technology-apis
 
     \title Qt System Information
-    \brief A set of APIs that provides various system information.
+    \brief A set of APIs to discover system related information and capabilities.
 
 
     \tableofcontents
 
+    \ingroup technology-apis
+
     \section1 System Information
 
-    The System Information API provides various system information,
-    including battery, network, screen saver, storage, etc.
+    The System Information API provides a set of APIs to discover system
+    related information and capabilities.
+
+    \section1 Overview
+    The System Information API returns the system information related to a
+    number of categories.
+
+    \section2 Information Categories
+
+    \section3 \bold{Version}
+
+    The \l {QDeviceInfo::version()}{version()} function provides version information
+    for the \l {QDeviceInfo::Version}{Operating System} and also the \l {QDeviceInfo::Version}{Firmware}.
+
+    \section3 \bold{Features (hardware)}
+
+    The supported \l {QDeviceInfo::Feature}{hardware} can be tested using the
+    \l {QDeviceInfo::hasFeature()}{hasFeature()} function to return a boolean
+    that shows if the hardware is present. Features include things
+    such as the camera, bluetooth, GPS, FM radio.
+
+
+    \section3 \bold{Network}
+
+    The QNetworkInfo class enables the developer to access the \l {QNetworkInfo::NetworkMode}{NetworkMode} and the \l {QNetworkInfo::NetworkStatus}{NetworkStatus}. Signals
+    are available so that changes to session details can be reported, such as,
+    a \l {QNetworkInfo::cellIdChanged()}{cellIdChanged()} or
+    \l {QNetworkInfo::currentNetworkModeChanged()}{currentNetworkModeChanged()}.
+
+    Also the class can supply information on the \l {QNetworkInfo::networkInterfaceCount()}{number of network interfaces for a mode}, \l {QNetworkInfo::networkSignalStrength()}{signal strength} and other data.
+
+
+    \section3 \bold{Display Information}
+
+    The \l {QDisplayInfo} class provides height, width, contrast, and other
+    information of the display. It also includes the \l {QDisplayInfo::orientationChanged()}{orientationChanged()} signal. The user can get information on the brightness,
+    contrast, color depth, X and Y resolutions, and X and Y physical dimensions.
+
+    \section3 \bold{Storage Information}
+    The class \l {QStorageInfo} reports the presence of various storage devices.
+    Including: none, internal, removable, cdrom. It also supplies information
+    such as: \l {QStorageInfo::availableDiskSpace()}{availableDiskSpace()},
+    \l {QStorageInfo::totalDiskSpace()}{totalDiskSpace()} and
+    \l {QStorageInfo::driveType()}{driveType()}.
+
+    \section3 \bold{Device Information}
+    \list
+        \o \l {QBatteryInfo}{Battery Status}
+        \o \l {QBatteryInfo::remainingCapacity()}{Power State}
+        \o \l {QDeviceProfile}{Profile (silent, vibrating, normal etc)}
+        \o Sim
+        \o \l {QInputDeviceInfo}{Input Method} (key/buttons, keypad, qwerty, single touch screen, multitouch etc)
+    \endlist
+
+
+    \section3 \bold{Screensaver}
+
+    This provides the access to the information of the screen saver.
+
 
     \section1 Main Classes
     \annotatedlist systeminfo
@@ -54,10 +112,6 @@
     \annotatedlist qml-systeminfo
 
     \section1 Examples
-    \section2 System Information Example
-    The \l{sysinfo}{System Information} example demonstrates how an
-    application can very easily access the system information of the
-    device.
 
     \section2 System Information QML Example
     The System Info QML example demonstrates how an application can
