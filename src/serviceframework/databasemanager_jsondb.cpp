@@ -153,8 +153,8 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
         QList<QVariant> res = m_data.toMap()[kData].toList();
         if (!res.empty()) {
             QString alreadyRegisteredService = res.first().toMap().value(QLatin1String("service")).toString();
-            qDebug() << "Location: " << service.location;
-            qDebug() << "Results" << m_data;
+//            qDebug() << "Location: " << service.location;
+//            qDebug() << "Results" << m_data;
             const QString errorText = QLatin1String("Cannot register service \"%1\". Service \"%2\" is already "
                         "registered to service \"%3\".  It must first be deregistered "
                         "before it can be reregistered");
@@ -230,15 +230,17 @@ bool DatabaseManager::unregisterService(const QString &serviceName, DbScope scop
 {
     Q_UNUSED(scope)
     m_lastError.setError(DBError::NoError);
-//    qDebug() << ":!:" << __FUNCTION__;
+    //qDebug() << Q_FUNC_INFO << serviceName;
 
     QVariantMap query;
     query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"][?service=\"%2\"]")
                  .arg(JsonDbString::kTypeStr)
                  .arg(serviceName));
     int id = db->find(query);
-    if (!waitForResponse(id))
+    if (!waitForResponse(id)) {
+        m_lastError.setError(DBError::DatabaseNotOpen, QString::fromLatin1("Unable to connect to database"));
         return false;
+    }
 
     QList<QVariant> list = m_data.toMap()[kData].toList();
     if (list.isEmpty()) {
