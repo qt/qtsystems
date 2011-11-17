@@ -55,13 +55,6 @@
 #include <QByteArray>
 #include <QDataStream>
 
-#define QTRY_VERIFY(a)                       \
-    for (int _i = 0; _i < 5000; _i += 100) {    \
-        if (a) break;                  \
-        QTest::qWait(100);                      \
-    }                                           \
-    QVERIFY(a)
-
 QT_USE_NAMESPACE
 Q_DECLARE_METATYPE(QServiceFilter);
 Q_DECLARE_METATYPE(QVariant);

@@ -76,15 +76,6 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
 #include <stdlib.h>
 #endif
 
-#ifndef QTRY_VERIFY
-#define QTRY_VERIFY(a)                       \
-    for (int _i = 0; _i < 5000; _i += 100) {    \
-        if (a) break;                  \
-        QTest::qWait(100);                      \
-    }                                           \
-    QVERIFY(a)
-#endif
-
 QT_USE_NAMESPACE
 Q_DECLARE_METATYPE(QServiceFilter);
 Q_DECLARE_METATYPE(QVariant);

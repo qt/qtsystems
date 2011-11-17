@@ -53,20 +53,6 @@
 #include <QDir>
 #include <QPair>
 
-#define QTRY_COMPARE(a,e)                       \
-    for (int _i = 0; _i < 5000; _i += 100) {    \
-        if ((a) == (e)) break;                  \
-        QTest::qWait(100);                      \
-    }                                           \
-    QCOMPARE(a, e)
-
-#define QTRY_VERIFY(a)                       \
-    for (int _i = 0; _i < 5000; _i += 100) {    \
-        if (a) break;                  \
-        QTest::qWait(100);                      \
-    }                                           \
-    QVERIFY(a)
-
 #define PRINT_ERR(a) qPrintable(QString("error = %1").arg(a.error()))
 
 typedef QList<QServiceInterfaceDescriptor> ServiceInterfaceDescriptorList;
@@ -80,11 +66,6 @@ Q_DECLARE_METATYPE(QService::Scope)
 
 QT_BEGIN_NAMESPACE
 typedef QHash<QServiceInterfaceDescriptor::Attribute, QVariant> DescriptorAttributes;
-
-inline uint qHash(const QServiceInterfaceDescriptor &desc)
-{
-    return qHash(desc.serviceName()) + qHash(desc.interfaceName()) + desc.majorVersion() * 7 + desc.minorVersion() * 7;
-}
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE

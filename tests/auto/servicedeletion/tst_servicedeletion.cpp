@@ -52,20 +52,6 @@
 #include <QPair>
 #include <QTimer>
 
-#define QTRY_COMPARE(a,e)                       \
-    for (int _i = 0; _i < 5000; _i += 100) {    \
-        if ((a) == (e)) break;                  \
-        QTest::qWait(100);                      \
-    }                                           \
-    QCOMPARE(a, e)
-
-#define QTRY_VERIFY(a)                       \
-    for (int _i = 0; _i < 5000; _i += 100) {    \
-        if (a) break;                  \
-        QTest::qWait(100);                      \
-    }                                           \
-    QVERIFY(a)
-
 #define PRINT_ERR(a) qPrintable(QString("error = %1").arg(a.error()))
 QT_USE_NAMESPACE
 
