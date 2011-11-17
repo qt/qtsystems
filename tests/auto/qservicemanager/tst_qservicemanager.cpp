@@ -280,7 +280,7 @@ void tst_QServiceManager::initTestCase()
 
 void tst_QServiceManager::init()
 {
-#if defined(QT_JSONDB)
+#if defined(QT_ADDON_JSONDB_LIB)
     QSfwTestUtil::clearDatabases_jsondb();
 #endif
 #if defined(Q_OS_SYMBIAN)
@@ -416,7 +416,7 @@ void tst_QServiceManager::findServices_scope()
 #if defined(Q_OS_SYMBIAN)
     QSKIP("There is no difference between user and system scope in symbian");
 #endif
-#if defined(QT_JSONDB)
+#if defined(QT_ADDON_JSONDB_LIB)
     QSKIP("There is no difference between user and system scope with jsondb");
 #endif
     QFETCH(QService::Scope, scope_add);
@@ -689,7 +689,7 @@ void tst_QServiceManager::findInterfaces_scope()
 #if defined(Q_OS_SYMBIAN)
     QSKIP("There is no difference between user and system scope in symbian");
 #endif
-#if defined(QT_JSONDB)
+#if defined(QT_ADDON_JSONDB_LIB)
     QSKIP("There is no difference between user and system scope with jsondb");
 #endif
     QFETCH(QService::Scope, scope_add);
@@ -1233,7 +1233,7 @@ void tst_QServiceManager::setInterfaceDefault_descriptor_data()
     QTest::addColumn<QService::Scope>("scope_find");
     QTest::addColumn<bool>("expectFound");
 
-#if defined(Q_OS_SYMBIAN) || defined(QT_JSONDB)
+#if defined(Q_OS_SYMBIAN) || defined(QT_ADDON_JSONDB_LIB)
     // Symbian implementation hard-codes user-scope for everything, do not test any system scope-stuff
     // because returned service interface descriptor is always in user-scope
     QTest::newRow("user scope")
@@ -1349,7 +1349,7 @@ void tst_QServiceManager::serviceAdded_data()
 
     QByteArray file1Data = file1.readAll();
 
-#if defined (Q_OS_SYMBIAN) || defined(QT_JSONDB)
+#if defined (Q_OS_SYMBIAN) || defined(QT_ADDON_JSONDB_LIB)
     // Symbian implementation hard-codes (ignores) scopes for everything, do not test mixed-scope stuff
     QTest::newRow("SampleService, user scope") << file1Data << "SampleService"
             << QService::SystemScope << QService::SystemScope << true;
