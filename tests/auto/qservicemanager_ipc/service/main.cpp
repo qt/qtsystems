@@ -311,6 +311,7 @@ Q_SIGNALS:
     void signalWithVariousParam(QVariant,QString,QServiceFilter,QVariant);
     void valueChanged();
     void priorityChanged();
+    void count(int value);
 
 public slots:
     void triggerSignalWithIntParam()
@@ -396,6 +397,20 @@ public slots:
         return m_data;
     }
 
+    int testSignalSlotOrdering() {
+        m_count = 0;
+        QMetaObject::invokeMethod(this, "generateSignal", Qt::QueuedConnection);
+
+        return 0;
+    }
+
+    void generateSignal() {
+        emit count(m_count++);
+        if (m_count < 20) {
+            QMetaObject::invokeMethod(this, "generateSignal", Qt::QueuedConnection);
+        }
+    }
+
     void testIpcFailure() {
       qApp->exit(0); // exit to show failure
     }
@@ -406,6 +421,7 @@ private:
     ServiceFlags m_flags;
     uint m_hash;
     QByteArray m_data;
+    int m_count;
 };
 
 class FailureTestServiceCreation : public QObject

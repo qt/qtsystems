@@ -125,6 +125,8 @@ private slots:
     void testSlotInvokation();
     void testSignalling();
 
+    void testSignalSlotOrdering();
+
     void verifyServiceClass();
     void verifyFailures();
 
@@ -557,8 +559,8 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
     QVERIFY(mo->superClass());
     QCOMPARE(mo->superClass()->className(), "QServiceProxyBase");
     // TODO adding the ipc failure signal seems to break these
-    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 23); // 23+1 added signal for error signal added by library
-    QCOMPARE(mo->methodCount(), 28); //21 meta functions available + 1 signal
+    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 26); // 28+1 added signal for error signal added by library
+    QCOMPARE(mo->methodCount(), 31); //33 meta functions available + 1 signal
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
@@ -1091,6 +1093,18 @@ void tst_QServiceManager_IPC::verifyLargeDataTransfer_data()
     QTest::newRow("128k") << QByteArray(131072, 'A');
     QTest::newRow("1 megabyte") << QByteArray(1048576, 'A');
     QTest::newRow("Free mem") << QByteArray("");
+}
+
+void tst_QServiceManager_IPC::testSignalSlotOrdering()
+{
+    QSignalSpy spy(serviceUnique, SIGNAL(count(int)));
+
+    int value = -1;
+    bool ret = QMetaObject::invokeMethod(serviceUnique, "testSignalSlotOrdering", Q_RETURN_ARG(int, value));
+    QVERIFY2(ret == true, "Verify slot call worked");
+    QVERIFY2(value == 0, "Verify slot return value");
+    QVERIFY2(spy.count() == 0, "Verify no signals fired before the invokeMethod returns");
+    QTRY_COMPARE(spy.count(), 20);
 }
 
 void tst_QServiceManager_IPC::testIpcFailure()
