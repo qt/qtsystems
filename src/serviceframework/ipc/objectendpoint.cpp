@@ -99,10 +99,13 @@ class ObjectEndPointPrivate
 public:
     ObjectEndPointPrivate()
     {
+        functionReturned = false;
+        loop = new QEventLoop();
     }
 
     ~ObjectEndPointPrivate()
     {
+        delete loop;
     }
 
     //service side
@@ -156,10 +159,14 @@ public:
     //used on client and service side
     ObjectEndPoint::Type endPointType;
     ObjectEndPoint* parent;
+    QEventLoop* loop;
 
     //used on service side
     QRemoteServiceRegister::Entry entry;
     QUuid serviceInstanceId;
+
+    // user on the client side
+    bool functionReturned;
 };
 
 ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent)
@@ -170,6 +177,8 @@ ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* pa
     d = new ObjectEndPointPrivate;
     d->parent = this;
     d->endPointType = type;
+
+    connect(this, SIGNAL(pendingRequestFinished()), d->loop, SLOT(quit()));
 
     dispatch->setParent(this);
     connect(dispatch, SIGNAL(readyRead()), this, SLOT(newPackageReady()), Qt::QueuedConnection);
@@ -242,7 +251,7 @@ void ObjectEndPoint::newPackageReady()
 {
     //client and service side
 
-    while (dispatch->packageAvailable())
+    while (dispatch->packageAvailable() && !d->functionReturned)
     {
         QServicePackage p = dispatch->nextPackage();
         if (!p.isValid())
@@ -516,18 +525,21 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
         //client side
         Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
 
+        d->functionReturned = true;
+
         Response* response = openRequests()->value(p.d->messageId);
         if (response){
             response->isFinished = true;
             if (p.d->responseType == QServicePackage::Failed) {
                 response->result = 0;
-                QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+                QMetaObject::invokeMethod(this, "pendingRequestFinished");
                 return;
             }
             QVariant* variant = new QVariant(p.d->payload);
             response->result = reinterpret_cast<void *>(variant);
 
-            QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+            QMetaObject::invokeMethod(this, "pendingRequestFinished");
+
         }
     }
 }
@@ -640,12 +652,12 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 {
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests()->contains(requestId) ) {
-//        Response* response = openRequests()->value(requestId);
-        QEventLoop* loop = new QEventLoop( this );
-        QTimer::singleShot(30000, loop, SLOT(quit()));
-        connect(this, SIGNAL(pendingRequestFinished()), loop, SLOT(quit()));
-        loop->exec();
-        delete loop;
+        QTimer::singleShot(30000, d->loop, SLOT(quit()));
+        d->loop->exec();
+        if (d->functionReturned) {
+            d->functionReturned = false;
+            QMetaObject::invokeMethod(this, "newPackageReady", Qt::QueuedConnection);
+        }
     }
 }
 

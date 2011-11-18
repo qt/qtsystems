@@ -188,10 +188,9 @@ protected slots:
                 in >> package;
                 incoming.enqueue(package);
                 pending_buf.clear();
+                emit readyRead();
             }
         }
-
-        emit readyRead();
     }
     void readIncomingSecurity()
     {
