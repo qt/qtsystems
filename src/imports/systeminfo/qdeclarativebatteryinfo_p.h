@@ -58,8 +58,6 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QBatteryInfoPrivate;
-
 class Q_SYSTEMINFO_EXPORT QDeclarativeBatteryInfo : public QObject
 {
     Q_OBJECT
