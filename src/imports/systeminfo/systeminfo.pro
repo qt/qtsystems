@@ -13,9 +13,11 @@ QT += declarative systeminfo
 
 HEADERS += \
     qdeclarativebatteryinfo_p.h \
+    qdeclarativedeviceinfo_p.h \
     qdeclarativenetworkinfo_p.h
 
 SOURCES += \
     qdeclarativebatteryinfo.cpp \
+    qdeclarativedeviceinfo.cpp \
     qdeclarativenetworkinfo.cpp \
     qsysteminfo.cpp
