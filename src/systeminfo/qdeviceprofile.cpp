@@ -77,12 +77,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn  void QDeviceProfile::currentProfileChanged(const QDeviceProfile &profile)
-
-    This signal is emitted whenever the activated profile has changed to \a profile.
-*/
-
-/*!
     Constructs a QDeviceProfile object with the given \a parent.
 */
 QDeviceProfile::QDeviceProfile(QObject *parent)

@@ -240,7 +240,7 @@ void QDeclarativeNetworkInfo::setMonitorCurrentCellDataTechnology(bool monitor)
 }
 
 /*!
-    \qmlmethod enum NetworkInfo::currentCellDataTechnology(int interface)
+    \qmlmethod CellDataTechnology NetworkInfo::currentCellDataTechnology(int interface)
 
     Returns the current cell data technology of the given \a interface. Possible values are:
     \list
@@ -293,7 +293,7 @@ void QDeclarativeNetworkInfo::setMonitorNetworkStatus(bool monitor)
 }
 
 /*!
-    \qmlmethod enum NetworkInfo::networkStatus(NetworkMode mode, int interface)
+    \qmlmethod NetworkStatus NetworkInfo::networkStatus(NetworkMode mode, int interface)
 
     Returns the status of the given \a mode and \a interface. Possible values are:
     \list

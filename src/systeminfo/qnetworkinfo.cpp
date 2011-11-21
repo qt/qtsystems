@@ -132,7 +132,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QNeworkInfo::currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech)
+    \fn void QNetworkInfo::currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech)
 
     This signal is emitted whenever the current cell data technology for \a interface has changed to \a tech.
 */
@@ -232,8 +232,6 @@ QNetworkInfo::CellDataTechnology QNetworkInfo::currentCellDataTechnology(int int
 }
 
 /*!
-    \property QNetworkInfo::currentNetworkMode
-
     Returns the current active network mode. If there are more than one modes activated, the preferred
     one is returned.
 */
