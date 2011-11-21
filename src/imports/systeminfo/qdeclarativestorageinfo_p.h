@@ -39,44 +39,69 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qdeclarativeextensionplugin.h>
-#include <QtDeclarative/qdeclarative.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qdeclarativebatteryinfo_p.h"
-#include "qdeclarativedeviceinfo_p.h"
-#include <qdeviceprofile.h>
-#include <qdisplayinfo.h>
-#include <qinputdeviceinfo.h>
-#include "qdeclarativenetworkinfo_p.h"
-#include <qscreensaver.h>
-#include "qdeclarativestorageinfo_p.h"
+#ifndef QDECLARATIVESTORAGEINFO_P_H
+#define QDECLARATIVESTORAGEINFO_P_H
 
+#include <qstorageinfo.h>
+
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QSystemInfoDeclarativeModule : public QDeclarativeExtensionPlugin
+class Q_SYSTEMINFO_EXPORT QDeclarativeStorageInfo : public QObject
 {
     Q_OBJECT
 
-public:
-    virtual void registerTypes(const char *uri)
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtSystemInfo"));
+    Q_ENUMS(DriveType)
 
-        int major = 5;
-        int minor = 0;
-        qmlRegisterType<QDeclarativeBatteryInfo>(uri, major, minor, "BatteryInfo");
-        qmlRegisterType<QDeclarativeDeviceInfo>(uri, major, minor, "DeviceInfo");
-        qmlRegisterType<QDeviceProfile>(uri, major, minor, "DeviceProfile");
-        qmlRegisterType<QDisplayInfo>(uri, major, minor, "DisplayInfo");
-        qmlRegisterType<QInputDeviceInfo>(uri, major, minor, "InputDeviceInfo");
-        qmlRegisterType<QDeclarativeNetworkInfo>(uri, major, minor, "NetworkInfo");
-        qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");
-        qmlRegisterType<QDeclarativeStorageInfo>(uri, major, minor, "StorageInfo");
-    }
+    Q_PROPERTY(bool monitorAllLogicalDrives READ monitorAllLogicalDrives WRITE setMonitorAllLogicalDrives NOTIFY monitorAllLogicalDrivesChanged)
+
+    Q_PROPERTY(QStringList allLogicalDrives READ allLogicalDrives NOTIFY logicalDriveChanged)
+
+public:
+    enum DriveType {
+        UnknownDrive = QStorageInfo::UnknownDrive,
+        InternalDrive = QStorageInfo::InternalDrive,
+        RemovableDrive = QStorageInfo::RemovableDrive,
+        RemoteDrive = QStorageInfo::RemoteDrive,
+        CdromDrive = QStorageInfo::CdromDrive,
+        RamDrive = QStorageInfo::RamDrive
+    };
+
+    QDeclarativeStorageInfo(QObject *parent = 0);
+    virtual ~QDeclarativeStorageInfo();
+
+    bool monitorAllLogicalDrives() const;
+    void setMonitorAllLogicalDrives(bool monitor);
+    QStringList allLogicalDrives() const;
+
+    Q_INVOKABLE qlonglong availableDiskSpace(const QString &drive) const;
+    Q_INVOKABLE qlonglong totalDiskSpace(const QString &drive) const;
+    Q_INVOKABLE QString uriForDrive(const QString &drive) const;
+    Q_INVOKABLE DriveType driveType(const QString &drive) const;
+
+Q_SIGNALS:
+    void monitorAllLogicalDrivesChanged();
+
+    void logicalDriveChanged(const QString &drive, bool added);
+
+private:
+    QStorageInfo *storageInfo;
+
+    bool isMonitorAllLogicalDrives;
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
-#include "qsysteminfo.moc"
-
-Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoDeclarativeModule))
+#endif // QDECLARATIVESTORAGEINFO_P_H
