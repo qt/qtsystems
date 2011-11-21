@@ -69,9 +69,9 @@ class Q_SYSTEMINFO_EXPORT QDeclarativeDeviceInfo : public QObject
 
     Q_FLAGS(LockType LockTypeFlags)
 
-    Q_PROPERTY(bool monitorActivatedLocks READ monitorActivatedLocks NOTIFY monitorActivatedLocksChanged)
-    Q_PROPERTY(bool monitorEnabledLocks READ monitorEnabledLocks NOTIFY monitorEnabledLocksChanged)
-    Q_PROPERTY(bool monitorThermalState READ monitorThermalState NOTIFY monitorThermalStateChanged)
+    Q_PROPERTY(bool monitorActivatedLocks READ monitorActivatedLocks WRITE setMonitorActivatedLocks NOTIFY monitorActivatedLocksChanged)
+    Q_PROPERTY(bool monitorEnabledLocks READ monitorEnabledLocks WRITE setMonitorEnabledLocks NOTIFY monitorEnabledLocksChanged)
+    Q_PROPERTY(bool monitorThermalState READ monitorThermalState WRITE setMonitorThermalState NOTIFY monitorThermalStateChanged)
 
     Q_PROPERTY(LockTypeFlags activatedLocks READ activatedLocks NOTIFY activatedLocksChanged)
     Q_PROPERTY(LockTypeFlags enabledLocks READ enabledLocks NOTIFY enabledLocksChanged)
