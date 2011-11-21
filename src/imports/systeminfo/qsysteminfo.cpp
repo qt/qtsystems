@@ -80,3 +80,19 @@ QT_END_NAMESPACE
 #include "qsysteminfo.moc"
 
 Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoDeclarativeModule))
+
+/*!
+    \qmlclass ScreenSaver QScreenSaver
+    \inmodule QtSystems
+    \ingroup qml-systeminfo
+    \brief The ScreenSaver element provides information of the screen saver.
+*/
+
+/*!
+    \qmlproperty bool ScreenSaver::screenSaverEnabled
+
+    This property holds whether or not the screen saver is enabled.
+
+    On certain platforms, if screen saver is disabled, deep system sleep won't be automatically triggered,
+    and the display won't be automatically turned off, etc.
+ */
