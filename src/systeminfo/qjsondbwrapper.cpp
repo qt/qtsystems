@@ -62,7 +62,7 @@ const QString SYSTEM_OBJECT_REMOVE(QStringLiteral("{\"_uuid\":\"%1\"}"));
 const QString SYSTEM_PROPERTY_QUERY(QStringLiteral("[?_type=\"%1\"][=%2]"));
 const QString SETTING_QUERY(QStringLiteral("[?_type=\"com.nokia.mp.settings.SystemSettings\"][?identifier=\"%1\"][=settings]"));
 
-const int JSON_EXPIRATION_TIMER(500);
+const int JSON_EXPIRATION_TIMER(2000);
 
 QJsonDbWrapper::QJsonDbWrapper(QObject *parent)
     : QObject(parent)

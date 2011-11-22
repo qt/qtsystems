@@ -310,10 +310,10 @@ void QDeclarativeBatteryInfo::setMonitorChargingState(bool monitor)
     if (monitor != isMonitorChargingState) {
         isMonitorChargingState = monitor;
         if (monitor) {
-            connect(batteryInfo, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType)),
+            connect(batteryInfo, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState)),
                     this, SLOT(_q_chargingStateChanged(int,QBatteryInfo::ChargingState)));
         } else {
-            disconnect(batteryInfo, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType)),
+            disconnect(batteryInfo, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState)),
                        this, SLOT(_q_chargingStateChanged(int,QBatteryInfo::ChargingState)));
         }
         emit monitorChargingStateChanged();

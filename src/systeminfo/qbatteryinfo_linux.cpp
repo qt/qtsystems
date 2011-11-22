@@ -47,11 +47,13 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString AC_ONLINE_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/AC/online"));
-static const QString BATTERY_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/BAT%1/"));
-static const QString POWER_SUPPLY_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/"));
-static const QString USB_PRESENT_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/usb/present"));
-static const QString USB_TYPE_SYSFS_PATH(QString::fromAscii("/sys/class/power_supply/usb/type"));
+static const QString AC_ONLINE_SYSFS_PATH(QStringLiteral("/sys/class/power_supply/AC/online"));
+static const QString BATTERY_SYSFS_PATH(QStringLiteral("/sys/class/power_supply/BAT%1/"));
+static const QString POWER_SUPPLY_SYSFS_PATH(QStringLiteral("/sys/class/power_supply/"));
+static const QString USB_PRESENT_SYSFS_PATH(QStringLiteral("/sys/class/power_supply/usb/present"));
+static const QString USB_TYPE_SYSFS_PATH(QStringLiteral("/sys/class/power_supply/usb/type"));
+static const QString USB0_PRESENT_SYSFS_PATH(QStringLiteral("/sys/class/power_supply/USB0/present"));
+static const QString USB0_TYPE_SYSFS_PATH(QStringLiteral("/sys/class/power_supply/USB0/type"));
 
 QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     : QObject(parent)
@@ -93,7 +95,7 @@ int QBatteryInfoPrivate::currentFlow(int battery)
 int QBatteryInfoPrivate::maximumCapacity(int battery)
 {
     if (maximumCapacities[battery] == 0) {
-        QFile maximum(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("charge_full"));
+        QFile maximum(BATTERY_SYSFS_PATH.arg(battery) + QStringLiteral("charge_full"));
         if (maximum.open(QIODevice::ReadOnly)) {
             bool ok = false;
             int capacity = maximum.readAll().simplified().toInt(&ok);
@@ -296,7 +298,7 @@ void QBatteryInfoPrivate::onTimeout()
 
 int QBatteryInfoPrivate::getBatteryCount()
 {
-    return QDir(POWER_SUPPLY_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("BAT*")).size();
+    return QDir(POWER_SUPPLY_SYSFS_PATH).entryList(QStringList() << QStringLiteral("BAT*")).size();
 }
 
 int QBatteryInfoPrivate::getCurrentFlow(int battery)
@@ -305,7 +307,7 @@ int QBatteryInfoPrivate::getCurrentFlow(int battery)
     if (state == QBatteryInfo::UnknownChargingState)
         return 0;
 
-    QFile current(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("current_now"));
+    QFile current(BATTERY_SYSFS_PATH.arg(battery) + QStringLiteral("current_now"));
     if (!current.open(QIODevice::ReadOnly))
         return 0;
 
@@ -323,7 +325,7 @@ int QBatteryInfoPrivate::getCurrentFlow(int battery)
 
 int QBatteryInfoPrivate::getRemainingCapacity(int battery)
 {
-    QFile remaining(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("charge_now"));
+    QFile remaining(BATTERY_SYSFS_PATH.arg(battery) + QStringLiteral("charge_now"));
     if (!remaining.open(QIODevice::ReadOnly))
         return -1;
 
@@ -355,7 +357,7 @@ int QBatteryInfoPrivate::getRemainingChargingTime(int battery)
 
 int QBatteryInfoPrivate::getVoltage(int battery)
 {
-    QFile current(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("voltage_now"));
+    QFile current(BATTERY_SYSFS_PATH.arg(battery) + QStringLiteral("voltage_now"));
     if (!current.open(QIODevice::ReadOnly))
         return -1;
 
@@ -376,19 +378,27 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::getChargerType()
         charger.close();
     }
 
-    charger.setFileName(USB_PRESENT_SYSFS_PATH);
-    if (charger.open(QIODevice::ReadOnly)) {
-        char present;
-        if (charger.read(&present, 1) == 1 && present == '1') {
-            charger.close();
-            charger.setFileName(USB_TYPE_SYSFS_PATH);
-            if (charger.open(QIODevice::ReadOnly)) {
-                if (charger.readAll().simplified() == "USB_DCP")
-                    return QBatteryInfo::WallCharger;
-                return QBatteryInfo::USBCharger;
+    QMap<QString, QString> chargerMap;
+    chargerMap.insert(USB0_PRESENT_SYSFS_PATH, USB0_TYPE_SYSFS_PATH);
+    chargerMap.insert(USB_PRESENT_SYSFS_PATH, USB_TYPE_SYSFS_PATH);
+
+    QList<QString> presentPaths = chargerMap.keys();
+    foreach (const QString &presentPath, presentPaths) {
+        charger.setFileName(presentPath);
+        if (charger.open(QIODevice::ReadOnly)) {
+            char present;
+            if (charger.read(&present, 1) == 1 && present == '1') {
+                charger.close();
+
+                charger.setFileName(chargerMap.value(presentPath));
+                if (charger.open(QIODevice::ReadOnly)) {
+                    if (charger.readAll().simplified() == "USB_DCP")
+                        return QBatteryInfo::WallCharger;
+                    return QBatteryInfo::USBCharger;
+                }
             }
+            charger.close();
         }
-        charger.close();
     }
 
     return QBatteryInfo::UnknownCharger;
@@ -396,7 +406,7 @@ QBatteryInfo::ChargerType QBatteryInfoPrivate::getChargerType()
 
 QBatteryInfo::ChargingState QBatteryInfoPrivate::getChargingState(int battery)
 {
-    QFile state(BATTERY_SYSFS_PATH.arg(battery) + QString::fromAscii("status"));
+    QFile state(BATTERY_SYSFS_PATH.arg(battery) + QStringLiteral("status"));
     if (!state.open(QIODevice::ReadOnly))
         return QBatteryInfo::UnknownChargingState;
 
