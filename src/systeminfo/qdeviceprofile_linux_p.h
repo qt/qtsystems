@@ -50,80 +50,37 @@
 // We mean it.
 //
 
-#ifndef QJSONDBWRAPPER_P_H
-#define QJSONDBWRAPPER_P_H
+#ifndef QDEVICEPROFILE_LINUX_P_H
+#define QDEVICEPROFILE_LINUX_P_H
 
-#include <qdeviceinfo.h>
-
-#include <QObject>
-#include <QMap>
-#include <QVariant>
-
-#include <jsondb-global.h>
-
-Q_ADDON_JSONDB_BEGIN_NAMESPACE
-class JsonDbClient;
-Q_ADDON_JSONDB_END_NAMESPACE
-Q_USE_JSONDB_NAMESPACE
+#include <qdeviceprofile.h>
 
 QT_BEGIN_NAMESPACE
-class QTimer;
-class QEventLoop;
 
-class QJsonDbWrapper : public QObject
+#if !defined(QT_NO_JSONDB)
+class QJsonDbWrapper;
+#endif //QT_NO_JSONDB
+
+class QDeviceProfilePrivate
 {
-    Q_OBJECT
 public:
-    QJsonDbWrapper(QObject *parent = 0);
-    virtual ~QJsonDbWrapper();
+    QDeviceProfilePrivate(QDeviceProfile *parent);
+    ~QDeviceProfilePrivate();
 
-    // DeviceInfo Interface
-    QDeviceInfo::LockTypeFlags getActivatedLocks();
-    QDeviceInfo::LockTypeFlags getEnabledLocks();
-    bool hasFeaturePositioning();
-    bool hasFeatureVibration();
-    QString getUniqueDeviceID();
-
-    // DeviceProfile Interface
     bool isVibrationActivated();
-    int getRingtoneVolume();
-
-Q_SIGNALS:
-    void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
-    void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
-
-protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
-
-private Q_SLOTS:
-    void onError(int reqId, int code, const QString& message);
-    void onResponse(int reqId, const QVariant &response);
-    void onTimerExpired();
-    void onNotification(const QString &uuid, const QVariant &notification, const QString &action);
+    int messageRingtoneVolume();
+    int voiceRingtoneVolume();
+    QDeviceProfile::ProfileType profileType();
 
 private:
-    QVariant getSystemPropertyValue(const QString &objectType, const QString &property);
-    QVariant getSystemSettingValue(const QString &settingId, const QString &setting);
-    bool hasSystemObject(const QString &objectType);
-    QString registerOnChanges(const QString &objectType);
-    bool unregisterOnChanges(const QString &uuid);
-    bool waitForResponse();
+    QDeviceProfile * const q_ptr;
+    Q_DECLARE_PUBLIC(QDeviceProfile)
 
-    JsonDbClient *jsonclient;
-    QMap<int,QVariant> responses;
-
-    QEventLoop *waitLoop;
-    QTimer *timer;
-    bool watchActivatedLocks;
-    bool watchEnabledLocks;
-
-    QString uuidSecurityLockNotifier;
-
-    QDeviceInfo::LockTypeFlags activatedLocks;
-    QDeviceInfo::LockTypeFlags enabledLocks;
+#if !defined(QT_NO_JSONDB)
+    QJsonDbWrapper *jsondbWrapper;
+#endif //QT_NO_JSONDB
 };
 
 QT_END_NAMESPACE
 
-#endif // QJSONDBWRAPPER_P_H
+#endif // QDEVICEPROFILE_LINUX_P_H

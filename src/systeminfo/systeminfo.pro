@@ -68,7 +68,8 @@ linux-* {
                        qbatteryinfo_linux_p.h \
                        qnetworkinfo_linux_p.h \
                        qinputdeviceinfo_linux_p.h \
-                       qscreensaver_linux_p.h
+                       qscreensaver_linux_p.h \
+                       qdeviceprofile_linux_p.h
 
     SOURCES += qdeviceinfo_linux.cpp \
                qdisplayinfo_linux.cpp \
@@ -76,7 +77,8 @@ linux-* {
                qbatteryinfo_linux.cpp \
                qnetworkinfo_linux.cpp \
                qinputdeviceinfo_linux.cpp \
-               qscreensaver_linux.cpp
+               qscreensaver_linux.cpp \
+               qdeviceprofile_linux.cpp
 
     x11|contains(config_test_x11, yes): {
         CONFIG += link_pkgconfig

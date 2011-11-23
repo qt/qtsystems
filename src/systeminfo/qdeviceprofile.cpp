@@ -41,6 +41,9 @@
 
 #include <qdeviceprofile.h>
 
+#if defined(Q_OS_LINUX)
+#  include "qdeviceprofile_linux_p.h"
+#else
 QT_BEGIN_NAMESPACE
 class QDeviceProfilePrivate
 {
@@ -53,6 +56,7 @@ public:
     QDeviceProfile::ProfileType profileType() { return QDeviceProfile::UnknownProfile; }
 };
 QT_END_NAMESPACE
+#endif
 
 QT_BEGIN_NAMESPACE
 

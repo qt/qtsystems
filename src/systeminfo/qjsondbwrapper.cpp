@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 const QString SETTING_PATH(QStringLiteral("com.nokia.mp.settings."));
 const QString SETTING_LOCATION(QStringLiteral("location"));
+const QString SETTING_SOUNDS(QStringLiteral("sounds"));
 const QString SYSTEM_PATH(QStringLiteral("com.nokia.mp.system."));
 const QString SYSTEM_SECURITYLOCK(QStringLiteral("SecurityLock"));
 const QString SYSTEM_DEVICEINFO(QStringLiteral("DeviceInfo"));
@@ -113,9 +114,32 @@ bool QJsonDbWrapper::hasFeaturePositioning()
     return getSystemSettingValue(SETTING_LOCATION, QStringLiteral("locationServicesFeatureEnabled")).toBool();
 }
 
+bool QJsonDbWrapper::hasFeatureVibration()
+{
+    QVariant vibration = getSystemSettingValue(SETTING_SOUNDS, QStringLiteral("vibrationOn"));
+    if (!vibration.isNull())
+        return true;
+
+    return false;
+}
+
 QString QJsonDbWrapper::getUniqueDeviceID()
 {
     return getSystemPropertyValue(SYSTEM_DEVICEINFO, QStringLiteral("uniqueDeviceId")).toString();
+}
+
+bool QJsonDbWrapper::isVibrationActivated()
+{
+    return getSystemSettingValue(SETTING_SOUNDS, QStringLiteral("vibrationOn")).toBool();
+}
+
+int QJsonDbWrapper::getRingtoneVolume()
+{
+    int volume = getSystemSettingValue(SETTING_SOUNDS, QStringLiteral("ringerVolume")).toInt();
+    if (volume >= 0 && volume <= 100)
+        return volume;
+
+    return -1;
 }
 
 QVariant QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, const QString &property)
