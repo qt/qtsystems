@@ -128,6 +128,9 @@ void tst_QValueSpace::tst_PublishSubscribe()
     if (QValueSpace::availableLayers().size() == 0)
         QSKIP("No value space layer available, thus skip all the test cases.");
 
+    if (QValueSpace::availableLayers().contains(QVALUESPACE_JSONDB_LAYER))
+        QSKIP("Unit tests for JSON DB layer are currently unsupported!.");
+
     QFETCH(QString, path);
     QFETCH(QString, name);
     QFETCH(QVariant, value);
