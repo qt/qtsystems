@@ -57,10 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDisplayInfoPrivate : public QObject
+class QDisplayInfoPrivate
 {
-    Q_OBJECT
-
 public:
     QDisplayInfoPrivate(QDisplayInfo *parent);
 
@@ -68,17 +66,12 @@ public:
     int contrast(int screen);
     QDisplayInfo::BacklightState backlightState(int screen);
 
-Q_SIGNALS:
-    void orientationChanged(int screen, Qt::ScreenOrientation orientation);
-
-protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
-
-
 private:
     QDisplayInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDisplayInfo)
+
+    static const QString BACKLIGHT_SYSFS_PATH;
+    static const QString GRAPHICS_SYSFS_PATH;
 };
 
 QT_END_NAMESPACE

@@ -42,41 +42,47 @@
 #include "qdisplayinfo_linux_p.h"
 
 #include <QtCore/qdir.h>
-#include <QtGui/qpixmap.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
+const QString QDisplayInfoPrivate::BACKLIGHT_SYSFS_PATH(QStringLiteral("/sys/class/backlight/"));
+const QString QDisplayInfoPrivate::GRAPHICS_SYSFS_PATH(QStringLiteral("/sys/class/graphics/"));
+
 QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
-    : QObject(parent)
-    , q_ptr(parent)
+    : q_ptr(parent)
 {
 }
 
 int QDisplayInfoPrivate::brightness(int screen)
 {
-    QString sysfsPath(QString::fromAscii("/sys/class/backlight/"));
-    const QStringList dirs = QDir(sysfsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    if (dirs.size() <= screen)
-        return -1;
+    QMap<QString, QStringList> brightnessMap;
+    brightnessMap.insert(BACKLIGHT_SYSFS_PATH, QStringList() << QStringLiteral("/max_brightness") << QStringLiteral("/actual_brightness"));
+    brightnessMap.insert(GRAPHICS_SYSFS_PATH, QStringList() << QStringLiteral("/backlight_max") << QStringLiteral("/backlight"));
 
-    bool ok = false;
-    int max = 0;
-    int actual = 0;
-    sysfsPath += dirs.at(screen);
-    QFile brightness(sysfsPath + QString::fromAscii("/max_brightness"));
-    if (brightness.open(QIODevice::ReadOnly)) {
-        max = brightness.readAll().simplified().toInt(&ok);
-        if (!ok || max == 0)
-            return -1;
-        brightness.close();
-
-        brightness.setFileName(sysfsPath + QString::fromAscii("/actual_brightness"));
+    QStringList sysfsPaths = brightnessMap.keys();
+    foreach (const QString &sysfsPath, sysfsPaths) {
+        const QStringList dirs = QDir(sysfsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+        if (dirs.size() <= screen)
+            continue;
+        bool ok = false;
+        int max = 0;
+        int actual = 0;
+        QFile brightness(sysfsPath + dirs.at(screen) + brightnessMap.value(sysfsPath).at(0));
         if (brightness.open(QIODevice::ReadOnly)) {
-            actual = brightness.readAll().simplified().toInt(&ok);
-            if (!ok)
-                return -1;
+            max = brightness.readAll().simplified().toInt(&ok);
+            if (!ok || max == 0)
+                continue;
+            brightness.close();
 
-            return actual * 100 / max;
+            brightness.setFileName(sysfsPath + dirs.at(screen) + brightnessMap.value(sysfsPath).at(1));
+            if (brightness.open(QIODevice::ReadOnly)) {
+                actual = brightness.readAll().simplified().toInt(&ok);
+                if (!ok)
+                    continue;
+
+                return actual * 100 / max;
+            }
         }
     }
 
@@ -91,28 +97,14 @@ int QDisplayInfoPrivate::contrast(int screen)
 
 QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
 {
-    Q_UNUSED(screen);
+    int actualBrightness = brightness(screen);
+
+    if (actualBrightness == 100)
+        return QDisplayInfo::BacklightOn;
+    else if (actualBrightness == 0)
+        return QDisplayInfo::BacklightOff;
+
     return QDisplayInfo::BacklightUnknown;
-}
-
-void QDisplayInfoPrivate::connectNotify(const char *signal)
-{
-    if (strcmp(signal, SIGNAL(orientationChanged(int,Qt::ScreenOrientation))) == 0) {
-//        watchOrientation = true;
-//        int count = QGuiApplication::screens().size();
-//        for (int i = 0; i < count; ++i)
-//            currentOrientation[i] = getOrientation(i);
-//        connect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
-    }
-}
-
-void QDisplayInfoPrivate::disconnectNotify(const char *signal)
-{
-    if (strcmp(signal, SIGNAL(orientationChanged(int,Qt::ScreenOrientation))) == 0) {
-//        watchOrientation = false;
-//        currentOrientation.clear();
-//        disconnect(qApp->desktop(), SIGNAL(resized(int)), this, SLOT(onDesktopWidgetResized(int)));
-    }
 }
 
 QT_END_NAMESPACE

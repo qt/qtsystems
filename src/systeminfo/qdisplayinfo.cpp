@@ -47,8 +47,6 @@
 
 #if defined(Q_OS_LINUX)
 #  include "qdisplayinfo_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qdisplayinfo_win_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QDisplayInfoPrivate
@@ -221,11 +219,7 @@ Qt::ScreenOrientation QDisplayInfo::orientation(int screen) const
 */
 void QDisplayInfo::connectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX)
-    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
-#else
     Q_UNUSED(signal)
-#endif
 }
 
 /*!
@@ -233,15 +227,7 @@ void QDisplayInfo::connectNotify(const char *signal)
 */
 void QDisplayInfo::disconnectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX)
-    // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (receivers(signal) > 0)
-        return;
-
-    disconnect(d_ptr, signal, this, signal);
-#else
     Q_UNUSED(signal)
-#endif
 }
 
 QT_END_NAMESPACE
