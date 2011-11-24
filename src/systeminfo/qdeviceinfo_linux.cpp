@@ -163,11 +163,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        QStringList modems = ofonoWrapper->allModems();
-        foreach (const QString &modem, modems) {
-            if (!ofonoWrapper->imei(modem).isEmpty())
-                return true;
-        }
+        return (ofonoWrapper->allModems().size() > 0);
     }
 #endif
         return false;
