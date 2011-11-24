@@ -101,11 +101,14 @@ public:
     {
         functionReturned = false;
         loop = new QEventLoop();
+        loopTimeout = new QTimer();
+        QObject::connect(loopTimeout, SIGNAL(timeout()), loop, SLOT(quit()));
     }
 
     ~ObjectEndPointPrivate()
     {
         delete loop;
+        delete loopTimeout;
     }
 
     //service side
@@ -160,6 +163,7 @@ public:
     ObjectEndPoint::Type endPointType;
     ObjectEndPoint* parent;
     QEventLoop* loop;
+    QTimer *loopTimeout;
 
     //used on service side
     QRemoteServiceRegister::Entry entry;
@@ -332,18 +336,31 @@ void ObjectEndPoint::propertyCall(const QServicePackage& p)
     } else {
         //client side
         Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
+        static QQueue<QUuid> lastId;
         Response* response = openRequests()->value(p.d->messageId);
-        response->isFinished = true;
-        if (p.d->responseType == QServicePackage::Failed) {
-            response->result = 0;
-            QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
-            qWarning() << "Service method call failed";
-            return;
-        }
-        QVariant* variant = new QVariant(p.d->payload);
-        response->result = reinterpret_cast<void *>(variant);
+        if (response) {
+            lastId.enqueue(p.d->messageId);
+            while (lastId.count() > 10)
+                lastId.dequeue();
+            response->isFinished = true;
+            if (p.d->responseType == QServicePackage::Failed) {
+                response->result = 0;
+                QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+                qWarning() << "Service method call failed";
+                return;
+            }
+            QVariant* variant = new QVariant(p.d->payload);
+            response->result = reinterpret_cast<void *>(variant);
 
-        QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+            QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+        }
+        else {
+            qWarning() << "**** FAILED TO FIND MESSAGE ID!!! ****";
+            qWarning() << "Current id" << p.d->messageId.toString();
+            foreach (const QUuid &last, lastId)
+                qWarning() << "last ids" << last.toString();
+            qWarning() << p;
+        }
     }
 }
 
@@ -652,8 +669,9 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 {
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests()->contains(requestId) ) {
-        QTimer::singleShot(30000, d->loop, SLOT(quit()));
+        d->loopTimeout->setSingleShot(30000);
         d->loop->exec();
+        d->loopTimeout->stop();
         if (d->functionReturned) {
             d->functionReturned = false;
             QMetaObject::invokeMethod(this, "newPackageReady", Qt::QueuedConnection);
