@@ -48,8 +48,6 @@
 #include <QString>
 #include <QDir>
 
-QT_BEGIN_NAMESPACE
-
 static const char * const errorTable[] = {
     "No error", //0
     "Storage read error",
@@ -534,5 +532,3 @@ int main(int argc, char *argv[])
 }
 
 #include "servicefw.moc"
-
-QT_END_NAMESPACE
