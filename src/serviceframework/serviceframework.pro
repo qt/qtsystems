@@ -20,10 +20,12 @@ jsondb|contains(QT_CONFIG, jsondb): {
         PKGCONFIG += mtcore
         QT += jsondb jsondb-private
     }
-}
-
-!no_wayland: contains(config_test_wayland, yes) {
-    DEFINES += QT_WAYLAND_PRESENT
+    !no_wayland: {
+        DEFINES += QT_WAYLAND_PRESENT
+    }
+    else: {
+        error(failed)
+    }
 }
 
 include(ipc/ipc.pri)

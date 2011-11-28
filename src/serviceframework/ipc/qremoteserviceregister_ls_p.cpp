@@ -63,7 +63,7 @@
 #include <QTextStream>
 #include "qsecuritypackage_p.h"
 #include "qservicesecurity_p.h"
-#ifndef QT_WAYLAND_PRESENT
+#ifdef QT_WAYLAND_PRESENT
 #include <QtAddOnJsonDb/QtAddOnJsonDb>
 #endif
 #endif
@@ -298,7 +298,7 @@ private:
         NotionClient *client;
 };
 
-#ifndef QT_WAYLAND_PRESENT
+#ifdef QT_WAYLAND_PRESENT
 Q_USE_JSONDB_NAMESPACE
 
 class JsonDbWaiter : public QObject
@@ -517,6 +517,8 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 
 #ifdef QT_WAYLAND_PRESENT
 static QUuid doAuth(const QString &location) {
+    qDebug() << Q_FUNC_INFO << "SFW doing auth request for" << location;
+
     QUuid secToken;
     NotionClient *client = new NotionClient();
     NotionWaiter *waiter = new NotionWaiter(client);
@@ -527,6 +529,7 @@ static QUuid doAuth(const QString &location) {
     notion.insert(QLatin1String("service"), location);
     client->send(notion);
 
+    qDebug() << "Sent service request for" << notion;
 
     bool serviceRequestEventReceived = false;
 
@@ -538,14 +541,14 @@ static QUuid doAuth(const QString &location) {
             qWarning() << "Error on ServiceRequest!" << waiter->errorText;
             delete waiter;
             delete client;
-            return false;
+            return QUuid();
         }
 
         if (waiter->waitingOnNotion == true) {
             qWarning() << "Notions failed to return within waiting period";
             delete waiter;
             delete client;
-            return false;
+            return QUuid();
         }
 
         if (waiter->notion.value(QLatin1String("notion")) == QLatin1String("ServiceRequestEvent")) {
