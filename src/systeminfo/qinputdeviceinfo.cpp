@@ -41,7 +41,9 @@
 
 #include <qinputdeviceinfo.h>
 
-#if defined(Q_OS_LINUX)
+#if defined(QT_SIMULATOR)
+#  include "qsysteminfo_simulator_p.h"
+#elif defined(Q_OS_LINUX)
 #  include "qinputdeviceinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
 #  include "qinputdeviceinfo_win_p.h"
@@ -187,7 +189,7 @@ QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfo::availableTouchDevices() con
 */
 void QInputDeviceInfo::connectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && !defined(QT_SIMULATOR)
     connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
@@ -199,7 +201,7 @@ void QInputDeviceInfo::connectNotify(const char *signal)
 */
 void QInputDeviceInfo::disconnectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && !defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (receivers(signal) > 0)
         return;

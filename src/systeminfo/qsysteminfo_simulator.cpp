@@ -39,68 +39,9 @@
 **
 ****************************************************************************/
 
-#include <qscreensaver.h>
-
-#if defined(QT_SIMULATOR)
-#  include "qsysteminfo_simulator_p.h"
-#elif defined(Q_OS_LINUX)
-#include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
-
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QT_END_NAMESPACE
-#endif
+#include "qsysteminfo_simulator_p.h"
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystems
-    \brief The QScreenSaver class provides various information of the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
-{
-}
-
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
-{
-    delete d_ptr;
-}
-
-/*!
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
-{
-    return d_ptr->screenSaverEnabled();
-}
-
-/*!
-    Set the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
-}
 
 QT_END_NAMESPACE

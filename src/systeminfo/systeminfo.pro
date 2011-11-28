@@ -31,7 +31,7 @@ SOURCES += qdeviceinfo.cpp \
            qdeviceprofile.cpp \
            qinputdeviceinfo.cpp
 
-win32 {
+win32: !simulator {
     contains(CONFIG, release) {
        CONFIG -= console
     }
@@ -59,7 +59,7 @@ win32 {
                qnetworkinfo_win.cpp
 }
 
-linux-* {
+linux-*: !simulator{
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
                        qstorageinfo_linux_p.h \
@@ -136,6 +136,16 @@ linux-* {
     } else {
         DEFINES += QT_NO_UDEV
     }
+}
+
+simulator {
+    QT += simulator
+    DEFINES += QT_SIMULATOR
+    SOURCES += qsysteminfodata_simulator.cpp \
+                qsysteminfo_simulator.cpp
+
+    HEADERS += qsysteminfodata_simulator_p.h \
+                qsysteminfo_simulator_p.h
 }
 
 HEADERS = qtsysteminfoversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS
