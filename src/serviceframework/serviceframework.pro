@@ -24,7 +24,7 @@ jsondb|contains(QT_CONFIG, jsondb): {
         DEFINES += QT_WAYLAND_PRESENT
     }
     else: {
-        error(failed)
+        error(Config option no_wayland is no longer valid in this configuration)
     }
 }
 
