@@ -122,6 +122,10 @@ bool QServiceSecurity::isAuthorized(QServicePackage::Type type, const QRemoteSer
                 return true;
             }
         }
+#ifdef QT_DISABLE_SECURITY
+        qWarning() << Q_FUNC_INFO << "Service Framework security is disabled. The security check should have FAILED.";
+        return true;
+#endif
     }
     else {
         return true;

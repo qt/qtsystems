@@ -26,6 +26,10 @@ jsondb|contains(QT_CONFIG, jsondb): {
     else: {
         error(Config option no_wayland is no longer valid in this configuration)
     }
+    no_security: {
+        warning(SERVICE FRAMEWORK SECURITY IS DISABLED)
+        DEFINES += QT_DISABLE_SECURITY
+    }
 }
 
 include(ipc/ipc.pri)
