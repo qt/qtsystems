@@ -44,10 +44,9 @@
 #include <qpublishsubscribeglobal.h>
 #include <QMainWindow>
 
+QT_BEGIN_NAMESPACE
 class QValueSpacePublisher;
 
-
-QT_BEGIN_NAMESPACE
 namespace Ui {
     class PublisherDialog;
 }

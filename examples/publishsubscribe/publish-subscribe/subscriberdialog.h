@@ -44,10 +44,10 @@
 #include <qpublishsubscribeglobal.h>
 #include <QMainWindow>
 
+QT_BEGIN_NAMESPACE
+
 class QValueSpaceSubscriber;
 
-
-QT_BEGIN_NAMESPACE
 namespace Ui {
     class SubscriberDialog;
 }
