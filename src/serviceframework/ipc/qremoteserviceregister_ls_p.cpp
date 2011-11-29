@@ -167,7 +167,6 @@ protected slots:
 
             if (pending_bytes == 0) { /* New packet */
                 QDataStream in_size(socket);
-                quint32 size;
                 in_size >> pending_bytes;
                 pending_buf.clear();
             }
@@ -222,6 +221,7 @@ protected slots:
 
     void socketError(QLocalSocket::LocalSocketError err)
     {
+        Q_UNUSED(err)
 //        qWarning() << "Socket error!" << err << socket->errorString();
     }
 
@@ -427,7 +427,8 @@ void QRemoteServiceRegisterLocalSocketPrivate::notionEvent(const QVariantMap &no
         map.insert(QLatin1String("notion"), QLatin1String("ServiceAuthorizationReply"));
         notionClient->send(map);
     }
-
+#else
+    Q_UNUSED(notion)
 #endif
 }
 
@@ -590,9 +591,9 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             // If we have autotests enable, check for the service in .
 #ifndef QT_ADDON_JSONDB_LIB
 #ifdef QT_BUILD_INTERNAL
-            QFile file("./" + path);
+            QFile file(QStringLiteral("./") + path);
             if (file.exists()){
-                path.prepend("./");
+                path.prepend(QStringLiteral("./"));
             }
 #endif /* QT_BUILD_INTERNAL */
             qint64 pid = 0;
