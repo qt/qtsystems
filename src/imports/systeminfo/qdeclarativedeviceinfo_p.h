@@ -58,7 +58,7 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class Q_SYSTEMINFO_EXPORT QDeclarativeDeviceInfo : public QObject
+class QDeclarativeDeviceInfo : public QObject
 {
     Q_OBJECT
 

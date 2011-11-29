@@ -58,7 +58,7 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class Q_SYSTEMINFO_EXPORT QDeclarativeNetworkInfo : public QObject
+class QDeclarativeNetworkInfo : public QObject
 {
     Q_OBJECT
 

@@ -58,7 +58,7 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class Q_SYSTEMINFO_EXPORT QDeclarativeStorageInfo : public QObject
+class QDeclarativeStorageInfo : public QObject
 {
     Q_OBJECT
 
