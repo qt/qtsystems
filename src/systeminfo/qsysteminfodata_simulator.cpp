@@ -132,7 +132,7 @@ QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BluetoothInfo &s)
 QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::CellularInfo &s)
 {
     out << s.basicNetworkInfo;
-    out << static_cast<qint32>(s.cellId) << static_cast<qint32>(s.locationAreaCode);
+    out << s.cellId << s.locationAreaCode;
     out << s.currentMobileCountryCode << s.currentMobileNetworkCode;
     out << s.homeMobileCountryCode << s.homeMobileNetworkCode;
     out << static_cast<qint32>(s.cellData);
@@ -143,10 +143,8 @@ QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::CellularInfo &
 QDataStream &operator>>(QDataStream &in, QNetworkInfoData::CellularInfo &s)
 {
     in >> s.basicNetworkInfo;
-    qint32 cellid, lac, cellData;
-    in >> cellid >> lac;
-    s.cellId = cellid;
-    s.locationAreaCode = lac;
+    qint32 cellData;
+    in >> s.cellId >> s.locationAreaCode;
     in >> s.currentMobileCountryCode >> s.currentMobileNetworkCode;
     in >> s.homeMobileCountryCode >> s.homeMobileNetworkCode;
     in >> cellData;

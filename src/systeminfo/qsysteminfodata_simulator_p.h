@@ -98,8 +98,8 @@ struct QNetworkInfoData
     struct CellularInfo {
         BasicNetworkInfo basicNetworkInfo;
 
-        int cellId;
-        int locationAreaCode;
+        QString cellId;
+        QString locationAreaCode;
 
         QString currentMobileCountryCode;
         QString currentMobileNetworkCode;
