@@ -499,6 +499,7 @@ void QNetworkInfoPrivate::disconnectNotify(const char *signal)
         watchNetworkInterfaceCount = false;
         return;
 #endif // QT_NO_UDEV
+        watchNetworkInterfaceCount = false;
     } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int))) == 0) {
         watchNetworkSignalStrength = false;
     } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus))) == 0) {
@@ -511,7 +512,7 @@ void QNetworkInfoPrivate::disconnectNotify(const char *signal)
         return;
     }
 
-    if (!watchNetworkSignalStrength && !watchNetworkStatus && !watchNetworkName && !watchCurrentNetworkMode)
+    if (!watchNetworkInterfaceCount && !watchNetworkSignalStrength && !watchNetworkStatus && !watchNetworkName && !watchCurrentNetworkMode)
         timer->stop();
 }
 
@@ -598,7 +599,7 @@ void QNetworkInfoPrivate::onTimeout()
                 }
             }
 
-            if (watchNetworkSignalStrength) {
+            if (watchNetworkName) {
                 QString value = getNetworkName(mode, i);
                 QPair<QNetworkInfo::NetworkMode, int> key(mode, i);
                 if (networkNames.value(key) != value) {
