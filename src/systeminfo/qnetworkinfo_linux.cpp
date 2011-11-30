@@ -69,11 +69,10 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString BLUETOOTH_SYSFS_PATH(QString::fromAscii("/sys/class/bluetooth/"));
-static const QString NETWORK_SYSFS_PATH(QString::fromAscii("/sys/class/net/"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, NETWORK_SYSFS_PATH, (QStringLiteral("/sys/class/net/")))
 
-static const QStringList WLAN_MASK(QString::fromAscii("wlan*"));
-static const QStringList ETHERNET_MASK(QStringList() << QString::fromAscii("eth*") << QString::fromAscii("usb*"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, WLAN_MASK, (QStringList() << QStringLiteral("wlan*")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, ETHERNET_MASK, (QStringList() << QStringLiteral("eth*") << QStringLiteral("usb*")))
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     : QObject(parent)
@@ -161,7 +160,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
         if (interface < dirs.size()) {
             QNetworkInterface networkInterface = QNetworkInterface::interfaceFromName(dirs.at(interface));
             if (networkInterface.isValid())
@@ -171,7 +170,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
     }
 
     case QNetworkInfo::EthernetMode: {
-        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK);
+        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK());
         if (interface < dirs.size()) {
             QNetworkInterface networkInterface = QNetworkInterface::interfaceFromName(dirs.at(interface));
             if (networkInterface.isValid())
@@ -330,9 +329,9 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/address"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/address"));
             if (carrier.open(QIODevice::ReadOnly))
                 return QString::fromAscii(carrier.readAll().simplified().data());
         }
@@ -340,9 +339,9 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
     }
 
     case QNetworkInfo::EthernetMode: {
-        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK);
+        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/address"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/address"));
             if (carrier.open(QIODevice::ReadOnly))
                 return QString::fromAscii(carrier.readAll().simplified().data());
         }
@@ -615,10 +614,10 @@ int QNetworkInfoPrivate::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode
 {
     switch (mode) {
     case QNetworkInfo::WlanMode:
-        return QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK).size();
+        return QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK()).size();
 
     case QNetworkInfo::EthernetMode:
-        return QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK).size();
+        return QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK()).size();
 
     case QNetworkInfo::BluetoothMode: {
 #if !defined(QT_NO_BLUEZ)
@@ -792,9 +791,9 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/carrier"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/carrier"));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
                 if (carrier.read(&state, 1) == 1 && state == '1')
@@ -805,9 +804,9 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
     }
 
     case QNetworkInfo::EthernetMode: {
-        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(ETHERNET_MASK);
+        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(NETWORK_SYSFS_PATH + dirs.at(interface) + QString::fromAscii("/carrier"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/carrier"));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
                 if (carrier.read(&state, 1) == 1 && state == '1')
@@ -878,7 +877,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        QStringList dirs = QDir(NETWORK_SYSFS_PATH).entryList(WLAN_MASK);
+        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
         if (interface < dirs.size()) {
             int sock = socket(PF_INET, SOCK_DGRAM, 0);
             if (sock > 0) {

@@ -69,9 +69,6 @@ public:
 private:
     QDisplayInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDisplayInfo)
-
-    static const QString BACKLIGHT_SYSFS_PATH;
-    static const QString GRAPHICS_SYSFS_PATH;
 };
 
 QT_END_NAMESPACE

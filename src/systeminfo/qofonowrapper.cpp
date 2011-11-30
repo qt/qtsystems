@@ -50,12 +50,12 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString OFONO_SERVICE(QString::fromUtf8("org.ofono"));
-static const QString OFONO_MANAGER_INTERFACE(QString::fromUtf8("org.ofono.Manager"));
-static const QString OFONO_MANAGER_PATH(QString::fromUtf8("/"));
-static const QString OFONO_MODEM_INTERFACE(QString::fromUtf8("org.ofono.Modem"));
-static const QString OFONO_NETWORK_REGISTRATION_INTERFACE(QString::fromUtf8("org.ofono.NetworkRegistration"));
-static const QString OFONO_SIM_MANAGER_INTERFACE(QString::fromUtf8("org.ofono.SimManager"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_SERVICE, (QStringLiteral("org.ofono")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MANAGER_INTERFACE, (QStringLiteral("org.ofono.Manager")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MANAGER_PATH, (QStringLiteral("/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MODEM_INTERFACE, (QStringLiteral("org.ofono.Modem")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_NETWORK_REGISTRATION_INTERFACE, (QStringLiteral("org.ofono.NetworkRegistration")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_SIM_MANAGER_INTERFACE, (QStringLiteral("org.ofono.SimManager")))
 
 struct QOfonoProperty
 {
@@ -115,7 +115,7 @@ bool QOfonoWrapper::isOfonoAvailable()
     //  1: OFONO is available.
     if (-1 == available) {
         if (QDBusConnection::systemBus().isConnected()) {
-            QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered(OFONO_SERVICE);
+            QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered(*OFONO_SERVICE());
             if (reply.isValid())
                 available = reply.value();
             else
@@ -209,7 +209,7 @@ QNetworkInfo::NetworkMode QOfonoWrapper::networkMode(const QString& modemPath)
 QString QOfonoWrapper::homeMcc(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_SIM_MANAGER_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_SIM_MANAGER_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("MobileCountryCode")).toString();
 }
@@ -217,7 +217,7 @@ QString QOfonoWrapper::homeMcc(const QString &modemPath)
 QString QOfonoWrapper::homeMnc(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_SIM_MANAGER_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_SIM_MANAGER_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("MobileNetworkCode")).toString();
 }
@@ -225,7 +225,7 @@ QString QOfonoWrapper::homeMnc(const QString &modemPath)
 QString QOfonoWrapper::imsi(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_SIM_MANAGER_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_SIM_MANAGER_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("SubscriberIdentity")).toString();
 }
@@ -234,7 +234,7 @@ QString QOfonoWrapper::imsi(const QString &modemPath)
 QString QOfonoWrapper::imei(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_MODEM_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_MODEM_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("Serial")).toString();
 }
@@ -243,10 +243,10 @@ void QOfonoWrapper::connectNotify(const char *signal)
 {
     if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
         allModemPaths = getAllModems();
-        QDBusConnection::systemBus().connect(OFONO_SERVICE, OFONO_MANAGER_PATH, OFONO_MANAGER_INTERFACE,
+        QDBusConnection::systemBus().connect(*OFONO_SERVICE(), *OFONO_MANAGER_PATH(), *OFONO_MANAGER_INTERFACE(),
                                              QString::fromUtf8("ModemAdded"),
                                              this, SLOT(onOfonoModemAdded(QDBusObjectPath)));
-        QDBusConnection::systemBus().connect(OFONO_SERVICE, OFONO_MANAGER_PATH, OFONO_MANAGER_INTERFACE,
+        QDBusConnection::systemBus().connect(*OFONO_SERVICE(), *OFONO_MANAGER_PATH(), *OFONO_MANAGER_INTERFACE(),
                                              QString::fromUtf8("ModemRemoved"),
                                              this, SLOT(onOfonoModemRemoved(QDBusObjectPath)));
         watchAllModems = true;
@@ -276,9 +276,9 @@ void QOfonoWrapper::connectNotify(const char *signal)
             currentMncs[modem] = getCurrentMnc(modem);
             lacs[modem] = getLac(modem);
             operatorNames[modem] = getOperatorName(modem);
-            QDBusConnection::systemBus().connect(OFONO_SERVICE,
+            QDBusConnection::systemBus().connect(*OFONO_SERVICE(),
                                                  modem,
-                                                 OFONO_NETWORK_REGISTRATION_INTERFACE,
+                                                 *OFONO_NETWORK_REGISTRATION_INTERFACE(),
                                                  QString::fromUtf8("PropertyChanged"),
                                                  this, SLOT(onOfonoPropertyChanged(QString,QDBusVariant)));
         }
@@ -289,10 +289,10 @@ void QOfonoWrapper::connectNotify(const char *signal)
 void QOfonoWrapper::disconnectNotify(const char *signal)
 {
     if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
-        QDBusConnection::systemBus().disconnect(OFONO_SERVICE, OFONO_MANAGER_PATH, OFONO_MANAGER_INTERFACE,
+        QDBusConnection::systemBus().disconnect(*OFONO_SERVICE(), *OFONO_MANAGER_PATH(), *OFONO_MANAGER_INTERFACE(),
                                                 QString::fromUtf8("ModemAdded"),
                                                 this, SLOT(onOfonoModemAdded(QDBusObjectPath)));
-        QDBusConnection::systemBus().disconnect(OFONO_SERVICE, OFONO_MANAGER_PATH, OFONO_MANAGER_INTERFACE,
+        QDBusConnection::systemBus().disconnect(*OFONO_SERVICE(), *OFONO_MANAGER_PATH(), *OFONO_MANAGER_INTERFACE(),
                                                 QString::fromUtf8("ModemRemoved"),
                                                 this, SLOT(onOfonoModemRemoved(QDBusObjectPath)));
         watchAllModems = false;
@@ -306,9 +306,9 @@ void QOfonoWrapper::disconnectNotify(const char *signal)
                || strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,QNetworkInfo::NetworkStatus))) == 0) {
         QStringList modems = allModems();
         foreach (const QString &modem, modems) {
-            QDBusConnection::systemBus().disconnect(OFONO_SERVICE,
+            QDBusConnection::systemBus().disconnect(*OFONO_SERVICE(),
                                                     modem,
-                                                    OFONO_NETWORK_REGISTRATION_INTERFACE,
+                                                    *OFONO_NETWORK_REGISTRATION_INTERFACE(),
                                                     QString::fromUtf8("PropertyChanged"),
                                                     this, SLOT(onOfonoPropertyChanged(QString,QDBusVariant)));
         }
@@ -404,7 +404,7 @@ QNetworkInfo::NetworkStatus QOfonoWrapper::statusStringToEnum(const QString &sta
 QString QOfonoWrapper::currentTechnology(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromUtf8("Technology")).toString();
 }
@@ -413,7 +413,7 @@ QString QOfonoWrapper::currentTechnology(const QString &modemPath)
 QStringList QOfonoWrapper::getAllModems()
 {
     QDBusReply<QOfonoPropertyMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, OFONO_MANAGER_PATH, OFONO_MANAGER_INTERFACE, QString::fromUtf8("GetModems")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), *OFONO_MANAGER_PATH(), *OFONO_MANAGER_INTERFACE(), QString::fromUtf8("GetModems")));
 
     QStringList modems;
     if (reply.isValid()) {
@@ -427,7 +427,7 @@ QStringList QOfonoWrapper::getAllModems()
 int QOfonoWrapper::getSignalStrength(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("Strength")).toInt();
 }
@@ -440,7 +440,7 @@ QNetworkInfo::CellDataTechnology QOfonoWrapper::getCurrentCellDataTechnology(con
 QNetworkInfo::NetworkStatus QOfonoWrapper::getNetworkStatus(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return statusStringToEnum(reply.value().value(QString::fromAscii("Status")).toString());
 }
@@ -448,7 +448,7 @@ QNetworkInfo::NetworkStatus QOfonoWrapper::getNetworkStatus(const QString &modem
 QString QOfonoWrapper::getCellId(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("CellId")).toString();
 }
@@ -456,7 +456,7 @@ QString QOfonoWrapper::getCellId(const QString &modemPath)
 QString QOfonoWrapper::getCurrentMcc(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("MobileCountryCode")).toString();
 }
@@ -464,7 +464,7 @@ QString QOfonoWrapper::getCurrentMcc(const QString &modemPath)
 QString QOfonoWrapper::getCurrentMnc(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("MobileNetworkCode")).toString();
 }
@@ -472,7 +472,7 @@ QString QOfonoWrapper::getCurrentMnc(const QString &modemPath)
 QString QOfonoWrapper::getLac(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("LocationAreaCode")).toString();
 }
@@ -480,7 +480,7 @@ QString QOfonoWrapper::getLac(const QString &modemPath)
 QString QOfonoWrapper::getOperatorName(const QString &modemPath)
 {
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(OFONO_SERVICE, modemPath, OFONO_NETWORK_REGISTRATION_INTERFACE, QString::fromUtf8("GetProperties")));
+                QDBusMessage::createMethodCall(*OFONO_SERVICE(), modemPath, *OFONO_NETWORK_REGISTRATION_INTERFACE(), QString::fromUtf8("GetProperties")));
 
     return reply.value().value(QString::fromAscii("Name")).toString();
 }

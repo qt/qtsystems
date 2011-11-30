@@ -52,11 +52,11 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString REGISTRY_BIOS_PATH(QString::fromAscii("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS"));
-static const QString REGISTRY_CURRENT_VERSION_PATH(QString::fromAscii("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"));
-static const QString REGISTRY_MANUFACTURER_KEY(QString::fromAscii("SystemManufacturer"));
-static const QString REGISTRY_PRODUCTNAME_KEY(QString::fromAscii("SystemProductName"));
-static const QString REGISTRY_PRODUCTID_KEY(QString::fromAscii("ProductId"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_BIOS_PATH, (QStringLiteral("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_CURRENT_VERSION_PATH, (QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_MANUFACTURER_KEY, (QStringLiteral("SystemManufacturer")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTNAME_KEY, (QStringLiteral("SystemProductName")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTID_KEY, (QStringLiteral("ProductId")))
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     : q_ptr(parent)
@@ -193,8 +193,8 @@ QString QDeviceInfoPrivate::imei(int /* interfaceNumber */)
 QString QDeviceInfoPrivate::manufacturer()
 {
     if (systemManufacturerName.isEmpty()) {
-        QSettings manufacturerSetting(REGISTRY_BIOS_PATH, QSettings::NativeFormat);
-        systemManufacturerName = manufacturerSetting.value(REGISTRY_MANUFACTURER_KEY).toString();
+        QSettings manufacturerSetting(*REGISTRY_BIOS_PATH(), QSettings::NativeFormat);
+        systemManufacturerName = manufacturerSetting.value(*REGISTRY_MANUFACTURER_KEY()).toString();
     }
     return systemManufacturerName;
 }
@@ -207,8 +207,8 @@ QString QDeviceInfoPrivate::model()
 QString QDeviceInfoPrivate::productName()
 {
     if (systemProductName.isEmpty()) {
-        QSettings productNameSetting(REGISTRY_BIOS_PATH, QSettings::NativeFormat);
-        systemProductName = productNameSetting.value(REGISTRY_PRODUCTNAME_KEY).toString();
+        QSettings productNameSetting(*REGISTRY_BIOS_PATH(), QSettings::NativeFormat);
+        systemProductName = productNameSetting.value(*REGISTRY_PRODUCTNAME_KEY()).toString();
     }
     return systemProductName;
 }
@@ -216,8 +216,8 @@ QString QDeviceInfoPrivate::productName()
 QString QDeviceInfoPrivate::uniqueDeviceID()
 {
     if (deviceID.isEmpty()) {
-        QSettings deviceIDSetting(REGISTRY_CURRENT_VERSION_PATH, QSettings::NativeFormat);
-        deviceID = deviceIDSetting.value(REGISTRY_PRODUCTID_KEY).toString();
+        QSettings deviceIDSetting(*REGISTRY_CURRENT_VERSION_PATH(), QSettings::NativeFormat);
+        deviceID = deviceIDSetting.value(*REGISTRY_PRODUCTID_KEY()).toString();
     }
     return deviceID;
 }

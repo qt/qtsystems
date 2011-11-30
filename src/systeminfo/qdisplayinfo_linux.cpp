@@ -46,8 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
-const QString QDisplayInfoPrivate::BACKLIGHT_SYSFS_PATH(QStringLiteral("/sys/class/backlight/"));
-const QString QDisplayInfoPrivate::GRAPHICS_SYSFS_PATH(QStringLiteral("/sys/class/graphics/"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BACKLIGHT_SYSFS_PATH, (QStringLiteral("/sys/class/backlight/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, GRAPHICS_SYSFS_PATH, (QStringLiteral("/sys/class/graphics/")))
 
 QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
     : q_ptr(parent)
@@ -57,8 +57,8 @@ QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
 int QDisplayInfoPrivate::brightness(int screen)
 {
     QMap<QString, QStringList> brightnessMap;
-    brightnessMap.insert(BACKLIGHT_SYSFS_PATH, QStringList() << QStringLiteral("/max_brightness") << QStringLiteral("/actual_brightness"));
-    brightnessMap.insert(GRAPHICS_SYSFS_PATH, QStringList() << QStringLiteral("/backlight_max") << QStringLiteral("/backlight"));
+    brightnessMap.insert(*BACKLIGHT_SYSFS_PATH(), QStringList() << QStringLiteral("/max_brightness") << QStringLiteral("/actual_brightness"));
+    brightnessMap.insert(*GRAPHICS_SYSFS_PATH(), QStringList() << QStringLiteral("/backlight_max") << QStringLiteral("/backlight"));
 
     QStringList sysfsPaths = brightnessMap.keys();
     foreach (const QString &sysfsPath, sysfsPaths) {

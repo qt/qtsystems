@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString REGISTRY_DESKTOP_PATH(QString::fromAscii("HKEY_CURRENT_USER\\Control Panel\\Desktop"));
-static const QString REGISTRY_SCREENSAVER_KEY(QString::fromAscii("SCRNSAVE.EXE"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_DESKTOP_PATH, (QStringLiteral("HKEY_CURRENT_USER\\Control Panel\\Desktop")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_SCREENSAVER_KEY, (QStringLiteral("SCRNSAVE.EXE")))
 
 QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     : q_ptr(parent)
@@ -58,8 +58,8 @@ QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
 bool QScreenSaverPrivate::screenSaverEnabled()
 {
     // Work-around for http://support.microsoft.com/kb/318781
-    QSettings screenSaverSetting(REGISTRY_DESKTOP_PATH, QSettings::NativeFormat);
-    return !screenSaverSetting.value(REGISTRY_SCREENSAVER_KEY).isNull();
+    QSettings screenSaverSetting(*REGISTRY_DESKTOP_PATH(), QSettings::NativeFormat);
+    return !screenSaverSetting.value(*REGISTRY_SCREENSAVER_KEY()).isNull();
 }
 
 void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)

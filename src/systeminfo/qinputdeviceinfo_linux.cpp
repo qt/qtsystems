@@ -50,7 +50,7 @@
 #include <linux/input.h>
 
 QT_BEGIN_NAMESPACE
-static const QString INPUT_SYSFS_PATH(QString::fromAscii("/sys/class/input/"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, INPUT_SYSFS_PATH, (QStringLiteral("/sys/class/input/")))
 static const int LONGBITS (sizeof(unsigned long) << 3);
 
 static int numberOfLongs(ulong bits)
@@ -101,7 +101,7 @@ bool QInputDeviceInfoPrivate::isWirelessKeyboardConnected()
 
 QInputDeviceInfo::InputDeviceTypes QInputDeviceInfoPrivate::availableInputDevices()
 {
-    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("input*"));
+    const QStringList dirs = QDir(*INPUT_SYSFS_PATH()).entryList(QStringList() << QString::fromAscii("input*"));
     if (dirs.isEmpty())
         return QInputDeviceInfo::UnknownInputDevice;
 
@@ -123,7 +123,7 @@ QInputDeviceInfo::InputDeviceTypes QInputDeviceInfoPrivate::availableInputDevice
 
 QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
 {
-    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("input*"));
+    const QStringList dirs = QDir(*INPUT_SYSFS_PATH()).entryList(QStringList() << QString::fromAscii("input*"));
     if (dirs.isEmpty())
         return QInputDeviceInfo::UnknownKeyboard;
 
@@ -144,7 +144,7 @@ QInputDeviceInfo::KeyboardTypes QInputDeviceInfoPrivate::availableKeyboards()
 
 QInputDeviceInfo::TouchDeviceTypes QInputDeviceInfoPrivate::availableTouchDevices()
 {
-    const QStringList dirs = QDir(INPUT_SYSFS_PATH).entryList(QStringList() << QString::fromAscii("input*"));
+    const QStringList dirs = QDir(*INPUT_SYSFS_PATH()).entryList(QStringList() << QString::fromAscii("input*"));
     if (dirs.isEmpty())
         return QInputDeviceInfo::UnknownTouchDevice;
 
@@ -199,7 +199,7 @@ QStringList QInputDeviceInfoPrivate::getTypesOfInputDevice(const QString &inputd
     ulong keybits[numberOfLongs(KEY_MAX)];
     ulong relbits[numberOfLongs(REL_MAX)];
 
-    QFile absfile(INPUT_SYSFS_PATH + inputdir + QString::fromAscii("/capabilities/abs"));
+    QFile absfile(*INPUT_SYSFS_PATH() + inputdir + QString::fromAscii("/capabilities/abs"));
     if (absfile.open(QIODevice::ReadOnly)) {
         QStringList datablocks = QString::fromAscii(absfile.readAll().data()).split(QString::fromAscii(" "));
         int count = datablocks.count() - 1;
@@ -207,7 +207,7 @@ QStringList QInputDeviceInfoPrivate::getTypesOfInputDevice(const QString &inputd
             absbits[count - i] = datablocks[i].toULong(0, 16);
         }
     }
-    QFile keyfile(INPUT_SYSFS_PATH + inputdir + QString::fromAscii("/capabilities/key"));
+    QFile keyfile(*INPUT_SYSFS_PATH() + inputdir + QString::fromAscii("/capabilities/key"));
     if (keyfile.open(QIODevice::ReadOnly)) {
         QStringList datablocks = QString::fromAscii(keyfile.readAll().data()).split(QString::fromAscii(" "));
         int count = datablocks.count() - 1;
@@ -215,7 +215,7 @@ QStringList QInputDeviceInfoPrivate::getTypesOfInputDevice(const QString &inputd
             keybits[count - i] = datablocks[i].toULong(0, 16);
         }
     }
-    QFile relfile(INPUT_SYSFS_PATH + inputdir + QString::fromAscii("/capabilities/rel"));
+    QFile relfile(*INPUT_SYSFS_PATH() + inputdir + QString::fromAscii("/capabilities/rel"));
     if (relfile.open(QIODevice::ReadOnly)) {
         QStringList datablocks = QString::fromAscii(relfile.readAll().data()).split(QString::fromAscii(" "));
         int count = datablocks.count() - 1;

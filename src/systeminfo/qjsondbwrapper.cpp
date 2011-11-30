@@ -50,18 +50,18 @@ Q_USE_JSONDB_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-const QString SETTING_PATH(QStringLiteral("com.nokia.mp.settings."));
-const QString SETTING_LOCATION(QStringLiteral("location"));
-const QString SETTING_SOUNDS(QStringLiteral("sounds"));
-const QString SYSTEM_PATH(QStringLiteral("com.nokia.mp.system."));
-const QString SYSTEM_SECURITYLOCK(QStringLiteral("SecurityLock"));
-const QString SYSTEM_DEVICEINFO(QStringLiteral("DeviceInfo"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_PATH, (QStringLiteral("com.nokia.mp.settings.")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_LOCATION, (QStringLiteral("location")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_SOUNDS, (QStringLiteral("sounds")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_PATH, (QStringLiteral("com.nokia.mp.system.")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_SECURITYLOCK, (QStringLiteral("SecurityLock")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_DEVICEINFO, (QStringLiteral("DeviceInfo")))
 
-const QString SYSTEM_OBJECT_QUERY(QStringLiteral("[?_type=\"%1\"]"));
-const QString SYSTEM_OBJECT_NOTIFY(QStringLiteral("[_type=\"%1\"]"));
-const QString SYSTEM_OBJECT_REMOVE(QStringLiteral("{\"_uuid\":\"%1\"}"));
-const QString SYSTEM_PROPERTY_QUERY(QStringLiteral("[?_type=\"%1\"][=%2]"));
-const QString SETTING_QUERY(QStringLiteral("[?_type=\"com.nokia.mp.settings.SystemSettings\"][?identifier=\"%1\"][=settings]"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_QUERY, (QStringLiteral("[?_type=\"%1\"]")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_NOTIFY, (QStringLiteral("[_type=\"%1\"]")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_REMOVE, (QStringLiteral("{\"_uuid\":\"%1\"}")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_PROPERTY_QUERY, (QStringLiteral("[?_type=\"%1\"][=%2]")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_QUERY, (QStringLiteral("[?_type=\"com.nokia.mp.settings.SystemSettings\"][?identifier=\"%1\"][=settings]")))
 
 const int JSON_EXPIRATION_TIMER(2000);
 
@@ -90,7 +90,7 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getActivatedLocks()
 
     QDeviceInfo::LockTypeFlags activeLocks = QDeviceInfo::NoLock;
 
-    if (getSystemPropertyValue(SYSTEM_SECURITYLOCK, QStringLiteral("active")).toBool())
+    if (getSystemPropertyValue(*SYSTEM_SECURITYLOCK(), QStringLiteral("active")).toBool())
         activeLocks |= QDeviceInfo::PinLock;
 
     return activeLocks;
@@ -103,7 +103,7 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getEnabledLocks()
 
     QDeviceInfo::LockTypeFlags enabledLocks = QDeviceInfo::NoLock;
 
-    if (hasSystemObject(SYSTEM_SECURITYLOCK))
+    if (hasSystemObject(*SYSTEM_SECURITYLOCK()))
         enabledLocks |= QDeviceInfo::PinLock;
 
     return enabledLocks;
@@ -111,12 +111,12 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getEnabledLocks()
 
 bool QJsonDbWrapper::hasFeaturePositioning()
 {
-    return getSystemSettingValue(SETTING_LOCATION, QStringLiteral("locationServicesFeatureEnabled")).toBool();
+    return getSystemSettingValue(*SETTING_LOCATION(), QStringLiteral("locationServicesFeatureEnabled")).toBool();
 }
 
 bool QJsonDbWrapper::hasFeatureVibration()
 {
-    QVariant vibration = getSystemSettingValue(SETTING_SOUNDS, QStringLiteral("vibrationOn"));
+    QVariant vibration = getSystemSettingValue(*SETTING_SOUNDS(), QStringLiteral("vibrationOn"));
     if (!vibration.isNull())
         return true;
 
@@ -125,17 +125,17 @@ bool QJsonDbWrapper::hasFeatureVibration()
 
 QString QJsonDbWrapper::getUniqueDeviceID()
 {
-    return getSystemPropertyValue(SYSTEM_DEVICEINFO, QStringLiteral("uniqueDeviceId")).toString();
+    return getSystemPropertyValue(*SYSTEM_DEVICEINFO(), QStringLiteral("uniqueDeviceId")).toString();
 }
 
 bool QJsonDbWrapper::isVibrationActivated()
 {
-    return getSystemSettingValue(SETTING_SOUNDS, QStringLiteral("vibrationOn")).toBool();
+    return getSystemSettingValue(*SETTING_SOUNDS(), QStringLiteral("vibrationOn")).toBool();
 }
 
 int QJsonDbWrapper::getRingtoneVolume()
 {
-    int volume = getSystemSettingValue(SETTING_SOUNDS, QStringLiteral("ringerVolume")).toInt();
+    int volume = getSystemSettingValue(*SETTING_SOUNDS(), QStringLiteral("ringerVolume")).toInt();
     if (volume >= 0 && volume <= 100)
         return volume;
 
@@ -150,7 +150,7 @@ QVariant QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, const
     if (!jsonclient->isConnected())
         return response;
 
-    reqId = jsonclient->query((SYSTEM_PROPERTY_QUERY).arg(SYSTEM_PATH + objectType).arg(property));
+    reqId = jsonclient->query(SYSTEM_PROPERTY_QUERY()->arg(*SYSTEM_PATH() + objectType).arg(property));
     if (waitForResponse()) {
         QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
         QVariantList tempList(data.toList());
@@ -169,7 +169,7 @@ QVariant QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const Q
     if (!jsonclient->isConnected())
         return response;
 
-    reqId = jsonclient->query((SETTING_QUERY).arg(SETTING_PATH + settingId));
+    reqId = jsonclient->query(SETTING_QUERY()->arg(*SETTING_PATH() + settingId));
     if (waitForResponse()) {
         QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
         QVariantList tempList(data.toList());
@@ -187,7 +187,7 @@ bool QJsonDbWrapper::hasSystemObject(const QString &objectType)
     if (!jsonclient->isConnected())
         return false;
 
-    reqId = jsonclient->query((SYSTEM_OBJECT_QUERY).arg(SYSTEM_PATH + objectType));
+    reqId = jsonclient->query(SYSTEM_OBJECT_QUERY()->arg(*SYSTEM_PATH() + objectType));
     if (waitForResponse()) {
         QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
         QVariantList tempList(data.toList());
@@ -207,7 +207,7 @@ QString QJsonDbWrapper::registerOnChanges(const QString &objectType)
         return uuid;
 
     reqId = jsonclient->notify(JsonDbClient::NotifyUpdate | JsonDbClient::NotifyCreate | JsonDbClient::NotifyRemove,
-                               (SYSTEM_OBJECT_NOTIFY).arg(SYSTEM_PATH + objectType));
+                               SYSTEM_OBJECT_NOTIFY()->arg(*SYSTEM_PATH() + objectType));
     if (waitForResponse())
         uuid = responses.take(reqId).toMap().value(QStringLiteral("_uuid")).toString().remove(QRegExp(QStringLiteral("[{}]")));
 
@@ -221,7 +221,7 @@ bool QJsonDbWrapper::unregisterOnChanges(const QString &uuid)
     if (!jsonclient->isConnected())
         return false;
 
-    reqId = jsonclient->remove((SYSTEM_OBJECT_REMOVE).arg(uuid));
+    reqId = jsonclient->remove(SYSTEM_OBJECT_REMOVE()->arg(uuid));
     if (waitForResponse()) {
         QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
         if (data.toList().count() > 0)
@@ -244,13 +244,13 @@ void QJsonDbWrapper::connectNotify(const char *signal)
     if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
         activatedLocks = getActivatedLocks();
         if (uuidSecurityLockNotifier.isEmpty())
-            uuidSecurityLockNotifier = registerOnChanges(SYSTEM_SECURITYLOCK);
+            uuidSecurityLockNotifier = registerOnChanges(*SYSTEM_SECURITYLOCK());
         if (!uuidSecurityLockNotifier.isEmpty())
             watchActivatedLocks = true;
     } else if (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
         enabledLocks = getEnabledLocks();
         if (uuidSecurityLockNotifier.isEmpty())
-            uuidSecurityLockNotifier = registerOnChanges(SYSTEM_SECURITYLOCK);
+            uuidSecurityLockNotifier = registerOnChanges(*SYSTEM_SECURITYLOCK());
         if (!uuidSecurityLockNotifier.isEmpty())
             watchEnabledLocks = true;
     }
@@ -283,7 +283,7 @@ void QJsonDbWrapper::onNotification(const QString &uuid,
     QVariantMap data = notification.toMap();
     QString objectType = data.value(QStringLiteral("_type")).toString();
 
-    if (objectType.compare(SYSTEM_PATH + SYSTEM_SECURITYLOCK) == 0) {
+    if (objectType.compare(*SYSTEM_PATH() + *SYSTEM_SECURITYLOCK()) == 0) {
         if (watchActivatedLocks) {
             if (action.compare(QStringLiteral("remove")) == 0
                     && (activatedLocks & QDeviceInfo::PinLock) == QDeviceInfo::PinLock) {

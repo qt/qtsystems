@@ -49,13 +49,13 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString BLUEZ_SERVICE(QString::fromAscii("org.bluez"));
-static const QString BLUEZ_MANAGER_INTERFACE(QString::fromAscii("org.bluez.Manager"));
-static const QString BLUEZ_MANAGER_PATH(QString::fromAscii("/"));
-static const QString BLUEZ_ADAPTER_INTERFACE(QString::fromAscii("org.bluez.Adapter"));
-static const QString BLUEZ_DEVICE_INTERFACE(QString::fromAscii("org.bluez.Device"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BLUEZ_SERVICE, (QStringLiteral("org.bluez")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BLUEZ_MANAGER_INTERFACE, (QStringLiteral("org.bluez.Manager")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BLUEZ_MANAGER_PATH, (QStringLiteral("/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BLUEZ_ADAPTER_INTERFACE, (QStringLiteral("org.bluez.Adapter")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BLUEZ_DEVICE_INTERFACE, (QStringLiteral("org.bluez.Device")))
 
-static const QString GET_PROPERTIES(QString::fromAscii("GetProperties"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, GET_PROPERTIES, (QStringLiteral("GetProperties")))
 
 // TODO check where these magic numbers are defined
 static const int BLUEZ_INPUT_DEVICE_CLASS(9536);
@@ -88,7 +88,7 @@ bool QBluezWrapper::isBluezAvailable()
     //  1: BLUEZ is available.
     if (-1 == available) {
         if (QDBusConnection::systemBus().isConnected()) {
-            QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered(BLUEZ_SERVICE);
+            QDBusReply<bool> reply = QDBusConnection::systemBus().interface()->isServiceRegistered(*BLUEZ_SERVICE());
             if (reply.isValid())
                 available = reply.value();
             else
@@ -104,7 +104,7 @@ bool QBluezWrapper::hasInputDevice()
     QStringList devices = allDevices();
     foreach (const QString &device, devices) {
         QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                    QDBusMessage::createMethodCall(BLUEZ_SERVICE, device, BLUEZ_DEVICE_INTERFACE, GET_PROPERTIES));
+                    QDBusMessage::createMethodCall(*BLUEZ_SERVICE(), device, *BLUEZ_DEVICE_INTERFACE(), *GET_PROPERTIES()));
         if (reply.value().value(QString::fromAscii("Class")).toInt() == BLUEZ_INPUT_DEVICE_CLASS
             && reply.value().value(QString::fromAscii("Connected")).toBool()) {
             return true;
@@ -118,9 +118,9 @@ void QBluezWrapper::connectNotify(const char *signal)
     if (strcmp(signal, SIGNAL(wirelessKeyboardConnected(bool))) == 0) {
         QStringList devices = allDevices();
         foreach (const QString &device, devices) {
-            QDBusConnection::systemBus().connect(BLUEZ_SERVICE,
+            QDBusConnection::systemBus().connect(*BLUEZ_SERVICE(),
                                                  device,
-                                                 BLUEZ_DEVICE_INTERFACE,
+                                                 *BLUEZ_DEVICE_INTERFACE(),
                                                  QString::fromAscii("PropertyChanged"),
                                                  this, SLOT(onBluezPropertyChanged(QString,QDBusVariant)));
         }
@@ -137,9 +137,9 @@ void QBluezWrapper::disconnectNotify(const char *signal)
 
     QStringList devices = allDevices();
     foreach (const QString &device, devices) {
-        QDBusConnection::systemBus().disconnect(BLUEZ_SERVICE,
+        QDBusConnection::systemBus().disconnect(*BLUEZ_SERVICE(),
                                                 device,
-                                                BLUEZ_DEVICE_INTERFACE,
+                                                *BLUEZ_DEVICE_INTERFACE(),
                                                 QString::fromAscii("PropertyChanged"),
                                                 this, SLOT(onBluezPropertyChanged(QString,QDBusVariant)));
     }
@@ -151,7 +151,7 @@ void QBluezWrapper::onBluezPropertyChanged(const QString &property, const QDBusV
         return;
 
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(BLUEZ_SERVICE, message().path(), BLUEZ_DEVICE_INTERFACE, GET_PROPERTIES));
+                QDBusMessage::createMethodCall(*BLUEZ_SERVICE(), message().path(), *BLUEZ_DEVICE_INTERFACE(), *GET_PROPERTIES()));
     if (reply.isValid() && reply.value().value(QString::fromAscii("Class")).toInt() == BLUEZ_INPUT_DEVICE_CLASS)
         emit wirelessKeyboardConnected(value.variant().toBool());
 }
@@ -161,11 +161,11 @@ QStringList QBluezWrapper::allDevices()
     QStringList deviceList;
 
     QDBusReply<QVariantMap> reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(BLUEZ_SERVICE, BLUEZ_MANAGER_PATH, BLUEZ_MANAGER_INTERFACE, GET_PROPERTIES));
+                QDBusMessage::createMethodCall(*BLUEZ_SERVICE(), *BLUEZ_MANAGER_PATH(), *BLUEZ_MANAGER_INTERFACE(), *GET_PROPERTIES()));
     QList<QDBusObjectPath> adapters = qdbus_cast<QList<QDBusObjectPath> >(reply.value().value(QString::fromAscii("Adapters")));
     foreach (const QDBusObjectPath &adapter, adapters) {
         reply = QDBusConnection::systemBus().call(
-                    QDBusMessage::createMethodCall(BLUEZ_SERVICE, adapter.path(), BLUEZ_ADAPTER_INTERFACE, GET_PROPERTIES));
+                    QDBusMessage::createMethodCall(*BLUEZ_SERVICE(), adapter.path(), *BLUEZ_ADAPTER_INTERFACE(), *GET_PROPERTIES()));
         QList<QDBusObjectPath> devices = qdbus_cast<QList<QDBusObjectPath> >(reply.value().value(QString::fromAscii("Devices")));
         foreach (const QDBusObjectPath &device, devices)
             deviceList << device.path();

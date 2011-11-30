@@ -63,16 +63,16 @@
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_UDISKS)
-static const QString UDISKS_SERVICE(QString::fromAscii("org.freedesktop.UDisks"));
-static const QString UDISKS_PATH(QString::fromAscii("/org/freedesktop/UDisks"));
-static const QString UDISKS_INTERFACE(QString::fromAscii("org.freedesktop.UDisks"));
-static const QString UDISKS_DEVICE_INTERFACE(QString::fromAscii("org.freedesktop.UDisks.Device"));
-static const QString UDISKS_PROPERTY_INTERFACE(QString::fromAscii("org.freedesktop.DBus.Properties"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_SERVICE, (QStringLiteral("org.freedesktop.UDisks")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_PATH, (QStringLiteral("/org/freedesktop/UDisks")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_INTERFACE, (QStringLiteral("org.freedesktop.UDisks")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_DEVICE_INTERFACE, (QStringLiteral("org.freedesktop.UDisks.Device")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_PROPERTY_INTERFACE, (QStringLiteral("org.freedesktop.DBus.Properties")))
 
-static const QString UDISKS_GET(QString::fromAscii("Get"));
-static const QString UDISKS_ENUMERATE_DEVICES(QString::fromAscii("EnumerateDevices"));
-static const QString UDISKS_MOUNT_PATH(QString::fromAscii("DeviceMountPaths"));
-static const QString UDISKS_UUID(QString::fromAscii("IdUuid"));
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_GET, (QStringLiteral("Get")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_ENUMERATE_DEVICES, (QStringLiteral("EnumerateDevices")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_MOUNT_PATH, (QStringLiteral("DeviceMountPaths")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_UUID, (QStringLiteral("IdUuid")))
 #endif // QT_NO_UDISKS
 
 QStorageInfoPrivate::QStorageInfoPrivate(QStorageInfo *parent)
@@ -136,16 +136,16 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 
 #if !defined(QT_NO_UDISKS)
     QDBusReply<QList<QDBusObjectPath> > reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(UDISKS_SERVICE, UDISKS_PATH, UDISKS_INTERFACE, UDISKS_ENUMERATE_DEVICES));
+                QDBusMessage::createMethodCall(*UDISKS_SERVICE(), *UDISKS_PATH(), *UDISKS_INTERFACE(), *UDISKS_ENUMERATE_DEVICES()));
     if (reply.isValid()) {
         QList<QDBusObjectPath> paths = reply.value();
         foreach (const QDBusObjectPath &path, paths) {
-            QDBusInterface interface(UDISKS_SERVICE, path.path(), UDISKS_PROPERTY_INTERFACE, QDBusConnection::systemBus());
+            QDBusInterface interface(*UDISKS_SERVICE(), path.path(), *UDISKS_PROPERTY_INTERFACE(), QDBusConnection::systemBus());
             if (!interface.isValid())
                 continue;
-            QDBusReply<QVariant> reply = interface.call(UDISKS_GET, UDISKS_DEVICE_INTERFACE, UDISKS_MOUNT_PATH);
+            QDBusReply<QVariant> reply = interface.call(*UDISKS_GET(), *UDISKS_DEVICE_INTERFACE(), *UDISKS_MOUNT_PATH());
             if (reply.isValid() && reply.value().toString() == drive) {
-                reply = interface.call(UDISKS_GET, UDISKS_DEVICE_INTERFACE, UDISKS_UUID);
+                reply = interface.call(*UDISKS_GET(), *UDISKS_DEVICE_INTERFACE(), *UDISKS_UUID());
                 if (reply.isValid())
                     return reply.value().toString();
             }
