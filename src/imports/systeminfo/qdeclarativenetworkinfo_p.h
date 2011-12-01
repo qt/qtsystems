@@ -171,16 +171,16 @@ Q_SIGNALS:
     void monitorLocationAreaCodeChanged();
     void monitorNetworkNameChanged();
 
-    void cellIdChanged(int interface, const QString &id);
-    void currentCellDataTechnologyChanged(int interface, CellDataTechnology tech);
-    void currentMobileCountryCodeChanged(int interface, const QString &mcc);
-    void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
+    void cellIdChanged(int interfaceIndex, const QString &id);
+    void currentCellDataTechnologyChanged(int interfaceIndex, CellDataTechnology tech);
+    void currentMobileCountryCodeChanged(int interfaceIndex, const QString &mcc);
+    void currentMobileNetworkCodeChanged(int interfaceIndex, const QString &mnc);
     void currentNetworkModeChanged();
-    void locationAreaCodeChanged(int interface, const QString &lac);
+    void locationAreaCodeChanged(int interfaceIndex, const QString &lac);
     void networkInterfaceCountChanged(NetworkMode mode, int count);
-    void networkNameChanged(NetworkMode mode, int interface, const QString &name);
-    void networkSignalStrengthChanged(NetworkMode mode, int interface, int strength);
-    void networkStatusChanged(NetworkMode mode, int interface, NetworkStatus status);
+    void networkNameChanged(NetworkMode mode, int interfaceIndex, const QString &name);
+    void networkSignalStrengthChanged(NetworkMode mode, int interfaceIndex, int strength);
+    void networkStatusChanged(NetworkMode mode, int interfaceIndex, NetworkStatus status);
 
 private Q_SLOTS:
     void _q_currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);
