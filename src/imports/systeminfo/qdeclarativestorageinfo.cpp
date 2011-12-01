@@ -136,7 +136,7 @@ QString QDeclarativeStorageInfo::uriForDrive(const QString &drive) const
 }
 
 /*!
-    \qmlmethod enum StorageInfo::driveType(string drive)
+    \qmlmethod DriveType StorageInfo::driveType(string drive)
 
     Returns the type of the given \a drive. Possible values are:
     \list

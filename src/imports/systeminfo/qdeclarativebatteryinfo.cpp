@@ -77,6 +77,8 @@ QDeclarativeBatteryInfo::~QDeclarativeBatteryInfo()
     \qmlproperty bool BatteryInfo::monitorBatteryCount
 
     This property holds whether or not monitor the change of battery counts.
+
+    \sa batteryCount
  */
 bool QDeclarativeBatteryInfo::monitorBatteryCount() const
 {
@@ -113,6 +115,8 @@ int QDeclarativeBatteryInfo::batteryCount() const
     \qmlproperty bool BatteryInfo::monitorChargerType
 
     This property holds whether or not monitor the change of charger type.
+
+    \sa chargerType
  */
 bool QDeclarativeBatteryInfo::monitorChargerType() const
 {
@@ -159,6 +163,8 @@ void QDeclarativeBatteryInfo::_q_chargerTypeChanged(QBatteryInfo::ChargerType ty
     \qmlproperty bool BatteryInfo::monitorCurrentFlow
 
     This property holds whether or not monitor the flow of batteries.
+
+    \sa onCurrentFlowChanged
  */
 bool QDeclarativeBatteryInfo::monitorCurrentFlow() const
 {
@@ -181,9 +187,20 @@ void QDeclarativeBatteryInfo::setMonitorCurrentFlow(bool monitor)
 }
 
 /*!
+    \qmlsignal BatteryInfo::onCurrentFlowChanged(int battery, int flow)
+
+    This handler is called when current flow of \a battery has changed to \a flow.
+    Note that it won't be called unless monitorCurrentFlow is set true.
+
+    \sa currentFlow, monitorCurrentFlow
+ */
+
+/*!
     \qmlmethod int BatteryInfo::currentFlow(int battery)
 
     Returns the current flow of the \a battery.
+
+    \sa onCurrentFlowChanged
 */
 int QDeclarativeBatteryInfo::currentFlow(int battery) const
 {
@@ -194,6 +211,8 @@ int QDeclarativeBatteryInfo::currentFlow(int battery) const
     \qmlproperty bool BatteryInfo::monitorRemainingCapacity
 
     This property holds whether or not monitor the remaining capacity of batteries.
+
+    \sa onRemainingCapacityChanged
  */
 bool QDeclarativeBatteryInfo::monitorRemainingCapacity() const
 {
@@ -216,9 +235,20 @@ void QDeclarativeBatteryInfo::setMonitorRemainingCapacity(bool monitor)
 }
 
 /*!
+    \qmlsignal BatteryInfo::onRemainingCapacityChanged(int battery, int capacity)
+
+    This handler is called when remaining capacity of \a battery has changed to \a capacity.
+    Note that it won't be called unless monitorRemainingCapacity is set true.
+
+    \sa remainingCapacity, monitorRemainingCapacity
+ */
+
+/*!
     \qmlmethod int BatteryInfo::remainingCapacity(int battery)
 
     Returns the remaining capacity of the \a battery.
+
+    \sa onRemainingCapacityChanged
 */
 int QDeclarativeBatteryInfo::remainingCapacity(int battery) const
 {
@@ -229,6 +259,8 @@ int QDeclarativeBatteryInfo::remainingCapacity(int battery) const
     \qmlproperty bool BatteryInfo::monitorRemainingChargingTime
 
     This property holds whether or not monitor the remaining charging time of batteries.
+
+    \sa onRemainingChargingTimeChanged
  */
 bool QDeclarativeBatteryInfo::monitorRemainingChargingTime() const
 {
@@ -251,9 +283,20 @@ void QDeclarativeBatteryInfo::setMonitorRemainingChargingTime(bool monitor)
 }
 
 /*!
+    \qmlsignal BatteryInfo::onRemainingChargingTimeChanged(int battery, int seconds)
+
+    This handler is called when remaining charging time of \a battery has changed to \a seconds.
+    Note that it won't be called unless monitorRemainingChargingTime is set true.
+
+    \sa remainingChargingTime, monitorRemainingChargingTime
+ */
+
+/*!
     \qmlmethod int BatteryInfo::remainingChargingTime(int battery)
 
     Returns the remaining charging time of the \a battery.
+
+    \sa onRemainingChargingTimeChanged
 */
 int QDeclarativeBatteryInfo::remainingChargingTime(int battery) const
 {
@@ -264,6 +307,8 @@ int QDeclarativeBatteryInfo::remainingChargingTime(int battery) const
     \qmlproperty bool BatteryInfo::monitorVoltage
 
     This property holds whether or not monitor the voltage of batteries.
+
+    \sa onVoltageChanged
  */
 bool QDeclarativeBatteryInfo::monitorVoltage() const
 {
@@ -286,9 +331,20 @@ void QDeclarativeBatteryInfo::setMonitorVoltage(bool monitor)
 }
 
 /*!
+    \qmlsignal BatteryInfo::onVoltageChanged(int battery, int voltage)
+
+    This handler is called when voltage of \a battery has changed to \a voltage.
+    Note that it won't be called unless monitorVoltage is set true.
+
+    \sa voltage, monitorVoltage
+ */
+
+/*!
     \qmlmethod int BatteryInfo::voltage(int battery)
 
     Returns the voltage of the \a battery.
+
+    \sa onVoltageChanged
 */
 int QDeclarativeBatteryInfo::voltage(int battery) const
 {
@@ -299,6 +355,8 @@ int QDeclarativeBatteryInfo::voltage(int battery) const
     \qmlproperty bool BatteryInfo::monitorChargingState
 
     This property holds whether or not monitor the change of charging state.
+
+    \sa onChargingStateChanged
  */
 bool QDeclarativeBatteryInfo::monitorChargingState() const
 {
@@ -321,21 +379,31 @@ void QDeclarativeBatteryInfo::setMonitorChargingState(bool monitor)
 }
 
 /*!
-    \qmlproperty enum BatteryInfo::chargingState
+    \qmlmethod ChargingState BatteryInfo::chargingState(int battery)
 
-    This property holds the charging state. Possible values are:
+    Returns the charging state of the given \a battery. Possible values are:
     \list
     \o BatteryInfo.UnknownChargingState
     \o BatteryInfo.NotCharging
     \o BatteryInfo.Charging
     \o BatteryInfo.Discharging
     \endlist
+
+    \sa onChargingStateChanged
 */
 QDeclarativeBatteryInfo::ChargingState QDeclarativeBatteryInfo::chargingState(int battery) const
 {
     return static_cast<ChargingState>(batteryInfo->chargingState(battery));
 }
 
+/*!
+    \qmlsignal BatteryInfo::onChargingStateChanged(int battery, ChargingState state)
+
+    This handler is called when charging state of \a battery has changed to \a state.
+    Note that it won't be called unless monitorChargingState is set true.
+
+    \sa chargingState, monitorChargingState
+ */
 void QDeclarativeBatteryInfo::_q_chargingStateChanged(int battery, QBatteryInfo::ChargingState state)
 {
     emit chargingStateChanged(battery, static_cast<ChargingState>(state));

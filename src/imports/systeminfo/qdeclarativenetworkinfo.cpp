@@ -158,10 +158,12 @@ int QDeclarativeNetworkInfo::networkSignalStrength(NetworkMode mode, int interfa
 }
 
 /*!
-    \qmlsignal NetworkInfo::networkSignalStrengthChanged(NetworkInfo::NetworkMode mode, int interface, int strength)
+    \qmlsignal NetworkInfo::onNetworkSignalStrengthChanged(NetworkMode mode, int interfaceIndex, int strength)
 
-    This signal is emitted whenever the signal strength for the \a interface of \a mode has changed
-    to \a strength. Note that the signal won't emit until monitorNetworkSignalStrength is set true.
+    This handler is called whenever the signal strength for the \a interfaceIndex of \a mode has changed
+    to \a strength. Note that it won't be called until monitorNetworkSignalStrength is set true.
+
+    \sa networkSignalStrength, monitorNetworkSignalStrength
  */
 void QDeclarativeNetworkInfo::_q_networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength)
 {
@@ -204,10 +206,12 @@ int QDeclarativeNetworkInfo::networkInterfaceCount(NetworkMode mode) const
 }
 
 /*!
-    \qmlsignal NetworkInfo::networkInterfaceCountChanged(NetworkInfo::NetworkMode mode, int count)
+    \qmlsignal NetworkInfo::onNetworkInterfaceCountChanged(NetworkMode mode, int count)
 
-    This signal is emitted whenever the number of interfaces of \a mode has changed to \a count.
-    Note that the signal won't emit until monitorNetworkInterfaceCount is set true.
+    This handler is called whenever the number of interfaces of \a mode has changed to \a count.
+    Note that it won't called until monitorNetworkInterfaceCount is set true.
+
+    \sa networkInterfaceCount, monitorNetworkInterfaceCount
  */
 void QDeclarativeNetworkInfo::_q_networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count)
 {
@@ -257,10 +261,12 @@ QDeclarativeNetworkInfo::CellDataTechnology QDeclarativeNetworkInfo::currentCell
 }
 
 /*!
-    \qmlsignal NetworkInfo::currentCellDataTechnologyChanged(int interface, NetworkInfo::CellDataTechnology tech)
+    \qmlsignal NetworkInfo::onCurrentCellDataTechnologyChanged(int interfaceIndex, CellDataTechnology tech)
 
-    This signal is emitted whenever the cell data technology of \a interface has been changed to \a tech.
+    This handler is called whenever the cell data technology of \a interfaceIndex has been changed to \a tech.
     Note that the signal won't emit until monitorCurrentCellDataTechnology is set true.
+
+    \sa currentCellDataTechnology, monitorCurrentCellDataTechnology
  */
 void QDeclarativeNetworkInfo::_q_currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech)
 {
@@ -313,10 +319,12 @@ QDeclarativeNetworkInfo::NetworkStatus QDeclarativeNetworkInfo::networkStatus(QD
 }
 
 /*!
-    \qmlsignal NetworkInfo::networkStatusChanged(NetworkMode mode, int interface, NetworkStatus status)
+    \qmlsignal NetworkInfo::onNetworkStatusChanged(NetworkMode mode, int interfaceIndex, NetworkStatus status)
 
-    This signal is emitted whenever the status of \a mode and \a interface has been changed to \a status.
-    Note that the signal won't emit until monitorNetworkStatus is set true.
+    This handler is called whenever the status of \a mode and \a interfaceIndex has been changed to \a status.
+    Note that it won't be called until monitorNetworkStatus is set true.
+
+    \sa networkStatus, monitorNetworkStatus
  */
 void QDeclarativeNetworkInfo::_q_networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status)
 {
@@ -352,6 +360,8 @@ void QDeclarativeNetworkInfo::setMonitorCellId(bool monitor)
     \qmlmethod string NetworkInfo::cellId(int interface)
 
     Returns the cell ID of the given \a interface.
+
+    \sa onCellIdChanged
  */
 QString QDeclarativeNetworkInfo::cellId(int interface) const
 {
@@ -359,10 +369,12 @@ QString QDeclarativeNetworkInfo::cellId(int interface) const
 }
 
 /*!
-    \qmlsignal NetworkInfo::cellIdChanged(int interface, string id)
+    \qmlsignal NetworkInfo::onCellIdChanged(int interfaceIndex, string id)
 
-    This signal is emitted whenever the cell ID of \a interface has been changed to \a id.
-    Note that the signal won't emit until monitorCellId is set true.
+    This handler is called whenever the cell ID of \a interfaceIndex has been changed to \a id.
+    Note that it won't be called unless monitorCellId is set true.
+
+    \sa cellId, monitorCellId
  */
 
 /*!
@@ -401,10 +413,12 @@ QString QDeclarativeNetworkInfo::currentMobileCountryCode(int interface) const
 }
 
 /*!
-    \qmlsignal NetworkInfo::currentMobileCountryCodeChanged(int interface, string mcc)
+    \qmlsignal NetworkInfo::onCurrentMobileCountryCodeChanged(int interfaceIndex, string mcc)
 
-    This signal is emitted whenever the current mobile country code of \a interface has been changed
-    to \a mcc. Note that the signal won't emit until monitorCurrentMobileCountryCode is set true.
+    This handler is called whenever the current mobile country code of \a interfaceIndex has been changed
+    to \a mcc. Note that it won't be called unless monitorCurrentMobileCountryCode is set true.
+
+    \sa currentMobileCountryCode, monitorCurrentMobileCountryCode
  */
 
 /*!
@@ -443,10 +457,12 @@ QString QDeclarativeNetworkInfo::currentMobileNetworkCode(int interface) const
 }
 
 /*!
-    \qmlsignal NetworkInfo::currentMobileNetworkCodeChanged(int interface, string mnc)
+    \qmlsignal NetworkInfo::onCurrentMobileNetworkCodeChanged(int interfaceIndex, string mnc)
 
-    This signal is emitted whenever the current mobile network code of \a interface has been changed
-    to \a mnc. Note that the signal won't emit until monitorCurrentMobileNetworkCode is set true.
+    This handler is called whenever the current mobile network code of \a interfaceIndex has been changed
+    to \a mnc. Note that it won't be called unless monitorCurrentMobileNetworkCode is set true.
+
+    \sa currentMobileNetworkCode, monitorCurrentMobileNetworkCode
  */
 
 /*!
@@ -485,10 +501,12 @@ QString QDeclarativeNetworkInfo::locationAreaCode(int interface) const
 }
 
 /*!
-    \qmlsignal NetworkInfo::locationAreaCodeChanged(int interface, string lac)
+    \qmlsignal NetworkInfo::onLocationAreaCodeChanged(int interfaceIndex, string lac)
 
-    This signal is emitted whenever the location area code of \a interface has been changed to \a lac.
-    Note that the signal won't emit until monitorLocationAreaCode is set true.
+    This handler is called whenever the location area code of \a interfaceIndex has been changed to \a lac.
+    Note that it won't be called unless monitorLocationAreaCode is set true.
+
+    \sa locationAreaCode, monitorLocationAreaCode
  */
 
 /*!
@@ -517,7 +535,7 @@ void QDeclarativeNetworkInfo::setMonitorNetworkName(bool monitor)
 }
 
 /*!
-    \qmlmethod string NetworkInfo::networkName(NetworkInfo::NetworkMode mode, int interface)
+    \qmlmethod string NetworkInfo::networkName(NetworkMode mode, int interface)
 
     Returns the name of the given \a mode and \a interface.
  */
@@ -527,10 +545,12 @@ QString QDeclarativeNetworkInfo::networkName(NetworkMode mode, int interface) co
 }
 
 /*!
-    \qmlsignal NetworkInfo::networkNameChanged(NetworkMode mode, int interface, string name)
+    \qmlsignal NetworkInfo::onNetworkNameChanged(NetworkMode mode, int interfaceIndex, string name)
 
-    This signal is emitted whenever the network name of \a mode and \a interface has been changed
-    to \a name. Note that the signal won't emit until monitorNetworkName is set true.
+    This handler is called whenever the network name of \a mode and \a interfaceIndex has been changed
+    to \a name. Note that it won't called until monitorNetworkName is set true.
+
+    \sa networkName, monitorNetworkName
  */
 void QDeclarativeNetworkInfo::_q_networkNamedChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
 {
@@ -538,6 +558,8 @@ void QDeclarativeNetworkInfo::_q_networkNamedChanged(QNetworkInfo::NetworkMode m
 }
 
 /*!
+    \qmlmethod string NetworkInfo::macAddress(NetworkMode mode, int interface)
+
     Returns the MAC address for \a interface of \a mode. If the MAC address is not available or error
     occurs, an empty string is returned.
 */
@@ -547,6 +569,8 @@ QString QDeclarativeNetworkInfo::macAddress(QDeclarativeNetworkInfo::NetworkMode
 }
 
 /*!
+    \qmlmethod string NetworkInfo::homeMobileCountryCode(int interface)
+
     Returns the home Mobile Country Code (MCC) for \a interface. An empty string is returned if the
     information is not available or on error.
 */
@@ -556,6 +580,8 @@ QString QDeclarativeNetworkInfo::homeMobileCountryCode(int interface) const
 }
 
 /*!
+    \qmlmethod string NetworkInfo::homeMobileNetworkCode(int interface)
+
     Returns the home Mobile Network Code (MNC) for \a interface. An empty string is returned if the
     information is not available or on error.
 */
@@ -565,6 +591,8 @@ QString QDeclarativeNetworkInfo::homeMobileNetworkCode(int interface) const
 }
 
 /*!
+    \qmlmethod string NetworkInfo::imsi(int interface)
+
     Returns the International Mobile Subscriber Identity (IMSI) for \a interface. If this information is
     not available, or error occurs, an empty string is returned.
 */
