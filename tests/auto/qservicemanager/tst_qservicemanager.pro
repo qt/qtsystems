@@ -2,6 +2,7 @@ TARGET = tst_qservicemanager
 CONFIG += testcase
 
 QT = core sql serviceframework serviceframework-private testlib
+QT -= gui
 CONFIG += parallel_test
 
 !mtlib:!contains(config_test_mtlib, yes): DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"

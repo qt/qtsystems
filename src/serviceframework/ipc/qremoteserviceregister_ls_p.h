@@ -52,13 +52,6 @@
 QT_BEGIN_NAMESPACE
 
 class ObjectEndPoint;
-#ifdef QT_ADDON_JSONDB_LIB
-class NotionClient;
-#else
-class NotionClient
-{
-};
-#endif
 
 class QRemoteServiceRegisterLocalSocketPrivate: public QRemoteServiceRegisterPrivate
 {
@@ -70,16 +63,11 @@ public:
 public slots:
     void processIncoming();
 
-private slots:
-    void notionEvent(const QVariantMap& notion);
-
 private:
     bool createServiceEndPoint(const QString& ident);
 
     QLocalServer* localServer;
     QList<ObjectEndPoint*> pendingConnections;
-    QHash<QString, QStringList> authorizedClients;
-    NotionClient *notionClient;
 };
 
 QT_END_NAMESPACE

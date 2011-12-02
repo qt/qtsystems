@@ -34,7 +34,6 @@ PRIVATE_HEADERS += ipc/qslotinvoker_p.h \
     ipc/instancemanager_p.h \
     ipc/qservicepackage_p.h \
     ipc/qsecuritypackage_p.h \
-    ipc/qservicesecurity_p.h \
     ipc/proxyobject_p.h \
     ipc/ipcendpoint_p.h \
     ipc/qremoteserviceregister_p.h \
@@ -45,10 +44,10 @@ SOURCES += ipc/qslotinvoker.cpp \
     ipc/instancemanager.cpp \
     ipc/qservicepackage.cpp \
     ipc/qsecuritypackage.cpp \
-    ipc/qservicesecurity.cpp \
     ipc/proxyobject.cpp \
     ipc/ipcendpoint.cpp \
     ipc/qremoteserviceregister_p.cpp
 
 OTHER_FILES += \
     ipc/json-schema.txt
+

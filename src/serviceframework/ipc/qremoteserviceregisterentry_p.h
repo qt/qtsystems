@@ -67,6 +67,7 @@ public:
     QString iface;
     QString service;
     QString ifaceVersion;
+    QString connectionToken;
     const QMetaObject* meta;
     QRemoteServiceRegister::CreateServiceFunc cptr;
     QRemoteServiceRegister::InstanceType instanceType;

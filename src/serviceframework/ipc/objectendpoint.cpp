@@ -168,7 +168,7 @@ public:
 };
 
 ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent)
-    : QObject(parent), dispatch(comm), service(0), security(0), localToRemote(0),
+    : QObject(parent), dispatch(comm), service(0), localToRemote(0),
       remoteToLocal(0)
 {
     Q_ASSERT(dispatch);
@@ -253,12 +253,6 @@ void ObjectEndPoint::newPackageReady()
         QServicePackage p = dispatch->nextPackage();
         if (!p.isValid())
             continue;
-
-        if (security && !security->isAuthorized(p.d->packageType, p.d->entry)) {
-            qWarning() << "Failed auth, trying to terminate connection";
-            this->disconnected();
-            return;
-        }
 
         switch (p.d->packageType) {
             case QServicePackage::ObjectCreation:
@@ -680,11 +674,6 @@ void ObjectEndPoint::setLookupTable(int *local, int *remote)
 {
     localToRemote = local;
     remoteToLocal = remote;
-}
-
-void ObjectEndPoint::setServiceSecurity(QServiceSecurity *serviceSecurity)
-{
-    security = serviceSecurity;
 }
 
 #include "moc_objectendpoint_p.cpp"

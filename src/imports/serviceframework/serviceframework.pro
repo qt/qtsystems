@@ -18,6 +18,15 @@ HEADERS += qdeclarativeservice_p.h
 SOURCES += qdeclarativeservice.cpp \
            serviceframework.cpp 
 
+jsondb|contains(QT_CONFIG, jsondb): {
+    mtlib|contains(config_test_mtlib, yes): {
+        DEFINES += QT_NO_DBUS QT_MTCLIENT_PRESENT
+        CONFIG += link_pkgconfig
+        PKGCONFIG += mt-client
+    }
+}
+
+
 symbian {
     TARGET.EPOCALLOWDLLDATA=1
     TARGET.CAPABILITY = All -Tcb

@@ -52,21 +52,21 @@
 #include <QProcess>
 #include <QFile>
 #include <QCoreApplication>
+#include <QScopedPointer>
 #include <QDir>
 
 #include <time.h>
 #include <sys/types.h>          /* See NOTES */
 
-#ifdef QT_ADDON_JSONDB_LIB
+#ifdef QT_MTCLIENT_PRESENT
 #include <mt-client/notionclient.h>
 #include <mt-client/notionconnection.h>
+#include <QtAddOnJsonDb/QtAddOnJsonDb>
 #include <QCoreApplication>
 #include <QTextStream>
+#include <QFileSystemWatcher>
 #include "qsecuritypackage_p.h"
 #include "qservicesecurity_p.h"
-#ifdef QT_WAYLAND_PRESENT
-#include <QtAddOnJsonDb/QtAddOnJsonDb>
-#endif
 #endif
 
 #ifndef Q_OS_WIN
@@ -90,35 +90,23 @@ class LocalSocketEndPoint : public QServiceIpcEndPoint
 {
     Q_OBJECT
 public:
-    LocalSocketEndPoint(QLocalSocket* s, QServiceSecurity *sec, QObject* parent = 0)
+    LocalSocketEndPoint(QLocalSocket* s, QObject* parent = 0)
         : QServiceIpcEndPoint(parent),
           socket(s),
-          securityService(sec),
           pending_bytes(0)
 
     {
         Q_ASSERT(socket);
         socket->setParent(this);
 
-        connect(s, SIGNAL(readyRead()), this, SLOT(readIncomingSecurity()));
+        connect(s, SIGNAL(readyRead()), this, SLOT(readIncoming()));
         connect(s, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
         connect(s, SIGNAL(disconnected()), this, SLOT(ipcfault()));
         connect(s, SIGNAL(error(QLocalSocket::LocalSocketError)),
                 this, SLOT(socketError(QLocalSocket::LocalSocketError)));
 
-#if defined(QT_ADDON_JSONDB_LIB) && defined(QT_WAYLAND_PRESENT)
-        if (sec->getSessionType() == QServiceSecurity::Client) {
-            // write hello package
-            QByteArray block;
-            QDataStream out(&block, QIODevice::WriteOnly);
-            out.setVersion(QDataStream::Qt_4_6);
-            out << sec->getSecurityPackage();
-            socket->write(block);
-        }
-#endif
-
         if (socket->bytesAvailable())
-            QTimer::singleShot(0, this, SLOT(readIncomingSecurity()));
+            QTimer::singleShot(0, this, SLOT(readIncoming()));
 
     }
 
@@ -192,33 +180,6 @@ protected slots:
             }
         }
     }
-    void readIncomingSecurity()
-    {
-        if (!securityService || !securityService->waitingOnToken()) {
-            disconnect(socket, SIGNAL(readyRead()), this, SLOT(readIncomingSecurity()));
-            connect(socket, SIGNAL(readyRead()), this, SLOT(readIncoming()));
-            readIncoming();
-            return;
-        }
-
-        QDataStream in(socket);
-        in.setVersion(QDataStream::Qt_4_6);
-        if (socket->bytesAvailable()) {
-            QSecurityPackage pkg;
-            in >> pkg;
-            if (!securityService->isTokenValid(pkg)) {
-                qWarning() << Q_FUNC_INFO << "FAILED AUTH, serivce didn't have a token, or client didn't send a valid one.";
-                qWarning() << Q_FUNC_INFO << "Token received was" << pkg.token().toString();
-                socket->disconnect();
-            }
-            else {
-                connect(socket, SIGNAL(readyRead()), this, SLOT(readIncoming()));
-                disconnect(socket, SIGNAL(readyRead()), this, SLOT(readIncomingSecurity()));
-                if (socket->bytesAvailable())
-                    readIncoming();
-            }
-        }
-    }
 
     void socketError(QLocalSocket::LocalSocketError err)
     {
@@ -234,14 +195,12 @@ protected slots:
 
 private:
     QLocalSocket* socket;
-    QServiceSecurity *securityService;
     QRemoteServiceRegisterLocalSocketPrivate *serviceRegPriv;
     QByteArray pending_buf;
     quint32 pending_bytes;
 };
 
-#ifdef QT_ADDON_JSONDB_LIB
-
+#ifdef QT_MTCLIENT_PRESENT
 class NotionWaiter : public QObject
 {
     Q_OBJECT
@@ -299,98 +258,10 @@ private:
         NotionClient *client;
 };
 
-#ifdef QT_WAYLAND_PRESENT
-Q_USE_JSONDB_NAMESPACE
-
-class JsonDbWaiter : public QObject
-{
-    Q_OBJECT
-public:
-    JsonDbWaiter(QObject *parent = 0)
-        :
-          QObject(parent),
-          m_id(-1),
-          db(new JsonDbClient)
-    {
-        loop = new QEventLoop(this);
-        timer = new QTimer(this);
-
-        connect(timer, SIGNAL(timeout()), loop, SLOT(quit()));
-
-        connect(db, SIGNAL(response(int,const QVariant&)),
-            this, SLOT(handleResponse(int,const QVariant&)));
-        connect(db, SIGNAL(error(int,int,const QString&)),
-            this, SLOT(handleError(int,int,const QString&)));
-        connect(db, SIGNAL(disconnected()),
-                this, SLOT(handleDisconnect()));
-
-    }
-    ~JsonDbWaiter() { delete db; }
-
-    void reset() {
-        m_id = -1;
-        timer->stop();
-        result.clear();
-        errorText.clear();
-    }
-
-    int wait(int ms) {
-        timer->setInterval(ms);
-        timer->start();
-        int res = loop->exec();
-        timer->stop();
-        return res;
-    }
-
-    int find(const QVariant &v) {
-        reset();
-        m_id = db->find(v);
-        return wait(3000);
-    }
-
-    QVariantMap result;
-    QString errorText;
-    int m_id;
-
-
-protected slots:
-    void handleResponse( int id, const QVariant& data ) {
-        if (id == m_id) {
-            result = data.toMap();
-            loop->exit(0);
-        }
-    }
-
-    void handleError( int id, int code, const QString& message )
-    {
-            Q_UNUSED(code)
-
-            if (id == m_id) {
-                result.clear();
-                errorText = message;
-                loop->exit(1);
-            }
-    }
-
-    void handleDisconnect()
-    {
-        result.clear();
-        errorText = QLatin1String("Jsondb Connection Reset");
-        loop->exit(1);
-    }
-
-private:
-        QEventLoop *loop;
-        QTimer *timer;
-        JsonDbClient *db;
-};
-#endif
-
 #endif
 
 QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPrivate(QObject* parent)
-    : QRemoteServiceRegisterPrivate(parent),
-      notionClient(new NotionClient)
+    : QRemoteServiceRegisterPrivate(parent)
 {    
 }
 
@@ -398,39 +269,12 @@ void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& i
 {
     createServiceEndPoint(ident);
 
-#ifdef QT_ADDON_JSONDB_LIB
-    connect(notionClient, SIGNAL(notionEvent(QVariantMap)), this, SLOT(notionEvent(QVariantMap)));
-    notionClient->setActive(true);
-
+#ifdef QT_MTCLIENT_PRESENT
     // Must write the outputMatch to stdout to tell it we're ready
     // We must complete this without 10 seconds
     QTextStream out(stdout); out<<"Ready";out.flush();
 #endif
 
-}
-
-void QRemoteServiceRegisterLocalSocketPrivate::notionEvent(const QVariantMap &notion)
-{
-#ifdef QT_ADDON_JSONDB_LIB
-    if (notion.value(QLatin1String("notion")).toString() == QLatin1String("ServiceAuthorizationEvent")) {
-        QString token = notion.value(QLatin1String("token")).toString();
-        QStringList authorized = notion.value(QLatin1String("authorized")).toStringList();
-
-        if(token.isEmpty() || authorized.isEmpty()) {
-            qWarning() << "Invalid ServiceAuthorizedEvent notion received";
-            return;
-        }
-
-        authorizedClients.insert(token, authorized);
-
-        QVariantMap map(notion);
-        map.remove(QLatin1String("notion"));
-        map.insert(QLatin1String("notion"), QLatin1String("ServiceAuthorizationReply"));
-        notionClient->send(map);
-    }
-#else
-    Q_UNUSED(notion)
-#endif
 }
 
 void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
@@ -480,14 +324,8 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
                 return;
             }
         }
-        QServiceSecurity *sec = 0x0;
-#if defined(QT_ADDON_JSONDB_LIB) && defined(QT_WAYLAND_PRESENT)
-        sec = new QServiceSecurity(QServiceSecurity::Service, this);
-        sec->setAuthorizedClients(&authorizedClients);
-#endif
-        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(s, sec, this);
+        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(s, this);
         ObjectEndPoint* endpoint = new ObjectEndPoint(ObjectEndPoint::Service, ipcEndPoint, this);
-        endpoint->setServiceSecurity(sec);
         Q_UNUSED(endpoint);
     }
 }
@@ -517,13 +355,12 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
   return new QRemoteServiceRegisterLocalSocketPrivate(parent);
 }
 
-#ifdef QT_WAYLAND_PRESENT
-static QUuid doAuth(const QString &location) {
-    qDebug() << Q_FUNC_INFO << "SFW doing auth request for" << location;
+#ifdef QT_MTCLIENT_PRESENT
+void doStart(const QString &location, const QString &connectionToken) {
 
-    QUuid secToken;
-    NotionClient *client = new NotionClient();
-    NotionWaiter *waiter = new NotionWaiter(client);
+    QScopedPointer<NotionConnection> connection(new NotionConnection(connectionToken));
+    QScopedPointer<NotionClient> client(new NotionClient(connection.data()));
+    QScopedPointer<NotionWaiter> waiter(new NotionWaiter(client.data()));
     client->setActive(true);
 
     QVariantMap notion;
@@ -531,44 +368,18 @@ static QUuid doAuth(const QString &location) {
     notion.insert(QLatin1String("service"), location);
     client->send(notion);
 
-    qDebug() << "Sent service request for" << notion;
-
-    bool serviceRequestEventReceived = false;
-
-    while (!serviceRequestEventReceived) {
-        waiter->wait(30000);
-
-        if (!waiter->errorNotion.isEmpty() &&
-                (waiter->errorNotion == QLatin1String("ServiceRequest"))) {
-            qWarning() << "Error on ServiceRequest!" << waiter->errorText;
-            delete waiter;
-            delete client;
-            return QUuid();
-        }
-
-        if (waiter->waitingOnNotion == true) {
-            qWarning() << "Notions failed to return within waiting period";
-            delete waiter;
-            delete client;
-            return QUuid();
-        }
-
-        if (waiter->notion.value(QLatin1String("notion")) == QLatin1String("ServiceRequestEvent")) {
-            serviceRequestEventReceived = true;
-        }
-        else {
-            waiter->reset();
-        }
+    QEventLoop loop;
+    QFileSystemWatcher watcher;
+    QFileInfo file(QLatin1Literal("/tmp/") + location);
+    watcher.addPath(QLatin1Literal("/tmp"));
+    qWarning() << "SFW checking in" << file.path() << "for the socket to come into existance";
+    QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), &loop, SLOT(quit()));
+    QTimer timeout;
+    timeout.start(30000);
+    QObject::connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
+    while (!file.exists() && timeout.isActive()) {
+        loop.exec();
     }
-
-    qDebug() << "Got ServiceRequestEvent" << waiter->notion;
-
-    secToken = waiter->notion.value(QLatin1String("token")).toString();
-
-    delete waiter;
-    delete client;
-
-    return secToken;
 }
 #endif
 
@@ -577,20 +388,25 @@ static QUuid doAuth(const QString &location) {
 */
 QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegister::Entry& entry, const QString& location)
 {
+    qDebug() << "SFW proxyForService" << location;
     QLocalSocket* socket = new QLocalSocket();
     socket->connectToServer(location);
-    QUuid secToken;
-
-#ifdef QT_WAYLAND_PRESENT
-    secToken = doAuth(location);
-#endif
 
     if (!socket->waitForConnected()){
         if (!socket->isValid()) {
             QString path = location;
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
+#ifdef QT_MTCLIENT_PRESENT
+            qDebug() << "SFW Sending notion to start service";
+            doStart(location, entry.d->connectionToken);
+
+            socket->connectToServer(location);
+            if (!socket->isValid()){
+                qWarning() << "Server failed to start within waiting period";
+                return false;
+            }
+#else
             // If we have autotests enable, check for the service in .
-#ifndef QT_ADDON_JSONDB_LIB
 #ifdef QT_BUILD_INTERNAL
             QFile file(QStringLiteral("./") + path);
             if (file.exists()){
@@ -623,85 +439,11 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             else {
                 qWarning() << "Server could not be started";
             }
-#else
-#ifdef QT_WAYLAND_PRESENT
-
-            secToken = doAuth(location);
-
-            socket->connectToServer(location);
-            if (!socket->isValid()){
-                qWarning() << "Server failed to start within waiting period";
-                return false;
-            }
-
-#else /* QT_WAYLAND_PRESENT */
-            // XXX Work around for single process systems
-            qWarning() << "SFW Using single process hack to start service";
-            JsonDbWaiter waiter;
-
-            QVariantMap query;
-            query.insert(QLatin1String("query"), QString::fromLatin1("[?_type=\"com.nokia.mp.core.Package\"][?identifier=\"%2\"]").arg(location));
-            if (waiter.find(query)) {
-                qWarning() << "Can't find db entry for" << location << waiter.errorText;
-                return false;
-            }
-            QList<QVariant> res = waiter.result[QLatin1String("data")].toList();
-            if (res.empty()) {
-                qWarning() << "Got no results back looking for" << location;
-                return false;
-            }
-            QVariantMap entry = res.takeFirst().toMap();
-            if (!res.isEmpty()) {
-                qWarning() << "Found more than one option/registered package at" << location << "using the first one";
-            }
-            QString url = entry.value(QLatin1String("url")).toString();
-            QString app = entry.value(QLatin1String("application")).toString();
-            qDebug() << "App: " << app << "URL: " << url;
-            QUrl u(url);
-            QString p = u.toLocalFile();
-            qDebug() << "Path" << p;
-            path = p + QLatin1String("/") + app;
-            if (!QFile::exists(path) && QFile::exists(app)) {
-                qDebug() << "Absolute path, using app only" << app;
-                path = app;
-            }
-
-            qDebug() << "SFW trying to start" << path;
-            qint64 pid = 0;
-            // Start the service as a detached process
-            if (QProcess::startDetached(path, QStringList(), QString(), &pid)){
-                int i;
-                socket->connectToServer(location);
-                for (i = 0; !socket->isValid() && i < 1000; i++){
-                    // Temporary hack till we can improve startup signaling
-                    struct timespec tm;
-                    tm.tv_sec = 0;
-                    tm.tv_nsec = 1000000;
-                    nanosleep(&tm, 0x0);
-                    socket->connectToServer(location);
-                    // keep trying for a while
-                }
-                if (!socket->isValid()){
-                    qWarning() << "Server failed to start within waiting period";
-                    return false;
-                }
-            }
-            else {
-                qWarning() << "Server could not be started";
-            }
 #endif
-#endif /* QT_ADDON_JSONDB_LIB */
         }
     }
     if (socket->isValid()){
-        QServiceSecurity *sec = new QServiceSecurity(QServiceSecurity::Client, socket);
-#if defined(QT_ADDON_JSONDB_LIB) && defined(QT_WAYLAND_PRESENT)
-        if (secToken.isNull()){
-            qWarning() << "No security token found, client will be refused connection";
-        }
-        sec->setAuthToken(secToken);
-#endif
-        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(socket, sec);
+        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(socket);
         ObjectEndPoint* endPoint = new ObjectEndPoint(ObjectEndPoint::Client, ipcEndPoint);
 
         QObject *proxy = endPoint->constructProxy(entry);
@@ -712,6 +454,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
         }
         ipcEndPoint->setParent(proxy);
         endPoint->setParent(proxy);
+        qDebug() << "SFW create object";
         return proxy;
     }
     return 0;

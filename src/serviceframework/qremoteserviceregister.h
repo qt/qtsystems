@@ -92,6 +92,7 @@ public:
 
         const QMetaObject* metaObject() const;
 
+        friend class QRemoteServiceRegisterPrivate;
         friend class QRemoteServiceRegister;
         friend class InstanceManager;
         friend class QServiceManager;

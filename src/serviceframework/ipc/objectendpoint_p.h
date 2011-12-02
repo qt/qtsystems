@@ -74,8 +74,6 @@ public:
     QVariant invokeRemote(int metaIndex, const QVariantList& args, int returnType);
     QVariant invokeRemoteProperty(int metaIndex, const QVariant& arg, int returnType, QMetaObject::Call c);
 
-    void setServiceSecurity(QServiceSecurity *serviceSecurity);
-
     void setLookupTable(int *local, int *remote);
 
 Q_SIGNALS:
@@ -92,7 +90,6 @@ private:
     QServiceIpcEndPoint* dispatch;
     QPointer<QObject> service;
     ObjectEndPointPrivate* d;
-    QServiceSecurity* security;
     int *localToRemote;
     int *remoteToLocal;
     QHash<QUuid, Response*> openRequests;
