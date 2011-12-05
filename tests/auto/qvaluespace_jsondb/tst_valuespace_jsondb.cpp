@@ -43,21 +43,21 @@
 #include <QtCore/QString>
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
-#include <qjson/parser.h>
+#include <QScriptEngine>
+#include <QScriptValue>
 #include <qvaluespace.h>
 #include "qvaluespace_p.h"
-#include <qsignalspy.h>
 
 #include <jsondblayer_p.h>
 
 #include <private/jsondb-connection_p.h>
 
-class TestJsonDbLayer : public QObject
+class TestQValueSpaceJsonDb : public QObject
 {
     Q_OBJECT
 
 public:
-    TestJsonDbLayer();
+    TestQValueSpaceJsonDb();
 
 private Q_SLOTS:
     void initTestCase();
@@ -66,94 +66,52 @@ private Q_SLOTS:
     void init();
     void cleanup();
 
-    void testAddWatch();
-    void testRemoveWatches();
-    void testChildren();
-    void testId();
-    void testItem();
-    void testLayerOptions();
-    void testName();
-    void testNotifyInterest();
-    void testOrder();
-    void testRemoveHandle();
-    void testRemoveSubTree();
-    void testRemoveValue();
-    void testSetProperty();
-    void testSetValue();
-    void testStartup();
-    void testSupportsInterestNotification();
-    void testSync();
-    void testValue();
-    void testInstance();
+    void testLayer_AddWatch();
+    void testLayer_RemoveWatches();
+    void testLayer_Children();
+    void testLayer_Id();
+    void testLayer_Item();
+    void testLayer_LayerOptions();
+    void testLayer_Name();
+    void testLayer_NotifyInterest();
+    void testLayer_Order();
+    void testLayer_RemoveHandle();
+    void testLayer_RemoveSubTree();
+    void testLayer_RemoveValue();
+    void testLayer_SetProperty();
+    void testLayer_SetValue();
+    void testLayer_Startup();
+    void testLayer_SupportsInterestNotification();
+    void testLayer_Sync();
+    void testLayer_Value();
+    void testLayer_Instance();
+
+    void testPath_JsonDbPath();
+    void testPath_JsonDbPathString();
+    void testPath_JsonDbPathOther();
+    void testPath_GetPath();
+    void testPath_OperatorAssign();
+    void testPath_OperatorEqual();
+    void testPath_OperatorPlusString();
+    void testPath_OperatorPlusPath();
+    void testPath_GetIdentifier();
+
+    void testHandle_JsonDbHandle();
+    void testHandle_Value();
+    void testHandle_SetValue();
+    void testHandle_UnsetValue();
+    void testHandle_Subscribe();
+    void testHandle_Unsubscribe();
+    void testHandle_Children();
+    void testHandle_RemoveSubTree();
 
 private:
     JsonDbLayer *layer;
 };
 
-class TestJsonDbPath : public QObject
+TestQValueSpaceJsonDb::TestQValueSpaceJsonDb()
 {
-    Q_OBJECT
 
-public:
-    TestJsonDbPath();
-
-private Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
-
-    void testJsonDbPath();
-    void testJsonDbPathString();
-    void testJsonDbPathOther();
-
-    void testGetPath();
-
-    void testOperatorAssign();
-    void testOperatorEqual();
-
-    void testOperatorPlusString();
-    void testOperatorPlusPath();
-
-    void testGetIdentifier();
-};
-
-class TestJsonDbHandle : public QObject
-{
-    Q_OBJECT
-
-    public:
-        TestJsonDbHandle();
-
-    private Q_SLOTS:
-        void initTestCase();
-        void cleanupTestCase();
-
-        void init();
-        void cleanup();
-
-        void testJsonDbHandle();
-        void testValue();
-        void testSetValue();
-        void testUnsetValue();
-        void testSubscribe();
-        void testUnsubscribe();
-        void testChildren();
-        void testRemoveSubTree();
-};
-
-
-
-void createJsonObjects(const QStringList &objects)
-{
-    QString object;
-
-    QJson::Parser parser;
-    bool ok;
-
-    foreach (object, objects) {
-        QVariantMap map = JsonDbConnection::makeCreateRequest(parser.parse(object.toAscii(), &ok));
-
-        JsonDbConnection::instance()->sync(map).value<QVariantMap>();
-    }
 }
 
 void cleanupJsonDb()
@@ -173,6 +131,43 @@ void cleanupJsonDb()
     }
 
     QTest::qWait(100);
+}
+
+void TestQValueSpaceJsonDb::initTestCase()
+{
+
+}
+
+void TestQValueSpaceJsonDb::cleanupTestCase()
+{
+
+}
+
+void TestQValueSpaceJsonDb::init()
+{
+    layer = new JsonDbLayer();
+}
+
+void TestQValueSpaceJsonDb::cleanup()
+{
+    delete layer;
+
+    cleanupJsonDb();
+}
+
+
+void createJsonObjects(const QStringList &objects)
+{
+    QString object;
+    QScriptValue sc;
+    QScriptEngine engine;
+
+    foreach (object, objects) {
+        sc = engine.evaluate("(" % object % ")");
+        QVariantMap map = JsonDbConnection::makeCreateRequest(sc.toVariant());
+
+        JsonDbConnection::instance()->sync(map).value<QVariantMap>();
+    }
 }
 
 bool exists(QString query)
@@ -199,53 +194,19 @@ QVariantMap getObject(const QString &identifier)
 }
 
 
-TestJsonDbLayer::TestJsonDbLayer()
-{
-
-}
-
-void TestJsonDbLayer::initTestCase()
-{
-
-}
-
-void TestJsonDbLayer::cleanupTestCase()
-{
-    //cleanupJsonDb();
-}
-
-void TestJsonDbLayer::init()
-{
-    /*handler.stop();
-    handler.reset();
-    handler.start();
-
-    QTest::qWait(100);*/
-
-    layer = new JsonDbLayer();
-}
-
-void TestJsonDbLayer::cleanup()
-{
-    //delete layer;
-    delete layer;
-
-    cleanupJsonDb();
-}
-
-void TestJsonDbLayer::testAddWatch()
+void TestQValueSpaceJsonDb::testLayer_AddWatch()
 {
     // addWatch() is currently not implemented
     //QVERIFY2(false, "Not implemented!");
 }
 
-void TestJsonDbLayer::testRemoveWatches()
+void TestQValueSpaceJsonDb::testLayer_RemoveWatches()
 {
     // removeWatches() is currently not implemented
     //QVERIFY2(false, "Not implemented!");
 }
 
-void TestJsonDbLayer::testChildren()
+void TestQValueSpaceJsonDb::testLayer_Children()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testChildren.app1\", \"settings\": {\"setting1\":1}}";
@@ -267,12 +228,12 @@ void TestJsonDbLayer::testChildren()
     catch(...) { }
 }
 
-void TestJsonDbLayer::testId()
+void TestQValueSpaceJsonDb::testLayer_Id()
 {
     QVERIFY2(layer->id() == QVALUESPACE_JSONDB_LAYER, "id() failed!");
 }
 
-void TestJsonDbLayer::testItem()
+void TestQValueSpaceJsonDb::testLayer_Item()
 {
     JsonDbHandle* handle = reinterpret_cast<JsonDbHandle*>(layer->item(NULL, ""));
     QVERIFY2(handle != NULL, "item() failed!");
@@ -291,18 +252,18 @@ void TestJsonDbLayer::testItem()
     QVERIFY2(handle4->path.getPath() == "testItemLayer.b.c.d.e", "item() failed!");
 }
 
-void TestJsonDbLayer::testLayerOptions()
+void TestQValueSpaceJsonDb::testLayer_LayerOptions()
 {
     QVERIFY2((layer->layerOptions() | QValueSpace::WritableLayer)
              && (layer->layerOptions() | QValueSpace::PermanentLayer), "Not implemented!");
 }
 
-void TestJsonDbLayer::testName()
+void TestQValueSpaceJsonDb::testLayer_Name()
 {
     QVERIFY2(layer->name() == "JSON DB Layer", "JSON DB layer name");
 }
 
-void TestJsonDbLayer::testNotifyInterest()
+void TestQValueSpaceJsonDb::testLayer_NotifyInterest()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testNotifyInterest.app\", \"setting1\":1}";
@@ -332,12 +293,12 @@ void TestJsonDbLayer::testNotifyInterest()
     }
 }
 
-void TestJsonDbLayer::testOrder()
+void TestQValueSpaceJsonDb::testLayer_Order()
 {
     QVERIFY2(layer->order() == 0x1000, "order() failed!");
 }
 
-void TestJsonDbLayer::testRemoveHandle()
+void TestQValueSpaceJsonDb::testLayer_RemoveHandle()
 {
     JsonDbHandle* handle = new JsonDbHandle(NULL, "", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
     QSignalSpy spy(handle, SIGNAL(destroyed()));
@@ -350,7 +311,7 @@ void TestJsonDbLayer::testRemoveHandle()
     QCOMPARE(spy.count(), 1);
 }
 
-void TestJsonDbLayer::testRemoveSubTree()
+void TestQValueSpaceJsonDb::testLayer_RemoveSubTree()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
@@ -366,7 +327,7 @@ void TestJsonDbLayer::testRemoveSubTree()
     catch(...) { }
 }
 
-void TestJsonDbLayer::testRemoveValue()
+void TestQValueSpaceJsonDb::testLayer_RemoveValue()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testUnsetValue.app\", \"setting1\":1}";
@@ -392,7 +353,7 @@ void TestJsonDbLayer::testRemoveValue()
     } catch(...) {}
 }
 
-void TestJsonDbLayer::testSetProperty()
+void TestQValueSpaceJsonDb::testLayer_SetProperty()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSetProperty.app\", \"setting1\":1}";
@@ -422,7 +383,7 @@ void TestJsonDbLayer::testSetProperty()
     }
 }
 
-void TestJsonDbLayer::testSetValue()
+void TestQValueSpaceJsonDb::testLayer_SetValue()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSetValue.app\", \"settings\": {\"setting1\":1}}";
@@ -461,23 +422,23 @@ void TestJsonDbLayer::testSetValue()
     } catch(...) {}
 }
 
-void TestJsonDbLayer::testStartup()
+void TestQValueSpaceJsonDb::testLayer_Startup()
 {
     QVERIFY2(layer->startup(QAbstractValueSpaceLayer::Server) == true, "startup() failed!");
     QVERIFY2(layer->startup(QAbstractValueSpaceLayer::Client) == true, "startup() failed!");
 }
 
-void TestJsonDbLayer::testSupportsInterestNotification()
+void TestQValueSpaceJsonDb::testLayer_SupportsInterestNotification()
 {
     QVERIFY2(layer->supportsInterestNotification(), "supportsInterestNotification() failed!");
 }
 
-void TestJsonDbLayer::testSync()
+void TestQValueSpaceJsonDb::testLayer_Sync()
 {
     // Nothing to test because the back-end isn't assynchronous
 }
 
-void TestJsonDbLayer::testValue()
+void TestQValueSpaceJsonDb::testLayer_Value()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
@@ -520,35 +481,19 @@ void TestJsonDbLayer::testValue()
     } catch(...) {}
 }
 
-void TestJsonDbLayer::testInstance()
+void TestQValueSpaceJsonDb::testLayer_Instance()
 {
     QVERIFY2(JsonDbLayer::instance() != NULL, "instance() failed!");
 }
 
 
-
-TestJsonDbPath::TestJsonDbPath()
-{
-
-}
-
-void TestJsonDbPath::initTestCase()
-{
-
-}
-
-void TestJsonDbPath::cleanupTestCase()
-{
-
-}
-
-void TestJsonDbPath::testJsonDbPath()
+void TestQValueSpaceJsonDb::testPath_JsonDbPath()
 {
     JsonDbPath path;
     QVERIFY2(path.getPath() == "", "Path is not an empty string!");
 }
 
-void TestJsonDbPath::testJsonDbPathString()
+void TestQValueSpaceJsonDb::testPath_JsonDbPathString()
 {
     JsonDbPath path1("/a/b/c");
     QVERIFY2(path1.getPath() == "a.b.c", "String constructor failed!");
@@ -566,7 +511,7 @@ void TestJsonDbPath::testJsonDbPathString()
     QVERIFY2(path5.getPath() == "a.b.c", "String constructor failed!");
 }
 
-void TestJsonDbPath::testJsonDbPathOther()
+void TestQValueSpaceJsonDb::testPath_JsonDbPathOther()
 {
     JsonDbPath path1("/a/b/c");
     JsonDbPath path11(path1);
@@ -585,12 +530,12 @@ void TestJsonDbPath::testJsonDbPathOther()
     QVERIFY2(path44.getPath() == "a.b.c", "Path constructor failed!");
 }
 
-void TestJsonDbPath::testGetPath()
+void TestQValueSpaceJsonDb::testPath_GetPath()
 {
     // Already tested in constructor test methods above
 }
 
-void TestJsonDbPath::testOperatorAssign()
+void TestQValueSpaceJsonDb::testPath_OperatorAssign()
 {
     JsonDbPath path1;
     JsonDbPath path11 = path1;
@@ -601,7 +546,7 @@ void TestJsonDbPath::testOperatorAssign()
     QVERIFY2(path22.getPath() == "a.b.c", "Assignment operator failed!");
 }
 
-void TestJsonDbPath::testOperatorEqual()
+void TestQValueSpaceJsonDb::testPath_OperatorEqual()
 {
     JsonDbPath path1;
     JsonDbPath path11;
@@ -620,7 +565,7 @@ void TestJsonDbPath::testOperatorEqual()
     QVERIFY2(!(path4 == path44), "Equal operator failed!");
 }
 
-void TestJsonDbPath::testOperatorPlusString()
+void TestQValueSpaceJsonDb::testPath_OperatorPlusString()
 {
     JsonDbPath path1;
     QVERIFY2((path1 + "").getPath() == "", "Plus string operator failed!");
@@ -641,7 +586,7 @@ void TestJsonDbPath::testOperatorPlusString()
     QVERIFY2((path6 + "/d/e").getPath() == "a.b.c.d.e", "Plus string operator failed!");
 }
 
-void TestJsonDbPath::testOperatorPlusPath()
+void TestQValueSpaceJsonDb::testPath_OperatorPlusPath()
 {
     JsonDbPath path1;
     JsonDbPath path11;
@@ -668,7 +613,7 @@ void TestJsonDbPath::testOperatorPlusPath()
     QVERIFY2((path6 + path66).getPath() == "a.b.c.d.e", "Plus path operator failed!");
 }
 
-void TestJsonDbPath::testGetIdentifier()
+void TestQValueSpaceJsonDb::testPath_GetIdentifier()
 {
     QString path = "com.nokia.mail.setting1";
     QStringList parts = JsonDbPath::getIdentifier(path);
@@ -679,31 +624,7 @@ void TestJsonDbPath::testGetIdentifier()
 }
 
 
-TestJsonDbHandle::TestJsonDbHandle()
-{
-}
-
-void TestJsonDbHandle::initTestCase()
-{
-
-}
-
-void TestJsonDbHandle::cleanupTestCase()
-{
-
-}
-
-void TestJsonDbHandle::init()
-{
-
-}
-
-void TestJsonDbHandle::cleanup()
-{
-    cleanupJsonDb();
-}
-
-void TestJsonDbHandle::testJsonDbHandle()
+void TestQValueSpaceJsonDb::testHandle_JsonDbHandle()
 {
     JsonDbHandle handle(NULL, "", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
     QVERIFY2(handle.path.getPath() == "", "JsonDbHandle constructor failed!");
@@ -718,7 +639,7 @@ void TestJsonDbHandle::testJsonDbHandle()
     QVERIFY2(handle3.path.getPath() == "testJsonDbHandle.b.c", "JsonDbHandle constructor failed!");
 }
 
-void TestJsonDbHandle::testValue()
+void TestQValueSpaceJsonDb::testHandle_Value()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
@@ -761,7 +682,7 @@ void TestJsonDbHandle::testValue()
     } catch(...) {}
 }
 
-void TestJsonDbHandle::testSetValue()
+void TestQValueSpaceJsonDb::testHandle_SetValue()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSetValue.app\", \"settings\": {\"setting1\":1}}";
@@ -802,7 +723,7 @@ void TestJsonDbHandle::testSetValue()
     } catch(...) {}
 }
 
-void TestJsonDbHandle::testUnsetValue()
+void TestQValueSpaceJsonDb::testHandle_UnsetValue()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testUnsetValue.app\", \"setting1\":1}";
@@ -828,7 +749,7 @@ void TestJsonDbHandle::testUnsetValue()
     } catch(...) {}
 }
 
-void TestJsonDbHandle::testSubscribe()
+void TestQValueSpaceJsonDb::testHandle_Subscribe()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSubscribe.app\", \"setting1\":1}";
@@ -851,7 +772,7 @@ void TestJsonDbHandle::testSubscribe()
     }
 }
 
-void TestJsonDbHandle::testUnsubscribe()
+void TestQValueSpaceJsonDb::testHandle_Unsubscribe()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testUnsubscribe.app\", \"setting1\":1}";
@@ -875,7 +796,7 @@ void TestJsonDbHandle::testUnsubscribe()
     QCOMPARE(spy.count(), 0);
 }
 
-void TestJsonDbHandle::testChildren()
+void TestQValueSpaceJsonDb::testHandle_Children()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testChildren.app1\", \"settings\": {\"setting1\":1}}";
@@ -896,7 +817,7 @@ void TestJsonDbHandle::testChildren()
     catch(...) { }
 }
 
-void TestJsonDbHandle::testRemoveSubTree()
+void TestQValueSpaceJsonDb::testHandle_RemoveSubTree()
 {
     QStringList objects;
     objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
@@ -912,17 +833,13 @@ void TestJsonDbHandle::testRemoveSubTree()
     catch(...) { }
 }
 
-#include "tst_testpublishsubscribe.moc"
+#include "tst_valuespace_jsondb.moc"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    TestJsonDbPath pathTest;
-    TestJsonDbHandle handleTest;
-    TestJsonDbLayer layerTest;
+    TestQValueSpaceJsonDb test;
 
-    return  QTest::qExec(&pathTest, argc, argv) \
-            & QTest::qExec(&handleTest, argc, argv) \
-            & QTest::qExec(&layerTest, argc, argv);
+    return  QTest::qExec(&test, argc, argv);
 }

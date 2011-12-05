@@ -7,6 +7,7 @@
 QT       += testlib
 QT       += jsondb
 QT       += jsondb-private
+QT       += script
 QT       -= gui
 
 # JSON DB DEPENDENCIES ############################################################################
