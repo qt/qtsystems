@@ -87,24 +87,26 @@ bool QScreenSaverPrivate::screenSaverEnabled()
 void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
 #if !defined(QT_NO_MTCORE)
-    if (enabled) {
-        if (notionClient && timer) {
-            notionClient->mediaPlaying(false);
-            timer->stop();
+    if (enabled != isScreenSaverEnabled) {
+        if (enabled) {
+            if (notionClient && timer) {
+                notionClient->mediaPlaying(false);
+                timer->stop();
+            }
+            isScreenSaverEnabled = true;
+        } else {
+            if (!notionClient)
+                notionClient = new NotionClient(this);
+            if (!timer) {
+                timer = new QTimer(this);
+                timer->setInterval((notionDuration - 2) * 1000);
+                connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+            }
+            if (!timer->isActive())
+                timer->start();
+            onTimeout();
+            isScreenSaverEnabled = false;
         }
-        isScreenSaverEnabled = true;
-    } else {
-        if (!notionClient)
-            notionClient = new NotionClient(this);
-        if (!timer) {
-            timer = new QTimer(this);
-            timer->setInterval((notionDuration - 2) * 1000);
-            connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
-        }
-        if (!timer->isActive())
-            timer->start();
-        onTimeout();
-        isScreenSaverEnabled = false;
     }
 #elif !defined(QT_NO_X11)
     int timeout = 0;
