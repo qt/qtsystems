@@ -10,16 +10,10 @@ QT       += jsondb-private
 QT       += script
 QT       -= gui
 
-# JSON DB DEPENDENCIES ############################################################################
-#LIBS += -lmtcore
-###################################################################################################
-
-#QMAKE_CXXFLAGS+=-fprofile-arcs
-#QMAKE_CXXFLAGS+=-ftest-coverage
-
-#LIBS += -lgcov
-
 TARGET = tst_testpublishsubscribe
+target.path = /usr/bin
+INSTALLS += target
+
 QMAKE_EXTRA_TARGETS = check
 check.depends = $$TARGET
 check.commands = ./$$TARGET

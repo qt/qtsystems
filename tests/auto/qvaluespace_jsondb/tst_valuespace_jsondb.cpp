@@ -124,7 +124,7 @@ void cleanupJsonDb()
     foreach (object, map["data"].value<QVariantList>()) {
         QVariantMap delMap = object.value<QVariantMap>();
 
-        if (delMap.contains("_type") && ((delMap["_type"] == "com.nokia.mp.settings.ApplicationSettings") || (delMap["_type"] == "com.nokia.mp.settings.SystemSettings"))) {
+        if (delMap.contains("identifier") && (delMap["identifier"].toString().startsWith("com.pstest"))) {
             delMap = JsonDbConnection::makeRemoveRequest(object);
             JsonDbConnection::instance()->sync(delMap);
         }
@@ -209,15 +209,15 @@ void TestQValueSpaceJsonDb::testLayer_RemoveWatches()
 void TestQValueSpaceJsonDb::testLayer_Children()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testChildren.app1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.app1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com.testChildren", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com.pstest.testChildren", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         //QSet<QString> children = handle.children();
         QSet<QString> children = layer->children(quintptr(&handle));
         QVERIFY2(children.count() == 3, "children() method failed!");
@@ -266,10 +266,10 @@ void TestQValueSpaceJsonDb::testLayer_Name()
 void TestQValueSpaceJsonDb::testLayer_NotifyInterest()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testNotifyInterest.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testNotifyInterest.app\", \"setting1\":1}";
 
     // Subscribe for settings objects under com.testNotifyInterest
-    JsonDbHandle handle(NULL, "com.testNotifyInterest", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+    JsonDbHandle handle(NULL, "com.pstest.testNotifyInterest", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
     layer->notifyInterest(quintptr(&handle), true);
 
     try {
@@ -314,12 +314,12 @@ void TestQValueSpaceJsonDb::testLayer_RemoveHandle()
 void TestQValueSpaceJsonDb::testLayer_RemoveSubTree()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "/com.testRemoveSubTree", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "/com.pstest.testRemoveSubTree", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         // Deleting a subtree is not supported
         QVERIFY2(!layer->removeSubTree(NULL, quintptr(&handle)), "removeSubTree() failed!");
@@ -330,12 +330,12 @@ void TestQValueSpaceJsonDb::testLayer_RemoveSubTree()
 void TestQValueSpaceJsonDb::testLayer_RemoveValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testUnsetValue.app\", \"setting1\":1}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testUnsetValue.system\", \"setting2\":2}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsetValue.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testUnsetValue.system\", \"setting2\":2}";
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com.testUnsetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com.pstest.testUnsetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         // Settings may not be deleted
         QVERIFY2(!layer->removeValue(NULL, quintptr(&handle), "setting1"), "removeValue() failed!");//handle.unsetValue("setting1"), "unsetValue()");
@@ -343,7 +343,7 @@ void TestQValueSpaceJsonDb::testLayer_RemoveValue()
         // Settings objects may not be deleted
         QVERIFY2(!layer->removeValue(NULL, quintptr(&handle), ""), "removeValue() failed!");
 
-        JsonDbHandle handle2(NULL, "com.testUnsetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle2(NULL, "com.pstest.testUnsetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         // Settings may not be deleted
         QVERIFY2(!layer->removeValue(NULL, quintptr(&handle2), "setting2"), "removeValue() failed!");
@@ -356,10 +356,10 @@ void TestQValueSpaceJsonDb::testLayer_RemoveValue()
 void TestQValueSpaceJsonDb::testLayer_SetProperty()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSetProperty.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetProperty.app\", \"setting1\":1}";
 
     // Subscribe for settings objects under com.testSubscribe
-    JsonDbHandle handle(NULL, "com.testSetProperty", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+    JsonDbHandle handle(NULL, "com.pstest.testSetProperty", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
     layer->setProperty(quintptr(&handle), QAbstractValueSpaceLayer::Publish);
 
     try {
@@ -386,12 +386,12 @@ void TestQValueSpaceJsonDb::testLayer_SetProperty()
 void TestQValueSpaceJsonDb::testLayer_SetValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSetValue.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testSetValue.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetValue.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testSetValue.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com.testSetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com.pstest.testSetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         QVERIFY2(layer->setValue(NULL, quintptr(&handle), "setting1", 42), "setValue() failed!");
 
@@ -399,11 +399,11 @@ void TestQValueSpaceJsonDb::testLayer_SetValue()
         QVERIFY2(handle.value("setting1", &value), "value() failed!");
         QVERIFY2(value.value<int>() == 42, "setValue() failed!");
 
-        JsonDbHandle handle2(NULL, "com.testSetValue.app.setting1", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle2(NULL, "com.pstest.testSetValue.app.setting1", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QVERIFY2(handle2.value("", &value), "value() failed!");
         QVERIFY2(value.value<int>() == 42, "setValue() failed!");
 
-        JsonDbHandle handle3(NULL, "com.testSetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle3(NULL, "com.pstest.testSetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         QVERIFY2(layer->setValue(NULL, quintptr(&handle3), "setting2", 42), "setValue() failed!");
 
@@ -417,7 +417,7 @@ void TestQValueSpaceJsonDb::testLayer_SetValue()
         QVERIFY2(!layer->setValue(NULL, quintptr(&handle3), "", 42), "setValue() failed!");
 
         // Creating a new settings object is not allowed
-        JsonDbHandle handle4(NULL, "com.testSetValue.system2", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle4(NULL, "com.pstest.testSetValue.system2", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QVERIFY2(!layer->setValue(NULL, quintptr(&handle4), "", 42), "setValue() failed!");
     } catch(...) {}
 }
@@ -441,12 +441,12 @@ void TestQValueSpaceJsonDb::testLayer_Sync()
 void TestQValueSpaceJsonDb::testLayer_Value()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com/testValueLayer/app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com/pstest/testValueLayer/app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QVariant value;
 
         QVERIFY2(layer->value(quintptr(&handle), "setting1", &value), "value() failed!");
@@ -457,12 +457,12 @@ void TestQValueSpaceJsonDb::testLayer_Value()
         QVERIFY2(layer->value(quintptr(&handle), &value), "value() failed!");
         QVariantMap map = value.value<QVariantMap>();
         QVERIFY2( map.contains("identifier") &&
-                 (map["identifier"] == "com.testValueLayer.app") &&
+                 (map["identifier"] == "com.pstest.testValueLayer.app") &&
                   map.contains("settings") &&
                   (map["settings"].value<QVariantMap>()["setting1"] == "1"),
                  "value() failed!");
 
-        JsonDbHandle handle2(NULL, "com/testValueLayer/system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle2(NULL, "com/pstest/testValueLayer/system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         QVERIFY2(layer->value(quintptr(&handle2), "setting2", &value), "value() failed!");
         intValue = value.value<int>();
@@ -472,7 +472,7 @@ void TestQValueSpaceJsonDb::testLayer_Value()
         QVERIFY2(layer->value(quintptr(&handle2), &value), "value() failed!");
         map = value.value<QVariantMap>();
         QVERIFY2( map.contains("identifier") &&
-                 (map["identifier"] == "com.testValueLayer.system") &&
+                 (map["identifier"] == "com.pstest.testValueLayer.system") &&
                   map.contains("settings") &&
                   (map["settings"].value<QVariantMap>()["setting2"] == "2"),
                  "value() failed!");
@@ -642,12 +642,12 @@ void TestQValueSpaceJsonDb::testHandle_JsonDbHandle()
 void TestQValueSpaceJsonDb::testHandle_Value()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com/testValueLayer/app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com/pstest/testValueLayer/app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QVariant value;
 
         QVERIFY2(handle.value("setting1", &value), "value() failed!");
@@ -658,12 +658,12 @@ void TestQValueSpaceJsonDb::testHandle_Value()
         QVERIFY2(handle.value("", &value), "value() failed!");
         QVariantMap map = value.value<QVariantMap>();
         QVERIFY2( map.contains("identifier") &&
-                 (map["identifier"] == "com.testValueLayer.app") &&
+                 (map["identifier"] == "com.pstest.testValueLayer.app") &&
                   map.contains("settings") &&
                   (map["settings"].value<QVariantMap>()["setting1"] == "1"),
                  "value() failed!");
 
-        JsonDbHandle handle2(NULL, "com/testValueLayer/system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle2(NULL, "com/pstest/testValueLayer/system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         QVERIFY2(handle2.value("setting2", &value), "value() failed!");
         intValue = value.value<int>();
@@ -673,7 +673,7 @@ void TestQValueSpaceJsonDb::testHandle_Value()
         QVERIFY2(handle2.value("", &value), "value() failed!");
         map = value.value<QVariantMap>();
         QVERIFY2( map.contains("identifier") &&
-                 (map["identifier"] == "com.testValueLayer.system") &&
+                 (map["identifier"] == "com.pstest.testValueLayer.system") &&
                   map.contains("settings") &&
                   (map["settings"].value<QVariantMap>()["setting2"] == "2"),
                  "value() failed!");
@@ -685,12 +685,12 @@ void TestQValueSpaceJsonDb::testHandle_Value()
 void TestQValueSpaceJsonDb::testHandle_SetValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSetValue.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testSetValue.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetValue.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testSetValue.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com.testSetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com.pstest.testSetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         QVERIFY2(handle.setValue("setting1", 42), "setValue() failed!");
 
@@ -698,7 +698,7 @@ void TestQValueSpaceJsonDb::testHandle_SetValue()
         QVERIFY2(handle.value("setting1", &value), "value() failed!");
         QVERIFY2(value.value<int>() == 42, "setValue() failed!");
 
-        JsonDbHandle handle2(NULL, "com.testSetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle2(NULL, "com.pstest.testSetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         QVERIFY2(handle2.setValue("setting2", 42), "setValue() failed!");
 
@@ -712,13 +712,13 @@ void TestQValueSpaceJsonDb::testHandle_SetValue()
         QVERIFY2(!handle2.setValue("", 42), "setValue() failed!");
 
         // Use handle with setting path
-        JsonDbHandle handle3(NULL, "com.testSetValue.app.setting1", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle3(NULL, "com.pstest.testSetValue.app.setting1", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QVERIFY2(handle3.setValue("", 123), "setValue() failed!");
         QVERIFY2(handle3.value("", &value), "value() failed!");
         QVERIFY2(value.value<int>() == 123, "setValue() failed!");
 
         // Creating a new settings object is not allowed
-        JsonDbHandle handle4(NULL, "com.testSetValue.system2", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle4(NULL, "com.pstest.testSetValue.system2", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QVERIFY2(!handle4.setValue("", 42), "setValue() failed!");
     } catch(...) {}
 }
@@ -726,12 +726,12 @@ void TestQValueSpaceJsonDb::testHandle_SetValue()
 void TestQValueSpaceJsonDb::testHandle_UnsetValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testUnsetValue.app\", \"setting1\":1}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testUnsetValue.system\", \"setting2\":2}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsetValue.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testUnsetValue.system\", \"setting2\":2}";
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com.testUnsetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com.pstest.testUnsetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         // Settings may not be deleted
         QVERIFY2(!handle.unsetValue("setting1"), "unsetValue()");
@@ -739,7 +739,7 @@ void TestQValueSpaceJsonDb::testHandle_UnsetValue()
         // Settings objects may not be deleted
         QVERIFY2(!handle.unsetValue(""), "unsetValue()");
 
-        JsonDbHandle handle2(NULL, "com.testUnsetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle2(NULL, "com.pstest.testUnsetValue.system", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         // Settings may not be deleted
         QVERIFY2(!handle2.unsetValue("setting2"), "unsetValue()");
@@ -752,10 +752,10 @@ void TestQValueSpaceJsonDb::testHandle_UnsetValue()
 void TestQValueSpaceJsonDb::testHandle_Subscribe()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testSubscribe.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSubscribe.app\", \"setting1\":1}";
 
     // Subscribe for settings objects under com.testSubscribe
-    JsonDbHandle handle(NULL, "com.testSubscribe", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+    JsonDbHandle handle(NULL, "com.pstest.testSubscribe", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
     handle.subscribe();
 
     try {
@@ -775,9 +775,9 @@ void TestQValueSpaceJsonDb::testHandle_Subscribe()
 void TestQValueSpaceJsonDb::testHandle_Unsubscribe()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testUnsubscribe.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsubscribe.app\", \"setting1\":1}";
 
-    JsonDbHandle handle(NULL, "com.testUnsubscribe", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+    JsonDbHandle handle(NULL, "com.pstest.testUnsubscribe", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
     QSignalSpy spy(&handle, SIGNAL(valueChanged()));
     QVERIFY(spy.isValid());
@@ -799,15 +799,15 @@ void TestQValueSpaceJsonDb::testHandle_Unsubscribe()
 void TestQValueSpaceJsonDb::testHandle_Children()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testChildren.app1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.app1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "com.testChildren", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "com.pstest.testChildren", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QSet<QString> children = handle.children();
         QVERIFY2(children.count() == 3, "children() method failed!");
         QVERIFY2(children.contains("app1"), "children() method failed!");
@@ -820,12 +820,12 @@ void TestQValueSpaceJsonDb::testHandle_Children()
 void TestQValueSpaceJsonDb::testHandle_RemoveSubTree()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
     try {
-        JsonDbHandle handle(NULL, "/com.testRemoveSubTree", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+        JsonDbHandle handle(NULL, "/com.pstest.testRemoveSubTree", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
         // Deleting a subtree is not supported
         QVERIFY2(!handle.removeSubTree(), "removeSubTree() failed!");
