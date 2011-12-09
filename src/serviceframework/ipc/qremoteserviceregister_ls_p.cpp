@@ -58,7 +58,8 @@
 #include <sys/types.h>          /* See NOTES */
 
 #ifdef QT_ADDON_JSONDB_LIB
-#include <mtcore/notion-client.h>
+#include <mt-client/notionclient.h>
+#include <mt-client/notionconnection.h>
 #include <QCoreApplication>
 #include <QTextStream>
 #include "qsecuritypackage_p.h"

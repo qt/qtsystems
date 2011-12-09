@@ -17,7 +17,7 @@ jsondb|contains(QT_CONFIG, jsondb): {
     mtcore|contains(config_test_mtcore, yes): {
         DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
         CONFIG += link_pkgconfig
-        PKGCONFIG += mtcore
+        PKGCONFIG += mt-client
         QT += jsondb jsondb-private
     }
     !no_wayland: {
