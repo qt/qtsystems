@@ -7,9 +7,9 @@ CONFIG += parallel_test
 DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"
 
 jsondb|contains(QT_CONFIG, jsondb): {
-    mtcore|contains(config_test_mtcore, yes): {
+    mtlib|contains(config_test_mtlib, yes): {
         CONFIG += link_pkgconfig
-        PKGCONFIG += mtcore
+        PKGCONFIG += mt-client
         DEFINES += QT_ADDON_JSONDB_LIB
         QT += jsondb jsondb-private
     }

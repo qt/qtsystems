@@ -40,7 +40,8 @@
 ****************************************************************************/
 
 
-#include <mtcore/notion-client.h>
+#include <mt-client/notionclient.h>
+#include <mt-client/notionconnection.h>
 
 int main()
 {

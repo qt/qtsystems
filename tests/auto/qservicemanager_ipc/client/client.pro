@@ -8,7 +8,7 @@ CONFIG -= app_bundle
 DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 
 jsondb|contains(QT_CONFIG, jsondb): {
-    mtcore|contains(config_test_mtcore, yes): {
+    mtlib|contains(config_test_mtlib, yes): {
         DEFINES += QT_JSONDB
     }
 }

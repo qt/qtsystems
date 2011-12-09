@@ -90,14 +90,14 @@ linux-*: !simulator{
         PRIVATE_HEADERS += qjsondbwrapper_p.h
         SOURCES += qjsondbwrapper.cpp
     } else: {
-        DEFINES += QT_NO_JSONDB QT_NO_MTCORE
+        DEFINES += QT_NO_JSONDB QT_NO_MTLIB
     }
 
-    mtcore|contains(config_test_mtcore, yes): {
+    mtlib|contains(config_test_mtlib, yes): {
         CONFIG += link_pkgconfig
-        PKGCONFIG += mtcore
+        PKGCONFIG += mtlib
     } else: {
-        DEFINES += QT_NO_MTCORE
+        DEFINES += QT_NO_MTLIB
     }
 
     contains(QT_CONFIG, dbus): {

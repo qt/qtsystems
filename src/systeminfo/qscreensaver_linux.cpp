@@ -41,10 +41,11 @@
 
 #include "qscreensaver_linux_p.h"
 
-#if !defined(QT_NO_MTCORE)
-#include <mtcore/notion-client.h>
+#if !defined(QT_NO_MTLIB)
+#include <mt-client/notionclient.h>
+#include <mt-client/notionconnection.h>
 #include <QtCore/qtimer.h>
-#endif // QT_NO_MTCORE
+#endif // QT_NO_MTLIB
 
 #if !defined(QT_NO_X11)
 #include <X11/Xlib.h>
@@ -52,23 +53,23 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_MTCORE)
+#if !defined(QT_NO_MTLIB)
 const int QScreenSaverPrivate::notionDuration(25);
-#endif // QT_NO_MTCORE
+#endif // QT_NO_MTLIB
 
 QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     : q_ptr(parent)
-#if !defined(QT_NO_MTCORE)
+#if !defined(QT_NO_MTLIB)
     , notionClient(0)
     , timer(0)
     , isScreenSaverEnabled(true)
-#endif // QT_NO_MTCORE
+#endif // QT_NO_MTLIB
 {
 }
 
 bool QScreenSaverPrivate::screenSaverEnabled()
 {
-#if !defined(QT_NO_MTCORE)
+#if !defined(QT_NO_MTLIB)
     return isScreenSaverEnabled;
 #elif !defined(QT_NO_X11)
     int timeout = 0;
@@ -86,7 +87,7 @@ bool QScreenSaverPrivate::screenSaverEnabled()
 
 void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-#if !defined(QT_NO_MTCORE)
+#if !defined(QT_NO_MTLIB)
     if (enabled != isScreenSaverEnabled) {
         if (enabled) {
             if (notionClient && timer) {
@@ -127,11 +128,11 @@ void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 #endif
 }
 
-#if !defined(QT_NO_MTCORE)
+#if !defined(QT_NO_MTLIB)
 void QScreenSaverPrivate::onTimeout()
 {
     notionClient->mediaPlaying(true, notionDuration);
 }
-#endif // QT_NO_MTCORE
+#endif // QT_NO_MTLIB
 
 QT_END_NAMESPACE

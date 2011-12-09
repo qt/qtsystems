@@ -39,6 +39,6 @@
     "contextkit" => {},
     "bluez" => {},
     "udev" => {},
-    "mtcore" => {},
+    "mtlib" => {},
     "x11" => {}
 );

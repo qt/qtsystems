@@ -14,7 +14,7 @@ DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 load(qt_module_config)
 
 jsondb|contains(QT_CONFIG, jsondb): {
-    mtcore|contains(config_test_mtcore, yes): {
+    mtlib|contains(config_test_mtlib, yes): {
         DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
         CONFIG += link_pkgconfig
         PKGCONFIG += mt-client
