@@ -95,7 +95,7 @@ linux-*: !simulator{
 
     mtlib|contains(config_test_mtlib, yes): {
         CONFIG += link_pkgconfig
-        PKGCONFIG += mtlib
+        PKGCONFIG += mt-client
     } else: {
         DEFINES += QT_NO_MTLIB
     }
