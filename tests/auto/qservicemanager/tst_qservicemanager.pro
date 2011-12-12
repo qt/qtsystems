@@ -4,10 +4,10 @@ CONFIG += testcase
 QT = core sql serviceframework serviceframework-private testlib
 CONFIG += parallel_test
 
-DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"
+!mtlib:!contains(config_test_mtlib, yes): DEFINES += OUTDIR=\\\"$$OUT_PWD/\\\" SRCDIR=\\\"$$PWD/\\\"
 
-jsondb|contains(QT_CONFIG, jsondb): {
-    mtlib|contains(config_test_mtlib, yes): {
+jsondb|contains(QT_CONFIG, jsondb) {
+    mtlib|contains(config_test_mtlib, yes) {
         CONFIG += link_pkgconfig
         PKGCONFIG += mt-client
         DEFINES += QT_ADDON_JSONDB_LIB
@@ -31,10 +31,9 @@ symbian|wince* {
             DEFINES += SYMBIAN_EMULATOR_SUPPORTS_PERPROCESS_WSD
         }
     }
-
-    addFiles.sources = xml/testserviceplugin.xml \
-                       sampleservice/xml/sampleservice.xml \
-                       sampleservice2/xml/sampleservice2.xml
-    addFiles.path = plugins/xmldata
-    DEPLOYMENT += addFiles
 }
+addFiles.files = xml/testserviceplugin.xml \
+                    xml/sampleservice.xml \
+                    xml/sampleservice2.xml
+addFiles.path = xml
+DEPLOYMENT += addFiles

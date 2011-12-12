@@ -5,8 +5,7 @@ CONFIG += core servoiceframewok
 
 QT = core serviceframework testlib
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
-
+!mtlib:!contains(config_test_mtlib, yes): DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 # Input
 SOURCES += tst_servicedeletion.cpp
@@ -19,3 +18,7 @@ symbian {
         DEFINES += SYMBIAN_EMULATOR_SUPPORTS_PERPROCESS_WSD
     }
 }
+
+addFiles.files = xmldata/*
+addFiles.path = xmldata
+DEPLOYMENT += addFiles

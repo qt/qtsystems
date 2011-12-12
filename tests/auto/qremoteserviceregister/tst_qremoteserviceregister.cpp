@@ -118,13 +118,13 @@ void tst_QRemoteServiceRegister::initTestCase()
     serviceRegister->setSecurityFilter(mySecurityFilterFunction);
 
     QServiceManager* manager = new QServiceManager(this);
-
-    // Symbian has auto registration
-#ifndef Q_OS_SYMBIAN
+#ifdef SRCDIR
     const QString path = QString(SRCDIR) + "/xmldata/rsrexampleservice.xml";
+#else
+    const QString path = QCoreApplication::applicationDirPath() + "/xmldata/rsrexampleservice.xml";
+#endif
     bool r = manager->addService(path);
     QVERIFY2(r, qPrintable(QString("Cannot register RSRExampleService - %1").arg(path)));
-#endif
 
     // D-Bus auto registration
 #ifndef QT_NO_DBUS

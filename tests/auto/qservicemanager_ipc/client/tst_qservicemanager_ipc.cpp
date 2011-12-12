@@ -166,16 +166,21 @@ void tst_QServiceManager_IPC::initTestCase()
     qDBusRegisterMetaType<QVariantHash>();
 #endif
 
+    QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath());
 
     QServiceManager* manager = new QServiceManager(this);
 
     // Symbian has auto registration
 #ifndef Q_OS_SYMBIAN
+#ifdef TESTDATA_DIR
     const QString path = QString(TESTDATA_DIR) + "../xmldata/ipcexampleservice.xml";
+#else
+    const QString path = QCoreApplication::applicationDirPath() + "/xmldata/ipcexampleservice.xml";
+#endif // TESTDATA_DIR
     bool r = manager->addService(path);
     if (!r)
         qWarning() << "Cannot register IPCExampleService" << path;
-#endif
+#endif // Q_OS_SYMBIAN
 
 #ifdef SFW_USE_DBUS_BACKEND
     // D-Bus auto registration
@@ -189,12 +194,20 @@ void tst_QServiceManager_IPC::initTestCase()
         QTextStream out(&data);
         out << "[D-BUS Service]\n"
             << "Name=com.nokia.qtmobility.sfw.IPCExampleService" << '\n'
+#ifdef TESTDATA_DIR
             << "Exec=" << QFileInfo(QString(TESTDATA_DIR) +"qt_sfw_example_ipc_unittest").absoluteFilePath();
+#else
+            << "Exec=" << QFileInfo(QCoreApplication::applicationDirPath() + "/qt_sfw_example_ipc_unittest").absoluteFilePath();
+#endif // TESTDATA_DIR
         data.close();
     }
     QVERIFY(data.exists());
+#ifdef TESTDATA_DIR
     qDebug() << "DDDDD" << file << QFileInfo(QString(TESTDATA_DIR) +"qt_sfw_example_ipc_unittest").absoluteFilePath();
-#endif
+#else
+    qDebug() << "DDDDD" << file << QFileInfo(QCoreApplication::applicationDirPath() + "/qt_sfw_example_ipc_unittest").absoluteFilePath();
+#endif // TESTDATA_DIR
+#endif // SFW_USE_DBUS_BACKEND
 
 #ifdef Q_OS_MAC
     char *p = getenv("PATH");

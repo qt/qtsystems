@@ -3,8 +3,10 @@ CONFIG += testcase
 
 wince* {
     DEFINES+= TESTDATA_DIR=\\\".\\\"
-}else:!symbian {
-    DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
+}else {
+    !mtlib:!contains(config_test_mtlib, yes) {
+        DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
+    }
 }
                
 
@@ -19,3 +21,7 @@ SOURCES += tst_servicemetadata.cpp
 symbian {
     TARGET.CAPABILITY = ALL -TCB
 }
+
+addFiles.files = testdata/*
+addFiles.path = testdata
+DEPLOYMENT += addFiles

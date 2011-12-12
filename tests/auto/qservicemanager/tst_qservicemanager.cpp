@@ -86,7 +86,11 @@ static QStringList validPluginFiles()
     // these are the plugins under tests/ which point to real service plugins
     // that can be used for testing (i.e. plugins that can be loaded, invoked)
     QStringList files;
+#ifndef OUTDIR
     files << "plugins/tst_sfw_sampleserviceplugin" << "plugins/tst_sfw_sampleserviceplugin2";
+#else
+    files << QCoreApplication::applicationDirPath() + "/plugins/libtst_sfw_sampleserviceplugin" << QCoreApplication::applicationDirPath() + "/plugins/libtst_sfw_sampleserviceplugin2";
+#endif // OUTDIR
     return files;
 }
 static const QStringList VALID_PLUGIN_FILES = validPluginFiles();
@@ -134,7 +138,11 @@ private:
     QString xmlTestDataPath(const QString &xmlFileName)
     {
         // On Symbian applicationDirPath returns application's private directory
+#ifdef SRCDIR
         return QString(SRCDIR) + "/xml/" + xmlFileName;
+#else
+        return QCoreApplication::applicationDirPath() + "/xml/" + xmlFileName;
+#endif // SRCDIR
     }
 
     QByteArray createServiceXml(const QString &serviceName, const QByteArray &interfaceXml, const QString &path, const QString &description = QString()) const
@@ -273,27 +281,32 @@ void tst_QServiceManager::initTestCase()
     QSfwTestUtil::setupTempSystemDb();
 #if defined(Q_OS_SYMBIAN)
     QSfwTestUtil::removeDatabases_symbian();
-#endif
+#endif // Q_OS_SYMBIAN
 
+    QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath());
+#ifdef OUTDIR
     QCoreApplication::addLibraryPath(OUTDIR);
+#else
+    QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "/plugins");
+#endif // OUTDIR
 }
 
 void tst_QServiceManager::init()
 {
 #if defined(QT_ADDON_JSONDB_LIB)
     QSfwTestUtil::clearDatabases_jsondb();
-#endif
+#endif // QT_ADDON_JSONDB_LIB
 #if defined(Q_OS_SYMBIAN)
     // Wait a millisecond so that QServiceManagers are destroyed and release
     // the database file (otherwise QFile::remove will get a permission denied -->
     // in next case, the isEmpty() check fails).
     QTest::qWait(1);
-#endif
+#endif // Q_OS_SYMBIAN
     QSfwTestUtil::removeTempUserDb();
     QSfwTestUtil::removeTempSystemDb();
 #if defined(Q_OS_SYMBIAN)
     QSfwTestUtil::removeDatabases_symbian();
-#endif
+#endif // Q_OS_SYMBIAN
     QSettings settings("com.nokia.qt.serviceframework.tests", "SampleServicePlugin");
     settings.setValue("installed", false);
 }
@@ -415,10 +428,10 @@ void tst_QServiceManager::findServices_scope()
 {
 #if defined(Q_OS_SYMBIAN)
     QSKIP("There is no difference between user and system scope in symbian");
-#endif
+#endif // Q_OS_SYMBIAN
 #if defined(QT_ADDON_JSONDB_LIB)
     QSKIP("There is no difference between user and system scope with jsondb");
-#endif
+#endif // QT_ADDON_JSONDB_LIB
     QFETCH(QService::Scope, scope_add);
     QFETCH(QService::Scope, scope_find);
     QFETCH(bool, expectFound);
@@ -688,10 +701,11 @@ void tst_QServiceManager::findInterfaces_scope()
 {
 #if defined(Q_OS_SYMBIAN)
     QSKIP("There is no difference between user and system scope in symbian");
-#endif
+#endif // Q_OS_SYMBIAN
 #if defined(QT_ADDON_JSONDB_LIB)
     QSKIP("There is no difference between user and system scope with jsondb");
-#endif
+#endif // QT_ADDON_JSONDB_LIB
+
     QFETCH(QService::Scope, scope_add);
     QFETCH(QService::Scope, scope_find);
     QFETCH(bool, expectFound);
@@ -807,8 +821,11 @@ void tst_QServiceManager::loadInterface_descriptor_data()
     QServiceInterfaceDescriptor descriptor;
     QServiceInterfaceDescriptorPrivate *priv = new QServiceInterfaceDescriptorPrivate;
     priv->interfaceName = "com.nokia.qt.TestInterfaceA";    // needed by service plugin implementation
-
+#ifdef OUTDIR
     lib.setFileName(QString(OUTDIR) + "/plugins/tst_sfw_sampleserviceplugin");
+#else
+    lib.setFileName(QCoreApplication::applicationDirPath() + "/plugins/libtst_sfw_sampleserviceplugin");
+#endif // OUTDIR
     qDebug() << "Want to load" << lib.fileName();
     QVERIFY(lib.load());
     QVERIFY(lib.unload());
@@ -816,13 +833,16 @@ void tst_QServiceManager::loadInterface_descriptor_data()
     priv->attributes[QServiceInterfaceDescriptor::Location] = "plugins/" + lib.fileName();
 #else
     priv->attributes[QServiceInterfaceDescriptor::Location] =  lib.fileName();
-#endif
+#endif  // Q_OS_SYMBIAN
     QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
-    QTest::newRow("tst_sfw_sampleserviceplugin")
+    QTest::newRow("libtst_sfw_sampleserviceplugin")
             << descriptor
             << "SampleServicePluginClass";
-
-    lib.setFileName(QString(OUTDIR) + "/plugins/tst_sfw_testservice2plugin");
+#ifdef OUTDIR
+    lib.setFileName(QString(OUTDIR) + "/plugins/libtst_sfw_testservice2plugin");
+#else
+    lib.setFileName(QCoreApplication::applicationDirPath() + "/plugins/libtst_sfw_testservice2plugin");
+#endif // OUTDIR
     QVERIFY(lib.load());
     QVERIFY(lib.unload());
 
@@ -830,16 +850,20 @@ void tst_QServiceManager::loadInterface_descriptor_data()
     priv->attributes[QServiceInterfaceDescriptor::Location] =  "plugins/" + lib.fileName();
 #else
     priv->attributes[QServiceInterfaceDescriptor::Location] =  lib.fileName();
-#endif
+#endif // Q_OS_SYMBIAN
     QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
-    QTest::newRow("tst_sfw_sampleserviceplugin2")
+    QTest::newRow("libtst_sfw_testservice2plugin")
             << descriptor
             << "TestService";
 }
 
 void tst_QServiceManager::loadInterface_testLoadedObjectAttributes()
 {
-    QLibrary lib(QString(OUTDIR) + "/plugins/tst_sfw_testservice2plugin");
+#ifdef OUTDIR
+    QLibrary lib(QString(OUTDIR) + "/plugins/libtst_sfw_testservice2plugin");
+#else
+    QLibrary lib(QCoreApplication::applicationDirPath() + "/plugins/libtst_sfw_testservice2plugin");
+#endif // OUTDIR
     QVERIFY2(lib.load(), qPrintable(lib.errorString()));
     QVERIFY2(lib.unload(), qPrintable(lib.errorString()));
 
@@ -850,7 +874,7 @@ void tst_QServiceManager::loadInterface_testLoadedObjectAttributes()
     priv->attributes[QServiceInterfaceDescriptor::Location] =  "plugins/" + lib.fileName();
 #else
     priv->attributes[QServiceInterfaceDescriptor::Location] =  lib.fileName();
-#endif
+#endif // Q_OS_SYMBIAN
     QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
 
     QServiceManager mgr;
@@ -905,8 +929,12 @@ void tst_QServiceManager::loadInterface_testLoadedObjectAttributes()
 
 void tst_QServiceManager::loadLocalTypedInterface()
 {
-    //ensure the plugin exists 
+    //ensure the plugin exists
+#ifdef OUTDIR
     QLibrary lib(QString(OUTDIR) + "/plugins/tst_sfw_sampleserviceplugin");
+#else
+    QLibrary lib(QCoreApplication::applicationDirPath() + "/plugins/libtst_sfw_sampleserviceplugin");
+#endif // (OUTDIR
     QVERIFY2(lib.load(), qPrintable(lib.errorString()));
     lib.unload();
 
@@ -919,7 +947,7 @@ void tst_QServiceManager::loadLocalTypedInterface()
     priv->attributes[QServiceInterfaceDescriptor::Location] =  "plugins/" + lib.fileName();
 #else
     priv->attributes[QServiceInterfaceDescriptor::Location] =  lib.fileName();
-#endif
+#endif // Q_OS_SYMBIAN
     QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
 
     //use manual descriptor -> avoid database involvement
@@ -1224,7 +1252,7 @@ void tst_QServiceManager::setInterfaceDefault_descriptor()
 #else
     QServiceManager mgrWithOtherScope(scope_find);
     QCOMPARE(mgrWithOtherScope.interfaceDefault(interfaceName).isValid(), expectFound);
-#endif
+#endif // Q_OS_SYMBIAN
 }
 
 void tst_QServiceManager::setInterfaceDefault_descriptor_data()
@@ -1248,7 +1276,7 @@ void tst_QServiceManager::setInterfaceDefault_descriptor_data()
             << QService::UserScope << QService::SystemScope << false;
     QTest::newRow("system scope - add, user scope - find")
             << QService::SystemScope << QService::UserScope << true;
-#endif /* Q_OS_SYMBIAN */
+#endif // Q_OS_SYMBIAN || QT_JSONDB
 }
 
 void tst_QServiceManager::interfaceDefault()

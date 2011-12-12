@@ -478,7 +478,11 @@ void registerExampleService()
 {
     unregisterExampleService();
     QServiceManager m;
+#ifdef TESTDATA_DIR
     const QString path = QString(TESTDATA_DIR) + "../xmldata/ipcexampleservice.xml";
+#else
+    const QString path = QCoreApplication::applicationDirPath() + "/../xmldata/ipcexampleservice.xml";
+#endif
     bool r = m.addService(path);
     if (!r)
         qWarning() << "Cannot register IPCExampleService" << path;

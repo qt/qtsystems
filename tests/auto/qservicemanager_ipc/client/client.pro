@@ -5,7 +5,7 @@ QT += serviceframework testlib
 
 CONFIG -= app_bundle
 
-DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
+!mtlib:!contains(config_test_mtlib, yes):DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 
 jsondb|contains(QT_CONFIG, jsondb): {
     mtlib|contains(config_test_mtlib, yes): {

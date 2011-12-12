@@ -3,13 +3,12 @@ CONFIG += testcase
 
 QT = core sql serviceframework serviceframework-private testlib
 
-symbian {
-    addFiles.sources = testdata/*
-    addFiles.path = testdata
-    DEPLOYMENT += addFiles
-}
+addFiles.files = testdata/*
+addFiles.path = testdata
+DEPLOYMENT += addFiles
 
-!symbian {
+
+!mtlib:!contains(config_test_mtlib, yes) {
     DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 }
 

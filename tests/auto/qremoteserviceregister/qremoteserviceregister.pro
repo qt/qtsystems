@@ -6,14 +6,12 @@ QT = core serviceframework testlib
 SOURCES += tst_qremoteserviceregister.cpp
 HEADERS += service.h
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+!mtlib:!contains(config_test_mtlib, yes): DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 symbian {
     TARGET.CAPABILITY = ALL -TCB
 }
 
-symbian* {
-    addFiles.sources = testdata/*
-    addFiles.path = xmldata
-    DEPLOYMENT += addFiles
-}
+addFiles.files = xmldata/*
+addFiles.path = xmldata
+DEPLOYMENT += addFiles

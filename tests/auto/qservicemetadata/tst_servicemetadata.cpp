@@ -85,7 +85,11 @@ private:
 
 void ServiceMetadataTest::initTestCase()
 {
+#ifdef TESTDATA_DIR
     dir = QDir(TESTDATA_DIR "/testdata");
+#else
+    dir = QDir(QCoreApplication::applicationDirPath() + "/testdata");
+#endif
 }
 
 void ServiceMetadataTest::cleanupTestCase()
