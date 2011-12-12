@@ -125,6 +125,8 @@ void DatabaseFileWatcher::setEnabled(ServiceDatabase *database, bool enabled)
     QString path = database->databasePath();
     if (enabled) {
         if (QFile::exists(path)) {
+            if (!database->isOpen())
+                database->open();
             m_knownServices[path] = database->getServiceNames(QString());
             m_watcher->addPath(path);
         } else {

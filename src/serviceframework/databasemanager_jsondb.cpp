@@ -636,6 +636,21 @@ void DatabaseManager::setChangeNotificationsEnabled(DbScope scope, bool enabled)
     m_notenabled = enabled;
 
     if (enabled) {
+        m_lastError.setError(DBError::NoError);
+
+        QVariantMap query;
+        query.insert(kQuery, QString::fromLatin1("[?_type=\"com.nokia.mp.serviceframework.interface\"]"));
+        int id = db->find(query);
+        waitForResponse(id);
+        m_services.clear();
+
+        QList<QVariant> res = m_data.toMap().value(kData).toList();
+        while (!res.empty()) {
+            QMap<QString, QVariant> entry = res.takeFirst().toMap();
+            QString service = entry.value(QLatin1String("service")).toString();
+            m_services.insert(service, m_services.value(service)+1);
+        }
+
         m_notuuid = db->registerNotification(JsonDbClient::NotifyCreate | JsonDbClient::NotifyRemove,
                                              QLatin1String("[?_type=\"com.nokia.mp.serviceframework.interface\"]"));
     }
@@ -703,12 +718,12 @@ void DatabaseManager::handleNotified(const QString &notify_uuid, const QtAddOn::
         m_services.insert(service, m_services.value(service)+1);
     }
     else if (notif.action() == JsonDbClient::NotifyRemove) {
-        if (m_services.value(service) == 1) {
+        if (m_services.value(service) > 1) {
+            m_services.insert(service, m_services.value(service)-1);
+        }
+        else if (m_services.value(service) == 1) {
             emit serviceRemoved(map.value(QLatin1String("service")).toString(), DatabaseManager::SystemScope);
             m_services.remove(service);
-        }
-        else {
-            m_services.insert(service, m_services.value(service)-1);
         }
     }
 }

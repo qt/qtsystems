@@ -1409,26 +1409,33 @@ void tst_QServiceManager::serviceRemoved()
     QBuffer buffer;
     buffer.setData(xml);
     QServiceManager mgr_modify(scope_modify);
-    QServiceManager mgr_listen(scope_listen);
+    QServiceManager mgr_verify(scope_listen);
 
     // ensure mgr.connectNotify() is called
-    ServicesListener *listener = new ServicesListener;
-    connect(&mgr_listen, SIGNAL(serviceRemoved(QString,QService::Scope)),
-            listener, SLOT(serviceRemoved(QString,QService::Scope)));
+    ServicesListener *listenerVerify = new ServicesListener;
+    connect(&mgr_verify, SIGNAL(serviceAdded(QString,QService::Scope)),
+            listenerVerify, SLOT(serviceAdded(QString,QService::Scope)));
 
-    QSignalSpy spyAdd(&mgr_listen, SIGNAL(serviceAdded(QString,QService::Scope)));
+    QSignalSpy spyAddMod(&mgr_verify, SIGNAL(serviceAdded(QString,QService::Scope)));
     QVERIFY2(mgr_modify.addService(&buffer), PRINT_ERR(mgr_modify));
 
     if (!expectSignal) {
         QTest::qWait(2000);
-        QCOMPARE(spyAdd.count(), 0);
+        QCOMPARE(spyAddMod.count(), 0);
     } else {
-        QTRY_COMPARE(spyAdd.count(), 1);
+        QTRY_COMPARE(spyAddMod.count(), 1);
     }
 
     // Pause between file changes so they are detected separately
     QTest::qWait(2000);
 
+    QServiceManager mgr_listen(scope_listen);
+    QSignalSpy spyAdd(&mgr_listen, SIGNAL(serviceAdded(QString,QService::Scope)));
+
+    // ensure mgr.connectNotify() is called
+    ServicesListener *listener = new ServicesListener;
+    connect(&mgr_listen, SIGNAL(serviceRemoved(QString,QService::Scope)),
+            listener, SLOT(serviceRemoved(QString,QService::Scope)));
 
     QSignalSpy spyRemove(&mgr_listen, SIGNAL(serviceRemoved(QString,QService::Scope)));
     QVERIFY(mgr_modify.removeService(serviceName));
@@ -1483,8 +1490,12 @@ void tst_QServiceManager::serviceRemoved()
     // ensure mgr.disconnectNotify() is called
     disconnect(&mgr_listen, SIGNAL(serviceRemoved(QString,QService::Scope)),
             listener, SLOT(serviceRemoved(QString,QService::Scope)));
+    disconnect(&mgr_verify, SIGNAL(serviceRemoved(QString,QService::Scope)),
+            listenerVerify, SLOT(serviceRemoved(QString,QService::Scope)));
+
 
     delete listener;
+    delete listenerVerify;
 }
 
 void tst_QServiceManager::serviceRemoved_data()
