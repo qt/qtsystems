@@ -26,38 +26,25 @@
 ****************************************************************************/
 
 /*!
-    \group systeminfo
-    \title System Information Classes
-
-    A set of APIs that provides various system information.
- */
-
-/*!
     \page systeminfo.html
 
-    \title Qt System Information
+    \title Qt System Info Module
     \brief A set of APIs to discover system related information and capabilities.
 
     \tableofcontents
 
     \ingroup technology-apis
 
-    \section1 System Information
-
-    The System Information module provides a set of APIs to discover system
+    The Qt System Info module provides a set of APIs to discover system
     related information and capabilities, including the batteries being used,
     activated locks, different hardware features, input device, network, screen
     saver, and storage, etc.
 
-    \section1 Main Classes
+    \section1 C++ Classes
     \annotatedlist systeminfo
 
     \section1 QML Elements
     \annotatedlist qml-systeminfo
 
     \section1 Examples
-
-    \section2 System Information QML Example
-    The System Info QML example demonstrates how an application can
-    very easily access the system information of the device.
 */

@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkInfo
-    \inmodule QtSystems
+    \inmodule QtSystemInfo
     \brief The QNetworkInfo class provides various information of the network status.
 
     \ingroup systeminfo

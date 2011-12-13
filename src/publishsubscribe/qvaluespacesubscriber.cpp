@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QValueSpaceSubscriber
     \brief The QValueSpaceSubscriber class allows applications to read and subscribe to Value Space paths.
-    \inmodule QtSystems
+    \inmodule QtPublishSubscribe
     \ingroup publishsubscribe
 
     By default QValueSpaceSubscriber can read values from and report change notifications for all

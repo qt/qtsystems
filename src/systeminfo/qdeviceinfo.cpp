@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDeviceInfo
-    \inmodule QtSystems
+    \inmodule QtSystemInfo
     \brief The QDeviceInfo class provides various information of the system.
     \ingroup systeminfo
 */

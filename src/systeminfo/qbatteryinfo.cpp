@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QBatteryInfo
-    \inmodule QtSystems
+    \inmodule QtSystemInfo
     \brief The QBatteryInfo class provides various information of the battery.
     \ingroup systeminfo
 

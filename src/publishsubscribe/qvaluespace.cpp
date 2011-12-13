@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     \class QAbstractValueSpaceLayer
     \brief The QAbstractValueSpaceLayer class provides support for adding new logical data layers
            to the Qt Value Space.
-    \inmodule QtSystems
+    \inmodule QtPublishSubscribe
     \ingroup publishsubscribe
     \internal
 
@@ -286,7 +286,7 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
     \namespace QValueSpace
     \brief The QValueSpace namespace contains miscellaneous identifiers used throughtout the
            Publish and Subscribe API.
-    \inmodule QtSystems
+    \inmodule QtPublishSubscribe
 */
 
 /*!
@@ -504,7 +504,7 @@ QList<QUuid> QValueSpace::availableLayers()
 
 /*!
     \internal
-    \inmodule QtSystems
+    \inmodule QtPublishSubscribe
 
     Returns \a path with all duplicate '/' characters removed.
 */

@@ -83,7 +83,7 @@ Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoD
 
 /*!
     \qmlclass ScreenSaver QScreenSaver
-    \inmodule QtSystems
+    \inmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The ScreenSaver element provides information of the screen saver.
 */

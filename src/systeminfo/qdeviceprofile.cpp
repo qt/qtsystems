@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDeviceProfile
-    \inmodule QtSystems
+    \inmodule QtSystemInfo
     \brief The QDeviceProfile class provides details for the profile of the device.
     \ingroup systeminfo
 */

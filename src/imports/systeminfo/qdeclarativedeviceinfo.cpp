@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass DeviceInfo QDeclarativeDeviceInfo
-    \inmodule QtSystems
+    \inmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The DeviceInfo element provides various information of the device.
 */

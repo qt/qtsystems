@@ -45,10 +45,10 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass ValueSpaceSubscriber QDeclarativeValueSpaceSubscriber
+    \inqmlmodule QtPublishSubscribe
+    \ingroup qml-publishsubscribe
 
     \brief The QValueSpaceSubscriber class allows applications to read and subscribe to Value Space.
-
-    \ingroup qml-publishsubscribe
 
     Each \l ValueSpaceSubscriber element represents a single value or path in the Value Space. The
     path is set using the \i path property.
