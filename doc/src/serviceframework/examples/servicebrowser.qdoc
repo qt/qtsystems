@@ -28,7 +28,7 @@
 /*!
     \example servicebrowser
     \title Service Browser Example
-    \brief Demonstrates how Service Framework can register and search for
+    \brief This example demonstrates how Service Framework can register and search for
     services and interfaces.
 
     \ingroup serviceframework-examples

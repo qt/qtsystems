@@ -32,6 +32,8 @@
 
 \ingroup serviceframework-examples
 
+\brief This example demonstrates the usage of the Service Framework's QML API.
+
 \bold {Execution}
 
 This example requires the example dialer services to be registered in order
