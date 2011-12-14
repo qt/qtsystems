@@ -187,7 +187,7 @@ private Q_SLOTS:
     void _q_networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
     void _q_networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
     void _q_networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
-    void _q_networkNamedChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
+    void _q_networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
 
 private:
     QNetworkInfo *networkInfo;

@@ -552,7 +552,7 @@ QString QDeclarativeNetworkInfo::networkName(NetworkMode mode, int interface) co
 
     \sa networkName, monitorNetworkName
  */
-void QDeclarativeNetworkInfo::_q_networkNamedChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
+void QDeclarativeNetworkInfo::_q_networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
 {
     emit networkNameChanged(static_cast<NetworkMode>(mode), interface, name);
 }
