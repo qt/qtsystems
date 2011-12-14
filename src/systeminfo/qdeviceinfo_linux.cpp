@@ -82,13 +82,13 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 {
     switch (feature) {
     case QDeviceInfo::Bluetooth:
-        if (QDir(QString::fromAscii("/sys/class/bluetooth/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QStringLiteral("/sys/class/bluetooth/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::Camera: {
-        const QString devfsPath(QString::fromAscii("/dev/"));
-        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QString::fromAscii("video*"), QDir::System);
+        const QString devfsPath(QStringLiteral("/dev/"));
+        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QStringLiteral("video*"), QDir::System);
         foreach (const QString &dir, dirs) {
             QFile dev(devfsPath + dir);
             if (!dev.open(QIODevice::ReadWrite))
@@ -104,13 +104,13 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
     }
 
     case QDeviceInfo::FmRadio:
-        if (QDir(QString::fromAscii("/sys/class/video4linux/")).entryList(QStringList() << QString::fromAscii("radio*")).size() > 0)
+        if (QDir(QStringLiteral("/sys/class/video4linux/")).entryList(QStringList() << QStringLiteral("radio*")).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::FmTransmitter: {
-        const QString devfsPath(QString::fromAscii("/dev/"));
-        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QString::fromAscii("radio*"), QDir::System);
+        const QString devfsPath(QStringLiteral("/dev/"));
+        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QStringLiteral("radio*"), QDir::System);
         foreach (const QString &dir, dirs) {
             QFile dev(devfsPath + dir);
             if (!dev.open(QIODevice::ReadWrite))
@@ -130,17 +130,17 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::Led:
-        if (QDir(QString::fromAscii("/sys/class/leds/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QStringLiteral("/sys/class/leds/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::MemoryCard:
-        if (QDir(QString::fromAscii("/sys/class/mmc_host/")).entryList(QStringList() << QString::fromAscii("mmc*")).size() > 0)
+        if (QDir(QStringLiteral("/sys/class/mmc_host/")).entryList(QStringList() << QStringLiteral("mmc*")).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::Usb:
-        if (QDir(QString::fromAscii("/sys/bus/usb/devices/")).entryList(QStringList() << QString::fromAscii("usb*")).size() > 0)
+        if (QDir(QStringLiteral("/sys/bus/usb/devices/")).entryList(QStringList() << QStringLiteral("usb*")).size() > 0)
             return true;
         return false;
 
@@ -154,7 +154,8 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::Wlan:
-        if (QDir(QString::fromAscii("/sys/class/ieee80211/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if ((QDir(QStringLiteral("/sys/class/ieee80211/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+                || (QDir(QStringLiteral("/sys/class/net/")).entryList(QStringList() << QStringLiteral("wlan*")).size() > 0))
             return true;
         return false;
 
@@ -178,8 +179,8 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::VideoOut: {
-        const QString devfsPath(QString::fromAscii("/dev/"));
-        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QString::fromAscii("video*"), QDir::System);
+        const QString devfsPath(QStringLiteral("/dev/"));
+        const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QStringLiteral("video*"), QDir::System);
         foreach (const QString &dir, dirs) {
             QFile dev(devfsPath + dir);
             if (!dev.open(QIODevice::ReadWrite))
@@ -191,19 +192,19 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
                 return true;
             }
         }
-        if (QDir(QString::fromAscii("/sys/class/video_output/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QStringLiteral("/sys/class/video_output/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
     }
 
     case QDeviceInfo::Haptics:
-        if (QDir(QString::fromAscii("/sys/class/haptic/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
+        if (QDir(QStringLiteral("/sys/class/haptic/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
     case QDeviceInfo::Nfc:
         // As of now, it's the only supported NFC device in the kernel
-        return QFile::exists(QString::fromAscii("/dev/pn544"));
+        return QFile::exists(QStringLiteral("/dev/pn544"));
     }
 
     return false;
@@ -334,9 +335,9 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
             jsondbWrapper = new QJsonDbWrapper(this);
         uniqueDeviceIDBuffer = jsondbWrapper->getUniqueDeviceID();
 #else
-        QFile file(QString::fromAscii("/sys/devices/virtual/dmi/id/product_uuid"));
+        QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_uuid"));
         if (file.open(QIODevice::ReadOnly))
-            uniqueDeviceIDBuffer = QString::fromAscii(file.readAll().simplified().data());
+            uniqueDeviceIDBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
 #endif // QT_NO_JSONDB
     }
 
@@ -347,22 +348,22 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
     switch (type) {
     case QDeviceInfo::Os:
-        if (versionBuffer[0].isEmpty() && QFile::exists(QString::fromAscii("/usr/bin/lsb_release"))) {
+        if (versionBuffer[0].isEmpty() && QFile::exists(QStringLiteral("/usr/bin/lsb_release"))) {
             QProcess lsbRelease;
-            lsbRelease.start(QString::fromAscii("/usr/bin/lsb_release"),
-                             QStringList() << QString::fromAscii("-r"));
+            lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
+                             QStringList() << QStringLiteral("-r"));
             if (lsbRelease.waitForFinished()) {
                 QString buffer(QString::fromLocal8Bit(lsbRelease.readAllStandardOutput().constData()));
                 versionBuffer[0] = buffer.section(QChar::fromAscii('\t'), 1, 1).simplified();
             }
         }
         if (versionBuffer[0].isEmpty()) {
-            QStringList releaseFies = QDir(QString::fromAscii("/etc/")).entryList(QStringList() << QString::fromAscii("*-release"));
+            QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
             foreach (const QString &file, releaseFies) {
-                QFile release(QString::fromAscii("/etc/") + file);
+                QFile release(QStringLiteral("/etc/") + file);
                 if (release.open(QIODevice::ReadOnly)) {
                     QString all(QString::fromLocal8Bit(release.readAll().constData()));
-                    QRegExp regExp(QString::fromAscii("\\d+(\\.\\d+)*"));
+                    QRegExp regExp(QStringLiteral("\\d+(\\.\\d+)*"));
                     if (-1 != regExp.indexIn(all)) {
                         versionBuffer[0] = regExp.cap(0);
                         break;
@@ -374,9 +375,9 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 
     case QDeviceInfo::Firmware:
         if (versionBuffer[1].isEmpty()) {
-            QFile file(QString::fromAscii("/proc/sys/kernel/osrelease"));
+            QFile file(QStringLiteral("/proc/sys/kernel/osrelease"));
             if (file.open(QIODevice::ReadOnly))
-                versionBuffer[1] = QString::fromAscii(file.readAll().simplified().data());
+                versionBuffer[1] = QString::fromLocal8Bit(file.readAll().simplified().data());
         }
         return versionBuffer[1];
     };
@@ -446,13 +447,13 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::getThermalState()
 {
     QDeviceInfo::ThermalState state = QDeviceInfo::UnknownThermal;
 
-    const QString hwmonRoot(QString::fromAscii("/sys/class/hwmon/"));
-    const QStringList hwmonDirs(QDir(hwmonRoot).entryList(QStringList() << QString::fromAscii("hwmon*")));
+    const QString hwmonRoot(QStringLiteral("/sys/class/hwmon/"));
+    const QStringList hwmonDirs(QDir(hwmonRoot).entryList(QStringList() << QStringLiteral("hwmon*")));
     foreach (const QString &dir, hwmonDirs) {
         int index = 1;
-        const QString input(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_input"));
-        const QString critical(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_crit"));
-        const QString emergency(hwmonRoot + dir + QDir::separator() + QString::fromAscii("temp%1_emergency"));
+        const QString input(hwmonRoot + dir + QDir::separator() + QStringLiteral("temp%1_input"));
+        const QString critical(hwmonRoot + dir + QDir::separator() + QStringLiteral("temp%1_crit"));
+        const QString emergency(hwmonRoot + dir + QDir::separator() + QStringLiteral("temp%1_emergency"));
         while (true) {
             QFile file(input.arg(index));
             if (!file.open(QIODevice::ReadOnly))
