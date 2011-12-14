@@ -387,6 +387,7 @@ void QDeclarativeBatteryInfo::setMonitorChargingState(bool monitor)
     \o BatteryInfo.NotCharging
     \o BatteryInfo.Charging
     \o BatteryInfo.Discharging
+    \o BatteryInfo.Full
     \endlist
 
     \sa onChargingStateChanged

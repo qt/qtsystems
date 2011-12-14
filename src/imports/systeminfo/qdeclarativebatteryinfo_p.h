@@ -90,7 +90,8 @@ public:
         UnknownChargingState = QBatteryInfo::UnknownChargingState,
         NotCharging = QBatteryInfo::NotCharging,
         Charging = QBatteryInfo::Charging,
-        Discharging = QBatteryInfo::Discharging
+        Discharging = QBatteryInfo::Discharging,
+        Full = QBatteryInfo::Full
     };
 
     enum EnergyUnit {

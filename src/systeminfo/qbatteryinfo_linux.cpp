@@ -413,10 +413,12 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::getChargingState(int battery)
     QByteArray status = state.readAll().simplified();
     if (status == "Charging")
         return QBatteryInfo::Charging;
+    else if (status == "Not charging")
+        return QBatteryInfo::NotCharging;
     else if (status == "Discharging")
         return QBatteryInfo::Discharging;
     else if (status == "Full")
-        return QBatteryInfo::NotCharging;
+        return QBatteryInfo::Full;
 
     return QBatteryInfo::UnknownChargingState;
 }

@@ -74,7 +74,8 @@ public:
         UnknownChargingState = 0,
         NotCharging,
         Charging,
-        Discharging
+        Discharging,
+        Full
     };
 
     enum EnergyUnit {

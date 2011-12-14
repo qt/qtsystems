@@ -93,10 +93,11 @@ QT_BEGIN_NAMESPACE
     \enum QBatteryInfo::ChargingState
     This enum describes the charging state:
 
-    \value UnknownChargingState  The charging state is unknown.
-    \value NotCharging           The battery is not charging, i.e. full.
+    \value UnknownChargingState  The charging state is unknown or charging error occured.
+    \value NotCharging           The battery is not charging, i.e. too low charger power.
     \value Charging              The battery is charging.
     \value Discharging           The battery is discharging.
+    \value Full                  The battery is fully charged.
 */
 
 /*!
