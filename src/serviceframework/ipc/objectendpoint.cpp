@@ -63,9 +63,6 @@ public:
     void* result;
 };
 
-typedef QHash<QUuid, Response*> Replies;
-Q_GLOBAL_STATIC(Replies, openRequests);
-
 class ServiceSignalIntercepter : public QSignalIntercepter
 {
     //Do not put Q_OBJECT here
@@ -230,7 +227,7 @@ QObject* ObjectEndPoint::constructProxy(const QRemoteServiceRegister::Entry & en
     p.d->entry = entry;
 
     Response* response = new Response();
-    openRequests()->insert(p.d->messageId, response);
+    openRequests.insert(p.d->messageId, response);
 
     dispatch->writePackage(p);
     waitForResponse(p.d->messageId);
@@ -245,7 +242,7 @@ QObject* ObjectEndPoint::constructProxy(const QRemoteServiceRegister::Entry & en
         return 0;
     }
 
-    openRequests()->take(p.d->messageId);
+    openRequests.take(p.d->messageId);
     delete response;
 
     return service;
@@ -337,7 +334,7 @@ void ObjectEndPoint::propertyCall(const QServicePackage& p)
         //client side
         Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
         static QQueue<QUuid> lastId;
-        Response* response = openRequests()->value(p.d->messageId);
+        Response* response = openRequests.value(p.d->messageId);
         if (response) {
             lastId.enqueue(p.d->messageId);
             while (lastId.count() > 10)
@@ -370,7 +367,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         //client side
         Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
 
-        Response* response = openRequests()->value(p.d->messageId);
+        Response* response = openRequests.value(p.d->messageId);
         if (p.d->responseType == QServicePackage::Failed) {
             response->result = 0;
             response->isFinished = true;
@@ -544,7 +541,7 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
 
         d->functionReturned = true;
 
-        Response* response = openRequests()->value(p.d->messageId);
+        Response* response = openRequests.value(p.d->messageId);
         if (response){
             response->isFinished = true;
             if (p.d->responseType == QServicePackage::Failed) {
@@ -584,7 +581,7 @@ QVariant ObjectEndPoint::invokeRemoteProperty(int metaIndex, const QVariant& arg
     if (c == QMetaObject::ReadProperty) {
         //create response and block for answer
         Response* response = new Response();
-        openRequests()->insert(p.d->messageId, response);
+        openRequests.insert(p.d->messageId, response);
 
         dispatch->writePackage(p);
         waitForResponse(p.d->messageId);
@@ -602,7 +599,7 @@ QVariant ObjectEndPoint::invokeRemoteProperty(int metaIndex, const QVariant& arg
             qDebug() << "response passed but not finished";
         }
 
-        openRequests()->take(p.d->messageId);
+        openRequests.take(p.d->messageId);
         delete response;
 
         return result;
@@ -637,7 +634,7 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
     } else {
         //create response and block for answer
         Response* response = new Response();
-        openRequests()->insert(p.d->messageId, response);
+        openRequests.insert(p.d->messageId, response);
 
         dispatch->writePackage(p);
         waitForResponse(p.d->messageId);
@@ -655,7 +652,7 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
             qDebug() << "response passed but not finished";
         }
 
-        openRequests()->take(p.d->messageId);
+        openRequests.take(p.d->messageId);
         delete response;
 
         return result;
@@ -668,7 +665,7 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
 void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 {
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
-    if (openRequests()->contains(requestId) ) {
+    if (openRequests.contains(requestId) ) {
         d->loopTimeout->setSingleShot(30000);
         d->loop->exec();
         d->loopTimeout->stop();

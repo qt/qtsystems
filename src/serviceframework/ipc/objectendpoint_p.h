@@ -53,6 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 class ObjectEndPointPrivate;
+class Response;
 class ObjectEndPoint : public QObject
 {
     Q_OBJECT
@@ -93,6 +94,7 @@ private:
     QServiceSecurity* security;
     int *localToRemote;
     int *remoteToLocal;
+    QHash<QUuid, Response*> openRequests;
 };
 
 QT_END_NAMESPACE

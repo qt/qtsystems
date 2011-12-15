@@ -48,6 +48,7 @@
 #include <QTimer>
 #include <QMetaObject>
 #include <QMetaMethod>
+#include <QThread>
 #include <QtTest/QtTest>
 #include <qservice.h>
 #include <qremoteserviceregister.h>
@@ -118,6 +119,9 @@ private slots:
     void verifyLargeDataTransfer();
     void verifyLargeDataTransfer_data();
 
+    void verifyThreadSafety();
+    void verifyThreadSafety_data();
+
     void sharedTestService();
     void uniqueTestService();
 
@@ -130,9 +134,13 @@ private slots:
     void verifyServiceClass();
     void verifyFailures();
 
-
     void testIpcFailure();
 
+signals:
+    void threadReady();
+    void threadRun();
+    void threadFinished();
+    void threadError();
 
 private:
     QObject* serviceUnique;
@@ -1106,6 +1114,192 @@ void tst_QServiceManager_IPC::verifyLargeDataTransfer_data()
     QTest::newRow("128k") << QByteArray(131072, 'A');
     QTest::newRow("1 megabyte") << QByteArray(1048576, 'A');
     QTest::newRow("Free mem") << QByteArray("");
+}
+
+class FetchLotsOfProperties : public QThread
+{
+    Q_OBJECT
+public:
+    FetchLotsOfProperties(int runs, bool shared, QObject *parent = 0);
+    void run();
+
+public slots:
+    void startFetches();
+
+private slots:
+    void setup();
+    void fetchProperty();
+
+signals:
+    void ready();
+    void error();
+
+private:
+    int runs;
+    bool shared;
+    QString lastValue;
+    QObject *service;
+    QServiceManager *mgr;
+};
+
+FetchLotsOfProperties::FetchLotsOfProperties(int runs, bool shared, QObject *parent)
+    : QThread(parent),
+      service(0),
+      mgr(0)
+{
+    this->runs = runs;
+    this->shared = shared;
+}
+
+void FetchLotsOfProperties::run()
+{
+    QMetaObject::invokeMethod(this, "setup", Qt::QueuedConnection);
+    exec();
+}
+
+void FetchLotsOfProperties::setup()
+{
+    mgr = new QServiceManager(this);
+
+    if (!mgr) {
+        qWarning() << "Failed to create a manager";
+        emit error();
+        exit(-1);
+    }
+
+    QList<QServiceInterfaceDescriptor> list = mgr->findInterfaces("IPCExampleService");
+    foreach (const QServiceInterfaceDescriptor &d, list) {
+        if (d.majorVersion() == 3 && d.minorVersion() == 5 && !shared) {
+            service = mgr->loadInterface(d);
+        }
+        if (d.majorVersion() == 3 && d.minorVersion() == 4 && shared) {
+            service = mgr->loadInterface(d);
+        }
+    }
+
+    if (!service) {
+        qWarning() << "Thread failed to load service";
+        emit error();
+        exit(-1);
+        return;
+    }
+
+    connect(this, SIGNAL(destroyed()), service, SLOT(deleteLater()));
+
+    lastValue = service->property("value").toString();
+
+    emit ready();
+}
+
+void FetchLotsOfProperties::startFetches()
+{
+    if (!mgr || !service) {
+        exit(-1);
+    }
+
+    if (runs > 0) {
+        QMetaObject::invokeMethod(this, "fetchProperty", Qt::QueuedConnection);
+    }
+    else {
+        quit();
+    }
+}
+
+void FetchLotsOfProperties::fetchProperty()
+{
+    if (!service) {
+        emit error();
+        exit(-1);
+    }
+
+    QString value = service->property("value").toString();
+    if (value != lastValue) {
+        qWarning() << "Value changed on read! Got" << value << "wanted" << lastValue;
+        emit error();
+        exit(-1);
+    }
+
+    if (runs-- > 0) {
+        QMetaObject::invokeMethod(this, "fetchProperty", Qt::QueuedConnection);
+    }
+    else {
+        quit();
+    }
+}
+
+void tst_QServiceManager_IPC::verifyThreadSafety()
+{
+
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Test case known to segfault on MAC, skipping, QTBUG-23182", Abort);
+    QVERIFY(false);
+#else
+
+    QFETCH(int, shared);
+    QFETCH(int, runs);
+    QFETCH(int, threads);
+
+    QSignalSpy ready(this, SIGNAL(threadReady()));
+    QSignalSpy finished(this, SIGNAL(threadFinished()));
+    QSignalSpy errors(this, SIGNAL(threadError()));
+    bool mixed = true;
+    for (int i = 0; i < threads; i++) {
+        switch (shared) {
+        case 0:
+            mixed = false;
+            break;
+        case 1:
+            mixed = true;
+            break;
+        case 2:
+            mixed = !mixed;
+        }
+        FetchLotsOfProperties *fetch = new FetchLotsOfProperties(runs, mixed, this);
+        connect(this, SIGNAL(threadRun()), fetch, SLOT(startFetches()));
+        connect(fetch, SIGNAL(ready()), this, SIGNAL(threadReady()));
+        connect(fetch, SIGNAL(error()), this, SIGNAL(threadError()));
+        connect(fetch, SIGNAL(finished()), this, SIGNAL(threadFinished()));
+        connect(fetch, SIGNAL(finished()), fetch, SLOT(deleteLater()));
+        fetch->start();
+    }
+    QTRY_COMPARE(ready.count(), threads);
+    QVERIFY2(!errors.count(), "Threads reported errors on setup");
+    emit threadRun();
+
+    qDebug() << "Waiting on" << threads << "threads to finish";
+
+#define THREAD_TIMEOUT 30*10
+
+    int i = THREAD_TIMEOUT;
+    while (((finished.count() + errors.count()) < threads) && (--i > 0)) {
+        QTest::qWait(100);
+    }
+
+    qDebug() << "Waited" << (THREAD_TIMEOUT - i)/10 << "seconds";
+
+    QCOMPARE(finished.count(), threads);
+    QVERIFY2(!errors.count(), "Threads reported errors");
+#endif
+}
+
+void tst_QServiceManager_IPC::verifyThreadSafety_data()
+{
+    QTest::addColumn<int>("shared");
+    QTest::addColumn<int>("runs");
+    QTest::addColumn<int>("threads");
+
+    QTest::newRow("unique, 2 threads") << 0 << 5000 << 2;
+    QTest::newRow("unique, 4 threads") << 0 << 2500 << 4;
+    QTest::newRow("unique, 16 threads") << 0 << 500 << 16;
+    QTest::newRow("shared, 2 threads") << 1 << 5000 << 2;
+    QTest::newRow("shared, 4 threads") << 1 << 2500 << 4;
+    QTest::newRow("shared, 16 threads") << 1 << 500 << 16;
+    QTest::newRow("mixed, 16 threads") << 2 << 500 << 16;
+
+    QTest::newRow("unique, 128 threads") << 0 << 50 << 128;
+    QTest::newRow("shared, 128 threads") << 1 << 50 << 128;
+    QTest::newRow("mixed, 128 threads") << 2 << 50 << 128;
+
 }
 
 void tst_QServiceManager_IPC::testSignalSlotOrdering()

@@ -2,6 +2,7 @@ TARGET = tst_client
 CONFIG += testcase
 
 QT += serviceframework testlib
+QT -= gui
 
 CONFIG -= app_bundle
 
