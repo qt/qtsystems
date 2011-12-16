@@ -90,6 +90,7 @@ public:
 
 protected slots:
     void ipcError(QService::UnrecoverableIPCError error);
+    void unblockRemote();
 
 private slots:
     void initTestCase();
@@ -118,6 +119,8 @@ private slots:
 
     void verifyLargeDataTransfer();
     void verifyLargeDataTransfer_data();
+
+    void verifyRemoteBlockingFunctions();
 
     void verifyThreadSafety();
     void verifyThreadSafety_data();
@@ -580,8 +583,8 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
     QVERIFY(mo->superClass());
     QCOMPARE(mo->superClass()->className(), "QServiceProxyBase");
     // TODO adding the ipc failure signal seems to break these
-    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 26); // 28+1 added signal for error signal added by library
-    QCOMPARE(mo->methodCount(), 31); //33 meta functions available + 1 signal
+    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 27); // 28+1 added signal for error signal added by library
+    QCOMPARE(mo->methodCount(), 32); //33 meta functions available + 1 signal
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
@@ -589,8 +592,8 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
 //    }
 
     //test properties
-    QCOMPARE(mo->propertyCount()-mo->propertyOffset(), 3);
-    QCOMPARE(mo->propertyCount(), 4);
+    QCOMPARE(mo->propertyCount()-mo->propertyOffset(), 5);
+    QCOMPARE(mo->propertyCount(), 6);
 
     QCOMPARE(mo->enumeratorCount()-mo->enumeratorOffset(), 3);
     QCOMPARE(mo->enumeratorCount(), 3);
@@ -1300,6 +1303,25 @@ void tst_QServiceManager_IPC::verifyThreadSafety_data()
     QTest::newRow("shared, 128 threads") << 1 << 50 << 128;
     QTest::newRow("mixed, 128 threads") << 2 << 50 << 128;
 
+}
+
+void tst_QServiceManager_IPC::unblockRemote()
+{
+    QString ret = serviceUnique->property("releaseBlockingRead").toString();
+    QCOMPARE(ret, QLatin1Literal("releaseBlockingReadReturned"));
+}
+
+void tst_QServiceManager_IPC::verifyRemoteBlockingFunctions()
+{
+#ifdef SFW_USE_DBUS_BACKEND
+    QEXPECT_FAIL("", "Test case known to segfault on dbus, skipping, QTBUG-23168", Abort);
+    QVERIFY(false);
+#else
+    connect(serviceUnique, SIGNAL(blockingValueRead()), this, SLOT(unblockRemote()));
+
+    QString ret = serviceUnique->property("blockingValue").toString();
+    QCOMPARE(ret, QLatin1Literal("blockingValueReturned"));
+#endif
 }
 
 void tst_QServiceManager_IPC::testSignalSlotOrdering()

@@ -213,14 +213,16 @@ private:
 class UniqueTestService : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("UniqueTestService", "First test");
-    Q_CLASSINFO("Key", "Value");
+    Q_CLASSINFO("UniqueTestService", "First test")
+    Q_CLASSINFO("Key", "Value")
 
-    Q_PROPERTY(QString value READ value WRITE setValue RESET resetValue NOTIFY valueChanged SCRIPTABLE true DESIGNABLE true STORED true);
-    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged);
-    Q_PROPERTY(ServiceFlag serviceFlags READ flags WRITE setFlags);
-    Q_ENUMS(Priority);
-    Q_FLAGS(ServiceFlag ServiceFlags);
+    Q_PROPERTY(QString value READ value WRITE setValue RESET resetValue NOTIFY valueChanged SCRIPTABLE true DESIGNABLE true STORED true)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
+    Q_PROPERTY(ServiceFlag serviceFlags READ flags WRITE setFlags)
+    Q_PROPERTY(QString blockingValue READ blockingValue)
+    Q_PROPERTY(QString releaseBlockingRead READ releaseBlockingRead)
+    Q_ENUMS(Priority)
+    Q_FLAGS(ServiceFlag ServiceFlags)
 
 public:
     enum ServiceFlag {
@@ -270,6 +272,19 @@ public:
         emit valueChanged();
     }
 
+    QString blockingValue()
+    {
+        emit blockingValueRead();
+        m_loop.exec();
+        return QLatin1Literal("blockingValueReturned");
+    }
+
+    QString releaseBlockingRead()
+    {
+        m_loop.quit();
+        return QLatin1Literal("releaseBlockingReadReturned");
+    }
+
     Q_INVOKABLE QString testFunctionWithReturnValue(int input)
     {
         QString output("%1 x 3 = %2");
@@ -312,6 +327,7 @@ Q_SIGNALS:
     void valueChanged();
     void priorityChanged();
     void count(int value);
+    void blockingValueRead();
 
 public slots:
     void triggerSignalWithIntParam()
@@ -422,6 +438,7 @@ private:
     uint m_hash;
     QByteArray m_data;
     int m_count;
+    QEventLoop m_loop;
 };
 
 class FailureTestServiceCreation : public QObject

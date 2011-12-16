@@ -97,15 +97,10 @@ public:
     ObjectEndPointPrivate()
     {
         functionReturned = false;
-        loop = new QEventLoop();
-        loopTimeout = new QTimer();
-        QObject::connect(loopTimeout, SIGNAL(timeout()), loop, SLOT(quit()));
     }
 
     ~ObjectEndPointPrivate()
     {
-        delete loop;
-        delete loopTimeout;
     }
 
     //service side
@@ -159,8 +154,6 @@ public:
     //used on client and service side
     ObjectEndPoint::Type endPointType;
     ObjectEndPoint* parent;
-    QEventLoop* loop;
-    QTimer *loopTimeout;
 
     //used on service side
     QRemoteServiceRegister::Entry entry;
@@ -178,8 +171,6 @@ ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* pa
     d = new ObjectEndPointPrivate;
     d->parent = this;
     d->endPointType = type;
-
-    connect(this, SIGNAL(pendingRequestFinished()), d->loop, SLOT(quit()));
 
     dispatch->setParent(this);
     connect(dispatch, SIGNAL(readyRead()), this, SLOT(newPackageReady()), Qt::QueuedConnection);
@@ -666,9 +657,10 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 {
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests.contains(requestId) ) {
-        d->loopTimeout->setSingleShot(30000);
-        d->loop->exec();
-        d->loopTimeout->stop();
+        QEventLoop loop;
+        QTimer::singleShot(30000, &loop, SLOT(quit()));
+        connect(this, SIGNAL(pendingRequestFinished()), &loop, SLOT(quit()));
+        loop.exec();
         if (d->functionReturned) {
             d->functionReturned = false;
             QMetaObject::invokeMethod(this, "newPackageReady", Qt::QueuedConnection);
