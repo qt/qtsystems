@@ -45,9 +45,7 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/qplatformscreen_qpa.h>
 
-#if defined(QT_SIMULATOR)
-#  include "qsysteminfo_simulator_p.h"
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 #  include "qdisplayinfo_linux_p.h"
 #else
 QT_BEGIN_NAMESPACE

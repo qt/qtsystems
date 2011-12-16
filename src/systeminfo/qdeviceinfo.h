@@ -48,7 +48,11 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_SIMULATOR)
 class QDeviceInfoPrivate;
+#else
+class QDeviceInfoSimulator;
+#endif // QT_SIMULATOR
 
 class Q_SYSTEMINFO_EXPORT QDeviceInfo : public QObject
 {
@@ -131,8 +135,12 @@ protected:
 
 private:
     Q_DISABLE_COPY(QDeviceInfo)
+#if !defined(QT_SIMULATOR)
     QDeviceInfoPrivate * const d_ptr;
     Q_DECLARE_PRIVATE(QDeviceInfo)
+#else
+    QDeviceInfoSimulator * const d_ptr;
+#endif // QT_SIMULATOR
 };
 
 QT_END_NAMESPACE

@@ -54,14 +54,14 @@
 // We mean it.
 //
 
-#include <QNetworkInfo>
-#include <QDeviceInfo>
-#include <QBatteryInfo>
-#include <QDisplayInfo>
-#include <QStorageInfo>
-#include <QScreenSaver>
-#include <QInputDeviceInfo>
-#include <QDeviceProfile>
+#include <qnetworkinfo.h>
+#include <qdeviceinfo.h>
+#include <qbatteryinfo.h>
+#include <qdisplayinfo.h>
+#include <qstorageinfo.h>
+#include <qscreensaver.h>
+#include <qinputdeviceinfo.h>
+#include <qdeviceprofile.h>
 
 #include <QHash>
 #include <QVector>
@@ -69,8 +69,6 @@
 #include <QMetaType>
 
 QT_BEGIN_NAMESPACE
-
-void qt_registerSystemInfoTypes();
 
 struct QNetworkInfoData
 {
@@ -85,19 +83,18 @@ struct QNetworkInfoData
     {
         BasicNetworkInfo basicNetworkInfo;
         QString macAddress;
-        QNetworkInterface interface;
     };
 
     struct WLanInfo
     {
         BasicNetworkInfo basicNetworkInfo;
         QString macAddress;
-        QNetworkInterface interface;
     };
 
     struct CellularInfo {
         BasicNetworkInfo basicNetworkInfo;
 
+        QString imsi;
         QString cellId;
         QString locationAreaCode;
 
@@ -121,17 +118,11 @@ struct QNetworkInfoData
 
 struct QBatteryInfoData
 {
-    int nominalCapacity;
-    int remainingCapacityPercent;
-    int remainingCapacity;
-
-    int voltage;
-    int remainingChargingTime;
-
     int currentFlow;
-    int cumulativeCurrentFlow;
-    int remainingCapacityBars;
-    int maxBars;
+    int maximumCapacity;
+    int remainingCapacity;
+    int remainingChargingTime;
+    int voltage;
 
     QBatteryInfo::ChargingState chargingState;
     QBatteryInfo::ChargerType chargerType;
@@ -140,17 +131,18 @@ struct QBatteryInfoData
 
 struct QDeviceInfoData
 {
-    QString imei;
     QString manufacturer;
     QString model;
     QString productName;
     QString uniqueDeviceID;
-    int     imeiCount;
 
-    QDeviceInfo::Feature feature;
-    QDeviceInfo::LockTypeFlags lockType;
+    QDeviceInfo::LockTypeFlags enabledLocks;
+    QDeviceInfo::LockTypeFlags activatedLocks;
     QDeviceInfo::ThermalState currentThermalState;
-    QDeviceInfo::Version version;
+
+    QHash<QDeviceInfo::Feature, bool> featureList;
+    QList<QString> imeiList;
+    QMap<QDeviceInfo::Version, QString> versionList;
 };
 
 struct QDisplayInfoData
@@ -203,6 +195,41 @@ Q_DECLARE_METATYPE(QStorageInfoData)
 Q_DECLARE_METATYPE(QScreenSaverData)
 Q_DECLARE_METATYPE(QDeviceProfileData)
 Q_DECLARE_METATYPE(QInputDeviceInfoData)
+
+Q_SYSTEMINFO_EXPORT void qt_registerSystemInfoTypes();
+
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BasicNetworkInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BasicNetworkInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::EthernetInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::EthernetInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::WLanInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::WLanInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BluetoothInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BluetoothInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::CellularInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::CellularInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Feature s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceInfo::Feature &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Version s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDisplayInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDisplayInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QStorageInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QStorageInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QStorageInfoData::DriveInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QStorageInfoData::DriveInfo &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QScreenSaverData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QInputDeviceInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QInputDeviceInfoData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceProfileData &s);
+Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceProfileData &s);
 
 QT_END_NAMESPACE
 

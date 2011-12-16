@@ -54,139 +54,96 @@
 // We mean it.
 //
 
-#include <QStringList>
-
-#include <QNetworkInfo>
-#include <QDeviceInfo>
-#include <QStorageInfo>
-#include <QBatteryInfo>
-#include <QDeviceInfo>
-#include <QDisplayInfo>
-#include <QStorageInfo>
-#include <QScreenSaver>
-#include <QInputDeviceInfo>
-#include "qsysteminfodata_simulator_p.h"
+#include <qbatteryinfo.h>
+#include <qdeviceinfo.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkInfoPrivate
+class QBatteryInfoSimulatorBackend;
+class QDeviceInfoSimulatorBackend;
+
+#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
+class QDeviceInfoPrivate;
+#endif
+
+class QBatteryInfoSimulator : public QObject
 {
+    Q_OBJECT
+
 public:
-    QNetworkInfoPrivate(QNetworkInfo *) {}
+    QBatteryInfoSimulator(QBatteryInfo *parent);
+    ~QBatteryInfoSimulator();
 
-    int networkInterfaceCount(QNetworkInfo::NetworkMode) { return -1; }
-    int networkSignalStrength(QNetworkInfo::NetworkMode, int) { return -1; }
-    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int) { return QNetworkInfo::UnknownDataTechnology; }
-    QNetworkInfo::NetworkMode currentNetworkMode() { return QNetworkInfo::UnknownMode; }
-    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode, int) { return QNetworkInfo::UnknownStatus; }
-    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode, int) { return QNetworkInterface(); }
-    QString cellId(int) { return QString(); }
-    QString currentMobileCountryCode(int) { return QString(); }
-    QString currentMobileNetworkCode(int) { return QString(); }
-    QString homeMobileCountryCode(int) { return QString(); }
-    QString homeMobileNetworkCode(int) { return QString(); }
-    QString imsi(int) { return QString(); }
-    QString locationAreaCode(int) { return QString(); }
-    QString macAddress(QNetworkInfo::NetworkMode, int) { return QString(); }
-    QString networkName(QNetworkInfo::NetworkMode, int) { return QString(); }
+    int batteryCount();
+    int currentFlow(int battery);
+    int maximumCapacity(int battery);
+    int remainingCapacity(int battery);
+    int remainingChargingTime(int battery);
+    int voltage(int battery);
+    QBatteryInfo::ChargerType chargerType();
+    QBatteryInfo::ChargingState chargingState(int battery);
+    QBatteryInfo::EnergyUnit energyUnit();
+
+Q_SIGNALS:
+    void batteryCountChanged(int count);
+    void chargerTypeChanged(QBatteryInfo::ChargerType type);
+    void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
+    void currentFlowChanged(int battery, int flow);
+    void remainingCapacityChanged(int battery, int capacity);
+    void remainingChargingTimeChanged(int battery, int seconds);
+    void voltageChanged(int battery, int voltage);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private:
+    QBatteryInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QBatteryInfo)
+
+    QBatteryInfoSimulatorBackend *batteryInfoSimulatorBackend;
 };
-QNetworkInfoPrivate *getNetworkInfoPrivate();
 
-class QDisplayInfoPrivate
+class QDeviceInfoSimulator : public QObject
 {
+    Q_OBJECT
+
 public:
-    QDisplayInfoPrivate(QDisplayInfo *) {}
+    QDeviceInfoSimulator(QDeviceInfo *parent);
+    ~QDeviceInfoSimulator();
 
-    int brightness(int) { return -1; }
-    int contrast(int) const { return -1; }
-    QDisplayInfo::BacklightState backlightState(int) { return QDisplayInfo::BacklightUnknown; }
+    bool hasFeature(QDeviceInfo::Feature feature);
+    int imeiCount();
+    QDeviceInfo::LockTypeFlags activatedLocks();
+    QDeviceInfo::LockTypeFlags enabledLocks();
+    QDeviceInfo::ThermalState thermalState();
+    QString imei(int interface);
+    QString manufacturer();
+    QString model();
+    QString productName();
+    QString uniqueDeviceID();
+    QString version(QDeviceInfo::Version type);
+
+Q_SIGNALS:
+    void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
+    void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
+    void thermalStateChanged(QDeviceInfo::ThermalState state);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private:
+    QDeviceInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QDeviceInfo)
+
+    QDeviceInfoSimulatorBackend *deviceInfoSimulatorBackend;
+
+#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
+    QDeviceInfoPrivate * const d_ptr;
+    Q_DECLARE_PRIVATE(QDeviceInfo)
+#endif
 };
-QDisplayInfoPrivate *getDisplayInfoPrivate();
-
-class QDeviceInfoPrivate
-{
-public:
-    QDeviceInfoPrivate(QDeviceInfo *) {}
-
-    bool hasFeature(QDeviceInfo::Feature) { return false; }
-    int imeiCount() { return -1; }
-    QDeviceInfo::LockTypeFlags activatedLocks() { return QDeviceInfo::NoLock; }
-    QDeviceInfo::LockTypeFlags enabledLocks() { return QDeviceInfo::NoLock; }
-    QDeviceInfo::ThermalState thermalState() { return QDeviceInfo::UnknownThermal; }
-    QString imei(int) { return QString(); }
-    QString manufacturer() { return QString(); }
-    QString model() { return QString(); }
-    QString productName() { return QString(); }
-    QString uniqueDeviceID() { return QString(); }
-    QString version(QDeviceInfo::Version) { return QString(); }
-};
-QDeviceInfoPrivate *getDeviceInfoPrivate();
-
-class QStorageInfoPrivate
-{
-public:
-    QStorageInfoPrivate(QStorageInfo *) {}
-
-    qlonglong availableDiskSpace(const QString &) { return -1; }
-    qlonglong totalDiskSpace(const QString &) { return -1; }
-    QString uriForDrive(const QString &) { return QString(); }
-    QStringList allLogicalDrives() { return QStringList(); }
-    QStorageInfo::DriveType driveType(const QString &) { return QStorageInfo::UnknownDrive; }
-};
-QStorageInfoPrivate *getStorageInfoPrivate();
-
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
-
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QScreenSaverPrivate *getQScreenSaverPrivate();
-
-class QBatteryInfoPrivate
-{
-public:
-    QBatteryInfoPrivate(QBatteryInfo *) {}
-
-    int batteryCount() { return -1; }
-    int currentFlow(int) { return 0; }
-    int maximumCapacity(int) { return -1; }
-    int remainingCapacity(int) { return -1; }
-    int remainingChargingTime(int) { return -1; }
-    int voltage(int) { return -1; }
-    QBatteryInfo::ChargerType chargerType() { return QBatteryInfo::UnknownCharger; }
-    QBatteryInfo::ChargingState chargingState(int) { return QBatteryInfo::UnknownChargingState; }
-    QBatteryInfo::EnergyUnit energyUnit() { return QBatteryInfo::UnitUnknown; }
-};
-QBatteryInfoPrivate *getQBatteryInfoPrivate();
-
-class QInputDeviceInfoPrivate
-{
-public:
-    QInputDeviceInfoPrivate(QInputDeviceInfo *) {}
-
-    bool isKeyboardFlippedOpen() { return false; }
-    bool isKeyboardLightOn() { return false; }
-    bool isWirelessKeyboardConnected() { return false; }
-    QInputDeviceInfo::InputDeviceTypes availableInputDevices() { return QInputDeviceInfo::UnknownInputDevice; }
-    QInputDeviceInfo::KeyboardTypes availableKeyboards() { return QInputDeviceInfo::UnknownKeyboard; }
-    QInputDeviceInfo::TouchDeviceTypes availableTouchDevices() { return QInputDeviceInfo::UnknownTouchDevice; }
-};
-QInputDeviceInfoPrivate *getInputDeviceInfoPrivate();
-
-class QDeviceProfilePrivate
-{
-public:
-    QDeviceProfilePrivate(QDeviceProfile *) {}
-
-    bool isVibrationActivated() { return false; }
-    int messageRingtoneVolume() { return -1; }
-    int voiceRingtoneVolume() { return -1; }
-    QDeviceProfile::ProfileType profileType() { return QDeviceProfile::UnknownProfile; }
-};
-QDeviceProfilePrivate *getDeviceProfilePrivate();
 
 QT_END_NAMESPACE
 

@@ -31,7 +31,7 @@ SOURCES += qdeviceinfo.cpp \
            qdeviceprofile.cpp \
            qinputdeviceinfo.cpp
 
-win32: !simulator {
+win32: !simulator: {
     contains(CONFIG, release) {
        CONFIG -= console
     }
@@ -59,7 +59,7 @@ win32: !simulator {
                qnetworkinfo_win.cpp
 }
 
-linux-*: !simulator{
+linux-*: !simulator: {
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
                        qstorageinfo_linux_p.h \
@@ -141,11 +141,96 @@ linux-*: !simulator{
 simulator {
     QT += simulator
     DEFINES += QT_SIMULATOR
-    SOURCES += qsysteminfodata_simulator.cpp \
-                qsysteminfo_simulator.cpp
+    PRIVATE_HEADERS += qsysteminfodata_simulator_p.h \
+                       qsysteminfobackend_simulator_p.h \
+                       qsysteminfoconnection_simulator_p.h \
+                       qsysteminfo_simulator_p.h
 
-    HEADERS += qsysteminfodata_simulator_p.h \
-                qsysteminfo_simulator_p.h
+
+    SOURCES += qsysteminfodata_simulator.cpp \
+               qsysteminfobackend_simulator.cpp \
+               qsysteminfoconnection_simulator.cpp \
+               qsysteminfo_simulator.cpp
+
+
+    linux-*: {
+        PRIVATE_HEADERS += qdisplayinfo_linux_p.h \
+                           qstorageinfo_linux_p.h \
+                           qnetworkinfo_linux_p.h \
+                           qinputdeviceinfo_linux_p.h \
+                           qscreensaver_linux_p.h \
+                           qdeviceprofile_linux_p.h
+
+        SOURCES += qdisplayinfo_linux.cpp \
+                   qstorageinfo_linux.cpp \
+                   qnetworkinfo_linux.cpp \
+                   qinputdeviceinfo_linux.cpp \
+                   qscreensaver_linux.cpp \
+                   qdeviceprofile_linux.cpp
+
+
+        x11|contains(config_test_x11, yes): {
+            CONFIG += link_pkgconfig
+            PKGCONFIG += x11
+        } else: {
+            DEFINES += QT_NO_X11
+        }
+
+        contains(QT_CONFIG, jsondb): {
+            QT += jsondb
+            PRIVATE_HEADERS += qjsondbwrapper_p.h \
+                               qdeviceinfo_linux_p.h
+
+            SOURCES += qjsondbwrapper.cpp \
+                       qdeviceinfo_linux.cpp
+        } else: {
+            DEFINES += QT_NO_JSONDB QT_NO_MTLIB
+        }
+
+        mtlib|contains(config_test_mtlib, yes): {
+            CONFIG += link_pkgconfig
+            PKGCONFIG += mt-client
+        } else: {
+            DEFINES += QT_NO_MTLIB
+        }
+
+        contains(QT_CONFIG, dbus): {
+            contains(config_test_ofono, yes) {
+            QT += dbus
+            PRIVATE_HEADERS += qofonowrapper_p.h
+            SOURCES += qofonowrapper.cpp
+            } else {
+                DEFINES += QT_NO_OFONO
+            }
+
+            contains(config_test_udisks, yes): {
+                QT += dbus
+            } else: {
+                DEFINES += QT_NO_UDISKS
+            }
+
+            contains(config_test_bluez, yes) {
+                QT += dbus
+                CONFIG += link_pkgconfig
+                PKGCONFIG += bluez
+
+                PRIVATE_HEADERS += qbluezwrapper_p.h
+                SOURCES += qbluezwrapper.cpp
+            } else {
+                DEFINES += QT_NO_BLUEZ
+            }
+        } else {
+            DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_BLUEZ
+        }
+
+        contains(config_test_udev, yes) {
+            CONFIG += link_pkgconfig
+            PKGCONFIG += udev
+            LIBS += -ludev
+        } else {
+            DEFINES += QT_NO_UDEV
+        }
+    }
 }
 
 HEADERS = qtsysteminfoversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS

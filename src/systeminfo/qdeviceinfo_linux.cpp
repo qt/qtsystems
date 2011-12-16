@@ -66,7 +66,9 @@ QT_BEGIN_NAMESPACE
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     : QObject(parent)
+#if !defined(QT_SIMULATOR)
     , q_ptr(parent)
+#endif // QT_SIMULATOR
     , watchThermalState(false)
     , timer(0)
 #if !defined(QT_NO_JSONDB)
@@ -380,7 +382,7 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
                 versionBuffer[1] = QString::fromLocal8Bit(file.readAll().simplified().data());
         }
         return versionBuffer[1];
-    };
+    }
 
     return QString();
 }
@@ -421,7 +423,7 @@ void QDeviceInfoPrivate::disconnectNotify(const char *signal)
         disconnect(jsondbWrapper, signal, this, signal);
         return;
     }
-#endif // // QT_NO_JSONDB
+#endif // QT_NO_JSONDB
 
     if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
         watchThermalState = false;

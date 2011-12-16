@@ -41,9 +41,7 @@
 
 #include <qdeviceprofile.h>
 
-#if defined(QT_SIMULATOR)
-#  include "qsysteminfo_simulator_p.h"
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 #  include "qdeviceprofile_linux_p.h"
 #else
 QT_BEGIN_NAMESPACE

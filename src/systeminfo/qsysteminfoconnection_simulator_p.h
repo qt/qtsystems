@@ -39,66 +39,61 @@
 **
 ****************************************************************************/
 
-#include <qscreensaver.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if defined(Q_OS_LINUX)
-#include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
+#ifndef QSYSTEMINFOCONNECTION_SIMULATOR_P_H
+#define QSYSTEMINFOCONNECTION_SIMULATOR_P_H
+
+#include "qsysteminfodata_simulator_p.h"
+
+#include <QObject>
+
+namespace Simulator
 {
+    class Connection;
+    class ConnectionWorker;
+    class Version;
+}
+
+class SystemInfoConnection : public QObject
+{
+    Q_OBJECT
+
 public:
-    QScreenSaverPrivate(QScreenSaver *) {}
+    static void ensureSimulatorConnection();
+    virtual ~SystemInfoConnection();
 
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
+private:
+    SystemInfoConnection(QObject *parent = 0);
+    Q_DISABLE_COPY(SystemInfoConnection)
+
+    bool save() const { return mInitialDataSent; }
+
+private slots:
+    void initialSystemInfoDataSent();
+    void setBatteryInfoData(const QBatteryInfoData &data);
+    void setDeviceInfoData(const QDeviceInfoData &data);
+
+signals:
+    void initialDataReceived();
+
+private:
+    Simulator::Connection *mConnection;
+    Simulator::ConnectionWorker *mWorker;
+    bool mInitialDataSent;
+
+    static const QString SERVERNAME;
+    static const int PORT;
+    static const Simulator::Version VERSION;
 };
-QT_END_NAMESPACE
-#endif
 
-QT_BEGIN_NAMESPACE
-
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information of the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
-{
-}
-
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
-{
-    delete d_ptr;
-}
-
-/*!
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
-{
-    return d_ptr->screenSaverEnabled();
-}
-
-/*!
-    Set the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
-}
-
-QT_END_NAMESPACE
+#endif // QSYSTEMINFOCONNECTION_SIMULATOR_P_H

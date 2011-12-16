@@ -159,7 +159,12 @@ QT_BEGIN_NAMESPACE
 */
 QBatteryInfo::QBatteryInfo(QObject *parent)
     : QObject(parent)
+#if !defined(QT_SIMULATOR)
     , d_ptr(new QBatteryInfoPrivate(this))
+#else
+    , d_ptr(new QBatteryInfoSimulator(this))
+#endif // QT_SIMULATOR
+
 {
 }
 
@@ -260,7 +265,7 @@ QBatteryInfo::EnergyUnit QBatteryInfo::energyUnit() const
 */
 void QBatteryInfo::connectNotify(const char *signal)
 {
-#if (defined(Q_OS_LINUX) || defined(Q_OS_WIN)) && !defined(QT_SIMULATOR)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
@@ -272,7 +277,7 @@ void QBatteryInfo::connectNotify(const char *signal)
 */
 void QBatteryInfo::disconnectNotify(const char *signal)
 {
-#if (defined(Q_OS_LINUX) || defined(Q_OS_WIN)) && !defined(QT_SIMULATOR)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (receivers(signal) > 0)
         return;

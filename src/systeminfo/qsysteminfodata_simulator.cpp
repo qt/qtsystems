@@ -47,11 +47,11 @@ QT_BEGIN_NAMESPACE
 void qt_registerSystemInfoTypes()
 {
     qRegisterMetaTypeStreamOperators<QNetworkInfoData>("QNetworkInfoData");
+    qRegisterMetaTypeStreamOperators<QNetworkInfoData::BasicNetworkInfo>("QNetworkInfoData::BasicNetworkInfo");
     qRegisterMetaTypeStreamOperators<QNetworkInfoData::EthernetInfo>("QNetworkInfoData::EthernetInfo");
     qRegisterMetaTypeStreamOperators<QNetworkInfoData::WLanInfo>("QNetworkInfoData::WLanInfo");
     qRegisterMetaTypeStreamOperators<QNetworkInfoData::CellularInfo>("QNetworkInfoData::CellularInfo");
     qRegisterMetaTypeStreamOperators<QNetworkInfoData::BluetoothInfo>("QNetworkInfoData::BluetoothInfo");
-    qRegisterMetaTypeStreamOperators<QNetworkInfoData::BasicNetworkInfo>("QNetworkInfoData::BasicNetworkInfo");
     qRegisterMetaTypeStreamOperators<QDeviceInfoData>("QDeviceInfoData");
     qRegisterMetaTypeStreamOperators<QBatteryInfoData>("QBatteryInfoData");
     qRegisterMetaTypeStreamOperators<QDisplayInfoData>("QDisplayInfoData");
@@ -65,9 +65,8 @@ void qt_registerSystemInfoTypes()
 QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BasicNetworkInfo &s)
 {
     out << s.name;
-    out << static_cast<qint32>(s.signalStrength);
-    out << static_cast<qint32>(s.mode);
-    out << static_cast<qint32>(s.status);
+    out << static_cast<qint32>(s.signalStrength) << static_cast<qint32>(s.mode)
+        << static_cast<qint32>(s.status);
     return out;
 }
 
@@ -78,8 +77,8 @@ QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BasicNetworkInfo &s)
     in >> signalStrength;
     s.signalStrength = signalStrength;
     qint32 mode, status;
-    in >> status;
     in >> mode;
+    in >> status;
     s.mode = static_cast<QNetworkInfo::NetworkMode>(mode);
     s.status = static_cast<QNetworkInfo::NetworkStatus>(status);
     return in;
@@ -132,7 +131,7 @@ QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BluetoothInfo &s)
 QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::CellularInfo &s)
 {
     out << s.basicNetworkInfo;
-    out << s.cellId << s.locationAreaCode;
+    out << s.imsi << s.cellId << s.locationAreaCode;
     out << s.currentMobileCountryCode << s.currentMobileNetworkCode;
     out << s.homeMobileCountryCode << s.homeMobileNetworkCode;
     out << static_cast<qint32>(s.cellData);
@@ -144,7 +143,7 @@ QDataStream &operator>>(QDataStream &in, QNetworkInfoData::CellularInfo &s)
 {
     in >> s.basicNetworkInfo;
     qint32 cellData;
-    in >> s.cellId >> s.locationAreaCode;
+    in >> s.imsi >> s.cellId >> s.locationAreaCode;
     in >> s.currentMobileCountryCode >> s.currentMobileNetworkCode;
     in >> s.homeMobileCountryCode >> s.homeMobileNetworkCode;
     in >> cellData;
@@ -175,25 +174,56 @@ QDataStream &operator>>(QDataStream &in, QNetworkInfoData &s)
 
 QDataStream &operator<<(QDataStream &out, const QDeviceInfoData &s)
 {
-    out << s.imei << s.manufacturer << s.model << s.productName << s.uniqueDeviceID;
-    out << s.imeiCount;
-    out << static_cast<qint32>(s.feature) << static_cast<qint32>(s.lockType)
-        << static_cast<qint32>(s.currentThermalState) << static_cast<qint32>(s.version);
+    out << s.manufacturer << s.model << s.productName << s.uniqueDeviceID;
+    out << s.imeiList;
+    out << s.featureList;
+    out << s.versionList;
+    out << static_cast<qint32>(s.enabledLocks) << static_cast<qint32>(s.activatedLocks)
+        << static_cast<qint32>(s.currentThermalState);
 
     return out;
 }
 
 QDataStream &operator>>(QDataStream &in, QDeviceInfoData &s)
 {
-    in >> s.imei >> s.manufacturer >> s.model >> s.productName >> s.uniqueDeviceID;
-    in >> s.imeiCount;
-    qint32 feature, lockType, currentThermalState, version;
-    in >> feature >> lockType >> currentThermalState >> version;
-    s.feature = static_cast<QDeviceInfo::Feature>(feature);
-    s.lockType = static_cast<QDeviceInfo::LockTypeFlags>(lockType);
+    in >> s.manufacturer >> s.model >> s.productName >> s.uniqueDeviceID;
+    in >> s.imeiList;
+    in >> s.featureList;
+    in >> s.versionList;
+    qint32 enabledLocks, activatedLocks, currentThermalState;
+    in >> enabledLocks >> activatedLocks >> currentThermalState;
+    s.enabledLocks = static_cast<QDeviceInfo::LockTypeFlags>(enabledLocks);
+    s.activatedLocks = static_cast<QDeviceInfo::LockTypeFlags>(activatedLocks);
     s.currentThermalState = static_cast<QDeviceInfo::ThermalState>(currentThermalState);
-    s.version = static_cast<QDeviceInfo::Version>(version);
 
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Feature s)
+{
+    out << static_cast<qint32>(s);
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, QDeviceInfo::Feature &s)
+{
+    qint32 v;
+    in >> v;
+    s = static_cast<QDeviceInfo::Feature>(v);
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Version s)
+{
+    out << static_cast<qint32>(s);
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s)
+{
+    qint32 v;
+    in >> v;
+    s = static_cast<QDeviceInfo::Version>(v);
     return in;
 }
 
@@ -202,11 +232,9 @@ QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s)
     out << static_cast<qint32>(s.chargingState) << static_cast<qint32>(s.chargerType)
         << static_cast<qint32>(s.energyMeasurementUnit);
 
-    out << static_cast<qint32>(s.nominalCapacity) << static_cast<qint32>(s.remainingCapacityPercent)
-        << static_cast<qint32>(s.remainingCapacity) << static_cast<qint32>(s.voltage)
-        << static_cast<qint32>(s.remainingChargingTime) << static_cast<qint32>(s.currentFlow)
-        << static_cast<qint32>(s.cumulativeCurrentFlow) << static_cast<qint32>(s.remainingCapacityBars)
-        << static_cast<qint32>(s.maxBars);
+    out << static_cast<qint32>(s.currentFlow) << static_cast<qint32>(s.maximumCapacity)
+        << static_cast<qint32>(s.remainingCapacity) << static_cast<qint32>(s.remainingChargingTime)
+        << static_cast<qint32>(s.voltage);
     return out;
 }
 
@@ -218,22 +246,14 @@ QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s)
     s.chargerType = static_cast<QBatteryInfo::ChargerType>(chargerType);
     s.energyMeasurementUnit = static_cast<QBatteryInfo::EnergyUnit>(energyMeasurementUnit);
 
-    qint32 nominalCapacity, remainingCapacityPercent, remainingCapacity, voltage,
-           remainingChargingTime, currentFlow, cumulativeCurrentFlow, remainingCapacityBars,
-           maxBars;
-    in >> nominalCapacity >> remainingCapacityPercent >> remainingCapacity >> voltage
-       >> remainingChargingTime >> currentFlow >> cumulativeCurrentFlow >> remainingCapacityBars
-       >> maxBars;
+    qint32 currentFlow, maximumCapacity, remainingCapacity, remainingChargingTime, voltage;
+    in >> currentFlow >> maximumCapacity >> remainingCapacity >> remainingChargingTime >> voltage;
 
-    s.nominalCapacity = nominalCapacity;
-    s.remainingCapacityPercent = remainingCapacityPercent;
-    s.remainingCapacity = remainingCapacity;
-    s.voltage = voltage;
-    s.remainingChargingTime = remainingChargingTime;
     s.currentFlow = currentFlow;
-    s.cumulativeCurrentFlow = cumulativeCurrentFlow;
-    s.remainingCapacityBars = remainingCapacityBars;
-    s.maxBars = maxBars;
+    s.maximumCapacity = maximumCapacity;
+    s.remainingCapacity = remainingCapacity;
+    s.remainingChargingTime = remainingChargingTime;
+    s.voltage = voltage;
 
     return in;
 }

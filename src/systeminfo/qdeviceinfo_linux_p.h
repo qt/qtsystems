@@ -72,7 +72,7 @@ class QDeviceInfoPrivate : public QObject
     Q_OBJECT
 
 public:
-    QDeviceInfoPrivate(QDeviceInfo *parent);
+    QDeviceInfoPrivate(QDeviceInfo *parent = 0);
 
     bool hasFeature(QDeviceInfo::Feature feature);
     int imeiCount();
@@ -101,8 +101,10 @@ private Q_SLOTS:
     void onTimeout();
 
 private:
+#if !defined(QT_SIMULATOR)
     QDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceInfo)
+#endif
 
     bool watchThermalState;
     QDeviceInfo::ThermalState currentThermalState;

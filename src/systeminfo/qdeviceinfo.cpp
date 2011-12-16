@@ -152,7 +152,11 @@ QT_BEGIN_NAMESPACE
 */
 QDeviceInfo::QDeviceInfo(QObject *parent)
     : QObject(parent)
+#if !defined(QT_SIMULATOR)
     , d_ptr(new QDeviceInfoPrivate(this))
+#else
+    , d_ptr(new QDeviceInfoSimulator(this))
+#endif // QT_SIMULATOR
 {
 }
 
@@ -279,7 +283,7 @@ QString QDeviceInfo::version(QDeviceInfo::Version type) const
 */
 void QDeviceInfo::connectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX) && !defined(QT_SIMULATOR)
+#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
     connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
@@ -291,7 +295,7 @@ void QDeviceInfo::connectNotify(const char *signal)
 */
 void QDeviceInfo::disconnectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX) && !defined(QT_SIMULATOR)
+#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (receivers(signal) > 0)
         return;

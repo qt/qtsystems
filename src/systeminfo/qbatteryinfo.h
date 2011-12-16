@@ -48,7 +48,11 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_SIMULATOR)
 class QBatteryInfoPrivate;
+#else
+class QBatteryInfoSimulator;
+#endif // QT_SIMULATOR
 
 class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
 {
@@ -113,8 +117,12 @@ protected:
 
 private:
     Q_DISABLE_COPY(QBatteryInfo)
+#if !defined(QT_SIMULATOR)
     QBatteryInfoPrivate * const d_ptr;
     Q_DECLARE_PRIVATE(QBatteryInfo)
+#else
+    QBatteryInfoSimulator * const d_ptr;
+#endif // QT_SIMULATOR
 };
 
 QT_END_NAMESPACE
