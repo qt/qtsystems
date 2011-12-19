@@ -79,6 +79,7 @@ public:
     void setLookupTable(int *local, int *remote);
 
 Q_SIGNALS:
+    // deprecated, only left for dbus backend internal use
     void pendingRequestFinished();
 
 public Q_SLOTS:

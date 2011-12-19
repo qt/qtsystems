@@ -56,11 +56,15 @@ QT_BEGIN_NAMESPACE
 class Response
 {
 public:
-    Response() : isFinished(false), result(0)
+    Response() : isFinished(false), result(0), loop(new QEventLoop)
     { }
+
+    ~Response()
+    { delete loop; }
 
     bool isFinished;
     void* result;
+    QEventLoop *loop;
 };
 
 class ServiceSignalIntercepter : public QSignalIntercepter
@@ -193,10 +197,11 @@ void ObjectEndPoint::disconnected()
     if (d->endPointType == Service) {
         InstanceManager::instance()->removeObjectInstance(d->entry, d->serviceInstanceId);
     }
-    emit pendingRequestFinished();
-    // deleteLater on symbian does not function properly from disconnect()
-    // maybe disconnect comes in on a thread?  Call from timer works.
-    QTimer::singleShot(0, this, SLOT(deleteLater()));
+    foreach (Response *r, openRequests) {
+        r->loop->exit(-1);
+    }
+
+    deleteLater();
 }
 
 /*
@@ -333,14 +338,14 @@ void ObjectEndPoint::propertyCall(const QServicePackage& p)
             response->isFinished = true;
             if (p.d->responseType == QServicePackage::Failed) {
                 response->result = 0;
-                QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+                response->loop->exit(-1);
                 qWarning() << "Service method call failed";
                 return;
             }
             QVariant* variant = new QVariant(p.d->payload);
             response->result = reinterpret_cast<void *>(variant);
 
-            QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+            response->loop->exit();
         }
         else {
             qWarning() << "**** FAILED TO FIND MESSAGE ID!!! ****";
@@ -362,7 +367,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         if (p.d->responseType == QServicePackage::Failed) {
             response->result = 0;
             response->isFinished = true;
-            QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+            response->loop->exit(-1);
             qWarning() << "Service instantiation failed";
             return;
         }
@@ -373,7 +378,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         response->isFinished = true;
 
         //wake up waiting code
-        QTimer::singleShot(0, this, SIGNAL(pendingRequestFinished()));
+        response->loop->exit();
 
     } else {
         //service side
@@ -537,14 +542,13 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
             response->isFinished = true;
             if (p.d->responseType == QServicePackage::Failed) {
                 response->result = 0;
-                QMetaObject::invokeMethod(this, "pendingRequestFinished");
+                response->loop->exit(-1);
                 return;
             }
             QVariant* variant = new QVariant(p.d->payload);
             response->result = reinterpret_cast<void *>(variant);
 
-            QMetaObject::invokeMethod(this, "pendingRequestFinished");
-
+            response->loop->exit();
         }
     }
 }
@@ -657,10 +661,9 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
 {
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests.contains(requestId) ) {
-        QEventLoop loop;
-        QTimer::singleShot(30000, &loop, SLOT(quit()));
-        connect(this, SIGNAL(pendingRequestFinished()), &loop, SLOT(quit()));
-        loop.exec();
+        Response *r = openRequests.value(requestId);
+        QTimer::singleShot(30000, r->loop, SLOT(quit()));
+        r->loop->exec();
         if (d->functionReturned) {
             d->functionReturned = false;
             QMetaObject::invokeMethod(this, "newPackageReady", Qt::QueuedConnection);
