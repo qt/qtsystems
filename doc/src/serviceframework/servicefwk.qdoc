@@ -488,7 +488,7 @@ example of this, using the previous sample XML description, is provided below.
 \section3 Limitations
 
 When using integer types for arguments to signals and slots,
-bass types as defined by http://doc.trolltech.com/4.7/qdbustypesystem.html.
+bass types as defined by http://doc.qt.nokia.com/4.7/qdbustypesystem.html.
 For example, quint64 is generally equivalent to qulonglong, but
 all unsigned 64 bit values must be defined as qulonglong or they will
 not work with the dbus implementation. For more details and the current
