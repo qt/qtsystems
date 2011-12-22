@@ -390,7 +390,7 @@ void tst_QServiceManager_IPC::verifySharedServiceObject()
     QVERIFY(mo->superClass());
     QCOMPARE(mo->superClass()->className(), "QServiceProxyBase");
     QCOMPARE(mo->methodCount()-mo-> methodOffset(), 18);
-    QCOMPARE(mo->methodCount(), 23); //20 meta functions available
+    QCOMPARE(mo->methodCount(), 24); //20 meta functions available
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
@@ -584,7 +584,7 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
     QCOMPARE(mo->superClass()->className(), "QServiceProxyBase");
     // TODO adding the ipc failure signal seems to break these
     QCOMPARE(mo->methodCount()-mo-> methodOffset(), 27); // 28+1 added signal for error signal added by library
-    QCOMPARE(mo->methodCount(), 32); //33 meta functions available + 1 signal
+    QCOMPARE(mo->methodCount(), 33); //33 meta functions available + 1 signal
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
