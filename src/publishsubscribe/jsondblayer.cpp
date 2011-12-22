@@ -40,8 +40,6 @@
 ****************************************************************************/
 
 #include "jsondblayer_p.h"
-
-#include <private/jsondb-strings_p.h>
 #include <private/jsondb-connection_p.h>
 
 #include <QtCore/qstringlist.h>
@@ -298,7 +296,7 @@ void JsonDbHandle::subscribe()
 
     unsubscribe();
 
-    QVariantList actions;
+    JsonDbClient::NotifyTypes actions;
     getNotificationQueryAndActions(getWholePath(QStringLiteral("")), query, actions);
 
     DEBUG_MSG("Notification query: " + query);
@@ -309,29 +307,24 @@ void JsonDbHandle::subscribe()
     DEBUG_MSG(client);
 
     connect(client,
-            SIGNAL(notified(const QString&, const QVariant&, const QString&)),
+            SIGNAL(notified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)),
             this,
-            SLOT(onNotified(const QString&, const QVariant&, const QString&)));
+            SLOT(onNotified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)));
 
     //int res;
 
     try {
-        client->create((QVariant)JsonDbConnection::makeNotification(query, actions));
-        /*QVariantMap map = JsonDbConnection::makeCreateRequest(JsonDbConnection::makeNotification(query, actions));
-        QVariantMap res = JsonDbConnection::instance()->sync(map).toMap();//.value<QVariantMap>();
-
-        if (res.contains("_uuid"))
-            notificationUUID = res["_uuid"].value<QString>();*/
+        client->registerNotification(actions, query);
 
         DEBUG_MSG("NOTIFICATION " + query + " CREATED");
     } catch(...) { }
 }
 
-void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, QVariantList& actions)
+void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, JsonDbClient::NotifyTypes& actions)
 {
     QVariant object;
 
-    actions << JsonDbString::kUpdateStr;
+    actions = JsonDbClient::NotifyUpdate;
 
     if (!value(QStringLiteral(""), &object)){
         // Neither a settings object nor a setting in a settings object was found
@@ -340,7 +333,7 @@ void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, 
                     arg(path.replace(QStringLiteral("."), QStringLiteral("\\."))).
                     arg(SETTINGS_FILTER);
 
-        actions<<JsonDbString::kCreateStr<<JsonDbString::kRemoveStr;
+        actions |= JsonDbClient::NotifyCreate | JsonDbClient::NotifyRemove;
     } else {
         QVariantMap objectMap = object.toMap();
 
@@ -350,7 +343,7 @@ void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, 
                         arg(path).
                         arg(SETTINGS_FILTER);
 
-            actions<<JsonDbString::kCreateStr<<JsonDbString::kRemoveStr;
+            actions |= JsonDbClient::NotifyCreate | JsonDbClient::NotifyRemove;
         } else {
             // Path matches a setting in a settings object subscribe for that setting
             QStringList parts = JsonDbPath::getIdentifier(path);
@@ -375,16 +368,16 @@ void JsonDbHandle::unsubscribe()
     if (client) {
         DEBUG_MSG("DISCONNECT");
         disconnect(client,
-                   SIGNAL(notified(const QString&, const QVariant&, const QString&)),
+                   SIGNAL(notified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)),
                    this,
-                   SLOT(onNotified(const QString&, const QVariant&, const QString&)));
+                   SLOT(onNotified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)));
 
         delete client;
         client = NULL;
     }
 }
 
-void JsonDbHandle::onNotified(const QString&, const QVariant&, const QString&)
+void JsonDbHandle::onNotified(const JsonDbClient::NotifyTypes&, const JsonDbNotification &)
 {
     DEBUG_MSG("--- JsonDbHandle::notified(QString, QVariant, QString) ---");
     /*DEBUG_MSG(sender());
