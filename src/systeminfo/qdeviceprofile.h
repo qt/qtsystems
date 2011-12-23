@@ -55,6 +55,7 @@ class Q_SYSTEMINFO_EXPORT QDeviceProfile : public QObject
     Q_OBJECT
 
     Q_ENUMS(ProfileType)
+    Q_PROPERTY(ProfileType profileType READ profileType NOTIFY profileTypeChanged)
 
 public:
     enum ProfileType {
@@ -71,7 +72,10 @@ public:
     Q_INVOKABLE bool isVibrationActivated() const;
     Q_INVOKABLE int messageRingtoneVolume() const;
     Q_INVOKABLE int voiceRingtoneVolume() const;
-    Q_INVOKABLE QDeviceProfile::ProfileType profileType() const;
+    ProfileType profileType() const;
+
+Q_SIGNALS:
+    void profileTypeChanged(ProfileType profile);
 
 private:
     Q_DISABLE_COPY(QDeviceProfile)

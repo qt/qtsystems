@@ -81,6 +81,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QDeviceProfile::profileTypeChanged(ProfileType profile)
+
+    This signal is emitted whenever the current profile type has been changed to \a profile.
+ */
+
+/*!
     Constructs a QDeviceProfile object with the given \a parent.
 */
 QDeviceProfile::QDeviceProfile(QObject *parent)
