@@ -106,7 +106,7 @@ QDeviceProfile::ProfileType QDeviceProfilePrivate::profileType()
         return QDeviceProfile::NormalProfile;
     } else {
         if (jsondbWrapper->isVibrationActivated())
-            return QDeviceProfile::VibProfile;
+            return QDeviceProfile::VibrationProfile;
         else
             return QDeviceProfile::SilentProfile;
     }

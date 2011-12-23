@@ -61,9 +61,7 @@ public:
         UnknownProfile = 0,
         SilentProfile,
         NormalProfile,
-        LoudProfile,
-        VibProfile,
-        CustomProfile,
+        VibrationProfile,
         BeepProfile
     };
 

@@ -73,13 +73,11 @@ QT_BEGIN_NAMESPACE
     \enum QDeviceProfile::ProfileType
     This enum describes the type of the current profile.
 
-    \value UnknownProfile   Profile unknown or on error.
-    \value SilentProfile    Silent profile.
-    \value NormalProfile    Normal profile.
-    \value LoudProfile      Loud profile.
-    \value VibProfile       Vibrate profile.
-    \value BeepProfile      Beep profile.
-    \value CustomProfile    Custom profile.
+    \value UnknownProfile    Profile unknown or on error.
+    \value SilentProfile     Neither sound nor vibration is on.
+    \value NormalProfile     Normal sound is on.
+    \value VibrationProfile  Only vibration is on, and sound is off.
+    \value BeepProfile       Only beep is on.
 */
 
 /*!
