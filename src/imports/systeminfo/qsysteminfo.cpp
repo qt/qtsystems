@@ -96,3 +96,44 @@ Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoD
     On certain platforms, if screen saver is disabled, deep system sleep won't be automatically triggered,
     and the display won't be automatically turned off, etc.
  */
+
+
+/*!
+    \qmlclass DeviceProfile QDeviceProfile
+    \inmodule QtSystemInfo
+    \ingroup qml-systeminfo
+    \brief The DeviceProfile element provides information for the profile of the device.
+*/
+
+/*!
+    \qmlmethod bool DeviceProfile::isVibrationActivated()
+
+    Returns true if the vibration is currently activated, or false otherwise.
+ */
+
+/*!
+    \qmlmethod int DeviceProfile::messageRingtoneVolume()
+
+    Returns the current message ringtone volume, from 0 to 100. If this information is unknown, or
+    error occurs, -1 is returned.
+ */
+
+/*!
+    \qmlmethod int DeviceProfile::voiceRingtoneVolume()
+
+    Returns the current voice ringtone volume, from 0 to 100. If this information is unknown, or error
+    occurs, -1 is returned.
+ */
+
+/*!
+    \qmlproperty enum DeviceProfile::profileType()
+
+    Returns the type of the current profile, possible types are:
+    \list
+    \o UnknownProfile    Profile unknown or on error.
+    \o SilentProfile     Neither sound nor vibration is on.
+    \o NormalProfile     Normal sound is on.
+    \o VibrationProfile  Only vibration is on, and sound is off.
+    \o BeepProfile       Only beep is on.
+    \endlist
+ */
