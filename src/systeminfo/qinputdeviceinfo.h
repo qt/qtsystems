@@ -54,7 +54,7 @@ class Q_SYSTEMINFO_EXPORT QInputDeviceInfo : public QObject
 {
     Q_OBJECT
 
-    Q_FLAGS(InputDeviceType IInputDeviceTypes)
+    Q_FLAGS(InputDeviceType InputDeviceTypes)
     Q_FLAGS(KeyboardType KeyboardTypes)
     Q_FLAGS(TouchDeviceType TouchDeviceTypes)
 

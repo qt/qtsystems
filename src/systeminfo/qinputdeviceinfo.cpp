@@ -85,10 +85,10 @@ QT_BEGIN_NAMESPACE
     \enum QInputDeviceInfo::KeyboardType
     This enum describes the type of keyboards.
 
-    \value UnknownKeyboard     The keyborad type is unknown or no keyboard available.
+    \value UnknownKeyboard     The keyboard type is unknown or no keyboard available.
     \value SoftwareKeyboard    Software or virtual Keyboard.
     \value ITUKeypad           Standard phone keyboard.
-    \value HalfQwertyKeyboard  Half qwerty keboard like on Nokia E55.
+    \value HalfQwertyKeyboard  Half qwerty keyboard like on Nokia E55.
     \value FullQwertyKeyboard  Standard qwerty type keyboard.
     \value WirelessKeyboard    Bluetooth or other wireless keyboard.
     \value FlipableKeyboard    The keyboard can be flipped out.
