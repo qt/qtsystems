@@ -49,7 +49,11 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_SIMULATOR)
 class QStorageInfoPrivate;
+#else
+class QStorageInfoSimulator;
+#endif // QT_SIMULATOR
 
 class Q_SYSTEMINFO_EXPORT QStorageInfo : public QObject
 {
@@ -88,8 +92,12 @@ protected:
 
 private:
     Q_DISABLE_COPY(QStorageInfo)
+#if !defined(QT_SIMULATOR)
     QStorageInfoPrivate * const d_ptr;
     Q_DECLARE_PRIVATE(QStorageInfo)
+#else
+    QStorageInfoSimulator * const d_ptr;
+#endif // QT_SIMULATOR
 };
 
 QT_END_NAMESPACE

@@ -47,6 +47,9 @@
 #include <QtSimulator/connectionworker.h>
 #include <QtSimulator/QtSimulator>
 
+#include <QTimer>
+#include <QEventLoop>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Simulator;
@@ -69,9 +72,13 @@ SystemInfoConnection::SystemInfoConnection(QObject *parent)
     mWorker->call("setRequestsSystemInfo");
 
     // wait until initial data is received
+    QTimer timer;
     QEventLoop loop;
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
     connect(this, SIGNAL(initialDataReceived()), &loop, SLOT(quit()));
+    timer.start(3000);
     loop.exec();
+    timer.stop();
 }
 
 SystemInfoConnection::~SystemInfoConnection()
@@ -134,6 +141,21 @@ void SystemInfoConnection::setDeviceInfoData(const QDeviceInfoData &data)
     QList<QDeviceInfo::Feature> featureKeys = data.featureList.keys();
     foreach (const QDeviceInfo::Feature &featureKey, featureKeys)
         deviceInfoBackend->setFeature(featureKey, data.featureList.value(featureKey));
+}
+
+void SystemInfoConnection::setStorageInfoData(const QStorageInfoData &data)
+{
+    QStorageInfoSimulatorBackend *storageInfoBackend = QStorageInfoSimulatorBackend::getSimulatorBackend();
+
+    QStringList currentDrives = storageInfoBackend->getAllLogicalDrives();
+    foreach (const QString &name, currentDrives)
+        storageInfoBackend->removeDrive(name);
+    foreach (const QString &name, data.drives.keys()) {
+        storageInfoBackend->addDrive(name, data.drives[name].type,
+                                     data.drives[name].totalSpace,
+                                     data.drives[name].availableSpace,
+                                     data.drives[name].uri);
+    }
 }
 
 QT_END_NAMESPACE

@@ -48,6 +48,10 @@ QT_BEGIN_NAMESPACE
 
 QBatteryInfoSimulatorBackend *QBatteryInfoSimulatorBackend::globalSimulatorBackend = 0;
 QDeviceInfoSimulatorBackend *QDeviceInfoSimulatorBackend::globalSimulatorBackend = 0;
+QStorageInfoSimulatorBackend *QStorageInfoSimulatorBackend::globalSimulatorBackend = 0;
+
+
+// QBatteryInfoSimulatorBackend
 
 QBatteryInfoSimulatorBackend::QBatteryInfoSimulatorBackend(QObject *parent)
     : QObject(parent)
@@ -198,6 +202,9 @@ void QBatteryInfoSimulatorBackend::setEnergyUnit(QBatteryInfo::EnergyUnit unit)
     if (data.energyMeasurementUnit != unit)
         data.energyMeasurementUnit = unit;
 }
+
+
+// QDeviceInfoSimulatorBackend
 
 QDeviceInfoSimulatorBackend::QDeviceInfoSimulatorBackend(QObject *parent)
     : QObject(parent)
@@ -390,6 +397,137 @@ void QDeviceInfoSimulatorBackend::setVersion(QDeviceInfo::Version version, QStri
     QMap<QDeviceInfo::Version, QString>::iterator i = data.versionList.find(version);
     if (i != data.versionList.end() && i.value() != versionString)
         data.versionList[version] = versionString;
+}
+
+
+// QStorageInfoSimulatorBackend
+
+QStorageInfoSimulatorBackend::QStorageInfoSimulatorBackend(QObject *parent)
+    : QObject(parent)
+{
+    SystemInfoConnection::ensureSimulatorConnection();
+}
+
+QStorageInfoSimulatorBackend::~QStorageInfoSimulatorBackend()
+{
+}
+
+QStorageInfoSimulatorBackend *QStorageInfoSimulatorBackend::getSimulatorBackend()
+{
+    static QMutex mutex;
+
+    mutex.lock();
+    if (!globalSimulatorBackend)
+        globalSimulatorBackend = new QStorageInfoSimulatorBackend();
+    mutex.unlock();
+
+    return globalSimulatorBackend;
+}
+
+qlonglong QStorageInfoSimulatorBackend::getAvailableDiskSpace(const QString &drive)
+{
+    return getDriveInfo(drive).availableSpace;
+}
+
+qlonglong QStorageInfoSimulatorBackend::getTotalDiskSpace(const QString &drive)
+{
+    return getDriveInfo(drive).totalSpace;
+}
+
+QString QStorageInfoSimulatorBackend::getUriForDrive(const QString &drive)
+{
+    return getDriveInfo(drive).uri;
+}
+
+QStringList QStorageInfoSimulatorBackend::getAllLogicalDrives()
+{
+    QStringList driveList;
+    driveList << data.drives.keys();
+
+    return driveList;
+}
+
+QStorageInfo::DriveType QStorageInfoSimulatorBackend::getDriveType(const QString &drive)
+{
+    return getDriveInfo(drive).type;
+}
+
+void QStorageInfoSimulatorBackend::setAvailableDiskSpace(const QString &drive, qlonglong space)
+{
+    if (hasDriveInfo(drive) &&  getDriveInfo(drive).availableSpace != space)
+        data.drives[drive].availableSpace = space;
+}
+
+void QStorageInfoSimulatorBackend::setTotalDiskSpace(const QString &drive, qlonglong space)
+{
+    if (hasDriveInfo(drive) &&  getDriveInfo(drive).totalSpace != space)
+        data.drives[drive].totalSpace = space;
+}
+
+void QStorageInfoSimulatorBackend::setUriForDrive(const QString &drive, QString uri)
+{
+    if (hasDriveInfo(drive) &&  getDriveInfo(drive).uri != uri)
+        data.drives[drive].uri = uri;
+}
+
+void QStorageInfoSimulatorBackend::setDriveType(const QString &drive, QStorageInfo::DriveType type)
+{
+    if (hasDriveInfo(drive) &&  getDriveInfo(drive).type != type)
+        data.drives[drive].type = type;
+}
+
+bool QStorageInfoSimulatorBackend::addDrive(const QString &drive)
+{
+    return addDrive(drive, QStorageInfo::UnknownDrive, 0, 0, QString());
+}
+
+bool QStorageInfoSimulatorBackend::addDrive(const QString &drive, QStorageInfo::DriveType type,
+                                            qint64 totalSpace, qint64 availableSpace,
+                                            const QString &uri)
+{
+    QHash<QString, QStorageInfoData::DriveInfo>::const_iterator it = data.drives.find(drive);
+    if (it != data.drives.end())
+        return false;
+
+    QStorageInfoData::DriveInfo d;
+    d.type = static_cast<QStorageInfo::DriveType>(type);
+    d.totalSpace = totalSpace;
+    d.availableSpace = availableSpace;
+    d.uri = uri;
+
+    data.drives[drive] = d;
+    emit logicalDriveChanged(drive, true);
+
+    return true;
+}
+
+bool QStorageInfoSimulatorBackend::removeDrive(const QString &drive)
+{
+    if (data.drives.remove(drive) > 0) {
+        emit logicalDriveChanged(drive, false);
+        return true;
+    }
+    return false;
+}
+
+QStorageInfoData::DriveInfo QStorageInfoSimulatorBackend::getDriveInfo(const QString &drive)
+{
+    QHash<QString, QStorageInfoData::DriveInfo>::const_iterator i = data.drives.find(drive);
+    if (i != data.drives.end())
+        return i.value();
+    else {
+        struct QStorageInfoData::DriveInfo info = {-1, -1, QString(), QStorageInfo::UnknownDrive};
+        return info;
+    }
+}
+
+bool QStorageInfoSimulatorBackend::hasDriveInfo(const QString &drive)
+{
+    QHash<QString, QStorageInfoData::DriveInfo>::const_iterator i = data.drives.find(drive);
+    if (i != data.drives.end())
+        return true;
+
+    return false;
 }
 
 QT_END_NAMESPACE

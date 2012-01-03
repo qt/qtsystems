@@ -155,14 +155,12 @@ simulator {
 
     linux-*: {
         PRIVATE_HEADERS += qdisplayinfo_linux_p.h \
-                           qstorageinfo_linux_p.h \
                            qnetworkinfo_linux_p.h \
                            qinputdeviceinfo_linux_p.h \
                            qscreensaver_linux_p.h \
                            qdeviceprofile_linux_p.h
 
         SOURCES += qdisplayinfo_linux.cpp \
-                   qstorageinfo_linux.cpp \
                    qnetworkinfo_linux.cpp \
                    qinputdeviceinfo_linux.cpp \
                    qscreensaver_linux.cpp \
@@ -203,12 +201,6 @@ simulator {
                 DEFINES += QT_NO_OFONO
             }
 
-            contains(config_test_udisks, yes): {
-                QT += dbus
-            } else: {
-                DEFINES += QT_NO_UDISKS
-            }
-
             contains(config_test_bluez, yes) {
                 QT += dbus
                 CONFIG += link_pkgconfig
@@ -220,7 +212,7 @@ simulator {
                 DEFINES += QT_NO_BLUEZ
             }
         } else {
-            DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_BLUEZ
+            DEFINES += QT_NO_OFONO QT_NO_BLUEZ
         }
 
         contains(config_test_udev, yes) {

@@ -43,7 +43,9 @@
 
 #include <QtCore/qstringlist.h>
 
-#if defined(Q_OS_LINUX)
+#if defined(QT_SIMULATOR)
+#  include "qsysteminfo_simulator_p.h"
+#elif defined(Q_OS_LINUX)
 #  include "qstorageinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
 #  include "qstorageinfo_win_p.h"
@@ -95,7 +97,11 @@ QT_BEGIN_NAMESPACE
 */
 QStorageInfo::QStorageInfo(QObject *parent)
     : QObject(parent)
+#if !defined(QT_SIMULATOR)
     , d_ptr(new QStorageInfoPrivate(this))
+#else
+    , d_ptr(new QStorageInfoSimulator(this))
+#endif // QT_SIMULATOR
 {
 }
 
@@ -158,7 +164,7 @@ QStorageInfo::DriveType QStorageInfo::driveType(const QString &drive) const
 */
 void QStorageInfo::connectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
@@ -170,7 +176,7 @@ void QStorageInfo::connectNotify(const char *signal)
 */
 void QStorageInfo::disconnectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (receivers(signal) > 0)
         return;

@@ -152,6 +152,46 @@ private:
     void initVersionList();
 };
 
+class Q_SYSTEMINFO_EXPORT QStorageInfoSimulatorBackend : public QObject
+{
+    Q_OBJECT
+
+private:
+    QStorageInfoSimulatorBackend(QObject *parent = 0);
+    Q_DISABLE_COPY(QStorageInfoSimulatorBackend)
+
+public:
+    ~QStorageInfoSimulatorBackend();
+    static QStorageInfoSimulatorBackend *getSimulatorBackend();
+
+    qlonglong getAvailableDiskSpace(const QString &drive);
+    qlonglong getTotalDiskSpace(const QString &drive);
+    QString getUriForDrive(const QString &drive);
+    QStringList getAllLogicalDrives();
+    QStorageInfo::DriveType getDriveType(const QString &drive);
+
+    void setAvailableDiskSpace(const QString &drive, qlonglong space);
+    void setTotalDiskSpace(const QString &drive, qlonglong space);
+    void setUriForDrive(const QString &drive, QString uri);
+    void setDriveType(const QString &drive, QStorageInfo::DriveType);
+
+    bool addDrive(const QString &drive);
+    bool addDrive(const QString &drive, QStorageInfo::DriveType type,
+                  qint64 totalSpace, qint64 availableSpace,
+                  const QString &uri);
+    bool removeDrive(const QString &drive);
+
+Q_SIGNALS:
+    void logicalDriveChanged(const QString &drive, bool added);
+
+private:
+    QStorageInfoData data;
+    static QStorageInfoSimulatorBackend *globalSimulatorBackend;
+
+    QStorageInfoData::DriveInfo getDriveInfo(const QString &drive);
+    bool hasDriveInfo(const QString &drive);
+};
+
 QT_END_NAMESPACE
 
 #endif // QSYSTEMINFOBACKEND_SIMULATOR_P_H

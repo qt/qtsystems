@@ -48,6 +48,9 @@
 
 QT_BEGIN_NAMESPACE
 
+
+// QBatteryInfoSimulator
+
 QBatteryInfoSimulator::QBatteryInfoSimulator(QBatteryInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
@@ -156,6 +159,10 @@ void QBatteryInfoSimulator::disconnectNotify(const char *signal)
         disconnect(batteryInfoSimulatorBackend, signal, this, signal);
     }
 }
+
+
+// QDeviceInfoSimulator
+
 
 QDeviceInfoSimulator::QDeviceInfoSimulator(QDeviceInfo *parent)
     : QObject(parent)
@@ -322,6 +329,71 @@ void QDeviceInfoSimulator::disconnectNotify(const char *signal)
 
     if (deviceInfoSimulatorBackend && strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState state))) == 0)
         disconnect(deviceInfoSimulatorBackend, signal, this, signal);
+}
+
+
+// QStorageInfoSimulator
+
+QStorageInfoSimulator::QStorageInfoSimulator(QStorageInfo *parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , storageInfoSimulatorBackend(QStorageInfoSimulatorBackend::getSimulatorBackend())
+{
+}
+
+QStorageInfoSimulator::~QStorageInfoSimulator()
+{
+}
+
+qlonglong QStorageInfoSimulator::availableDiskSpace(const QString &drive)
+{
+    if (storageInfoSimulatorBackend)
+        return storageInfoSimulatorBackend->getAvailableDiskSpace(drive);
+
+    return -1;
+}
+
+qlonglong QStorageInfoSimulator::totalDiskSpace(const QString &drive)
+{
+    if (storageInfoSimulatorBackend)
+        return storageInfoSimulatorBackend->getTotalDiskSpace(drive);
+
+    return -1;
+}
+
+QString QStorageInfoSimulator::uriForDrive(const QString &drive)
+{
+    if (storageInfoSimulatorBackend)
+        return storageInfoSimulatorBackend->getUriForDrive(drive);
+
+    return QString();
+}
+
+QStringList QStorageInfoSimulator::allLogicalDrives()
+{
+    if (storageInfoSimulatorBackend)
+        return storageInfoSimulatorBackend->getAllLogicalDrives();
+
+    return QStringList();
+}
+
+QStorageInfo::DriveType QStorageInfoSimulator::driveType(const QString &drive)
+{
+    if (storageInfoSimulatorBackend)
+        return storageInfoSimulatorBackend->getDriveType(drive);
+
+    return QStorageInfo::UnknownDrive;
+}
+void QStorageInfoSimulator::connectNotify(const char *signal)
+{
+    if (storageInfoSimulatorBackend && strcmp(signal, SIGNAL(logicalDriveChanged(const QString, bool))) == 0)
+        connect(storageInfoSimulatorBackend, signal, this, signal);
+}
+
+void QStorageInfoSimulator::disconnectNotify(const char *signal)
+{
+    if (storageInfoSimulatorBackend && strcmp(signal, SIGNAL(logicalDriveChanged(const QString, bool))) == 0)
+        disconnect(storageInfoSimulatorBackend, signal, this, signal);
 }
 
 QT_END_NAMESPACE

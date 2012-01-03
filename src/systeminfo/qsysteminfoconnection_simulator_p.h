@@ -82,6 +82,7 @@ private slots:
     void initialSystemInfoDataSent();
     void setBatteryInfoData(const QBatteryInfoData &data);
     void setDeviceInfoData(const QDeviceInfoData &data);
+    void setStorageInfoData(const QStorageInfoData &data);
 
 signals:
     void initialDataReceived();
