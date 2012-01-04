@@ -662,8 +662,13 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests.contains(requestId) ) {
         Response *r = openRequests.value(requestId);
-        QTimer::singleShot(30000, r->loop, SLOT(quit()));
+        QTimer timer;
+        timer.setSingleShot(true);
+        connect(&timer, SIGNAL(timeout()), r->loop, SLOT(quit()));
+        timer.start(30000);
         r->loop->exec();
+        if (timer.isActive())
+            timer.stop();
         if (d->functionReturned) {
             d->functionReturned = false;
             QMetaObject::invokeMethod(this, "newPackageReady", Qt::QueuedConnection);
