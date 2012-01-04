@@ -4,6 +4,11 @@ CONFIG += testcase
 QT += serviceframework testlib
 QT -= gui
 
+DESTDIR = ./
+
+# Increase the stack size on MSVC to 4M to avoid a stack overflow
+win32-msvc*:QMAKE_LFLAGS += /STACK:4194304
+
 CONFIG -= app_bundle
 
 !mtlib:!contains(config_test_mtlib, yes):DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
