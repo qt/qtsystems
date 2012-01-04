@@ -64,6 +64,7 @@
 #include <jsondb-global.h>
 Q_ADDON_JSONDB_BEGIN_NAMESPACE
 class JsonDbClient;
+class JsonDbNotification;
 Q_ADDON_JSONDB_END_NAMESPACE
 Q_USE_JSONDB_NAMESPACE
 
@@ -108,7 +109,7 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
         void handleResponse( int id, const QVariant& data );
         void handleError( int id, int code, const QString& message );
         void handleDisconnect();
-        void handleNotified(const QString&, const QVariant&, const QString&);
+        void handleNotified(const QString &, const JsonDbNotification &);
 
     private:
         JsonDbClient *db;

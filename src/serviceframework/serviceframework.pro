@@ -18,7 +18,7 @@ jsondb|contains(QT_CONFIG, jsondb): {
         DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
         CONFIG += link_pkgconfig
         PKGCONFIG += mt-client
-        QT += jsondb jsondb-private
+        QT += jsondb
     }
     !no_wayland: {
         DEFINES += QT_WAYLAND_PRESENT
