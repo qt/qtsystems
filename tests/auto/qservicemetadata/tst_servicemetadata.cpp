@@ -56,10 +56,6 @@
     #include "../../../src/serviceframework/servicemetadata.cpp"
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-# define TESTDATA_DIR "."
-#endif
-
 QT_USE_NAMESPACE
 class ServiceMetadataTest: public QObject
 {
@@ -82,14 +78,11 @@ private:
 	QDir dir;
 
 };
-
 void ServiceMetadataTest::initTestCase()
 {
-#ifdef TESTDATA_DIR
-    dir = QDir(TESTDATA_DIR "/testdata");
-#else
-    dir = QDir(QCoreApplication::applicationDirPath() + "/testdata");
-#endif
+    const QString directory = QFINDTESTDATA("testdata");
+    QVERIFY2(!directory.isEmpty(), "Unable to locate 'testdata'.");
+    dir = QDir(directory);
 }
 
 void ServiceMetadataTest::cleanupTestCase()

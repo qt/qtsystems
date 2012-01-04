@@ -1,15 +1,6 @@
 TARGET = tst_qservicemetadata
 CONFIG += testcase
 
-wince* {
-    DEFINES+= TESTDATA_DIR=\\\".\\\"
-}else {
-    !mtlib:!contains(config_test_mtlib, yes) {
-        DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
-    }
-}
-               
-
 CONFIG += parallel_test
 
 QT += serviceframework serviceframework-private testlib
