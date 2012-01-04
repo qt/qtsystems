@@ -36,7 +36,6 @@
 # Compile tests
 %configtests = (
     "gconf" => {},
-    "contextkit" => {},
     "bluez" => {},
     "udev" => {},
     "mtlib" => {},

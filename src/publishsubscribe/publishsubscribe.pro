@@ -48,22 +48,6 @@ unix {
         } else {
             DEFINES += QT_NO_JSONDBLAYER
         }
-
-        contains(QT_CONFIG, dbus): {
-            contains(config_test_contextkit, yes) {
-                QT += dbus
-
-                PRIVATE_HEADERS += contextkitlayer_p.h
-                SOURCES += contextkitlayer.cpp
-
-                CONFIG += link_pkgconfig
-                PKGCONFIG += contextsubscriber-1.0 contextprovider-1.0
-            } else {
-                DEFINES += QT_NO_CONTEXTKIT
-            }
-        } else {
-            DEFINES += QT_NO_CONTEXTKIT
-        }
     }
 }
 

@@ -78,10 +78,6 @@ void tst_QValueSpace::tst_availableLayers()
 #if !defined(QT_NO_GCONFLAYER)
     QVERIFY(layers.contains(QVALUESPACE_GCONF_LAYER));
 #endif
-#if !defined(QT_NO_CONTEXTKIT)
-    QVERIFY(layers.contains(QVALUESPACE_CONTEXTKITNONCORE_LAYER));
-    QVERIFY(layers.contains(QVALUESPACE_CONTEXTKITCORE_LAYER));
-#endif
 #if !defined(QT_NO_JSONDBLAYER)
     QVERIFY(layers.contains(QVALUESPACE_JSONDB_LAYER));
 #endif

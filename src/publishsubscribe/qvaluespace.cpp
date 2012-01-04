@@ -430,34 +430,6 @@ void QValueSpace::installLayer(LayerCreateFunc func)
 */
 
 /*!
-    \macro QVALUESPACE_CONTEXTKITNONCORE_LAYER
-    \relates QValueSpace
-
-    The UUID of the ContextKit Non-Core layer as a QUuid.  The actual UUID values is
-    {2c769b9e-d949-4cd1-848f-d32241fe07ff}.
-
-    This value can be passed to the constructor of QValueSpacePublisher or QValueSpaceSubscriber to
-    force the constructed object to only access the ContextKit Non-Core layer.
-
-    You can test if the ContextKit layer is available by checking if the list returned by
-    QValueSpace::availableLayers() contains this value.
-*/
-
-/*!
-    \macro QVALUESPACE_CONTEXTKITCORE_LAYER
-    \relates QValueSpace
-
-    The UUID of the ContextKit Core layer as a QUuid.  The actual UUID values is
-    {6f111da0-185d-45a1-9485-c5d14cd511ce}.
-
-    This value can be passed to the constructor of QValueSpacePublisher or QValueSpaceSubscriber to
-    force the constructed object to only access the ContextKit Core layer.
-
-    You can test if the ContextKit layer is available by checking if the list returned by
-    QValueSpace::availableLayers() contains this value.
-*/
-
-/*!
     \macro QVALUESPACE_GCONF_LAYER
     \relates QValueSpace
 

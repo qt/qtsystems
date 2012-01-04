@@ -108,11 +108,6 @@
                on Windows platforms.
                The Non-volatile Registry layer has an order of 0.
         \row
-            \o \l{ContextKit Layer}
-            \o The ContextKit layer provides a non-permanent Value Space backing store using
-               ContextKit. This layer is only available on Linux where the ContextKit is available.
-               The ContextKit layer has an order of 0.
-        \row
             \o \l{GConf Layer}
             \o The GConf Layer provides a permanent Value Space backing store using GConf. This
                layer is only available on Linux where the GConf is available.
@@ -138,56 +133,6 @@
     converted back to the original data types. The serialization/deserialization is transparent operation
     to the API user but may cause interoperatibility issues with native applications that access the same
     data directly.
-
-    \section2 ContextKit Layer
-
-    The Qt Publish Subscribe module can be used to access both "core" and "non-core" values in the ContextKit
-    Registry. The backend by default will look for a "core" property in the registry first (dot-separated),
-    and then fall back to a "non-core" property (slash-separated) if a "core" one is not found.
-
-    You can force the selection of one or the other path scheme by passing the flags
-    QValueSpace::PermanentLayer and QValueSpace::TransientLayer to the constructors of QValueSpaceSubscriber
-    and QValueSpacePublisher along with the path name.
-
-    \section3 \bold{Organization and application name}
-
-    ContextKit requires providers to register with a valid DBus service name in order to publish values.
-    The ContextKit Layer automatically builds this name from QCoreApplication::organizationDomain() and
-    QCoreApplication::applicationName(). In order to publish, you will need to set these
-    values in your application. They are not necessary if your application only subscribes and does not
-    publish.
-
-    \code
-    QCoreApplication::setOrganizationDomain("example.com");
-    QCoreApplication::setApplicationName("Test Application");
-    // will register with 'com.example.Test-Application'
-    \endcode
-
-    \section3 \bold{Declaring Value Space Paths Using Property Declaration Files}
-
-    ContextKit also requires that an entry be present in the ContextKit Registry on the system before
-    subscribers will be able to find an advertised property. The Registry is a set of XML files, normally
-    saved in \c /usr/share/contextkit/providers with the \c .context file extension.
-
-    For example, the following \c .context file describes a simple example service:
-    \code
-    <?xml version="1.0"?>
-    <provider bus="session" service="com.example.Test-Application">
-    <key name="/com/example/test/value" />
-    </provider>
-    \endcode
-
-    Note: 1) The \c service attribute must match the organization domain and application name set above.
-    2) The \c bus attribute must be "session", i.e. you can only use the session bus.
-
-    For more detailed information, please refer to
-    \l{http://maemo.gitorious.org/maemo-af/contextkit/blobs/master/doc/context-providers.txt}{How to provide context properties}.
-
-    \section3 \bold{Limitations of ContextKit Layer}
-
-    Similar to both the Gconf backends, ContextKit supports only a limited range of QVariant data types.
-    Types not supported are serialized in a manner transparent to the API user, but interoperatibility
-    with native ContextKit subscribers may be impacted as a result.
 
     \section1 Examples
 
