@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qsysteminfobackend_simulator_p.h"
-#include "qsysteminfoconnection_simulator_p.h"
 
 #include <QMutex>
 
@@ -56,8 +55,6 @@ QStorageInfoSimulatorBackend *QStorageInfoSimulatorBackend::globalSimulatorBacke
 QBatteryInfoSimulatorBackend::QBatteryInfoSimulatorBackend(QObject *parent)
     : QObject(parent)
 {
-    SystemInfoConnection::ensureSimulatorConnection();
-
     data.currentFlow = 0;
     data.maximumCapacity = -1;
     data.remainingCapacity = -1;
@@ -209,11 +206,16 @@ void QBatteryInfoSimulatorBackend::setEnergyUnit(QBatteryInfo::EnergyUnit unit)
 QDeviceInfoSimulatorBackend::QDeviceInfoSimulatorBackend(QObject *parent)
     : QObject(parent)
 {
-    SystemInfoConnection::ensureSimulatorConnection();
-
     initFeatureList();
     initImeiList();
     initVersionList();
+    data.enabledLocks = QDeviceInfo::NoLock;
+    data.activatedLocks = QDeviceInfo::NoLock;
+    data.currentThermalState = QDeviceInfo::UnknownThermal;
+    data.manufacturer = QStringLiteral("Simulator Manufacturer");
+    data.model = QStringLiteral("Simulator Model");
+    data.productName =  QStringLiteral("Simulator Product Name");
+    data.uniqueDeviceID =  QStringLiteral("");
 }
 
 QDeviceInfoSimulatorBackend::~QDeviceInfoSimulatorBackend()
@@ -253,8 +255,8 @@ void QDeviceInfoSimulatorBackend::initFeatureList()
 
 void QDeviceInfoSimulatorBackend::initImeiList()
 {
-    data.imeiList.insert(0, QStringLiteral("IMEI 0"));
-    data.imeiList.insert(0, QStringLiteral("IMEI 1"));
+    data.imeiList.insert(0, QStringLiteral("000000000000000"));
+    data.imeiList.insert(0, QStringLiteral("111111111111111"));
 }
 
 void QDeviceInfoSimulatorBackend::initVersionList()
@@ -405,7 +407,6 @@ void QDeviceInfoSimulatorBackend::setVersion(QDeviceInfo::Version version, QStri
 QStorageInfoSimulatorBackend::QStorageInfoSimulatorBackend(QObject *parent)
     : QObject(parent)
 {
-    SystemInfoConnection::ensureSimulatorConnection();
 }
 
 QStorageInfoSimulatorBackend::~QStorageInfoSimulatorBackend()

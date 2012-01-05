@@ -41,6 +41,7 @@
 
 #include "qsysteminfo_simulator_p.h"
 #include "qsysteminfobackend_simulator_p.h"
+#include "qsysteminfoconnection_simulator_p.h"
 
 #if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
 #  include "qdeviceinfo_linux_p.h"
@@ -56,6 +57,7 @@ QBatteryInfoSimulator::QBatteryInfoSimulator(QBatteryInfo *parent)
     , q_ptr(parent)
     , batteryInfoSimulatorBackend(QBatteryInfoSimulatorBackend::getSimulatorBackend())
 {
+    SystemInfoConnection::ensureSimulatorConnection();
 }
 
 QBatteryInfoSimulator::~QBatteryInfoSimulator()
@@ -172,6 +174,7 @@ QDeviceInfoSimulator::QDeviceInfoSimulator(QDeviceInfo *parent)
     , d_ptr(new QDeviceInfoPrivate())
 #endif
 {
+    SystemInfoConnection::ensureSimulatorConnection();
 }
 
 QDeviceInfoSimulator::~QDeviceInfoSimulator()
@@ -339,6 +342,7 @@ QStorageInfoSimulator::QStorageInfoSimulator(QStorageInfo *parent)
     , q_ptr(parent)
     , storageInfoSimulatorBackend(QStorageInfoSimulatorBackend::getSimulatorBackend())
 {
+    SystemInfoConnection::ensureSimulatorConnection();
 }
 
 QStorageInfoSimulator::~QStorageInfoSimulator()

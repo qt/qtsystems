@@ -49,6 +49,7 @@
 
 #include <QTimer>
 #include <QEventLoop>
+#include <QMutex>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +67,7 @@ SystemInfoConnection::SystemInfoConnection(QObject *parent)
     mConnection = new Connection(Connection::Client, SERVERNAME, PORT, VERSION, this);
     mWorker = mConnection->connectToServer(Connection::simulatorHostName(true), PORT);
     if (!mWorker)
-        qFatal("Could not connect to server");
+        qWarning("Could not connect to server");
 
     mWorker->addReceiver(this);
     mWorker->call("setRequestsSystemInfo");
@@ -76,7 +77,7 @@ SystemInfoConnection::SystemInfoConnection(QObject *parent)
     QEventLoop loop;
     connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
     connect(this, SIGNAL(initialDataReceived()), &loop, SLOT(quit()));
-    timer.start(3000);
+    timer.start(1000);
     loop.exec();
     timer.stop();
 }
@@ -88,7 +89,11 @@ SystemInfoConnection::~SystemInfoConnection()
 
 void SystemInfoConnection::ensureSimulatorConnection()
 {
+    static QMutex mutex;
+
+    mutex.lock();
     static SystemInfoConnection systemInfoConnection;
+    mutex.unlock();
 }
 
 void SystemInfoConnection::initialSystemInfoDataSent()
