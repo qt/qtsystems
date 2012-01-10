@@ -66,20 +66,20 @@ SystemInfoConnection::SystemInfoConnection(QObject *parent)
     qt_registerSystemInfoTypes();
     mConnection = new Connection(Connection::Client, SERVERNAME, PORT, VERSION, this);
     mWorker = mConnection->connectToServer(Connection::simulatorHostName(true), PORT);
-    if (!mWorker)
+    if (mWorker) {
+        mWorker->addReceiver(this);
+        mWorker->call("setRequestsSystemInfo");
+
+        // wait until initial data is received
+        QTimer timer;
+        QEventLoop loop;
+        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        connect(this, SIGNAL(initialDataReceived()), &loop, SLOT(quit()));
+        timer.start(1000);
+        loop.exec();
+        timer.stop();
+    } else
         qWarning("Could not connect to server");
-
-    mWorker->addReceiver(this);
-    mWorker->call("setRequestsSystemInfo");
-
-    // wait until initial data is received
-    QTimer timer;
-    QEventLoop loop;
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    connect(this, SIGNAL(initialDataReceived()), &loop, SLOT(quit()));
-    timer.start(1000);
-    loop.exec();
-    timer.stop();
 }
 
 SystemInfoConnection::~SystemInfoConnection()
