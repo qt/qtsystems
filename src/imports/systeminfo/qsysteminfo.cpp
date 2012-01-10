@@ -45,7 +45,7 @@
 #include "qdeclarativebatteryinfo_p.h"
 #include "qdeclarativedeviceinfo_p.h"
 #include <qdeviceprofile.h>
-#include <qdisplayinfo.h>
+#include "qdeclarativedisplayinfo_p.h"
 #include "qdeclarativeinputdeviceinfo_p.h"
 #include "qdeclarativenetworkinfo_p.h"
 #include <qscreensaver.h>
@@ -67,7 +67,7 @@ public:
         qmlRegisterType<QDeclarativeBatteryInfo>(uri, major, minor, "BatteryInfo");
         qmlRegisterType<QDeclarativeDeviceInfo>(uri, major, minor, "DeviceInfo");
         qmlRegisterType<QDeviceProfile>(uri, major, minor, "DeviceProfile");
-        qmlRegisterType<QDisplayInfo>(uri, major, minor, "DisplayInfo");
+        qmlRegisterType<QDeclarativeDisplayInfo>(uri, major, minor, "DisplayInfo");
         qmlRegisterType<QDeclarativeInputDeviceInfo>(uri, major, minor, "InputDeviceInfo");
         qmlRegisterType<QDeclarativeNetworkInfo>(uri, major, minor, "NetworkInfo");
         qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");
@@ -137,72 +137,3 @@ Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoD
     \o BeepProfile       Only beep is on.
     \endlist
  */
-
-
-/*!
-    \qmlclass DisplayInfo QDisplayInfo
-    \inmodule QtSystemInfo
-    \ingroup qml-systeminfo
-    \brief The DisplayInfo element provides information about the display of the device.
-*/
-
-/*!
-    \qmlmethod int DisplayInfo::brightness(int screen)
-
-    Returns the display brightness of the given \a screen, in 0 - 100 scale. In case of error or
-    the information is not available, -1 is returned.
- */
-
-/*!
-    \qmlmethod int DisplayInfo::colorDepth(int screen)
-
-    Returns the color depth of the given \a screen, in bits per pixel. -1 is returned if not
-    available or on error.
-*/
-
-/*!
-    \qmlmethod int DisplayInfo::contrast(int screen)
-
-    Returns the contrast of the given \a screen, in 0 - 100 scale. -1 is returned if not available
-    or on error.
-*/
-
-/*!
-    \qmlmethod int DisplayInfo::dpiX(int screen)
-
-    Returns the horizontal resolution of the given \a screen in terms of the number of dots per inch.
-    -1 is returned if not available or on error.
-*/
-
-/*!
-    \qmlmethod int DisplayInfo::dpiY(int screen)
-
-    Returns the vertical resolution of the given \a screen in terms of the number of dots per inch.
-    -1 is returned if not available or on error.
-*/
-
-/*!
-    \qmlmethod int DisplayInfo::physicalHeight(int screen)
-
-    Returns the physical height of the \a screen in millimeters. -1 is returned if not available
-    or on error.
-*/
-
-/*!
-    \qmlmethod int DisplayInfo::physicalWidth(int screen)
-
-    Returns the physical width of \a screen in millimeters. -1 is returned if not available or
-    on error.
-*/
-
-/*!
-    \qmlmethod enum DisplayInfo::backlightState(int screen)
-
-    Returns the backlight state of the given \a screen. Possible values are:
-    \list
-    \o BacklightUnknown  The state of the backlight is unkown.
-    \o BacklightOff      Backlight is turned off.
-    \o BacklightDimmed   Backlight has been dimmed.
-    \o BacklightOn       Backlight is on.
-    \endlist
-*/

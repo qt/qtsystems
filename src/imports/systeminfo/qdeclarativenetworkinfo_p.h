@@ -128,11 +128,11 @@ public:
 
     bool monitorCurrentCellDataTechnology() const;
     void setMonitorCurrentCellDataTechnology(bool monitor);
-    Q_INVOKABLE CellDataTechnology currentCellDataTechnology(int interface) const;
+    Q_INVOKABLE int currentCellDataTechnology(int interface) const;
 
     bool monitorNetworkStatus() const;
     void setMonitorNetworkStatus(bool monitor);
-    Q_INVOKABLE NetworkStatus networkStatus(NetworkMode mode, int interface) const;
+    Q_INVOKABLE int networkStatus(NetworkMode mode, int interface) const;
 
     bool monitorCellId() const;
     void setMonitorCellId(bool monitor);

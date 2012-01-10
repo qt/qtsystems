@@ -159,17 +159,9 @@ bool QDeclarativeInputDeviceInfo::isKeyboardLightOn() const
     \o Mouse               The device has mouses.
     \endlist
 */
-QDeclarativeInputDeviceInfo::InputDeviceTypes QDeclarativeInputDeviceInfo::availableInputDevices() const
+int QDeclarativeInputDeviceInfo::availableInputDevices() const
 {
-    QInputDeviceInfo::InputDeviceTypes types(inputDeviceInfo->availableInputDevices());
-    InputDeviceTypes declarativeTypes(UnknownInputDevice);
-    if (types.testFlag(QInputDeviceInfo::Keys))
-        declarativeTypes |= Keys;
-    if (types.testFlag(QInputDeviceInfo::Touch))
-        declarativeTypes |= Touch;
-    if (types.testFlag(QInputDeviceInfo::Mouse))
-        declarativeTypes |= Mouse;
-    return declarativeTypes;
+    return inputDeviceInfo->availableInputDevices();
 }
 
 /*!
@@ -186,23 +178,9 @@ QDeclarativeInputDeviceInfo::InputDeviceTypes QDeclarativeInputDeviceInfo::avail
     \o FlipableKeyboard    The keyboard can be flipped out.
     \endlist
 */
-QDeclarativeInputDeviceInfo::KeyboardTypes QDeclarativeInputDeviceInfo::availableKeyboards() const
+int QDeclarativeInputDeviceInfo::availableKeyboards() const
 {
-    QInputDeviceInfo::KeyboardTypes types(inputDeviceInfo->availableKeyboards());
-    KeyboardTypes declarativeTypes(UnknownKeyboard);
-    if (types.testFlag(QInputDeviceInfo::SoftwareKeyboard))
-        declarativeTypes |= SoftwareKeyboard;
-    if (types.testFlag(QInputDeviceInfo::ITUKeypad))
-        declarativeTypes |= ITUKeypad;
-    if (types.testFlag(QInputDeviceInfo::HalfQwertyKeyboard))
-        declarativeTypes |= HalfQwertyKeyboard;
-    if (types.testFlag(QInputDeviceInfo::FullQwertyKeyboard))
-        declarativeTypes |= FullQwertyKeyboard;
-    if (types.testFlag(QInputDeviceInfo::WirelessKeyboard))
-        declarativeTypes |= WirelessKeyboard;
-    if (types.testFlag(QInputDeviceInfo::FlipableKeyboard))
-        declarativeTypes |= FlipableKeyboard;
-    return declarativeTypes;
+    return inputDeviceInfo->availableKeyboards();
 }
 
 /*!
@@ -215,15 +193,9 @@ QDeclarativeInputDeviceInfo::KeyboardTypes QDeclarativeInputDeviceInfo::availabl
     \o MultiTouch          The device has multi-point touch devices.
     \endlist
 */
-QDeclarativeInputDeviceInfo::TouchDeviceTypes QDeclarativeInputDeviceInfo::availableTouchDevices() const
+int QDeclarativeInputDeviceInfo::availableTouchDevices() const
 {
-    QInputDeviceInfo::TouchDeviceTypes types(inputDeviceInfo->availableTouchDevices());
-    TouchDeviceTypes declarativeTypes(UnknownTouchDevice);
-    if (types.testFlag(QInputDeviceInfo::SingleTouch))
-        declarativeTypes |= SingleTouch;
-    if (types.testFlag(QInputDeviceInfo::MultiTouch))
-        declarativeTypes |= MultiTouch;
-    return declarativeTypes;
+    return inputDeviceInfo->availableTouchDevices();
 }
 
 QT_END_NAMESPACE

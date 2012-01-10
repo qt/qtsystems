@@ -39,18 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QDISPLAYINFO_H
-#define QDISPLAYINFO_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <qsysteminfoglobal.h>
-#include <QtCore/qobject.h>
+#ifndef QDECLARATIVEDISPLAYINFO_P_H
+#define QDECLARATIVEDISPLAYINFO_P_H
+
+#include <qdisplayinfo.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QDisplayInfoPrivate;
-
-class Q_SYSTEMINFO_EXPORT QDisplayInfo : public QObject
+class QDeclarativeDisplayInfo : public QObject
 {
     Q_OBJECT
 
@@ -58,32 +66,30 @@ class Q_SYSTEMINFO_EXPORT QDisplayInfo : public QObject
 
 public:
     enum BacklightState {
-        BacklightUnknown = 0,
-        BacklightOff,
-        BacklightDimmed,
-        BacklightOn
+        BacklightUnknown = QDisplayInfo::BacklightUnknown,
+        BacklightOff = QDisplayInfo::BacklightOff,
+        BacklightDimmed = QDisplayInfo::BacklightDimmed,
+        BacklightOn = QDisplayInfo::BacklightOn
     };
 
-    QDisplayInfo(QObject *parent = 0);
-    virtual ~QDisplayInfo();
+    QDeclarativeDisplayInfo(QObject *parent = 0);
+    virtual ~QDeclarativeDisplayInfo();
 
-    int brightness(int screen) const;
-    int contrast(int screen) const;
-    BacklightState backlightState(int screen) const;
+    Q_INVOKABLE int brightness(int screen) const;
+    Q_INVOKABLE int contrast(int screen) const;
+    Q_INVOKABLE int backlightState(int screen) const;
 
-    int colorDepth(int screen) const;
-    int dpiX(int screen) const;
-    int dpiY(int screen) const;
-    int physicalHeight(int screen) const;
-    int physicalWidth(int screen) const;
+    Q_INVOKABLE int colorDepth(int screen) const;
+    Q_INVOKABLE int dpiX(int screen) const;
+    Q_INVOKABLE int dpiY(int screen) const;
+    Q_INVOKABLE int physicalHeight(int screen) const;
+    Q_INVOKABLE int physicalWidth(int screen) const;
 
 private:
-    Q_DISABLE_COPY(QDisplayInfo)
-    QDisplayInfoPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QDisplayInfo)
+    QDisplayInfo *displayInfo;
 };
 
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QDISPLAYINFO_H
+#endif // QDECLARATIVEDISPLAYINFO_P_H

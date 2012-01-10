@@ -129,7 +129,7 @@ public:
 
     bool monitorChargingState() const;
     void setMonitorChargingState(bool monitor);
-    Q_INVOKABLE ChargingState chargingState(int battery) const;
+    Q_INVOKABLE int chargingState(int battery) const;
 
     EnergyUnit energyUnit() const;
     Q_INVOKABLE int maximumCapacity(int battery) const;

@@ -255,9 +255,9 @@ void QDeclarativeNetworkInfo::setMonitorCurrentCellDataTechnology(bool monitor)
     \o HspaDataTechnology
     \endlist
  */
-QDeclarativeNetworkInfo::CellDataTechnology QDeclarativeNetworkInfo::currentCellDataTechnology(int interface) const
+int QDeclarativeNetworkInfo::currentCellDataTechnology(int interface) const
 {
-    return static_cast<CellDataTechnology>(networkInfo->currentCellDataTechnology(interface));
+    return networkInfo->currentCellDataTechnology(interface);
 }
 
 /*!
@@ -313,9 +313,9 @@ void QDeclarativeNetworkInfo::setMonitorNetworkStatus(bool monitor)
     \o Roaming
     \endlist
  */
-QDeclarativeNetworkInfo::NetworkStatus QDeclarativeNetworkInfo::networkStatus(QDeclarativeNetworkInfo::NetworkMode mode, int interface) const
+int QDeclarativeNetworkInfo::networkStatus(QDeclarativeNetworkInfo::NetworkMode mode, int interface) const
 {
-    return static_cast<NetworkStatus>(networkInfo->networkStatus(static_cast<QNetworkInfo::NetworkMode>(mode), interface));
+    return networkInfo->networkStatus(static_cast<QNetworkInfo::NetworkMode>(mode), interface);
 }
 
 /*!

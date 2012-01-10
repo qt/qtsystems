@@ -111,9 +111,9 @@ public:
     bool isWirelessKeyboardConnected() const;
 
     Q_INVOKABLE bool isKeyboardLightOn() const;
-    Q_INVOKABLE InputDeviceTypes availableInputDevices() const;
-    Q_INVOKABLE KeyboardTypes availableKeyboards() const;
-    Q_INVOKABLE TouchDeviceTypes availableTouchDevices() const;
+    Q_INVOKABLE int availableInputDevices() const;
+    Q_INVOKABLE int availableKeyboards() const;
+    Q_INVOKABLE int availableTouchDevices() const;
 
 Q_SIGNALS:
     void monitorKeyboardFlippedChanged();

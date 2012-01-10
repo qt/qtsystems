@@ -88,7 +88,7 @@ public:
     Q_INVOKABLE qlonglong availableDiskSpace(const QString &drive) const;
     Q_INVOKABLE qlonglong totalDiskSpace(const QString &drive) const;
     Q_INVOKABLE QString uriForDrive(const QString &drive) const;
-    Q_INVOKABLE DriveType driveType(const QString &drive) const;
+    Q_INVOKABLE int driveType(const QString &drive) const;
 
 Q_SIGNALS:
     void monitorAllLogicalDrivesChanged();

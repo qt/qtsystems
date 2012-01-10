@@ -392,9 +392,9 @@ void QDeclarativeBatteryInfo::setMonitorChargingState(bool monitor)
 
     \sa onChargingStateChanged
 */
-QDeclarativeBatteryInfo::ChargingState QDeclarativeBatteryInfo::chargingState(int battery) const
+int QDeclarativeBatteryInfo::chargingState(int battery) const
 {
-    return static_cast<ChargingState>(batteryInfo->chargingState(battery));
+    return batteryInfo->chargingState(battery);
 }
 
 /*!

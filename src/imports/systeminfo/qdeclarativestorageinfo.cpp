@@ -148,9 +148,9 @@ QString QDeclarativeStorageInfo::uriForDrive(const QString &drive) const
     \o RamDrive        Virtual drive made in RAM memory.
     \endlist
 */
-QDeclarativeStorageInfo::DriveType QDeclarativeStorageInfo::driveType(const QString &drive) const
+int QDeclarativeStorageInfo::driveType(const QString &drive) const
 {
-    return static_cast<DriveType>(storageInfo->driveType(drive));
+    return storageInfo->driveType(drive);
 }
 
 QT_END_NAMESPACE
