@@ -701,7 +701,7 @@ bool DatabaseManager::waitForResponse(int id)
     return m_lastError.code() == DBError::NoError;
 }
 
-void DatabaseManager::handleNotified(const QString &notify_uuid, const QtAddOn::JsonDb::JsonDbNotification &notif)
+void DatabaseManager::handleNotified(const QString &notify_uuid, const JsonDbNotification &notif)
 {
     Q_UNUSED(notify_uuid)
 
