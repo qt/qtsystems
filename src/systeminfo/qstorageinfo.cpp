@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
     \class QStorageInfo
     \inmodule QtSystemInfo
     \ingroup systeminfo
-    \brief The QStorageInfo class provides various disk storage information of the system.
+    \brief The QStorageInfo class provides various disk storage information about the system.
 */
 
 /*!

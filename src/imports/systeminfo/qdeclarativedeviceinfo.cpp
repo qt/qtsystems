@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
     \qmlclass DeviceInfo QDeclarativeDeviceInfo
     \inmodule QtSystemInfo
     \ingroup qml-systeminfo
-    \brief The DeviceInfo element provides various information of the device.
+    \brief The DeviceInfo element provides various information about the device.
 */
 
 /*!
@@ -204,6 +204,8 @@ QDeclarativeDeviceInfo::ThermalState QDeclarativeDeviceInfo::thermalState() cons
 }
 
 /*!
+    \qmlmethod bool DeviceInfo::hasFeature(Feature feature)
+
     Returns true if the \a feature is supported, otherwise false. The following features can be
     queried:
     \list
@@ -230,6 +232,8 @@ bool QDeclarativeDeviceInfo::hasFeature(QDeclarativeDeviceInfo::Feature feature)
 }
 
 /*!
+    \qmlmethod int DeviceInfo::imeiCount()
+
     Returns the count of available International Mobile Equipment Identity (IMEI) of the device. In
     case of error, or the information is not available, -1 is returned.
 */
@@ -239,6 +243,8 @@ int QDeclarativeDeviceInfo::imeiCount() const
 }
 
 /*!
+    \qmlmethod string DeviceInfo::imei(int interface)
+
     Returns the International Mobile Equipment Identity (IMEI) of the given \a interface on the device.
     In case of error, or the information is not available, an empty string is returned.
 */
@@ -248,6 +254,8 @@ QString QDeclarativeDeviceInfo::imei(int interface) const
 }
 
 /*!
+    \qmlmethod string DeviceInfo::manufacturer()
+
     Returns the name of the manufacturer of this device, or the name of the vendor of the motherboard
     as a fallback. In case of error, or the information is not available, an empty string is returned.
 */
@@ -257,6 +265,8 @@ QString QDeclarativeDeviceInfo::manufacturer() const
 }
 
 /*!
+    \qmlmethod string DeviceInfo::model()
+
     Returns the model information of the device, e.g. N8, or the CPU architect as a fallback. In case
     of error, or the information is not available, an empty string is returned.
 */
@@ -266,6 +276,8 @@ QString QDeclarativeDeviceInfo::model() const
 }
 
 /*!
+    \qmlmethod string DeviceInfo::productName()
+
     Returns the internal product name of the device, e.g. RM-774. In case of error, or the information
     is not available, an empty string is returned.
 
@@ -277,6 +289,8 @@ QString QDeclarativeDeviceInfo::productName() const
 }
 
 /*!
+    \qmlmethod string DeviceInfo::uniqueDeviceID()
+
     Returns a unique identifier for the device, or an empty string if on error or not available.
 */
 QString QDeclarativeDeviceInfo::uniqueDeviceID() const
@@ -285,6 +299,8 @@ QString QDeclarativeDeviceInfo::uniqueDeviceID() const
 }
 
 /*!
+    \qmlmethod string DeviceInfo::version(Version type)
+
     Returns the version of \a type. In case of error, or the version is unknown, an empty string
     is returned. The following versions can be queried:
     \list

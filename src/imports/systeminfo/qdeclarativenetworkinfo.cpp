@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
     \qmlclass NetworkInfo QDeclarativeNetworkInfo
     \inmodule QtSystemInfo
     \ingroup qml-systeminfo
-    \brief The NetworkInfo element provides various information of the network status.
+    \brief The NetworkInfo element provides various information about the network status.
  */
 
 /*!
@@ -150,7 +150,8 @@ void QDeclarativeNetworkInfo::setMonitorNetworkSignalStrength(bool monitor)
 /*!
     \qmlmethod int NetworkInfo::networkSignalStrength(NetworkMode mode, int interface)
 
-    Returns the signal strength of the given \a mode and \a interface.
+    Returns the signal strength of the given \a mode and \a interface. If the information
+    is not available, or error occurs, -1 is returned.
  */
 int QDeclarativeNetworkInfo::networkSignalStrength(NetworkMode mode, int interface) const
 {
@@ -349,7 +350,7 @@ void QDeclarativeNetworkInfo::setMonitorCellId(bool monitor)
             connect(networkInfo, SIGNAL(cellIdChanged(int,QString)),
                     this, SIGNAL(cellIdChanged(int,QString)));
         } else {
-            connect(networkInfo, SIGNAL(cellIdChanged(int,QString)),
+            disconnect(networkInfo, SIGNAL(cellIdChanged(int,QString)),
                     this, SIGNAL(cellIdChanged(int,QString)));
         }
         emit monitorCellIdChanged();
@@ -359,7 +360,8 @@ void QDeclarativeNetworkInfo::setMonitorCellId(bool monitor)
 /*!
     \qmlmethod string NetworkInfo::cellId(int interface)
 
-    Returns the cell ID of the given \a interface.
+    Returns the cell ID of the given \a interface. If this information
+    is not available or error occurs, an empty string is returned.
 
     \sa onCellIdChanged
  */
@@ -405,7 +407,8 @@ void QDeclarativeNetworkInfo::setMonitorCurrentMobileCountryCode(bool monitor)
 /*!
     \qmlmethod string NetworkInfo::currentMobileCountryCode(int interface)
 
-    Returns the current mobile country code of the given \a interface.
+    Returns the current mobile country code of the given \a interface. If this information
+    is not available or error occurs, an empty string is returned.
  */
 QString QDeclarativeNetworkInfo::currentMobileCountryCode(int interface) const
 {
@@ -449,7 +452,8 @@ void QDeclarativeNetworkInfo::setMonitorCurrentMobileNetworkCode(bool monitor)
 /*!
     \qmlmethod string NetworkInfo::currentMobileNetworkCode(int interface)
 
-    Returns the current mobile network code of the given \a interface.
+    Returns the current mobile network code of the given \a interface. If this information
+    is not available or error occurs, an empty string is returned.
  */
 QString QDeclarativeNetworkInfo::currentMobileNetworkCode(int interface) const
 {
@@ -483,7 +487,7 @@ void QDeclarativeNetworkInfo::setMonitorLocationAreaCode(bool monitor)
             connect(networkInfo, SIGNAL(locationAreaCodeChanged(int,QString)),
                     this, SIGNAL(locationAreaCodeChanged(int,QString)));
         } else {
-            connect(networkInfo, SIGNAL(locationAreaCodeChanged(int,QString)),
+            disconnect(networkInfo, SIGNAL(locationAreaCodeChanged(int,QString)),
                     this, SIGNAL(locationAreaCodeChanged(int,QString)));
         }
         emit monitorLocationAreaCodeChanged();
@@ -493,7 +497,8 @@ void QDeclarativeNetworkInfo::setMonitorLocationAreaCode(bool monitor)
 /*!
     \qmlmethod string NetworkInfo::locationAreaCode(int interface)
 
-    Returns the location area code of the given \a interface.
+    Returns the location area code of the given \a interface. If this information
+    is not available or error occurs, an empty string is returned.
  */
 QString QDeclarativeNetworkInfo::locationAreaCode(int interface) const
 {
@@ -525,10 +530,10 @@ void QDeclarativeNetworkInfo::setMonitorNetworkName(bool monitor)
         isMonitorNetworkName = monitor;
         if (monitor) {
             connect(networkInfo, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)),
-                    this, SIGNAL(_q_networkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
+                    this, SLOT(_q_networkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
         } else {
-            connect(networkInfo, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)),
-                    this, SIGNAL(_q_networkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
+            disconnect(networkInfo, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)),
+                    this, SLOT(_q_networkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
         }
         emit monitorNetworkNameChanged();
     }
@@ -537,7 +542,10 @@ void QDeclarativeNetworkInfo::setMonitorNetworkName(bool monitor)
 /*!
     \qmlmethod string NetworkInfo::networkName(NetworkMode mode, int interface)
 
-    Returns the name of the given \a mode and \a interface.
+    Returns the name of the given \a mode and \a interface. If the information is not available,
+    or an error occurs, an empty string is returned.
+
+    In case of WLAN, the SSID is returned; for Ethernet, the domain name is returned if available.
  */
 QString QDeclarativeNetworkInfo::networkName(NetworkMode mode, int interface) const
 {

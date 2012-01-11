@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QScreenSaver
     \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information of the screen saver.
+    \brief The QScreenSaver class provides various information about the screen saver.
 
     \ingroup systeminfo
 */
@@ -86,6 +86,9 @@ QScreenSaver::~QScreenSaver()
 }
 
 /*!
+    \property QScreenSaver::screenSaverEnabled
+    \brief The state of the screen saver.
+
     Returns if the screen saver is enabled.
 */
 bool QScreenSaver::screenSaverEnabled() const
@@ -94,7 +97,7 @@ bool QScreenSaver::screenSaverEnabled() const
 }
 
 /*!
-    Set the screen saver to be \a enabled.
+    Sets the screen saver to be \a enabled.
 */
 void QScreenSaver::setScreenSaverEnabled(bool enabled)
 {

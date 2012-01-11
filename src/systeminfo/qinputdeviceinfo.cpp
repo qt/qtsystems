@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QInputDeviceInfo
     \inmodule QtSystemInfo
-    \brief The QInputDeviceInfo class provides various information of the input devices.
+    \brief The QInputDeviceInfo class provides various information about the input devices.
     \ingroup systeminfo
 */
 
@@ -135,7 +135,7 @@ QInputDeviceInfo::~QInputDeviceInfo()
 }
 
 /*!
-    Returns if the keybord is currently flipped out.
+    Returns if the keyboard is currently flipped out.
 */
 bool QInputDeviceInfo::isKeyboardFlippedOpen() const
 {

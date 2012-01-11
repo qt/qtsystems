@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QDisplayInfo
     \inmodule QtSystemInfo
-    \brief The QDisplayInfo class provides various information of the display.
+    \brief The QDisplayInfo class provides various information about the display.
     \ingroup systeminfo
 */
 
@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     \enum QDisplayInfo::BacklightState
     This enum describes the state of the backlight.
 
-    \value BacklightUnknown     The state of the backlight is unkown.
+    \value BacklightUnknown     The state of the backlight is unknown.
     \value BacklightOff         Backlight is turned off.
     \value BacklightDimmed      Backlight has been dimmed.
     \value BacklightOn          Backlight is on.

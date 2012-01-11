@@ -72,7 +72,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QBatteryInfo
     \inmodule QtSystemInfo
-    \brief The QBatteryInfo class provides various information of the battery.
+    \brief The QBatteryInfo class provides various information about the battery.
     \ingroup systeminfo
 
     Note that on some platforms, listening to the signals could lead to a heavy CPU usage. Therefore,
@@ -131,7 +131,7 @@ QT_BEGIN_NAMESPACE
     \fn void QBatteryInfo::currentFlowChanged(int battery, int flow);
 
     This signal is emitted when the current flow of the \a battery has changed to \a flow, measured
-    in milliapmeres (mA).
+    in milliamperes (mA).
 */
 
 /*!
@@ -187,7 +187,7 @@ int QBatteryInfo::batteryCount() const
 }
 
 /*!
-    Returns the current flow of the given \a battery, measured in milliapmeres (mA). A positive
+    Returns the current flow of the given \a battery, measured in milliamperes (mA). A positive
     returned value means discharging, and a negative value means charging. In case of error, or
     the information if not available, 0 is returned.
 */
@@ -253,6 +253,9 @@ QBatteryInfo::ChargingState QBatteryInfo::chargingState(int battery) const
 }
 
 /*!
+    \property QBatteryInfo::energyUnit
+    \brief The used energy unit.
+
     Returns the energy unit that the system uses.
 */
 QBatteryInfo::EnergyUnit QBatteryInfo::energyUnit() const

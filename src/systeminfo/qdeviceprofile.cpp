@@ -128,6 +128,9 @@ int QDeviceProfile::voiceRingtoneVolume() const
 }
 
 /*!
+    \property QDeviceProfile::profileType
+    \brief The current activated profile.
+
     Returns the type for this profile.
 */
 QDeviceProfile::ProfileType QDeviceProfile::profileType() const

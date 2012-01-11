@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QNetworkInfo
     \inmodule QtSystemInfo
-    \brief The QNetworkInfo class provides various information of the network status.
+    \brief The QNetworkInfo class provides various information about the network status.
 
     \ingroup systeminfo
 
@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
     \enum QNetworkInfo::CellDataTechnology
     This enum describes the type of cellular technology.
 
-    \value UnknownDataTechnology   The cellular technology is unknown or on error.
+    \value UnknownDataTechnology   The cellular technology is unknown or an error occured.
     \value GprsDataTechnology      General Packet Radio Service (GPRS) data service.
     \value EdgeDataTechnology      Enhanced Data Rates for GSM Evolution (EDGE) data service.
     \value UmtsDataTechnology      Universal Mobile Telecommunications System (UMTS) data service.
@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
     \enum QNetworkInfo::NetworkMode
     This enumeration describes the type of the network.
 
-    \value UnknownMode     The network is unknown or on error.
+    \value UnknownMode     The network is unknown or an error occured.
     \value GsmMode         Global System for Mobile (GSM) network.
     \value CdmaMode        Code Division Multiple Access (CDMA) network.
     \value WcdmaMode       Wideband Code Division Multiple Access (WCDMA) network.
@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
     \enum QNetworkInfo::NetworkStatus
     This enumeration describes the status of the network.
 
-    \value UnknownStatus        The status is unknown or on error.
+    \value UnknownStatus        The status is unknown or an error occured.
     \value NoNetworkAvailable   There is no network available.
     \value EmergencyOnly        The network only allows emergency calls.
     \value Searching            The device is searching or connecting to the network.
@@ -268,7 +268,7 @@ QString QNetworkInfo::cellId(int interface) const
 
 /*!
     Returns the current Mobile Country Code (MCC) for \a interface. An empty string is returned if the
-    information is not available or on error.
+    information is not available or an error occurs.
 */
 QString QNetworkInfo::currentMobileCountryCode(int interface) const
 {
@@ -277,7 +277,7 @@ QString QNetworkInfo::currentMobileCountryCode(int interface) const
 
 /*!
     Returns the current Mobile Network Code (MNC) for \a interface. An empty string is returned if the
-    information is not available or on error.
+    information is not available or an error occurs.
 */
 QString QNetworkInfo::currentMobileNetworkCode(int interface) const
 {
@@ -286,7 +286,7 @@ QString QNetworkInfo::currentMobileNetworkCode(int interface) const
 
 /*!
     Returns the home Mobile Country Code (MCC) for \a interface. An empty string is returned if the
-    information is not available or on error.
+    information is not available or an error occurs.
 */
 QString QNetworkInfo::homeMobileCountryCode(int interface) const
 {
@@ -295,7 +295,7 @@ QString QNetworkInfo::homeMobileCountryCode(int interface) const
 
 /*!
     Returns the home Mobile Network Code (MNC) for \a interface. An empty string is returned if the
-    information is not available or on error.
+    information is not available or an error occurs.
 */
 QString QNetworkInfo::homeMobileNetworkCode(int interface) const
 {
