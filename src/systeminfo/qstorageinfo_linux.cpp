@@ -115,7 +115,7 @@ qlonglong QStorageInfoPrivate::totalDiskSpace(const QString &drive)
 
 QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 {
-    QFileInfoList fileinfolist = QDir(QString::fromAscii("/dev/disk/by-uuid/")).entryInfoList(QDir::NoDotAndDotDot);
+    QFileInfoList fileinfolist = QDir(QString::fromAscii("/dev/disk/by-uuid/")).entryInfoList(QDir::AllEntries | QDir::NoDot | QDir::NoDotDot);
     if (!fileinfolist.isEmpty()) {
         FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
         mntent *entry = NULL;

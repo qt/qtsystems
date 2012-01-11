@@ -341,7 +341,8 @@ int QBatteryInfoPrivate::getRemainingChargingTime(int battery)
     QBatteryInfo::ChargingState state = chargingState(battery);
     if (state == QBatteryInfo::UnknownChargingState)
         return -1;
-    else if (state == QBatteryInfo::NotCharging || state == QBatteryInfo::Discharging)
+    else if (state == QBatteryInfo::NotCharging || state == QBatteryInfo::Discharging
+             || state == QBatteryInfo::Full)
         return 0;
 
     int max = 0;

@@ -199,6 +199,10 @@ QStringList QInputDeviceInfoPrivate::getTypesOfInputDevice(const QString &inputd
     ulong keybits[numberOfLongs(KEY_MAX)];
     ulong relbits[numberOfLongs(REL_MAX)];
 
+    qMemSet(absbits, 0, sizeof(absbits));
+    qMemSet(keybits, 0, sizeof(keybits));
+    qMemSet(relbits, 0, sizeof(relbits));
+
     QFile absfile(*INPUT_SYSFS_PATH() + inputdir + QString::fromAscii("/capabilities/abs"));
     if (absfile.open(QIODevice::ReadOnly)) {
         QStringList datablocks = QString::fromAscii(absfile.readAll().data()).split(QString::fromAscii(" "));

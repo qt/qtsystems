@@ -258,9 +258,9 @@ void QJsonDbWrapper::connectNotify(const char *signal)
 
 void QJsonDbWrapper::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags types))) == 0)
+    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
         watchActivatedLocks = false;
-    else if (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags types))) == 0)
+    else if (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
         watchEnabledLocks = false;
 
     if ((strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
