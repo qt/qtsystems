@@ -101,8 +101,8 @@ DatabaseManager::DatabaseManager(): db(new JsonDbClient(this)), m_notenabled(fal
         this, SLOT(handleError(int,int,const QString&)));
     connect(db, SIGNAL(disconnected()),
             this, SLOT(handleDisconnect()));
-    connect(db, SIGNAL(notified(const QString &, const QtAddOn::JsonDb::JsonDbNotification &)),
-            this, SLOT(handleNotified(const QString &, const QtAddOn::JsonDb::JsonDbNotification &)));
+    connect(db, SIGNAL(notified(const QString &, const QtJsonDb::JsonDbNotification &)),
+            this, SLOT(handleNotified(const QString &, const QtJsonDb::JsonDbNotification &)));
 
 }
 

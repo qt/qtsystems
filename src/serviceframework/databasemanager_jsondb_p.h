@@ -109,7 +109,7 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
         void handleResponse( int id, const QVariant& data );
         void handleError( int id, int code, const QString& message );
         void handleDisconnect();
-        void handleNotified(const QString &, const QtAddOn::JsonDb::JsonDbNotification &);
+        void handleNotified(const QString &, const QtJsonDb::JsonDbNotification &);
 
     private:
         JsonDbClient *db;
