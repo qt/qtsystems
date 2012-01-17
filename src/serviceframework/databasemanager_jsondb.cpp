@@ -44,6 +44,8 @@
 #include <QCryptographicHash>
 
 #include <jsondb-client.h>
+#include <QCoreApplication>
+#include <QTimer>
 
 #include "databasemanager_jsondb_p.h"
 
@@ -93,8 +95,24 @@ static QString makeHash(const QString& interface, const QString& service, const 
 /*
    Constructor
 */
-DatabaseManager::DatabaseManager(): db(new JsonDbClient(this)), m_notenabled(false)
+DatabaseManager::DatabaseManager(): db(new JsonDbClient(QString(), this)), m_notenabled(false)
 {
+
+    // This is a real ugly hack
+    // XXX remove me
+    db->connectToServer();
+
+    if (!db->isConnected()) {
+        QEventLoop l;
+        QTimer::singleShot(5000, &l, SLOT(quit()));
+        QObject::connect(db, SIGNAL(statusChanged()), &l, SLOT(quit()));
+        l.exec();
+        if (db->status() != JsonDbClient::Ready) {
+            qWarning() << "Failed to connect to jsondb, expect mass failure";
+            return;
+        }
+    }
+
     connect(db, SIGNAL(response(int,const QVariant&)),
         this, SLOT(handleResponse(int,const QVariant&)));
     connect(db, SIGNAL(error(int,int,const QString&)),

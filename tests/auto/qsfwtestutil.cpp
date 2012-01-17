@@ -46,6 +46,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <QCoreApplication>
+#include <QTimer>
 
 #ifdef QT_ADDON_JSONDB_LIB
 #include <jsondb-client.h>
@@ -134,10 +135,17 @@ void QSfwTestUtil::removeDirectory(const QString &path)
 
 void QSfwTestUtil::clearDatabases_jsondb()
 {
-    JsonDbClient *db = new JsonDbClient();
+    JsonDbClient *db = new JsonDbClient(QString());
     if (!db->isConnected()) {
-        qWarning() << "Failed to connect to jsondb, expect mass failure";
-        return;
+        QEventLoop l;
+        QTimer::singleShot(5000, &l, SLOT(quit()));
+        QObject::connect(db, SIGNAL(statusChanged()), &l, SLOT(quit()));
+        l.exec();
+        if (db->status() != JsonDbClient::Ready) {
+            qDebug() << "Jsondb not ready" << db->status();
+            qWarning() << "Failed to connect to jsondb, expect mass failure";
+            return;
+        }
     }
     QSignalSpy response(db, SIGNAL(response(int,QVariant)));
     QSignalSpy error(db, SIGNAL(error(int,int,QString)));
