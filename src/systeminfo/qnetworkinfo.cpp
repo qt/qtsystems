@@ -109,6 +109,7 @@ QT_BEGIN_NAMESPACE
     \value BluetoothMode   Bluetooth network.
     \value WimaxMode       Worldwide Interoperability for Microwave Access (WiMAX) network.
     \value LteMode         3GPP Long Term Evolution (LTE) network.
+    \value TdscdmaMode     Time Division Synchronous Code Division Multiple Access (TD-SCDMA) network.
 */
 
 /*!

@@ -97,7 +97,8 @@ public:
         EthernetMode = QNetworkInfo::EthernetMode,
         BluetoothMode = QNetworkInfo::BluetoothMode,
         WimaxMode = QNetworkInfo::WimaxMode,
-        LteMode = QNetworkInfo::LteMode
+        LteMode = QNetworkInfo::LteMode,
+        TdscdmaMode = QNetworkInfo::TdscdmaMode
     };
 
     enum NetworkStatus {

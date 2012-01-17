@@ -73,7 +73,8 @@ public:
         EthernetMode,
         BluetoothMode,
         WimaxMode,
-        LteMode
+        LteMode,
+        TdscdmaMode
     };
 
     enum NetworkStatus {

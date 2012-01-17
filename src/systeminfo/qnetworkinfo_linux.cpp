@@ -185,6 +185,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 //    case QNetworkInfo::WcdmaMode:
 //    case QNetworkInfo::WimaxMode:
 //    case QNetworkInfo::LteMode:
+//    case QNetworkInfo::TdscdmaMode:
     default:
         break;
     };
@@ -386,6 +387,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
 //    case QNetworkInfo::WcdmaMode:
 //    case QNetworkInfo::WimaxMode:
 //    case QNetworkInfo::LteMode:
+//    case QNetworkInfo::TdscdmaMode:
     default:
         break;
     };
@@ -640,6 +642,7 @@ int QNetworkInfoPrivate::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode
     case QNetworkInfo::CdmaMode:
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
 #if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
@@ -692,6 +695,7 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
     case QNetworkInfo::CdmaMode:
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
 #if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
@@ -774,6 +778,8 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::getCurrentNetworkMode()
         return QNetworkInfo::CdmaMode;
     else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::GsmMode;
+    else if (networkStatus(QNetworkInfo::TdscdmaMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::TdscdmaMode;
     else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::WimaxMode;
     else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Roaming)
@@ -784,6 +790,8 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::getCurrentNetworkMode()
         return QNetworkInfo::CdmaMode;
     else if (networkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::GsmMode;
+    else if (networkStatus(QNetworkInfo::TdscdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::TdscdmaMode;
     else
         return QNetworkInfo::UnknownMode;
 }
@@ -852,6 +860,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
     case QNetworkInfo::CdmaMode:
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
 #if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
@@ -941,6 +950,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
     case QNetworkInfo::CdmaMode:
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
 #if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)

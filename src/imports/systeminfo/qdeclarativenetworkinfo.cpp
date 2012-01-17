@@ -115,6 +115,7 @@ void QDeclarativeNetworkInfo::setMonitorCurrentNetworkMode(bool monitor)
     \o BluetoothMode
     \o WimaxMode
     \o LteMode
+    \o TdscdmaMode
     \endlist
  */
 QDeclarativeNetworkInfo::NetworkMode QDeclarativeNetworkInfo::currentNetworkMode() const
