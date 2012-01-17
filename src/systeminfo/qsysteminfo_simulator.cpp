@@ -270,14 +270,8 @@ QString QDeviceInfoSimulator::productName()
 
 QString QDeviceInfoSimulator::uniqueDeviceID()
 {
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-    if (d_ptr)
-        return d_ptr->uniqueDeviceID();
-#else
-
     if (deviceInfoSimulatorBackend)
         return deviceInfoSimulatorBackend->getUniqueDeviceID();
-#endif
 
     return QString();
 }
