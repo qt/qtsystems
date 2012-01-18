@@ -162,13 +162,12 @@ class JsonDbHandle : public QObject
         void interestChanged(QString path, bool status);
 
     private slots:
-        void onNotified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &);
-        //void onResponse(int id, const QVariant& object);
-        //void onError(int id, int code, const QString& message);
+        void onError(int id, int code, const QString & message);
+        void onNotified(const QString & notifyUuid, const JsonDbNotification & notification);
 
     private:
-        //QString notificationUUID;
         JsonDbClient* client;
+        QString notificationUUID;
 
         static QVariantMap getObject(const QString &identifier, const QString &property);
         static QVariant getResponse(const QString& query);

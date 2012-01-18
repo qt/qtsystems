@@ -112,10 +112,10 @@ QString JsonDbPath::normalizePath(const QString &path)
     QString result = path.trimmed().replace(QLatin1Char('/'), QLatin1Char('.'));
 
     if (result.startsWith(QLatin1Char('.')))
-        result.remove(0, 1);
+        result = result.mid(1);
 
     if (result.endsWith(QLatin1Char('.')))
-        result.remove(result.length() - 1, 1);
+        result.chop(1);
 
     return result;
 }
@@ -138,25 +138,28 @@ JsonDbHandle::JsonDbHandle( JsonDbHandle *parent,
                             QValueSpace::LayerOptions) : QObject(parent), client(NULL)
 {
     DEBUG_MSG("JsonDbHandle::JsonDbHandle(JsonDbHandle *parent, const QString &root, QValueSpace::LayerOptions opts)");
+    DEBUG_MSG(this);
 
     if (parent != NULL)
         this->path = parent->path + root;
     else
         this->path = JsonDbPath(root);
+
+    notificationUUID = QString();
 }
 
 JsonDbHandle::~JsonDbHandle()
 {
     DEBUG_MSG("JsonDbHandle::~JsonDbHandle()");
+    DEBUG_MSG(this);
 
     unsubscribe();
-
-    delete client;
 }
 
 bool JsonDbHandle::value(const QString &path, QVariant *data)
 {
     DEBUG_MSG("JsonDbHandle::value(const QString &path, QVariant *data)");
+    DEBUG_MSG(this);
 
     QString wholePath = getWholePath(path);
     QStringList parts = JsonDbPath::getIdentifier(wholePath);
@@ -168,12 +171,6 @@ bool JsonDbHandle::value(const QString &path, QVariant *data)
             arg(parts[0]).
             arg(SETTINGS_FILTER).
             arg(parts[1]);
-
-    DEBUG_MSG("value() wholePath is: " + wholePath);
-    DEBUG_MSG("value() part[0] is: " + parts[0]);
-    DEBUG_MSG("value() part[1] is: " + parts[1]);
-    DEBUG_MSG("value() path is: " + path);
-    DEBUG_MSG("value() query is: " + query);
 
     objectMap = getResponse(query).toMap();
 
@@ -205,9 +202,8 @@ bool JsonDbHandle::value(const QString &path, QVariant *data)
 
 bool JsonDbHandle::setValue(const QString &path, const QVariant &data)
 {
-    // TODO: setting schema is not checked!
-
     DEBUG_MSG("JsonDbHandle::setValue(const QString &path, const QVariant &data)");
+    DEBUG_MSG(this);
 
     QStringList parts = JsonDbPath::getIdentifier(getWholePath(path));
 
@@ -261,6 +257,7 @@ QVariant JsonDbHandle::getResponse(const QString& query)
 QString JsonDbHandle::getWholePath(const QString &path) const
 {
     DEBUG_MSG("getWholePath() this->path is: " + this->path.getPath());
+    DEBUG_MSG(this);
     DEBUG_MSG("getWholePath() path is: " + path);
 
     if (path == QStringLiteral("/"))
@@ -279,6 +276,7 @@ QString JsonDbHandle::getWholePath(const QString &path) const
 bool JsonDbHandle::unsetValue(const QString&)
 {
     DEBUG_MSG("JsonDbHandle::unsetValue(const QString &path)");
+    DEBUG_MSG(this);
 
     // Not supported
     return false;
@@ -301,27 +299,31 @@ void JsonDbHandle::subscribe()
 
     DEBUG_MSG("Notification query: " + query);
 
-    //if (!client)
-        client = new JsonDbClient(JsonDbConnection::instance(), this);
+    client = new JsonDbClient();
 
-    DEBUG_MSG(client);
+    notificationUUID = client->registerNotification(actions,
+                                                    query,
+                                                    QString(),
+                                                    this,
+                                                    SLOT(onNotified(const QString, const JsonDbNotification)),
+                                                    0,
+                                                    0,
+                                                    SLOT(onError(int,int,QString)));
+}
 
-    connect(client,
-            SIGNAL(notified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)),
-            this,
-            SLOT(onNotified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)));
-
-    //int res;
-
-    try {
-        client->registerNotification(actions, query);
-
-        DEBUG_MSG("NOTIFICATION " + query + " CREATED");
-    } catch(...) { }
+void JsonDbHandle::onError(int id, int code, const QString & message)
+{
+    DEBUG_MSG(this);
+    qDebug()<<"Error:";
+    qDebug()<<"\tid: "<<id;
+    qDebug()<<"\tcode: "<<code;
+    qDebug()<<"\tmessage: "<<message;
 }
 
 void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, JsonDbClient::NotifyTypes& actions)
 {
+    DEBUG_MSG(this);
+
     QVariant object;
 
     actions = JsonDbClient::NotifyUpdate;
@@ -358,36 +360,25 @@ void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, 
 void JsonDbHandle::unsubscribe()
 {
     DEBUG_MSG("JsonDbHandle::unsubscribe()");
-
-    /*if (!notificationUUID.isEmpty()) {
-        //client->remove(QString("{\"_uuid\":\"%1\"}").arg(notificationUUID));
-        JsonDbConnection::instance()->sync(JsonDbConnection::makeRemoveRequest(QString("{\"_uuid\":\"%1\"}").arg(notificationUUID)));
-        notificationUUID = "";
-    }*/
+    DEBUG_MSG(this);
 
     if (client) {
         DEBUG_MSG("DISCONNECT");
-        disconnect(client,
-                   SIGNAL(notified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)),
-                   this,
-                   SLOT(onNotified(const JsonDbClient::NotifyTypes&, const QtAddOn::JsonDb::JsonDbNotification &)));
+
+        if (!notificationUUID.isEmpty()) {
+            DEBUG_MSG("Unregister notification");
+            client->unregisterNotification(notificationUUID);
+        }
 
         delete client;
         client = NULL;
     }
 }
 
-void JsonDbHandle::onNotified(const JsonDbClient::NotifyTypes&, const JsonDbNotification &)
+void JsonDbHandle::onNotified(const QString&, const JsonDbNotification&)
 {
-    DEBUG_MSG("--- JsonDbHandle::notified(QString, QVariant, QString) ---");
-    /*DEBUG_MSG(sender());
-    DEBUG_MSG("First: " + first);
-    DEBUG_MSG("Second:");
-    QVariantMap map = second.toMap();//.value<QVariantMap>();
-    foreach (QString key, map.keys()) {
-        DEBUG_MSG("\t" + key + " : " + map[key].toString());
-    }
-    DEBUG_MSG("Third: " + third);*/
+    DEBUG_MSG("!--- onNotified(const QString, const JsonDbNotification) ---!");
+    DEBUG_MSG(this);
 
     emit valueChanged();
 }
@@ -409,6 +400,7 @@ bool JsonDbHandle::checkIfObjectValidZero(const QVariantMap &object)
 QSet<QString> JsonDbHandle::children()
 {
     DEBUG_MSG("JsonDbHandle::children()");
+    DEBUG_MSG(this);
 
     QString identifier = getWholePath(QStringLiteral("")).
             replace(QStringLiteral("."), QStringLiteral("\\."));
@@ -439,6 +431,7 @@ QSet<QString> JsonDbHandle::children()
 bool JsonDbHandle::removeSubTree()
 {
     DEBUG_MSG("JsonDbLayer::removeSubTree()");
+    DEBUG_MSG(this);
 
     return false;
 }
@@ -632,8 +625,7 @@ bool JsonDbLayer::value(Handle handle, const QString &subPath, QVariant *data)
     JsonDbHandle *h = handleToJsonDbHandle(handle);
     if (h) {
         if (subPath.startsWith(QStringLiteral("/"))) {
-            QString tmp = subPath;
-            return h->value(tmp.remove(0, 1), data);
+            return h->value(subPath.mid(1), data);
         } else {
             return h->value(subPath, data);
         }
@@ -649,8 +641,7 @@ bool JsonDbLayer::setValue(QValueSpacePublisher*, Handle handle, const QString &
     JsonDbHandle *h = handleToJsonDbHandle(handle);
     if (h) {
         if (subPath.startsWith(QStringLiteral("/"))) {
-            QString tmp = subPath;
-            return h->setValue(tmp.remove(0, 1), value);
+            return h->setValue(subPath.mid(1), value);
         } else {
             return h->setValue(subPath, value);
         }
@@ -666,8 +657,7 @@ bool JsonDbLayer::removeValue(QValueSpacePublisher*, Handle handle, const QStrin
     JsonDbHandle *h = handleToJsonDbHandle(handle);
         if (h) {
             if (subPath.startsWith(QStringLiteral("/"))) {
-                QString tmp = subPath;
-                return h->unsetValue(tmp.remove(0, 1));
+                return h->unsetValue(subPath.mid(1));
             } else {
                 return h->unsetValue(subPath);
             }
@@ -685,8 +675,8 @@ void JsonDbLayer::jsonDbHandleChanged()
 
 
 
-QVALUESPACE_AUTO_INSTALL_LAYER(JsonDbLayer)
 Q_GLOBAL_STATIC(JsonDbLayer, jsonDbLayer)
+QVALUESPACE_AUTO_INSTALL_LAYER(JsonDbLayer)
 
 
 

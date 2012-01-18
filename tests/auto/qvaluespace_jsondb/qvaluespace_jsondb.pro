@@ -8,6 +8,7 @@ QT       += testlib
 QT       += jsondb
 QT       += jsondb-private
 QT       += script
+QT       += publishsubscribe
 QT       -= gui
 
 TARGET = tst_testpublishsubscribe

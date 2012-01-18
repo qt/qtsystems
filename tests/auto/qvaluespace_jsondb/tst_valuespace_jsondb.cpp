@@ -47,6 +47,8 @@
 #include <QScriptValue>
 #include <qvaluespace.h>
 #include "qvaluespace_p.h"
+#include "qvaluespacepublisher.h"
+#include "qvaluespacesubscriber.h"
 
 #include <jsondblayer_p.h>
 
@@ -105,6 +107,13 @@ private Q_SLOTS:
     void testHandle_Children();
     void testHandle_RemoveSubTree();
 
+    void testAPI_PublisherPath();
+    void testAPI_PublishSubscribe();
+    void testAPI_Notification();
+
+public slots:
+    void contentsChanged();
+
 private:
     JsonDbLayer *layer;
 };
@@ -135,7 +144,7 @@ void cleanupJsonDb()
 
 void TestQValueSpaceJsonDb::initTestCase()
 {
-
+    QValueSpace::initValueSpaceServer();
 }
 
 void TestQValueSpaceJsonDb::cleanupTestCase()
@@ -831,6 +840,78 @@ void TestQValueSpaceJsonDb::testHandle_RemoveSubTree()
         QVERIFY2(!handle.removeSubTree(), "removeSubTree() failed!");
     }
     catch(...) { }
+}
+
+void TestQValueSpaceJsonDb::testAPI_PublisherPath()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublisherPath\", \"settings\": {\"setting1\":1}}";
+    createJsonObjects(objects);
+
+    QString path = "/com/pstest/PublisherPath";
+    QValueSpacePublisher publisher(path);
+    QVERIFY(publisher.isConnected());
+    QCOMPARE(publisher.path(), path);
+}
+
+void TestQValueSpaceJsonDb::testAPI_PublishSubscribe()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublishSubscribe\", \"settings\": {\"setting1\":1}}";
+    createJsonObjects(objects);
+
+    QString path = "/com/pstest/PublishSubscribe";
+    QString name = "setting1";
+    int value = 42;
+
+    QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer, path);
+    QVERIFY(subscriber.isConnected());
+    QCOMPARE(subscriber.value(name).toInt(), 1);
+
+    QValueSpacePublisher publisher(path);
+    QVERIFY(publisher.isConnected());
+    publisher.setValue(name, value);
+    publisher.sync();
+
+
+    QCOMPARE(subscriber.value(name).toInt(), value);
+
+    subscriber.cd(name);
+    QCOMPARE(subscriber.value().toInt(), value);
+}
+
+void TestQValueSpaceJsonDb::testAPI_Notification()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.Notification\", \"settings\": {\"setting1\":1}}";
+    createJsonObjects(objects);
+
+    QString path = "/com/pstest/Notification";
+    QString name = "setting1";
+    int value = 42;
+
+    QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer, path);
+    connect(&subscriber, SIGNAL(contentsChanged()), this, SLOT(contentsChanged()));
+    QVERIFY(subscriber.isConnected());
+    QCOMPARE(subscriber.value(name).toInt(), 1);
+
+    QSignalSpy spy(&subscriber, SIGNAL(contentsChanged()));
+    QVERIFY(spy.isValid());
+    QCOMPARE(spy.count(), 0);
+
+    QValueSpacePublisher publisher(path);
+    QVERIFY(publisher.isConnected());
+    publisher.setValue(name, value);
+    publisher.sync();
+
+    QTest::qWait(100);
+    QCOMPARE(subscriber.value(name).toInt(), value);
+    QCOMPARE(spy.count(), 1);
+}
+
+void TestQValueSpaceJsonDb::contentsChanged()
+{
+    qDebug()<<"! BINGO !";
 }
 
 #include "tst_valuespace_jsondb.moc"
