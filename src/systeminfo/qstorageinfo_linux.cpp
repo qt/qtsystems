@@ -118,12 +118,13 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
     QFileInfoList fileinfolist = QDir(QString::fromAscii("/dev/disk/by-uuid/")).entryInfoList(QDir::AllEntries | QDir::NoDot | QDir::NoDotDot);
     if (!fileinfolist.isEmpty()) {
         FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
-        mntent *entry = NULL;
+        struct mntent entry;
+        char buffer[512];
         QString uri;
-        while ((entry = getmntent(fsDescription)) != NULL) {
-            if (drive != QString::fromAscii(entry->mnt_dir))
+        while ((getmntent_r(fsDescription, &entry, buffer, sizeof(buffer))) != NULL) {
+            if (drive != QString::fromAscii(entry.mnt_dir))
                 continue;
-            int idx = fileinfolist.indexOf(QString::fromAscii(entry->mnt_fsname));
+            int idx = fileinfolist.indexOf(QString::fromAscii(entry.mnt_fsname));
             if (idx != -1)
                 uri = fileinfolist[idx].fileName();
             break;
@@ -169,51 +170,51 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
 {
     QStorageInfo::DriveType type = QStorageInfo::UnknownDrive;
     FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
-    mntent *entry = NULL;
-    while ((entry = getmntent(fsDescription)) != NULL) {
-        if (drive != QString::fromAscii(entry->mnt_dir))
+    struct mntent entry;
+    char buffer[512];
+    while ((getmntent_r(fsDescription, &entry, buffer, sizeof(buffer))) != NULL) {
+        if (drive != QString::fromAscii(entry.mnt_dir))
             continue;
 
-        if (strcmp(entry->mnt_type, "binfmt_misc") == 0
-            || strcmp(entry->mnt_type, "debugfs") == 0
-            || strcmp(entry->mnt_type, "devpts") == 0
-            || strcmp(entry->mnt_type, "devtmpfs") == 0
-            || strcmp(entry->mnt_type, "fusectl") == 0
-            || strcmp(entry->mnt_type, "none") == 0
-            || strcmp(entry->mnt_type, "proc") == 0
-            || strcmp(entry->mnt_type, "ramfs") == 0
-            || strcmp(entry->mnt_type, "securityfs") == 0
-            || strcmp(entry->mnt_type, "sysfs") == 0
-            || strcmp(entry->mnt_type, "tmpfs") == 0) {
+        if (strcmp(entry.mnt_type, "binfmt_misc") == 0
+            || strcmp(entry.mnt_type, "debugfs") == 0
+            || strcmp(entry.mnt_type, "devpts") == 0
+            || strcmp(entry.mnt_type, "devtmpfs") == 0
+            || strcmp(entry.mnt_type, "fusectl") == 0
+            || strcmp(entry.mnt_type, "none") == 0
+            || strcmp(entry.mnt_type, "proc") == 0
+            || strcmp(entry.mnt_type, "ramfs") == 0
+            || strcmp(entry.mnt_type, "securityfs") == 0
+            || strcmp(entry.mnt_type, "sysfs") == 0
+            || strcmp(entry.mnt_type, "tmpfs") == 0) {
             type = QStorageInfo::RamDrive;
             break;
         }
 
-        if (strcmp(entry->mnt_type, "cifs") == 0
-            || strcmp(entry->mnt_type, "ncpfs") == 0
-            || strcmp(entry->mnt_type, "nfs") == 0
-            || strcmp(entry->mnt_type, "nfs4") == 0
-            || strcmp(entry->mnt_type, "smbfs") == 0) {
+        if (strcmp(entry.mnt_type, "cifs") == 0
+            || strcmp(entry.mnt_type, "ncpfs") == 0
+            || strcmp(entry.mnt_type, "nfs") == 0
+            || strcmp(entry.mnt_type, "nfs4") == 0
+            || strcmp(entry.mnt_type, "smbfs") == 0) {
             type = QStorageInfo::RemoteDrive;
             break;
         }
 
-        if (strcmp(entry->mnt_type, "iso9660") == 0) {
+        if (strcmp(entry.mnt_type, "iso9660") == 0) {
             type = QStorageInfo::CdromDrive;
             break;
         }
 
         // Now need to guess if it's InternalDrive or RemovableDrive
-        QString fsName(QString::fromAscii(entry->mnt_fsname));
+        QString fsName(QString::fromAscii(entry.mnt_fsname));
         if (fsName.contains(QString::fromAscii("mapper"))) {
             struct stat status;
-            stat(entry->mnt_fsname, &status);
+            stat(entry.mnt_fsname, &status);
             fsName = QString::fromAscii("/sys/block/dm-%1/removable").arg(status.st_rdev & 0377);
         } else {
             fsName = fsName.section(QString::fromAscii("/"), 2, 3);
             if (!fsName.isEmpty()) {
                 if (fsName.length() > 3) {
-                    fsName.chop(1);
                     if (fsName.right(1) == QString::fromAscii("p"))
                         fsName.chop(1);
                 }
@@ -289,10 +290,12 @@ void QStorageInfoPrivate::setupWatcher()
 void QStorageInfoPrivate::updateLogicalDrives()
 {
     FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
-    mntent *entry = NULL;
+    struct mntent entry;
+    char buffer[512];
+
     logicalDrives.clear();
-    while ((entry = getmntent(fsDescription)) != NULL)
-        logicalDrives << QString::fromAscii(entry->mnt_dir);
+    while (getmntent_r(fsDescription, &entry, buffer, sizeof(buffer)) != NULL)
+        logicalDrives << QString::fromAscii(entry.mnt_dir);
     endmntent(fsDescription);
 }
 
