@@ -1,4 +1,4 @@
-QT = core gui serviceframework declarative
+QT = core gui serviceframework declarative quick
 win32: CONFIG += console
 mac:CONFIG -= app_bundle
 
