@@ -375,11 +375,14 @@ void doStart(const QString &location, const QString &connectionToken) {
     qWarning() << "SFW checking in" << file.path() << "for the socket to come into existance";
     QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), &loop, SLOT(quit()));
     QTimer timeout;
-    timeout.start(30000);
+    timeout.start(5000);
     QObject::connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
     while (!file.exists() && timeout.isActive()) {
+        qWarning() << "SFW waiting for file deamon to start....";
         loop.exec();
     }
+    qWarning() << "SFW done waiting";
+
 }
 #endif
 
