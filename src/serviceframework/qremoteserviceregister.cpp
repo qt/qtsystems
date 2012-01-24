@@ -190,7 +190,7 @@ QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiatio
     \brief The QRemoteServiceRegister class manages instances of remote service objects.
 
     This class registers and publishes IPC based service objects. It owns the service's
-    objects and uess the platform specific IPC mechanism to publish the service.
+    objects and uses the platform specific IPC mechanism to publish the service.
 
     In order for the remote services to be discoverable by QServiceManager each
     QRemoteServiceRegister::Entry must be registered with the same information in

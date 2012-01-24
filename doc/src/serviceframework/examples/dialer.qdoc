@@ -85,7 +85,7 @@ as per \l {Installation Guide}.
 
 \bold {Service Framework in QML:}
 
-To included the Service Framework QML plugin to our QML file we need to import it as follows:
+To include the Service Framework QML plugin we need to import it as follows:
 
 \snippet serviceframework/dialer/content/DialerList.qml 4
 
@@ -139,7 +139,7 @@ want to access in out QML script later.
 \snippet serviceframework/voipdialerplugin/voipdialer.h 0
 
 
-\bold {Service access on the QML site}
+\bold {Service access on the QML side}
 
 
 The QML elements are implemented in 4 different qml scripting files
