@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 #define DEBUG_MSG(msg)
 #endif
 
+#define handleToJsonDbHandle(handle) reinterpret_cast<JsonDbHandle*>(handle)
+
 JsonDbPath::JsonDbPath() : path(QStringLiteral(""))
 {
 }
@@ -103,12 +105,6 @@ JsonDbPath JsonDbPath::operator+(const JsonDbPath &other) const
 
 QString JsonDbPath::normalizePath(const QString &path)
 {
-    if (path.length() == 0)
-        return path;
-
-    if (path == QStringLiteral("/"))
-        return QStringLiteral("");
-
     QString result = path.trimmed().replace(QLatin1Char('/'), QLatin1Char('.'));
 
     if (result.startsWith(QLatin1Char('.')))
@@ -162,42 +158,22 @@ bool JsonDbHandle::value(const QString &path, QVariant *data)
     DEBUG_MSG(this);
 
     QString wholePath = getWholePath(path);
-    QStringList parts = JsonDbPath::getIdentifier(wholePath);
-
-    QVariantMap objectMap;
 
     // Assume caller wants to get the value of a setting
-    QString query = QString(QStringLiteral("[?identifier=\"%1\"]%2[={value:settings.%3}]")).
-            arg(parts[0]).
-            arg(SETTINGS_FILTER).
-            arg(parts[1]);
-
-    objectMap = getResponse(query).toMap();
+    QVariantMap objectMap = getResponse(getSettingQuery(wholePath)).toMap();
 
     if (!checkIfObjectValid(objectMap)) {
         // Assume the caller wants to get the whole settings object
-        query = QString(QStringLiteral("[?identifier=\"%1\"]%2")).
-                arg(wholePath).
-                arg(SETTINGS_FILTER);
-
-        objectMap = getResponse(query).toMap();
+        objectMap = getResponse(getObjectQuery(wholePath)).toMap();
 
         if (!checkIfObjectValid(objectMap)) {
-            *data = QVariant();
-
             return false;
         }
-
-        *data = objectMap[QStringLiteral("data")].toList()[0];
-    }
-    else {
-        *data = objectMap[QStringLiteral("data")].toList()[0].toMap()[QStringLiteral("value")];
-
-        if (data->isNull())
-            return false;
     }
 
-    return true;
+    *data = objectMap[QStringLiteral("data")].toList()[0];
+
+    return !data->isNull();
 }
 
 bool JsonDbHandle::setValue(const QString &path, const QVariant &data)
@@ -208,10 +184,6 @@ bool JsonDbHandle::setValue(const QString &path, const QVariant &data)
     QStringList parts = JsonDbPath::getIdentifier(getWholePath(path));
 
     QVariantMap updateObject = getObject(parts[0], IDENTIFIER);
-    if (updateObject.empty()) {
-        // Settings object does not exist
-        return false;
-    }
 
     if (!updateObject.contains(QStringLiteral("settings"))) {
         // Object does not contain settings dictionary
@@ -260,9 +232,6 @@ QString JsonDbHandle::getWholePath(const QString &path) const
     DEBUG_MSG(this);
     DEBUG_MSG("getWholePath() path is: " + path);
 
-    if (path == QStringLiteral("/"))
-        return this->path.getPath();
-
     QString identifier = this->path.getPath();
 
     if (identifier.length() == 0)
@@ -291,9 +260,6 @@ void JsonDbHandle::subscribe()
         return;
 
     QString query;
-
-    unsubscribe();
-
     JsonDbClient::NotifyTypes actions;
     getNotificationQueryAndActions(getWholePath(QStringLiteral("")), query, actions);
 
@@ -337,24 +303,32 @@ void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, 
 
         actions |= JsonDbClient::NotifyCreate | JsonDbClient::NotifyRemove;
     } else {
-        QVariantMap objectMap = object.toMap();
-
-        if (objectMap.contains(QStringLiteral("_type"))) {
+        if (object.toMap().contains(QStringLiteral("_type"))) {
             // Path matches a settings object subscribe for that object
-            query = QString(QStringLiteral("[?identifier=\"%1\"]%2")).
-                        arg(path).
-                        arg(SETTINGS_FILTER);
+            query = getObjectQuery(path);
 
             actions |= JsonDbClient::NotifyCreate | JsonDbClient::NotifyRemove;
         } else {
             // Path matches a setting in a settings object subscribe for that setting
-            QStringList parts = JsonDbPath::getIdentifier(path);
-            query = QString(QStringLiteral("[?identifier=\"%1\"]%2[={value:settings.%3}]")).
-                    arg(parts[0]).
-                    arg(SETTINGS_FILTER).
-                    arg(parts[1]);
+            query = getSettingQuery(path);
         }
     }
+}
+
+QString JsonDbHandle::getObjectQuery(QString &identifier)
+{
+    return QString(QStringLiteral("[?identifier=\"%1\"]%2")).
+            arg(identifier).
+            arg(SETTINGS_FILTER);
+}
+
+QString JsonDbHandle::getSettingQuery(QString &identifier)
+{
+    QStringList parts = JsonDbPath::getIdentifier(identifier);
+    return QString(QStringLiteral("[?identifier=\"%1\"]%2[=settings.%3]")).
+                arg(parts[0]).
+                arg(SETTINGS_FILTER).
+                arg(parts[1]);
 }
 
 void JsonDbHandle::unsubscribe()
@@ -405,20 +379,19 @@ QSet<QString> JsonDbHandle::children()
     QString identifier = getWholePath(QStringLiteral("")).
             replace(QStringLiteral("."), QStringLiteral("\\."));
 
-    QSet<QString> result;
-
     // [=identifier] because we only need identifier
     QVariantMap map = getResponse(QString(QStringLiteral("[?identifier=~\"/^%1.+/\"]%2[=identifier]")).
       arg(identifier.length() == 0 ? QStringLiteral("") : identifier.append(QStringLiteral("\\."))).
       arg(SETTINGS_FILTER)).toMap();
 
+    QSet<QString> result;
+
     if (!checkIfObjectValidZero(map))
         return result;
 
-    QVariant object;
     QRegExp reg = QRegExp(QStringLiteral("^") + identifier.trimmed());
 
-    foreach (object, map[QStringLiteral("data")].toList()) {
+    foreach (QVariant object, map[QStringLiteral("data")].toList()) {
         // We only return the first part of each child subpath
         QString value = object.toString().remove(reg).split(QLatin1Char('.'))[0];
         if (!result.contains(value))
@@ -441,16 +414,6 @@ bool JsonDbHandle::removeSubTree()
 
 
 
-JsonDbHandle* JsonDbLayer::handleToJsonDbHandle(Handle handle)
-{
-    DEBUG_MSG("JsonDbLayer::handleToJsonDbHandle(Handle handle)");
-
-    if (handle != InvalidHandle)
-        return reinterpret_cast<JsonDbHandle*>(handle);
-
-    return NULL;
-}
-
 JsonDbLayer::JsonDbLayer()
 {
     DEBUG_MSG("JsonDbLayer::JsonDbLayer()");
@@ -460,8 +423,7 @@ QSet<QString> JsonDbLayer::children(Handle handle)
 {
     DEBUG_MSG("JsonDbLayer::children(Handle handle)");
 
-    JsonDbHandle *h = handleToJsonDbHandle(handle);
-    return h->children();
+    return handleToJsonDbHandle(handle)->children();
 }
 
 QUuid JsonDbLayer::id()
@@ -475,10 +437,14 @@ QAbstractValueSpaceLayer::Handle JsonDbLayer::item(QAbstractValueSpaceLayer::Han
 {
     DEBUG_MSG("JsonDbLayer::item(QAbstractValueSpaceLayer::Handle parent, const QString & subPath)");
 
-    JsonDbHandle *parentHandle = handleToJsonDbHandle(parent);
-    JsonDbHandle *h = new JsonDbHandle(parentHandle, subPath, this->layerOptions());
+    JsonDbHandle *parentHandle;
+    if (parent != InvalidHandle) {
+        parentHandle = handleToJsonDbHandle(parent);
+    } else {
+        parentHandle = NULL;
+    }
 
-    return reinterpret_cast<Handle>(h);
+    return reinterpret_cast<Handle>(new JsonDbHandle(parentHandle, subPath, this->layerOptions()));
 }
 
 QValueSpace::LayerOptions JsonDbLayer::layerOptions() const
@@ -524,47 +490,26 @@ void JsonDbLayer::removeHandle(Handle handle)
 {
     DEBUG_MSG("JsonDbLayer::removeHandle(Handle handle)");
 
-    JsonDbHandle *h = handleToJsonDbHandle(handle);
-
-    if (h) {
-        DEBUG_MSG("Delete handle");
-        delete h;
-    }
+    DEBUG_MSG("Delete handle");
+    delete handleToJsonDbHandle(handle);
 }
 
 bool JsonDbLayer::removeSubTree(QValueSpacePublisher*, Handle handle)
 {
     DEBUG_MSG("JsonDbLayer::removeSubTree(QValueSpacePublisher *creator, Handle handle)");
 
-    JsonDbHandle *h = handleToJsonDbHandle(handle);
-    if (!h) {
-        return false;
-    }
-
-    return h->removeSubTree();
+    return handleToJsonDbHandle(handle)->removeSubTree();
 }
 
 // Virtual methods inherited from QAbstractValueSpaceLayer
 void JsonDbLayer::addWatch(QValueSpacePublisher*, Handle)
 {
     DEBUG_MSG("JsonDbLayer::addWatch(QValueSpacePublisher *creator, Handle handle)");
-
-    // Currently not implemented
-
-    /*JsonDbHandle* handler = handleToJsonDbHandle(handle);
-    connect(handler, SIGNAL(interestChanged(QString,bool)),
-            creator, SIGNAL(interestChanged(QString,bool)));*/
 }
 
 void JsonDbLayer::removeWatches(QValueSpacePublisher*, Handle)
 {
     DEBUG_MSG("JsonDbLayer::removeWatches(QValueSpacePublisher *creator, Handle parent)");
-
-    // Currently not implemented
-
-    /*JsonDbHandle* handler = handleToJsonDbHandle(parent);
-    disconnect(handler, SIGNAL(interestChanged(QString,bool)),
-               creator, SIGNAL(interestChanged(QString,bool)));*/
 }
 
 void JsonDbLayer::setProperty(Handle handle, Properties properties)
@@ -572,9 +517,6 @@ void JsonDbLayer::setProperty(Handle handle, Properties properties)
     DEBUG_MSG("JsonDbLayer::setProperty(Handle handle, Properties property)");
 
     JsonDbHandle *h = handleToJsonDbHandle(handle);
-    if (!h) {
-        return;
-    }
 
     if (properties & Publish) {
         connect(h, SIGNAL(valueChanged()), this, SLOT(jsonDbHandleChanged()));
@@ -609,13 +551,7 @@ bool JsonDbLayer::value(Handle handle, QVariant *data)
 {
     DEBUG_MSG("JsonDbLayer::value(Handle handle, QVariant *data)");
 
-    JsonDbHandle *h = handleToJsonDbHandle(handle);
-    if (h) {
-        return h->value(QStringLiteral(""), data);
-    }
-    else {
-        return false;
-    }
+    return handleToJsonDbHandle(handle)->value(QStringLiteral(""), data);
 }
 
 bool JsonDbLayer::value(Handle handle, const QString &subPath, QVariant *data)
@@ -623,14 +559,11 @@ bool JsonDbLayer::value(Handle handle, const QString &subPath, QVariant *data)
     DEBUG_MSG("JsonDbLayer::value(Handle handle, const QString &subPath, QVariant *data)");
 
     JsonDbHandle *h = handleToJsonDbHandle(handle);
-    if (h) {
-        if (subPath.startsWith(QStringLiteral("/"))) {
-            return h->value(subPath.mid(1), data);
-        } else {
-            return h->value(subPath, data);
-        }
+
+    if (subPath.startsWith(QStringLiteral("/"))) {
+        return h->value(subPath.mid(1), data);
     } else {
-        return false;
+        return h->value(subPath, data);
     }
 }
 
@@ -639,14 +572,11 @@ bool JsonDbLayer::setValue(QValueSpacePublisher*, Handle handle, const QString &
     DEBUG_MSG("JsonDbLayer::setValue(QValueSpacePublisher *creator, Handle handle, const QString &subPath, const QVariant &value)");
 
     JsonDbHandle *h = handleToJsonDbHandle(handle);
-    if (h) {
-        if (subPath.startsWith(QStringLiteral("/"))) {
-            return h->setValue(subPath.mid(1), value);
-        } else {
-            return h->setValue(subPath, value);
-        }
+
+    if (subPath.startsWith(QStringLiteral("/"))) {
+        return h->setValue(subPath.mid(1), value);
     } else {
-        return false;
+        return h->setValue(subPath, value);
     }
 }
 
@@ -655,15 +585,12 @@ bool JsonDbLayer::removeValue(QValueSpacePublisher*, Handle handle, const QStrin
     DEBUG_MSG("JsonDbLayer::removeValue(QValueSpacePublisher *creator, Handle handle, const QString & subPath)");
 
     JsonDbHandle *h = handleToJsonDbHandle(handle);
-        if (h) {
-            if (subPath.startsWith(QStringLiteral("/"))) {
-                return h->unsetValue(subPath.mid(1));
-            } else {
-                return h->unsetValue(subPath);
-            }
-        } else {
-            return false;
-        }
+
+    if (subPath.startsWith(QStringLiteral("/"))) {
+        return h->unsetValue(subPath.mid(1));
+    } else {
+        return h->unsetValue(subPath);
+    }
 }
 
 void JsonDbLayer::jsonDbHandleChanged()

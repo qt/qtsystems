@@ -43,8 +43,8 @@
 #include <QtCore/QString>
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
-#include <QScriptEngine>
-#include <QScriptValue>
+#include <QJSValue>
+#include <QJSEngine>
 #include <qvaluespace.h>
 #include "qvaluespace_p.h"
 #include "qvaluespacepublisher.h"
@@ -167,11 +167,10 @@ void TestQValueSpaceJsonDb::cleanup()
 
 void createJsonObjects(const QStringList &objects)
 {
-    QString object;
-    QScriptValue sc;
-    QScriptEngine engine;
+    QJSValue sc;
+    QJSEngine engine;
 
-    foreach (object, objects) {
+    foreach (QString object, objects) {
         sc = engine.evaluate("(" % object % ")");
         QVariantMap map = JsonDbConnection::makeCreateRequest(sc.toVariant());
 
@@ -246,19 +245,19 @@ void TestQValueSpaceJsonDb::testLayer_Item()
 {
     JsonDbHandle* handle = reinterpret_cast<JsonDbHandle*>(layer->item(NULL, ""));
     QVERIFY2(handle != NULL, "item() failed!");
-    QVERIFY2(handle->path.getPath() == "", "item() failed!");
+    QVERIFY2(handle->getPath() == "", "item() failed!");
 
     JsonDbHandle* handle2 = reinterpret_cast<JsonDbHandle*>(layer->item(NULL, "testItemLayer/b/c"));
     QVERIFY2(handle2 != NULL, "item() failed!");
-    QVERIFY2(handle2->path.getPath() == "testItemLayer.b.c", "item() failed!");
+    QVERIFY2(handle2->getPath() == "testItemLayer.b.c", "item() failed!");
 
     JsonDbHandle* handle3 = reinterpret_cast<JsonDbHandle*>(layer->item(quintptr(handle), ""));
     QVERIFY2(handle3 != NULL, "item() failed!");
-    QVERIFY2(handle3->path.getPath() == "", "item() failed!");
+    QVERIFY2(handle3->getPath() == "", "item() failed!");
 
     JsonDbHandle* handle4 = reinterpret_cast<JsonDbHandle*>(layer->item(quintptr(handle2), "d/e"));
     QVERIFY2(handle4 != NULL, "item() failed!");
-    QVERIFY2(handle4->path.getPath() == "testItemLayer.b.c.d.e", "item() failed!");
+    QVERIFY2(handle4->getPath() == "testItemLayer.b.c.d.e", "item() failed!");
 }
 
 void TestQValueSpaceJsonDb::testLayer_LayerOptions()
@@ -401,7 +400,6 @@ void TestQValueSpaceJsonDb::testLayer_SetValue()
 
     try {
         JsonDbHandle handle(NULL, "com.pstest.testSetValue.app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
-
         QVERIFY2(layer->setValue(NULL, quintptr(&handle), "setting1", 42), "setValue() failed!");
 
         QVariant value;
@@ -636,16 +634,16 @@ void TestQValueSpaceJsonDb::testPath_GetIdentifier()
 void TestQValueSpaceJsonDb::testHandle_JsonDbHandle()
 {
     JsonDbHandle handle(NULL, "", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
-    QVERIFY2(handle.path.getPath() == "", "JsonDbHandle constructor failed!");
+    QVERIFY2(handle.getPath() == "", "JsonDbHandle constructor failed!");
 
     JsonDbHandle handle1(NULL, "/testJsonDbHandle/b/c", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
-    QVERIFY2(handle1.path.getPath() == "testJsonDbHandle.b.c", "JsonDbHandle constructor failed!");
+    QVERIFY2(handle1.getPath() == "testJsonDbHandle.b.c", "JsonDbHandle constructor failed!");
 
     JsonDbHandle handle2(&handle1, "/d/e", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
-    QVERIFY2(handle2.path.getPath() == "testJsonDbHandle.b.c.d.e", "JsonDbHandle constructor failed!");
+    QVERIFY2(handle2.getPath() == "testJsonDbHandle.b.c.d.e", "JsonDbHandle constructor failed!");
 
     JsonDbHandle handle3(&handle1, "", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
-    QVERIFY2(handle3.path.getPath() == "testJsonDbHandle.b.c", "JsonDbHandle constructor failed!");
+    QVERIFY2(handle3.getPath() == "testJsonDbHandle.b.c", "JsonDbHandle constructor failed!");
 }
 
 void TestQValueSpaceJsonDb::testHandle_Value()

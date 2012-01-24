@@ -155,7 +155,7 @@ class JsonDbHandle : public QObject
         // Returns children of the current path (only first level)
         QSet<QString> children();
 
-        JsonDbPath path;
+        inline QString getPath() { return path.getPath(); }
 
     signals:
         void valueChanged();
@@ -166,6 +166,7 @@ class JsonDbHandle : public QObject
         void onNotified(const QString & notifyUuid, const JsonDbNotification & notification);
 
     private:
+        JsonDbPath path;
         JsonDbClient* client;
         QString notificationUUID;
 
@@ -174,6 +175,8 @@ class JsonDbHandle : public QObject
         QString getWholePath(const QString &path) const;
         static bool checkIfObjectValid(const QVariantMap &object);
         static bool checkIfObjectValidZero(const QVariantMap &object);
+        static QString getObjectQuery(QString &identifier);
+        static QString getSettingQuery(QString &identifier);
 
         void getNotificationQueryAndActions(QString path, QString& query, JsonDbClient::NotifyTypes& actions);
 };
@@ -274,9 +277,6 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
 
     private slots:
         void jsonDbHandleChanged();
-
-    private:
-        static JsonDbHandle *handleToJsonDbHandle(Handle handle);
 };
 
 QT_END_NAMESPACE
