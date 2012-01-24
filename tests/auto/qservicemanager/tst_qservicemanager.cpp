@@ -318,11 +318,12 @@ void tst_QServiceManager::cleanupTestCase()
 #if defined(Q_OS_SYMBIAN)
     QSfwTestUtil::removeDatabases_symbian();
 #endif
-    //use QEventLopp::DeferredDeletion
+    //process deferred delete events
     //QServiceManager::loadInterface makes use of deleteLater() when
     //cleaning up service objects and their respective QPluginLoader
     //we want to force the testcase to run the cleanup code
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 }
 
 void tst_QServiceManager::constructor()
@@ -769,7 +770,8 @@ void tst_QServiceManager::loadInterface_string()
     QVERIFY(obj != 0);
     QCOMPARE(QString(obj->metaObject()->className()), serviceAClassName);
     delete obj;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 
     // Add first service. Adds the service described in
     // c/Private/<uid3 of this executable>/plugins/xmldata/sampleservice2.xml
@@ -781,7 +783,8 @@ void tst_QServiceManager::loadInterface_string()
     QVERIFY(obj != 0);
     QCOMPARE(QString(obj->metaObject()->className()), serviceAClassName);
     delete obj;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 
     // if second service is set as default, it should be returned
     QVERIFY(mgr.setInterfaceDefault(serviceB, commonInterface));
@@ -789,7 +792,8 @@ void tst_QServiceManager::loadInterface_string()
     QVERIFY(obj != 0);
     QCOMPARE(QString(obj->metaObject()->className()), serviceBClassName);
     delete obj;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 }
 
 void tst_QServiceManager::loadInterface_descriptor()
@@ -808,7 +812,8 @@ void tst_QServiceManager::loadInterface_descriptor()
     QVERIFY(obj != 0);
 
     delete obj;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 }
 
 void tst_QServiceManager::loadInterface_descriptor_data()
@@ -924,7 +929,8 @@ void tst_QServiceManager::loadInterface_testLoadedObjectAttributes()
     QVERIFY(!invokeOk);
 
     delete obj;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 }
 
 void tst_QServiceManager::loadLocalTypedInterface()
@@ -958,7 +964,8 @@ void tst_QServiceManager::loadLocalTypedInterface()
 
     delete plugin;
     plugin = 0;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 
     //use database descriptor
     QFile file1(xmlTestDataPath("sampleservice.xml"));
@@ -988,12 +995,14 @@ void tst_QServiceManager::loadLocalTypedInterface()
     //the second instance called
     QVERIFY(serviceObjects.count() == 2);
     delete serviceObjects.takeFirst();
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 
     plugin = serviceObjects.takeFirst();
     plugin->testSlotOne();
     delete plugin;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
 
 
     //use default lookup
@@ -1001,7 +1010,8 @@ void tst_QServiceManager::loadLocalTypedInterface()
     QVERIFY(plugin != 0);
 
     delete plugin;
-    QCoreApplication::processEvents(QEventLoop::AllEvents|QEventLoop::DeferredDeletion);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::processEvents();
     plugin = 0;
 
     //use totally wrong but QObject based template class type
