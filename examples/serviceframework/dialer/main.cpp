@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/QQuickView>
+#include <QtQuick/QQuickView>
 #include <QtGui/QGuiApplication>
 #include <QtCore/QUrl>
 
