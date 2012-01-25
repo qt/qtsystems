@@ -644,7 +644,7 @@ underlying IPC mechanism utilized is a local socket based protocol.
 Similar to the other IPC mechanisms, passing object pointers or typedefs will not
 work on local socket. Local socket also requires the executable for the service to
 be installed somewhere in your PATH for autostart to work.  Not all platforms support
-all fields on the QRemoteServiceResgiterCredentials and will return -1 in unsupported
+all fields on the QRemoteServiceRegisterCredentials and will return -1 in unsupported
 fields.
 
 \section3 Service Autostart
