@@ -46,7 +46,6 @@
 #include "ipcendpoint_p.h"
 #include "qremoteserviceregister.h"
 #include "qservice.h"
-#include "qservicesecurity_p.h"
 #include <QPointer>
 #include <QHash>
 

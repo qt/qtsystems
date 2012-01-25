@@ -66,7 +66,6 @@
 #include <QTextStream>
 #include <QFileSystemWatcher>
 #include "qsecuritypackage_p.h"
-#include "qservicesecurity_p.h"
 #endif
 
 #ifndef Q_OS_WIN
