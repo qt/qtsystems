@@ -48,12 +48,12 @@
 #include <qserviceinterfacedescriptor.h>
 #include <private/qserviceinterfacedescriptor_p.h>
 #if !defined(Q_CC_MINGW)
-    #include "../../../src/serviceframework/qserviceinterfacedescriptor.cpp"
+    #include "../../../../src/serviceframework/qserviceinterfacedescriptor.cpp"
 #endif
 #define IGNORE_SERVICEMETADATA_EXPORT
 #include "private/servicemetadata_p.h"
 #if !defined(Q_CC_MINGW)
-    #include "../../../src/serviceframework/servicemetadata.cpp"
+    #include "../../../../src/serviceframework/servicemetadata.cpp"
 #endif
 
 QT_USE_NAMESPACE

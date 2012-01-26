@@ -1,4 +1,4 @@
-include(../auto.pri)
+include(../../auto.pri)
 
 QT += publishsubscribe
 
