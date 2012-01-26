@@ -60,7 +60,6 @@
 #include <qdisplayinfo.h>
 #include <qstorageinfo.h>
 #include <qscreensaver.h>
-#include <qinputdeviceinfo.h>
 #include <qdeviceprofile.h>
 
 #include <QHash>
@@ -169,16 +168,6 @@ struct QScreenSaverData
     bool screenSaverEnabled;
 };
 
-struct QInputDeviceInfoData
-{
-    QInputDeviceInfo::InputDeviceTypes availableInputDevices;
-    QInputDeviceInfo::KeyboardTypes availableKeyboards;
-    QInputDeviceInfo::TouchDeviceTypes availableTouchDevices;
-    bool isKeyboardFlippedOpen;
-    bool isKeyboardLightOn;
-    bool isWirelessKeyboardConnected;
-};
-
 struct QDeviceProfileData
 {
     int messageRingtoneVolume;
@@ -194,7 +183,6 @@ Q_DECLARE_METATYPE(QDisplayInfoData)
 Q_DECLARE_METATYPE(QStorageInfoData)
 Q_DECLARE_METATYPE(QScreenSaverData)
 Q_DECLARE_METATYPE(QDeviceProfileData)
-Q_DECLARE_METATYPE(QInputDeviceInfoData)
 
 Q_SYSTEMINFO_EXPORT void qt_registerSystemInfoTypes();
 
@@ -226,8 +214,6 @@ Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QStorageInfo
 Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QStorageInfoData::DriveInfo &s);
 Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s);
 Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QScreenSaverData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QInputDeviceInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QInputDeviceInfoData &s);
 Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceProfileData &s);
 Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceProfileData &s);
 

@@ -58,7 +58,6 @@ void qt_registerSystemInfoTypes()
     qRegisterMetaTypeStreamOperators<QStorageInfoData>("QStorageInfoData");
     qRegisterMetaTypeStreamOperators<QStorageInfoData::DriveInfo>("QStorageInfoData::DriveInfo");
     qRegisterMetaTypeStreamOperators<QScreenSaverData>("QScreenSaverData");
-    qRegisterMetaTypeStreamOperators<QInputDeviceInfoData>("QInputDeviceInfoData");
     qRegisterMetaTypeStreamOperators<QDeviceProfileData>("QDeviceProfileData");
 }
 
@@ -321,29 +320,6 @@ QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s)
 QDataStream &operator>>(QDataStream &in, QScreenSaverData &s)
 {
     in >> s.screenSaverEnabled;
-    return in;
-}
-
-QDataStream &operator<<(QDataStream &out, const QInputDeviceInfoData &s)
-{
-    out << static_cast<qint32>(s.availableInputDevices)
-        << static_cast<qint32>(s.availableKeyboards)
-        << static_cast<qint32>(s.availableTouchDevices);
-    out << s.isKeyboardFlippedOpen << s.isKeyboardLightOn << s.isWirelessKeyboardConnected;
-
-    return out;
-}
-
-QDataStream &operator>>(QDataStream &in, QInputDeviceInfoData &s)
-{
-    qint32 availableInputDevices, availableKeyboards, availableTouchDevices;
-    in >> availableInputDevices >> availableKeyboards >> availableTouchDevices;
-    s.availableInputDevices = static_cast<QInputDeviceInfo::InputDeviceTypes>(availableInputDevices);
-    s.availableKeyboards = static_cast<QInputDeviceInfo::KeyboardTypes>(availableKeyboards);
-    s.availableTouchDevices = static_cast<QInputDeviceInfo::TouchDeviceTypes>(availableTouchDevices);
-
-    in >> s.isKeyboardFlippedOpen >> s.isKeyboardLightOn >> s.isWirelessKeyboardConnected;
-
     return in;
 }
 

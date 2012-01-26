@@ -19,8 +19,7 @@ PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qscreensaver.h \
                  qbatteryinfo.h \
                  qnetworkinfo.h \
-                 qdeviceprofile.h \
-                 qinputdeviceinfo.h
+                 qdeviceprofile.h
 
 SOURCES += qdeviceinfo.cpp \
            qdisplayinfo.cpp \
@@ -28,8 +27,7 @@ SOURCES += qdeviceinfo.cpp \
            qscreensaver.cpp \
            qbatteryinfo.cpp \
            qnetworkinfo.cpp \
-           qdeviceprofile.cpp \
-           qinputdeviceinfo.cpp
+           qdeviceprofile.cpp
 
 win32: !simulator: {
     contains(CONFIG, release) {
@@ -45,14 +43,12 @@ win32: !simulator: {
     }
 
     PRIVATE_HEADERS += qscreensaver_win_p.h \
-                       qinputdeviceinfo_win_p.h \
                        qdeviceinfo_win_p.h \
                        qstorageinfo_win_p.h \
                        qbatteryinfo_win_p.h \
                        qnetworkinfo_win_p.h
 
     SOURCES += qscreensaver_win.cpp \
-               qinputdeviceinfo_win.cpp \
                qdeviceinfo_win.cpp \
                qstorageinfo_win.cpp \
                qbatteryinfo_win.cpp \
@@ -65,7 +61,6 @@ linux-*: !simulator: {
                        qstorageinfo_linux_p.h \
                        qbatteryinfo_linux_p.h \
                        qnetworkinfo_linux_p.h \
-                       qinputdeviceinfo_linux_p.h \
                        qscreensaver_linux_p.h \
                        qdeviceprofile_linux_p.h
 
@@ -74,7 +69,6 @@ linux-*: !simulator: {
                qstorageinfo_linux.cpp \
                qbatteryinfo_linux.cpp \
                qnetworkinfo_linux.cpp \
-               qinputdeviceinfo_linux.cpp \
                qscreensaver_linux.cpp \
                qdeviceprofile_linux.cpp
 
@@ -100,6 +94,13 @@ linux-*: !simulator: {
         DEFINES += QT_NO_MTLIB
     }
 
+    contains(config_test_bluez, yes): {
+        CONFIG += link_pkgconfig
+        PKGCONFIG += bluez
+    } else: {
+        DEFINES += QT_NO_BLUEZ
+    }
+
     contains(QT_CONFIG, dbus): {
         contains(config_test_ofono, yes) {
             QT += dbus
@@ -114,19 +115,8 @@ linux-*: !simulator: {
         } else: {
             DEFINES += QT_NO_UDISKS
         }
-
-        contains(config_test_bluez, yes) {
-            QT += dbus
-            CONFIG += link_pkgconfig
-            PKGCONFIG += bluez
-
-            PRIVATE_HEADERS += qbluezwrapper_p.h
-            SOURCES += qbluezwrapper.cpp
-        } else {
-            DEFINES += QT_NO_BLUEZ
-        }
     } else {
-        DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_BLUEZ
+        DEFINES += QT_NO_OFONO QT_NO_UDISKS
     }
 
     contains(config_test_udev, yes) {
@@ -156,13 +146,11 @@ simulator {
     linux-*: {
         PRIVATE_HEADERS += qdisplayinfo_linux_p.h \
                            qnetworkinfo_linux_p.h \
-                           qinputdeviceinfo_linux_p.h \
                            qscreensaver_linux_p.h \
                            qdeviceprofile_linux_p.h
 
         SOURCES += qdisplayinfo_linux.cpp \
                    qnetworkinfo_linux.cpp \
-                   qinputdeviceinfo_linux.cpp \
                    qscreensaver_linux.cpp \
                    qdeviceprofile_linux.cpp
 
@@ -192,6 +180,13 @@ simulator {
             DEFINES += QT_NO_MTLIB
         }
 
+        contains(config_test_bluez, yes): {
+            CONFIG += link_pkgconfig
+            PKGCONFIG += bluez
+        } else: {
+            DEFINES += QT_NO_BLUEZ
+        }
+
         contains(QT_CONFIG, dbus): {
             contains(config_test_ofono, yes) {
             QT += dbus
@@ -200,19 +195,8 @@ simulator {
             } else {
                 DEFINES += QT_NO_OFONO
             }
-
-            contains(config_test_bluez, yes) {
-                QT += dbus
-                CONFIG += link_pkgconfig
-                PKGCONFIG += bluez
-
-                PRIVATE_HEADERS += qbluezwrapper_p.h
-                SOURCES += qbluezwrapper.cpp
-            } else {
-                DEFINES += QT_NO_BLUEZ
-            }
         } else {
-            DEFINES += QT_NO_OFONO QT_NO_BLUEZ
+            DEFINES += QT_NO_OFONO
         }
 
         contains(config_test_udev, yes) {

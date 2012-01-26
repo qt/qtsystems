@@ -46,7 +46,6 @@
 #include "qdeclarativedeviceinfo_p.h"
 #include <qdeviceprofile.h>
 #include "qdeclarativedisplayinfo_p.h"
-#include "qdeclarativeinputdeviceinfo_p.h"
 #include "qdeclarativenetworkinfo_p.h"
 #include <qscreensaver.h>
 #include "qdeclarativestorageinfo_p.h"
@@ -68,7 +67,6 @@ public:
         qmlRegisterType<QDeclarativeDeviceInfo>(uri, major, minor, "DeviceInfo");
         qmlRegisterType<QDeviceProfile>(uri, major, minor, "DeviceProfile");
         qmlRegisterType<QDeclarativeDisplayInfo>(uri, major, minor, "DisplayInfo");
-        qmlRegisterType<QDeclarativeInputDeviceInfo>(uri, major, minor, "InputDeviceInfo");
         qmlRegisterType<QDeclarativeNetworkInfo>(uri, major, minor, "NetworkInfo");
         qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");
         qmlRegisterType<QDeclarativeStorageInfo>(uri, major, minor, "StorageInfo");

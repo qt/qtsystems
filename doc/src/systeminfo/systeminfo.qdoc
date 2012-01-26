@@ -37,8 +37,8 @@
 
     The Qt System Info module provides a set of APIs to discover system
     related information and capabilities, including the batteries being used,
-    activated locks, different hardware features, input device, network, screen
-    saver, and storage, etc.
+    activated locks, different hardware features, network, screen saver, and
+    storage, etc.
 
     \section1 C++ Classes
     \annotatedlist systeminfo
