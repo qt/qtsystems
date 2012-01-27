@@ -50,10 +50,10 @@ Q_USE_JSONDB_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_PATH, (QStringLiteral("com.nokia.mp.settings.")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_PATH, (QStringLiteral("com.nokia.mt.settings.")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_LOCATION, (QStringLiteral("location")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_SOUNDS, (QStringLiteral("sounds")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_PATH, (QStringLiteral("com.nokia.mp.system.")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_PATH, (QStringLiteral("com.nokia.mt.system.")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_SECURITYLOCK, (QStringLiteral("SecurityLock")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_DEVICEINFO, (QStringLiteral("DeviceInfo")))
 
@@ -61,7 +61,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_QUERY, (QStringLiteral("[
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_NOTIFY, (QStringLiteral("[_type=\"%1\"]")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_REMOVE, (QStringLiteral("{\"_uuid\":\"%1\"}")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_PROPERTY_QUERY, (QStringLiteral("[?_type=\"%1\"][=%2]")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_QUERY, (QStringLiteral("[?_type=\"com.nokia.mp.settings.SystemSettings\"][?identifier=\"%1\"][=settings]")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_QUERY, (QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"%1\"][=settings]")))
 
 const int JSON_EXPIRATION_TIMER(2000);
 

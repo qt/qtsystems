@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
 */
 
 #define IDENTIFIER QStringLiteral("identifier")
-#define SETTINGS_FILTER QStringLiteral("[?_type in [\"com.nokia.mp.settings.ApplicationSettings\", \"com.nokia.mp.settings.SystemSettings\"]]")
+#define SETTINGS_FILTER QStringLiteral("[?_type in [\"com.nokia.mt.settings.ApplicationSettings\", \"com.nokia.mt.settings.SystemSettings\"]]")
 
 class JsonDbPath
 {
