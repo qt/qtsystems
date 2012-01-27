@@ -72,9 +72,8 @@ public:
     static const Handle InvalidHandle = ~Handle(0);
 
     enum Properties { Publish = 0x00000001 };
-    enum Type { Server, Client };
 
-    virtual bool startup(Type type) = 0;
+    virtual bool startup() = 0;
     virtual bool value(Handle handle, QVariant *data) = 0;
     virtual bool value(Handle handle, const QString &subPath, QVariant *data) = 0;
     virtual unsigned int order() = 0;

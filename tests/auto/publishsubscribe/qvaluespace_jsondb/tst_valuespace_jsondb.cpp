@@ -62,9 +62,6 @@ public:
     TestQValueSpaceJsonDb();
 
 private Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
-
     void init();
     void cleanup();
 
@@ -140,16 +137,6 @@ void cleanupJsonDb()
     }
 
     QTest::qWait(100);
-}
-
-void TestQValueSpaceJsonDb::initTestCase()
-{
-    QValueSpace::initValueSpaceServer();
-}
-
-void TestQValueSpaceJsonDb::cleanupTestCase()
-{
-
 }
 
 void TestQValueSpaceJsonDb::init()
@@ -431,8 +418,7 @@ void TestQValueSpaceJsonDb::testLayer_SetValue()
 
 void TestQValueSpaceJsonDb::testLayer_Startup()
 {
-    QVERIFY2(layer->startup(QAbstractValueSpaceLayer::Server) == true, "startup() failed!");
-    QVERIFY2(layer->startup(QAbstractValueSpaceLayer::Client) == true, "startup() failed!");
+    QVERIFY2(layer->startup() == true, "startup() failed!");
 }
 
 void TestQValueSpaceJsonDb::testLayer_SupportsInterestNotification()
@@ -874,7 +860,7 @@ void TestQValueSpaceJsonDb::testAPI_PublishSubscribe()
 
     QCOMPARE(subscriber.value(name).toInt(), value);
 
-    subscriber.cd(name);
+    subscriber.setPath(path + QStringLiteral("/") + name);
     QCOMPARE(subscriber.value().toInt(), value);
 }
 

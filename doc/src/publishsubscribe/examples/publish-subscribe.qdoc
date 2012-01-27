@@ -44,11 +44,6 @@
             \o Parameter
             \o Description
         \row
-            \o -server
-            \o Starts the Value Space Server.  Only one instance should be started with the this
-               parameter.  This parameter is only needed if the Value Space will use a layer that
-               has a client-server architecture and a server needs to be started.
-        \row
             \o -publisher
             \o Publish values in the Value Space and create a dialog to control those values
                directly.

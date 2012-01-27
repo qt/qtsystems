@@ -249,10 +249,9 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
         // IMPORTANT: if there is no object with given path then no new object is created!
         bool setValue(QValueSpacePublisher *creator, Handle handle, const QString &subPath, const QVariant &value);
 
-        // Called by the Value Space system to initialize each layer. The type parameter will be
-        // set accordingly, and layer implementors can use this to implement a client/server architecture if desired.
+        // Called by the Value Space system to initialize each layer.
         // Returns true upon success; otherwise returns false.
-        bool startup(Type type);
+        bool startup();
 
         // Returns true if the layer supports interest notifications; otherwise returns false.
         bool supportsInterestNotification() const;

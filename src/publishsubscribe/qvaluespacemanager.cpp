@@ -51,14 +51,13 @@ QValueSpaceManager *QValueSpaceManager::instance()
 }
 
 QValueSpaceManager::QValueSpaceManager()
-    : type(Uninit)
+    : initialized(false)
 {
 }
 
-void QValueSpaceManager::init(QAbstractValueSpaceLayer::Type type)
+void QValueSpaceManager::init()
 {
-    // Both server and clients may call this function multiple times
-    if (Uninit != this->type)
+    if (initialized)
         return;
 
     // Install all the dormant layers
@@ -66,24 +65,19 @@ void QValueSpaceManager::init(QAbstractValueSpaceLayer::Type type)
         install(funcs[ii]());
     funcs.clear();
 
-    this->type = (type == QAbstractValueSpaceLayer::Server) ? Server : Client;
+    initialized = true;
 
     for (int ii = 0; ii < layers.count(); ++ii) {
-        if (!layers.at(ii)->startup(type)) {
+        if (!layers.at(ii)->startup()) {
             layers.removeAt(ii);
             --ii;
         }
     }
 }
 
-bool QValueSpaceManager::isServer() const
-{
-    return (Server == type);
-}
-
 void QValueSpaceManager::install(QAbstractValueSpaceLayer * layer)
 {
-    Q_ASSERT(Uninit == type);
+    Q_ASSERT(!initialized);
     Q_ASSERT(layer);
 
     layers.append(layer);
@@ -91,13 +85,13 @@ void QValueSpaceManager::install(QAbstractValueSpaceLayer * layer)
 
 void QValueSpaceManager::install(QValueSpace::LayerCreateFunc func)
 {
-    Q_ASSERT(Uninit == type);
+    Q_ASSERT(!initialized);
     funcs.append(func);
 }
 
 QList<QAbstractValueSpaceLayer *> const & QValueSpaceManager::getLayers()
 {
-    init(QAbstractValueSpaceLayer::Client); // Fallback init
+    init(); // Fallback init
 
     return layers;
 }

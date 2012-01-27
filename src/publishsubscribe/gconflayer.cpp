@@ -86,7 +86,7 @@ GConfLayer *GConfLayer::instance()
     return gConfLayer();
 }
 
-bool GConfLayer::startup(Type /*type*/)
+bool GConfLayer::startup()
 {
     return true;
 }

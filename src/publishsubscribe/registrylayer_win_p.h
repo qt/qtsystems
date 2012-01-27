@@ -81,7 +81,7 @@ public:
     ~RegistryLayer();
 
     /* Common functions */
-    bool startup(Type t);
+    bool startup();
 
     Handle item(Handle parent, const QString &path);
     void removeHandle(Handle handle);

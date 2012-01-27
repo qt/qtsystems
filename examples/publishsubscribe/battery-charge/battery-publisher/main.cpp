@@ -46,10 +46,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    app.setOrganizationDomain("qt.nokia.com");
-    app.setApplicationName("Battery Publisher");
-
-    QValueSpace::initValueSpaceServer();
+    app.setOrganizationDomain(QStringLiteral("qt-project.org"));
+    app.setApplicationName(QStringLiteral("Battery Publisher"));
 
     BatteryPublisher batteryPublisher;
     batteryPublisher.show();

@@ -85,18 +85,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QAbstractValueSpaceLayer::Type
-
-    Value Space layers are initialized in either a "Server" or a "Client" context.  There is only
-    a single server in the Value Space architecture, and its layers are always initialized before
-    any clients.  This distinction allows layers to implement Client/Server architecture
-    \e {if required}. If not, layers are free to treat Server and Client contexts identically.
-
-    \value Server The layer is being initialized in the "server" context.
-    \value Client The layer is being initialized in the "client" context.
-*/
-
-/*!
     \enum QAbstractValueSpaceLayer::Properties
 
     To allow for efficient layer implementations, expensive handle operations, currently only
@@ -116,11 +104,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QAbstractValueSpaceLayer::startup(Type type)
+    \fn bool QAbstractValueSpaceLayer::startup()
 
-    Called by the Value Space system to initialize each layer.  The \a type parameter will be set
-    accordingly, and layer implementors can use this to implement a client/server architecture if
-    desired.
+    Called by the Value Space system to initialize each layer.
 
     Returns true upon success; otherwise returns false.
 */
@@ -302,8 +288,7 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
                                 \br
                                 Values stored in a layer with this option will persist with in the
                                 layer after the QValueSpacePublisher that published them is
-                                destroyed.  Whether the value persists in the layer after the
-                                server or device is restarted is system dependent.
+                                destroyed.
                                 \br
                                 This option and the TransientLayer option are mutually
                                 exclusive.
@@ -350,16 +335,6 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
     Installs the Value Space layer at static construction time by calling the layer creation
     function \a func.
 */
-
-/*!
-    Initialize the Value Space manager as the server.  This method only needs to be called by the
-    process acting as the server and should be called before any process in the system uses a value
-    space class.
-*/
-void QValueSpace::initValueSpaceServer()
-{
-    QValueSpaceManager::instance()->init(QAbstractValueSpaceLayer::Server);
-}
 
 /*!
     \internal

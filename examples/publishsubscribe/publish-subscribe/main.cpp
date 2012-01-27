@@ -49,20 +49,18 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    app.setOrganizationDomain("qt.nokia.com");
-    app.setApplicationName("Publish Subscribe Example");
+    app.setOrganizationDomain(QStringLiteral("qt-project.org"));
+    app.setApplicationName(QStringLiteral("Publish Subscribe Example"));
 
     bool createDefault = true;
     bool createPublisher = false;
     bool createSubscriber = false;
 
     for (int i = 1; i < argc; ++i) {
-        if (argv[i] == QLatin1String("-server")) {
-            QValueSpace::initValueSpaceServer();
-        } else if (argv[i] == QLatin1String("-publisher")) {
+        if (argv[i] == QStringLiteral("-publisher")) {
             createPublisher = true;
             createDefault = false;
-        } else if (argv[i] == QLatin1String("-subscriber")) {
+        } else if (argv[i] == QStringLiteral("-subscriber")) {
             createSubscriber = true;
             createDefault = false;
         }

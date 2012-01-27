@@ -51,8 +51,6 @@ class tst_QValueSpace : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     void tst_availableLayers();
 
     void tst_PublisherPath_data();
@@ -61,11 +59,6 @@ private slots:
     void tst_PublishSubscribe_data();
     void tst_PublishSubscribe();
 };
-
-void tst_QValueSpace::initTestCase()
-{
-    QValueSpace::initValueSpaceServer();
-}
 
 void tst_QValueSpace::tst_availableLayers()
 {
@@ -84,8 +77,6 @@ void tst_QValueSpace::tst_availableLayers()
 #elif defined(Q_OS_WIN)
     QVERIFY(layers.contains(QVALUESPACE_VOLATILEREGISTRY_LAYER));
     QVERIFY(layers.contains(QVALUESPACE_NONVOLATILEREGISTRY_LAYER));
-#else
-    QVERIFY(layers.contains(QVALUESPACE_SHAREDMEMORY_LAYER));
 #endif
 }
 
@@ -93,8 +84,8 @@ void tst_QValueSpace::tst_PublisherPath_data()
 {
     QTest::addColumn<QString>("path");
 
-    QTest::newRow("root") << QString::fromAscii("/");
-    QTest::newRow("non existing path") << QString::fromAscii("/a/path/that/doesnt/exist");
+    QTest::newRow("root") << QString(QStringLiteral("/"));
+    QTest::newRow("non existing path") << QString(QStringLiteral("/a/path/that/doesnt/exist"));
 }
 
 void tst_QValueSpace::tst_PublisherPath()
@@ -115,8 +106,8 @@ void tst_QValueSpace::tst_PublishSubscribe_data()
     QTest::addColumn<QString>("name");
     QTest::addColumn<QVariant>("value");
 
-    QTest::newRow("root") << QString::fromAscii("/") << QString::fromAscii("myName") << QVariant::fromValue(QString::fromAscii("myValue"));
-    QTest::newRow("non existing path") << QString::fromAscii("/a/path/that/doesnt/exist") << QString::fromAscii("propertyName") << QVariant::fromValue(QString::fromAscii("propertyValue"));
+    QTest::newRow("root") << QString(QStringLiteral("/")) << QString(QStringLiteral("myName")) << QVariant::fromValue(QString(QStringLiteral("myValue")));
+    QTest::newRow("non existing path") << QString(QStringLiteral("/a/path/that/doesnt/exist")) << QString(QStringLiteral("propertyName")) << QVariant::fromValue(QString(QStringLiteral("propertyValue")));
 }
 
 void tst_QValueSpace::tst_PublishSubscribe()
@@ -140,7 +131,7 @@ void tst_QValueSpace::tst_PublishSubscribe()
     QVERIFY(subscriber.isConnected());
     QCOMPARE(subscriber.value(name), value);
 
-    subscriber.cd(name);
+    subscriber.setPath(path + QStringLiteral("/") + name);
     QCOMPARE(subscriber.value(), value);
 
     publisher.resetValue(name);

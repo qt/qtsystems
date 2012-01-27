@@ -52,7 +52,7 @@ BatteryPublisher::BatteryPublisher(QWidget *parent)
 {
     ui->setupUi(this);
 
-    publisher = new QValueSpacePublisher("/power/battery");
+    publisher = new QValueSpacePublisher(QStringLiteral("/power/battery"));
 
     connect(ui->batteryCharge, SIGNAL(valueChanged(int)),
             this, SLOT(chargeChanged(int)));
@@ -91,13 +91,13 @@ void BatteryPublisher::timerEvent(QTimerEvent *)
 
 void BatteryPublisher::chargeChanged(int newCharge)
 {
-    publisher->setValue("charge", newCharge);
+    publisher->setValue(QStringLiteral("charge"), newCharge);
 }
 
 void BatteryPublisher::chargingToggled(bool charging)
 {
     ui->batteryCharge->setEnabled(!charging);
-    publisher->setValue("charging", charging);
+    publisher->setValue(QStringLiteral("charging"), charging);
 
     if (charging)
         chargeTimer = startTimer(2000);

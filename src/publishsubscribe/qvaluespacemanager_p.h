@@ -64,8 +64,7 @@ class QValueSpaceManager
 public:
     QValueSpaceManager();
 
-    bool isServer() const;
-    void init(QAbstractValueSpaceLayer::Type type);
+    void init();
     void install(QAbstractValueSpaceLayer * layer);
     void install(QValueSpace::LayerCreateFunc func);
     QList<QAbstractValueSpaceLayer *> const & getLayers();
@@ -73,7 +72,7 @@ public:
     static QValueSpaceManager *instance();
 
 private:
-    enum { Uninit, Server, Client } type;
+    bool initialized;
     QList<QAbstractValueSpaceLayer *> layers;
     QList<QValueSpace::LayerCreateFunc> funcs;
 };

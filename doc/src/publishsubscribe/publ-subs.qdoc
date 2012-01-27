@@ -114,11 +114,6 @@
                The GConf Layer has an order of 0.
     \endtable
 
-    The Value Space has support for both client/server and peer-to-peer layer architectures.  If a
-    layer that uses a client/server architecture is used and a server process is not provided by the
-    underlying system it will be necessary to start one.  This can be done by calling
-    QValueSpace::initValueSpaceServer() prior to any other use of the Value Space.
-
     \section1 Detailed Layer Descriptions
 
     \section2 GConf Layer

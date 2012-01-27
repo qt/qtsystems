@@ -76,7 +76,7 @@ public:
 protected:
     QString name();
 
-    bool startup(Type type);
+    bool startup();
     bool value(Handle handle, QVariant *data);
     bool value(Handle handle, const QString &subPath, QVariant *data);
     unsigned int order();

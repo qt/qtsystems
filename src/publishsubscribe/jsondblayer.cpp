@@ -528,9 +528,9 @@ void JsonDbLayer::setProperty(Handle handle, Properties properties)
     }
 }
 
-bool JsonDbLayer::startup(Type)
+bool JsonDbLayer::startup()
 {
-    DEBUG_MSG("JsonDbLayer::startup(Type type)");
+    DEBUG_MSG("JsonDbLayer::startup()");
 
     return true;
 }

@@ -176,7 +176,7 @@ RegistryLayer::~RegistryLayer()
     }
 }
 
-bool RegistryLayer::startup(Type)
+bool RegistryLayer::startup()
 {
     return true;
 }

@@ -92,22 +92,22 @@ void PublisherDialog::changeEvent(QEvent *e)
 //! [0]
 void PublisherDialog::intValueChanged(int value)
 {
-    publisher->setValue("intValue", value);
+    publisher->setValue(QStringLiteral("intValue"), value);
 }
 
 void PublisherDialog::unsetIntValue()
 {
-    publisher->resetValue("intValue");
+    publisher->resetValue(QStringLiteral("intValue"));
 }
 
 void PublisherDialog::setStringValue()
 {
-    publisher->setValue("stringValue", ui->stringValue->text());
+    publisher->setValue(QStringLiteral("stringValue"), ui->stringValue->text());
 }
 
 void PublisherDialog::setByteArrayValue()
 {
-    publisher->setValue("byteArrayValue", ui->byteArrayValue->text().toAscii());
+    publisher->setValue(QStringLiteral("byteArrayValue"), ui->byteArrayValue->text().toAscii());
 }
 //! [0]
 

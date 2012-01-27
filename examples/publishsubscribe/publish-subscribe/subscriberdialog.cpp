@@ -85,7 +85,7 @@ SubscriberDialog::SubscriberDialog(QWidget *parent)
     // if the default path does not exist reset it to /
     QVariant value = subscriber->value();
     if (!subscriber->value().isValid() && subscriber->subPaths().isEmpty()) {
-        ui->basePath->setText(QLatin1String("/"));
+        ui->basePath->setText(QStringLiteral("/"));
         changeSubscriberPath();
     }
 }
@@ -142,7 +142,7 @@ void SubscriberDialog::subscriberChanged()
         QVariant v = subscriber->value(subPaths.at(i));
 
         if (listWidget) {
-            const QString itemTemplate("%1 (%2)\n%3");
+            const QString itemTemplate(QStringLiteral("%1 (%2)\n%3"));
 
             QListWidgetItem *item =
                 new QListWidgetItem(itemTemplate.arg(subPaths.at(i), v.typeName(), v.toString()));
