@@ -239,12 +239,10 @@ int QSignalIntercepter::typeFromName( const QByteArray& type )
         return QMetaType::VoidStar;
     else if ( type.size() == 0 || type == "void" )
         return QMetaType::Void;
-    else if ( type == "QVariant" )
-        return QSignalIntercepter::QVariantId;
     id = QMetaType::type( type.constData() );
-    if ( id != (int)QMetaType::Void )
-        return id;
-    return QVariant::nameToType(type);
+    if (id == QMetaType::QVariant)
+        return QSignalIntercepter::QVariantId;
+    return id;
 }
 
 /*!

@@ -244,8 +244,8 @@ QObject* ObjectEndPoint::constructProxy(const QRemoteServiceRegister::Entry& ent
                 QList<QByteArray> params = mm.parameterTypes();
                 for (int arg = 0; arg < params.size(); arg++) {
                     const QByteArray& type = params[arg];
-                    int variantType = QVariant::nameToType(type);
-                    if (variantType == QVariant::UserType) {
+                    int variantType = QMetaType::type(type);
+                    if (variantType >= QMetaType::User || variantType == QMetaType::QVariant) {
                         sig.replace(QByteArray(type), QByteArray("QDBusVariant"));
                         customType = true;
                     }
@@ -550,32 +550,28 @@ QVariant ObjectEndPoint::invokeRemoteProperty(int metaIndex, const QVariant& arg
 
     Supports conversion from a QVariant, QList, QMap, QHash, and custom user-defined types.
 */
-QVariant ObjectEndPoint::toDBusVariant(const QByteArray& type, const QVariant& arg)
+QVariant ObjectEndPoint::toDBusVariant(const QByteArray& typeName, const QVariant& arg)
 {
     QVariant dbusVariant = arg;
 
-    int variantType = QVariant::nameToType(type);
-    if (variantType == QVariant::UserType) {
-        variantType = QMetaType::type(type);
+    int type = QMetaType::type(typeName);
+    if (type == QMetaType::QVariant) {
+        // Wrap QVariants in a QDBusVariant
+        QDBusVariant replacement(arg);
+        dbusVariant = QVariant::fromValue(replacement);
+    } else if (type >= QMetaType::User) {
+        // Wrap custom types in a QDBusVariant of the type name and
+        // a buffer of its variant-wrapped data
+        QByteArray buffer;
+        QDataStream stream(&buffer, QIODevice::ReadWrite | QIODevice::Append);
+        stream << arg;
 
-        if (type == "QVariant") {
-            // Wrap QVariants in a QDBusVariant
-            QDBusVariant replacement(arg);
-            dbusVariant = QVariant::fromValue(replacement);
-        } else {
-            // Wrap custom types in a QDBusVariant of the type name and
-            // a buffer of its variant-wrapped data
-            QByteArray buffer;
-            QDataStream stream(&buffer, QIODevice::ReadWrite | QIODevice::Append);
-            stream << arg;
+        QServiceUserTypeDBus customType;
+        customType.typeName = typeName;
+        customType.variantBuffer = buffer;
 
-            QServiceUserTypeDBus customType;
-            customType.typeName = type;
-            customType.variantBuffer = buffer;
-
-            QDBusVariant replacement(QVariant::fromValue(customType));
-            dbusVariant = QVariant::fromValue(replacement);
-        }
+        QDBusVariant replacement(QVariant::fromValue(customType));
+        dbusVariant = QVariant::fromValue(replacement);
     }
 
     return dbusVariant;
@@ -599,20 +595,18 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
         QList<QByteArray> params = method.parameterTypes();
         for (int i = 0; i < params.size(); i++) {
             const QByteArray& type = params[i];
-            int variantType = QVariant::nameToType(type);
-            if (variantType == QVariant::UserType) {
-                variantType = QMetaType::type(type);
-
+            int variantType = QMetaType::type(type);
+            if (variantType >= QMetaType::User || variantType == QMetaType::QVariant) {
                 QDBusVariant dbusVariant = qvariant_cast<QDBusVariant>(args[i]);
                 QVariant variant = dbusVariant.variant();
 
-                if (type == "QVariant") {
+                if (variantType == QMetaType::QVariant) {
                     convertedList << variant;
                 } else {
                     QByteArray buffer = variant.toByteArray();
                     QDataStream stream(&buffer, QIODevice::ReadWrite);
                     QVariant *customType = new QVariant(variantType, (const void*)0);
-                    QMetaType::load(stream, QMetaType::type("QVariant"), customType);
+                    QMetaType::load(stream, QMetaType::QVariant, customType);
                     convertedList << *customType;
                 }
             } else {
@@ -674,29 +668,25 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
 
             // Process return
             const QByteArray& retType = QByteArray(method.typeName());
-            int variantType = QVariant::nameToType(retType);
-                if (variantType == QVariant::UserType) {
-                    variantType = QMetaType::type(retType);
+            int variantType = QMetaType::type(retType);
+            if (variantType == QMetaType::QVariant) {
+                // QVariant return from QDBusVariant wrapper
+                QDBusVariant dbusVariant = qvariant_cast<QDBusVariant>(retList[0]);
+                return dbusVariant.variant();
+            } else if (variantType >= QMetaType::User) {
+                // Custom return type
+                QDBusVariant dbusVariant = qvariant_cast<QDBusVariant>(retList[0]);
+                QVariant convert = dbusVariant.variant();
 
-                    if (retType == "QVariant") {
-                        // QVariant return from QDBusVariant wrapper
-                        QDBusVariant dbusVariant = qvariant_cast<QDBusVariant>(retList[0]);
-                        return dbusVariant.variant();
-                    } else {
-                        // Custom return type
-                        QDBusVariant dbusVariant = qvariant_cast<QDBusVariant>(retList[0]);
-                        QVariant convert = dbusVariant.variant();
+                QServiceUserTypeDBus customType = qdbus_cast<QServiceUserTypeDBus>(convert);
+                QByteArray buffer = customType.variantBuffer;
+                QDataStream stream(&buffer, QIODevice::ReadWrite);
 
-                        QServiceUserTypeDBus customType = qdbus_cast<QServiceUserTypeDBus>(convert);
-                        QByteArray buffer = customType.variantBuffer;
-                        QDataStream stream(&buffer, QIODevice::ReadWrite);
+                // Load our buffered variant-wrapped custom return
+                QVariant *customReturn = new QVariant(variantType, (const void*)0);
+                QMetaType::load(stream, QMetaType::QVariant, customReturn);
 
-                        // Load our buffered variant-wrapped custom return
-                        QVariant *customReturn = new QVariant(variantType, (const void*)0);
-                        QMetaType::load(stream, QMetaType::type("QVariant"), customReturn);
-
-                        return QVariant(variantType, customReturn->data());
-                    }
+                return QVariant(variantType, customReturn->data());
             } else {
                 // Standard return type
                 return retList[0];

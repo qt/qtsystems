@@ -143,11 +143,9 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
         for (int i=0; i < pTypesCount; i++) {
             const QByteArray& t = pTypes[i];
 
-            int variantType = QVariant::nameToType(t);
-            if (variantType == QVariant::UserType)
-                variantType = QMetaType::type(t);
+            int variantType = QMetaType::type(t);
 
-            if (t == "QVariant") {  //ignore whether QVariant is declared as metatype
+            if (variantType == QMetaType::QVariant) {  //ignore whether QVariant is declared as metatype
                 args << *reinterpret_cast<const QVariant(*)>(a[i+1]);
             } else if ( variantType == 0 ){
                 qWarning("%s: argument %s has unknown type. Use qRegisterMetaType to register it.",
@@ -158,18 +156,13 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
             }
         }
 
-        //QVariant looks the same as Void type. we need to distinguish them
-        if (returnType == QMetaType::Void && strcmp(method.typeName(),"QVariant") ) {
+        if (returnType == QMetaType::Void) {
             d->endPoint->invokeRemote(d->localToRemote[metaIndex], args, returnType);
         } else {
-            //TODO: ugly but works
-            //add +1 if we have a variant return type to avoid triggering of void
-            //code path
-            //invokeRemote() parameter list needs review
-            QVariant result = d->endPoint->invokeRemote(d->localToRemote[metaIndex], args,
-                    returnType==0 ? returnType+1: returnType);
+            //TODO: invokeRemote() parameter list needs review
+            QVariant result = d->endPoint->invokeRemote(d->localToRemote[metaIndex], args, returnType);
             if (result.type() != QVariant::Invalid){
-                if (returnType != 0 && strcmp(method.typeName(),"QVariant")) {
+                if (returnType != QMetaType::QVariant) {
                     QByteArray buffer;
                     QDataStream stream(&buffer, QIODevice::ReadWrite);
                     QMetaType::save(stream, returnType, result.constData());
@@ -188,13 +181,11 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
         const int metaIndex = id + d->meta->propertyOffset();
         QMetaProperty property = d->meta->property(metaIndex);
         if (property.isValid()) {
-            int pType = property.type();
-            if (pType == QVariant::UserType)
-                pType = QMetaType::type(property.typeName());
+            int pType = property.userType();
 
             QVariant arg;
             if ( c == QMetaObject::WriteProperty ) {
-                if (pType == QVariant::Invalid && QByteArray(property.typeName()) == "QVariant")
+                if (pType == QMetaType::QVariant)
                     arg =  *reinterpret_cast<const QVariant(*)>(a[0]);
                 else if (pType == 0) {
                     qWarning("%s: property %s has unkown type", property.name(), property.typeName());

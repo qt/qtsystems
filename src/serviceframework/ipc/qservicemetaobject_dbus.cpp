@@ -135,8 +135,8 @@ void QServiceMetaObjectDBus::connectMetaSignals(bool signalsObject) {
                 // Detects custom types as passed arguments
                 for (int arg = 0; arg < pTypesCount; arg++) {
                     const QByteArray& type = pTypes[arg];
-                    int variantType = QVariant::nameToType(type);
-                    if (variantType == QVariant::UserType) {
+                    int variantType = QMetaType::type(type);
+                    if (variantType >= QMetaType::User || variantType == QMetaType::QVariant) {
                         sig.replace(QByteArray(type), QByteArray("QDBusVariant"));
                         customType = true;
                     }
@@ -174,11 +174,9 @@ void QServiceMetaObjectDBus::activateMetaSignal(int id, const QVariantList& args
 
         // Convert custom types
         const QByteArray& type = params[i];
-        int variantType = QVariant::nameToType(type);
-        if (variantType == QVariant::UserType) {
-            variantType = QMetaType::type(type);
-
-            if (variantType >= QMetaType::User) {
+        int variantType = QMetaType::type(type);
+        if (variantType >= QMetaType::User || variantType == QMetaType::QVariant) {
+            if (variantType != QMetaType::QVariant) {
                 // Wrap custom types in a QDBusVariant of the type name and
                 // a buffer of its variant-wrapped data
                 QByteArray buffer;
@@ -239,8 +237,8 @@ const QMetaObject* QServiceMetaObjectDBus::dbusMetaObject(bool signalsObject) co
             // Convert QVariant and custom return types to QDBusVariants
             QByteArray ret(mm.typeName());
             const QByteArray& type = mm.typeName();
-            int variantType = QVariant::nameToType(type);
-            if (variantType == QVariant::UserType) {
+            int variantType = QMetaType::type(type);
+            if (variantType >= QMetaType::User || variantType == QMetaType::QVariant) {
                 ret = QByteArray("QDBusVariant");
             }
 
@@ -250,8 +248,8 @@ const QMetaObject* QServiceMetaObjectDBus::dbusMetaObject(bool signalsObject) co
             const int pTypesCount = pTypes.count();
             for (int i=0; i < pTypesCount; i++) {
                 const QByteArray& type = pTypes[i];
-                int variantType = QVariant::nameToType(type);
-                if (variantType == QVariant::UserType) {
+                int variantType = QMetaType::type(type);
+                if (variantType >= QMetaType::User || variantType == QMetaType::QVariant) {
                     sig.replace(QByteArray(type), QByteArray("QDBusVariant"));
                 }
             }
@@ -381,10 +379,7 @@ int QServiceMetaObjectDBus::qt_metacall(QMetaObject::Call c, int id, void **a)
         const int xTypesCount = xTypes.count();
         for (int i=0; i < xTypesCount; i++) {
             const QByteArray& t = xTypes[i];
-            int variantType = QVariant::nameToType(t);
-            if (variantType == QVariant::UserType) {
-                variantType = QMetaType::type(t);
-            }
+            int variantType = QMetaType::type(t);
 
             // Check for QVariants or custom types, represented as QDBusVariants
             if (t == "QDBusVariant") {
@@ -436,10 +431,7 @@ int QServiceMetaObjectDBus::qt_metacall(QMetaObject::Call c, int id, void **a)
         // Process arguments
         for (int i=0; i < pTypesCount; i++) {
             const QByteArray& t = pTypes[i];
-            int variantType = QVariant::nameToType(t);
-            if (variantType == QVariant::UserType) {
-                variantType = QMetaType::type(t);
-            }
+            int variantType = QMetaType::type(t);
 
             if (variantType >= QMetaType::User) {
                 // Custom argument
@@ -465,8 +457,7 @@ int QServiceMetaObjectDBus::qt_metacall(QMetaObject::Call c, int id, void **a)
 
         // Check for custom return types and make the metacall
         const QByteArray& type = mm.typeName();
-        int retType = QVariant::nameToType(type);
-        retType = QMetaType::type(type);
+        int retType = QMetaType::type(type);
         if (retType >= QMetaType::User) {
             // Invoke the object method directly for custom return types
             bool result = false;

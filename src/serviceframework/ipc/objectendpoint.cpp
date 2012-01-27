@@ -479,7 +479,7 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
 
 
         bool result = false;
-        if (returnType == QMetaType::Void && strcmp(method.typeName(), "QVariant")) {
+        if (returnType == QMetaType::Void) {
             result = method.invoke(service,
                    QGenericArgument(typenames[0], param[0]),
                    QGenericArgument(typenames[1], param[1]),
@@ -495,7 +495,7 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
             //result buffer
             QVariant returnValue;
             //ignore whether QVariant is a declared meta type or not
-            if (returnType != QVariant::Invalid && strcmp(method.typeName(), "QVariant")) {
+            if (returnType != QMetaType::QVariant) {
                 returnValue = QVariant(returnType, (const void*) 0);
             }
 
