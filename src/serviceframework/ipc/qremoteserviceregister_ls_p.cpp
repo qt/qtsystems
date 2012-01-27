@@ -60,7 +60,6 @@
 
 #ifdef QT_MTCLIENT_PRESENT
 #include <mt-client/notionclient.h>
-#include <mt-client/notionconnection.h>
 #include <QtAddOnJsonDb/QtAddOnJsonDb>
 #include <QCoreApplication>
 #include <QTextStream>
@@ -357,9 +356,9 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 #ifdef QT_MTCLIENT_PRESENT
 void doStart(const QString &location, const QString &connectionToken) {
 
-    QScopedPointer<NotionConnection> connection(new NotionConnection(connectionToken));
     QScopedPointer<NotionClient> client(new NotionClient(connection.data()));
     QScopedPointer<NotionWaiter> waiter(new NotionWaiter(client.data()));
+    client->setToken(connectionToken);
     client->setActive(true);
 
     QVariantMap notion;

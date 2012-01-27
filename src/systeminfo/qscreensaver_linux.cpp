@@ -43,7 +43,6 @@
 
 #if !defined(QT_NO_MTLIB)
 #include <mt-client/notionclient.h>
-#include <mt-client/notionconnection.h>
 #include <QtCore/qtimer.h>
 #endif // QT_NO_MTLIB
 
