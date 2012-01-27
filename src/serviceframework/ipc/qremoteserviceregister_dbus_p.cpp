@@ -186,6 +186,9 @@ public slots:
                                   Q_ARG(QString, instanceId));
     }
 
+    void q_autostart() {
+    }
+
 signals:
     void packageReceived(const QByteArray &package, int type, const QString &id);
     void newConnection(int pid, int uid);
@@ -329,9 +332,6 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
 
     // Dummy call to autostart the service if not running
     connection.call(QDBusMessage::createMethodCall(serviceName, path, QString(), QStringLiteral("q_autostart")));
-    qWarning() << QString::fromLatin1("%1 %2 %3").arg(connection.lastError().name()).
-                                                  arg(connection.lastError().message()).
-                                                  arg(connection.lastError().type());
 
     QDBusInterface *iface = new QDBusInterface(serviceName, path, QString(), QDBusConnection::sessionBus());
     if (!iface->isValid()) {

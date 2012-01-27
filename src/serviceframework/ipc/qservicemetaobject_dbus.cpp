@@ -449,7 +449,7 @@ int QServiceMetaObjectDBus::qt_metacall(QMetaObject::Call c, int id, void **a)
 
                 // Load our buffered variant-wrapped custom type
                 QVariant *customType = new QVariant(variantType, (const void*)0);
-                QMetaType::load(stream, QMetaType::type("QVariant"), customType);
+                QMetaType::load(stream, QMetaType::QVariant, customType);
 
                 typeNames[i] = customType->typeName();
                 params[i] = customType->constData();
