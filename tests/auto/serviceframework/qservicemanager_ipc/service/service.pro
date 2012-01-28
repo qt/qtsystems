@@ -22,9 +22,6 @@ QT += serviceframework serviceframework-private
 
 
 SOURCES += main.cpp
-symbian {
-    TARGET.CAPABILITY = ALL -TCB
-}
 !mtlib:!contains(config_test_mtlib, yes): DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 
 RPM_PACKAGE_NAME = $$(RPM_PACKAGE_NAME)

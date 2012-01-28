@@ -26,6 +26,3 @@ jsondb|contains(QT_CONFIG, jsondb): {
 
 SOURCES += tst_qservicemanager_ipc.cpp
 
-symbian {
-    TARGET.CAPABILITY = ALL -TCB
-}

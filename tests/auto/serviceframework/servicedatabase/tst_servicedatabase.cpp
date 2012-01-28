@@ -51,10 +51,6 @@
 
 #define RESOLVERDATABASE "services.db"
 
-#if defined(Q_OS_SYMBIAN)
-# define TESTDATA_DIR "."
-#endif
-
 QT_USE_NAMESPACE
 
 class ServiceDatabaseUnitTest: public QObject
@@ -111,9 +107,6 @@ private:
 
 void ServiceDatabaseUnitTest::initTestCase()
 {
-#if defined(Q_OS_SYMBIAN)
-    database.m_databasePath = QDir::toNativeSeparators(QDir::currentPath().append("/services.db"));
-#endif
     database.close();
     QFile::remove(database.databasePath());
 }
@@ -130,9 +123,6 @@ void ServiceDatabaseUnitTest::testRegistration()
     QVERIFY(!registerService(parser.parseResults()));
 
     QCOMPARE(database.lastError().code(), DBError::DatabaseNotOpen);
-#if defined(Q_OS_SYMBIAN)
-    database.m_databasePath = QDir::toNativeSeparators(QDir::currentPath().append("/services.db"));
-#endif
     QVERIFY(database.open());
     QVERIFY(registerService(parser.parseResults()));
 
@@ -1520,7 +1510,7 @@ bool ServiceDatabaseUnitTest::unregisterService(const QString &serviceName, cons
 
 void ServiceDatabaseUnitTest::securityTokens() {
 #ifndef QT_SFW_SERVICEDATABASE_USE_SECURITY_TOKEN
-    QSKIP("Security tokens are not enabled (currently only enabled on Symbian).");
+    QSKIP("Security tokens are not enabled.");
 #endif
     // Clear databases just in case
     database.close();

@@ -181,8 +181,6 @@ void tst_QServiceManager_IPC::initTestCase()
 
     QServiceManager* manager = new QServiceManager(this);
 
-    // Symbian has auto registration
-#ifndef Q_OS_SYMBIAN
 #ifdef TESTDATA_DIR
     const QString path = QString(TESTDATA_DIR) + "../xmldata/ipcexampleservice.xml";
 #else
@@ -191,7 +189,6 @@ void tst_QServiceManager_IPC::initTestCase()
     bool r = manager->addService(path);
     if (!r)
         qWarning() << "Cannot register IPCExampleService" << path;
-#endif // Q_OS_SYMBIAN
 
 #ifdef SFW_USE_DBUS_BACKEND
     // D-Bus auto registration

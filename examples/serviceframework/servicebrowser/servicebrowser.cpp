@@ -269,11 +269,7 @@ void ServiceBrowser::initWidgets()
     attributesListWidget = new QListWidget;
     attributesListWidget->addItem(tr("(Select an interface implementation)"));
 
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5)
     interfacesListWidget->setMinimumWidth(450);
-#else
-    interfacesListWidget->setMaximumWidth(360);
-#endif
 
     connect(servicesListWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
             this, SLOT(reloadInterfaceImplementationsList()));
@@ -310,43 +306,15 @@ void ServiceBrowser::initWidgets()
     attributesGroup = new QGroupBox(tr("Invokable attributes"));
     QVBoxLayout *attributesLayout = new QVBoxLayout;
     attributesLayout->addWidget(attributesListWidget);
-#if !defined(Q_WS_MAEMO_5)
-    // No space on the screen to show following title in Maemo
     attributesLayout->addWidget(new QLabel(tr("Show attributes for:")));
-#endif
     attributesLayout->addWidget(selectedImplRadioButton);
     attributesLayout->addWidget(defaultImplRadioButton);
     attributesGroup->setLayout(attributesLayout);
 
-#if defined(Q_WS_MAEMO_5)
-    // Maemo 5 style doesn't take group box titles into account.
-    int spacingHack = QFontMetrics(QFont()).height();
-    interfacesLayout->setContentsMargins(0, spacingHack, 0, 0);
-    attributesLayout->setContentsMargins(0, spacingHack, 0, 0);
-    servicesLayout->setContentsMargins(0, spacingHack, 0, 0);
-#endif
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5)
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(servicesGroup, 0, 0);
     layout->addWidget(attributesGroup, 0, 1, 2, 1);
     layout->addWidget(interfacesGroup, 1, 0);
-#else
-    QVBoxLayout *layout = new QVBoxLayout;
-    QStackedLayout *stackedLayout = new QStackedLayout;
-    stackedLayout->addWidget(servicesGroup);
-    stackedLayout->addWidget(interfacesGroup);
-    stackedLayout->addWidget(attributesGroup);
-
-    QComboBox *pageComboBox = new QComboBox;
-    pageComboBox->addItem(tr("Services"));
-    pageComboBox->addItem(tr("Interfaces"));
-    pageComboBox->addItem(tr("Attributes"));
-    connect(pageComboBox, SIGNAL(activated(int)),
-            stackedLayout, SLOT(setCurrentIndex(int)));
-
-    layout->addWidget(pageComboBox);
-    layout->addLayout(stackedLayout);
-#endif
 
     setLayout(layout);
 }

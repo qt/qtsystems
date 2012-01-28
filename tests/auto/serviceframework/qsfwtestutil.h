@@ -65,9 +65,6 @@ public:
     static void clearDatabases_jsondb();
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-    static void removeDatabases_symbian();
-#endif
 };
 
 #endif

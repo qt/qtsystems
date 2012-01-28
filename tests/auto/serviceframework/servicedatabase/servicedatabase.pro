@@ -15,6 +15,3 @@ DEPLOYMENT += addFiles
 # Input 
 SOURCES += tst_servicedatabase.cpp \
             
-symbian {
-    TARGET.CAPABILITY = ALL -TCB
-}

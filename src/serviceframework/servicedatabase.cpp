@@ -138,11 +138,7 @@ bool ServiceDatabase::open()
     path = m_databasePath;
     QFileInfo dbFileInfo(path);
     if (!dbFileInfo.dir().exists()) {
-      // Create the path with QFile, avoids problems with S60 3.2/3.1
-      // Avoid security violation with PlatSec
-#ifndef Q_OS_SYMBIAN
        QDir::root().mkpath(dbFileInfo.path());
-#endif
        QFile file(path);
        if (!file.open(QIODevice::ReadWrite)) {
            QString errorText(QLatin1String("Could not create database directory: %1"));
@@ -1830,12 +1826,6 @@ QString ServiceDatabase::databasePath() const
 {
     QString path;
     if (m_databasePath.isEmpty()) {
-#ifdef Q_OS_SYMBIAN
-        QString qtVersion(qVersion());
-        qtVersion = qtVersion.left(qtVersion.size() -2); //strip off patch version
-        path = QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + "/QtServiceFramework_" +
-            qtVersion + "_system" + QLatin1String(".db"));
-#else
         QSettings settings(QSettings::SystemScope, QLatin1String("Nokia"), QLatin1String("Services"));
         path = settings.value(QLatin1String("ServicesDB/Path")).toString();
         if (path.isEmpty()) {
@@ -1846,7 +1836,6 @@ QString ServiceDatabase::databasePath() const
             path.append(QLatin1String(RESOLVERDATABASE));
         }
         path = QDir::toNativeSeparators(path);
-#endif
     } else {
         path = m_databasePath;
     }

@@ -20,14 +20,7 @@ mtlib|contains(config_test_mtlib, yes) {
 }
 INSTALLS += target sources xml info
 
-symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example
 
-symbian*: {
-    addFiles.sources = remotedialerservice.xml
-    addFiles.path = /private/2002AC7F/import/
-    DEPLOYMENT += addFiles
-}
-else {
-    DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
-}
+DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
+

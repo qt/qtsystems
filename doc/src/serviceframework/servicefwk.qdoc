@@ -398,8 +398,6 @@ description provided above.
 New services can be added and removed at any time via QServiceManager::addService()
 and QServiceManager::removeService().
 
-On Symbian devices a service can be installed using the Symbian package installer.
-
 \section1 Identifying Services
 
 Each implementation is identified by a service name, an interface name and
@@ -463,8 +461,7 @@ demonstrates using a out of process service.
 
 Inter-process services are deployed using a variety of different IPC mechanisms
 available on the current platform and as such may inherit several limitations.  For
-Symbian, IPC is handled by the Symbian Client-Server Framework whereas for other
-environments services are published using QtDBus if it is available otherwise
+some linux environments services can published using QtDBus otherwise it
 falls back on QLocalSocket for inter-process communication.
 
 \section2 D-Bus Services
@@ -531,113 +528,9 @@ a QServiceManager to discover the IPC interfaces that invoke the D-Bus service f
 This is usually done on deployment by adding services through the servicefw tool.
 
 
-\section2 Symbian Client-Server Framework
-
-\section3 Limitations
-Pointers to objects, and anything wrapped in a typedef cannot be passed
-between services and clients.  It's recommended that IPC messages
-be kept small on Symbian when possible.  Symbian Client-Server IPC mandates
-a fixed buffer size, currently set at 255 bytes. Messages that are large
-will cause a large number of context switches. This may cause a system
-performance pentalty if a lot of very large messages are transfered frequently.
-
-\section3 Service Autostart
-Symbian IPC will automatically start the server process if required when the client
-calls loadInterface.  The executable name must be the same as the name provided
-<ipcaddress> tag in the xml registration file.  For example <ipcaddress>xyzabc</ipcaddress>
-should have the executable for the service called xyzabc.exe.
-
-\section3 Service registration
-All services must be registered for clients to be able to locate and use them.
-Symbian provides 3 different methods to register services.
-
-\list
-\o \l{Automatic registration}
-\o \l{Secure registration}
-\o \l{ROM build registration}
-\endlist
-
-\section4 Automatic Registration
-Automatic registration is the prefered method for services that are not
-Symbian Signed and don't require high levels of security.  The XML
-file is copied into the import directory of the IPC backend.  In Qt
-project files this can be done by:
-
-\code
-xmlautoimport.path = /private/2002AC7F/import/
-xmlautoimport.sources = <service xml file>.xml
-DEPLOYMENT += xmlautoimport
-\endcode
-
-Or in a symbian .pkg file by:
-
-\code
-"/epoc32/data/z/private/2002AC7F/import/<service xml file>.xml" - "c:\private\2002AC7F\import\<service xml file>.xml"
-\endcode
-
-\section4 Secure Registration
-For services that are Symbian Signed and require a higher level of security they
-may chose to use a post install program.  The authenticity check of the service is done during
-registration using the VID/SID.  If the installer defines the VID it is stored in the
-registration database, and only the same VID maybe used to remove the service or reinstall it.
-If the VID is undefined then the SID is used.  The VID/SID remain in the registration
-database after unregistration locking the name to the VID/SID.  Only installers using the
-same VID/SID may register a service of the same name.
-
-An example project can be found at \c {examples/serviceinstaller_sfw_symbian}.
-
-More info about VID and SID can be found from
-\list
-    \o \l {http://wiki.forum.nokia.com/index.php/Symbian_Platform_Security_Model}
-    \o \l {http://wiki.forum.nokia.com/index.php/Symbian_Signed_Test_Criteria_V4_Wiki_version}
-\endlist
-
-\section4 ROM build registration
-For Symbian application built into the rom image registration must be done at
-build time using the host tool servicedbgen. To register a service run
-the command:
-
-\code
-servicedbgen -tall add <service xml file>
-\endcode
-
-Appropriate iby files, and settings are required for including the service executable
-and related files in the rom image.
-
-\section3 Service Security Filters
-Services can install a filter function to check the credentials
-of a client on initial connection and then terminate connections if desired.
-The filter is a function:
-
-\code
-bool securityFilter(const void *p)
-{
-    const RMessage2 *aMessage = reinterpret_cast<const RMessage2*>(p);
-    if(check_security) {
-        return true; // accept connection
-    }
-    else {
-        retun false; // reject connection
-    }
-}
-\endcode
-
-Returning true returns CPolicyServer::EPass and false returns CPolicyServer::EFail
-to the Client-Server secuity check.  Registration of the filter is done by
-calling QRemoteServiceRegister::setSecurityFilter().  The Symbian Policy Server
-API can be used to work with the RMessage2 to extract security policy details, such
-as RMessage2::HasCapability or RMessage2::VendorId().
-
-\section3 Error handling
-IPC errors can occur. QObjects returned by the service manager have an additional
-signal created, errorUnrecoverableIPCFault(QService::UnrecoverableIPCError) which the
-client must connect to.  If an error occurs the object must be
-destroyed; no further calls can be made.  The error recovery is left up to
-the client application.
-
 \section2 Local Socket
 
-On platforms that do not provide D-Bus or the Symbian Client-Server Framework, the
+On platforms that do not provide D-Bus or do not use it, the
 underlying IPC mechanism utilized is a local socket based protocol.
 
 \section3 Limitations

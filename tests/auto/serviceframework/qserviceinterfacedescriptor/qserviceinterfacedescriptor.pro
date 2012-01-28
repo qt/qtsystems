@@ -7,6 +7,3 @@ CONFIG += parallel_test
 
 SOURCES += tst_qserviceinterfacedescriptor.cpp
 
-symbian {
-    TARGET.CAPABILITY = ALL -TCB
-}

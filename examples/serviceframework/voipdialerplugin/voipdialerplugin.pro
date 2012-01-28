@@ -24,30 +24,5 @@ xml.files = voipdialerservice.xml
 
 INSTALLS += target sources xml addFiles
 
-symbian: CONFIG += qt_example
-maemo5: CONFIG += qt_example
-
-symbian*: {
-    addFiles.sources = remotedialerservice.xml
-}
-
-symbian {
-    load(data_caging_paths)
-    pluginDep.sources = serviceframework_voipdialerservice.dll
-    pluginDep.path = $$QT_PLUGINS_BASE_DIR
-    DEPLOYMENT += pluginDep
-
-    addFiles.sources = voipdialerservice.xml
-    addFiles.path = /private/2002AC7F/import/
-    DEPLOYMENT += addFiles
-
-    DEPLOYMENT += xmlautoimport
-
-    TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = LocalServices Location NetworkServices ReadUserData WriteUserData UserEnvironment
-    load(armcc_warnings)
-}
-else {
-    DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
-}
+DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 

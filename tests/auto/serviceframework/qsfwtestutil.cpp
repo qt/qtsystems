@@ -199,33 +199,3 @@ void QSfwTestUtil::clearDatabases_jsondb()
 
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#include <e32base.h>
-void QSfwTestUtil::removeDatabases_symbian()
-{
-#if defined(__WINS__) && !defined(SYMBIAN_EMULATOR_SUPPORTS_PERPROCESS_WSD)
-    QDir dir("C:/Data/temp/QtServiceFW");
-#else
-    TFindServer findServer(_L("!qsfwdatabasemanagerserver"));
-    TFullName name;
-    if (findServer.Next(name) == KErrNone)
-    {
-        RProcess dbServer;
-        if (dbServer.Open(_L("qsfwdatabasemanagerserver")) == KErrNone)
-        {
-            dbServer.Kill(KErrNone);
-            dbServer.Close();    
-        }
-    }    
-
-    QDir dir("c:/private/2002AC7F");
-#endif
-
-    QString qtVersion(qVersion());
-    qtVersion = qtVersion.left(qtVersion.size() - 2); //strip off patch version
-    QString dbIdentifier = "_system";
-    QString dbName = QString("QtServiceFramework_") + qtVersion + dbIdentifier + QLatin1String(".db");
-    QFile::remove(QDir::toNativeSeparators(dir.path() + QDir::separator() + dbName));
-}
-#endif
-

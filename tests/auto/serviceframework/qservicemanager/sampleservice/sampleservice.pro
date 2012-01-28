@@ -8,16 +8,6 @@ DESTDIR = ../plugins
 
 QT += serviceframework
 
-symbian {
-    load(data_caging_paths)
-    pluginDep.sources = tst_sfw_sampleserviceplugin.dll
-    pluginDep.path = $$QT_PLUGINS_BASE_DIR/plugins   
-
-    DEPLOYMENT += pluginDep
-    TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL -TCB
-}
-
 RPM_PACKAGE_NAME = $$(RPM_PACKAGE_NAME)
 isEmpty(RPM_PACKAGE_NAME) {
     RPM_PACKAGE_NAME = unknown-package

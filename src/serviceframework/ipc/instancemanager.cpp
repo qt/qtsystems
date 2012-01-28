@@ -70,12 +70,12 @@ InstanceManager::~InstanceManager()
         ServiceIdentDescriptor descr = metaMap.take(allEntries.takeFirst());
         if (descr.entryData->instanceType == QRemoteServiceRegister::GlobalInstance) {
             if (descr.globalInstance)
-               QTimer::singleShot(0, descr.globalInstance, SLOT(deleteLater())); // Symbian issue, use timer
+                descr.globalInstance->deleteLater();
             descr.globalInstance = 0;
         } else {
             QList<QUuid> allUuids = descr.individualInstances.keys();
             while (!allUuids.isEmpty()) {
-                QTimer::singleShot(0, descr.individualInstances.take(allUuids.takeFirst()), SLOT(deleteLater())); // Symbian issue
+                descr.individualInstances.take(allUuids.takeFirst())->deleteLater();
             }
         }
     }
@@ -205,7 +205,7 @@ void InstanceManager::removeObjectInstance(const QRemoteServiceRegister::Entry& 
     } else {
         QObject* service = descr.individualInstances.take(instanceId);
         if (service) {
-            QTimer::singleShot(0, service, SLOT(deleteLater())); // symbian issue
+            service->deleteLater();
             emit instanceClosed(entry);
             emit instanceClosed(entry, instanceId);    //internal use
         }

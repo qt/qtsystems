@@ -9,10 +9,6 @@ HEADERS += service.h
 
 !mtlib:!contains(config_test_mtlib, yes): DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
-symbian {
-    TARGET.CAPABILITY = ALL -TCB
-}
-
 addFiles.files = xmldata/*
 addFiles.path = xmldata
 DEPLOYMENT += addFiles

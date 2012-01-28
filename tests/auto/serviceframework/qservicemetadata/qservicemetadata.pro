@@ -10,10 +10,6 @@ QT -= gui
 SOURCES += tst_servicemetadata.cpp
 
 
-symbian {
-    TARGET.CAPABILITY = ALL -TCB
-}
-
 addFiles.files = testdata/*
 addFiles.path = testdata
 DEPLOYMENT += addFiles

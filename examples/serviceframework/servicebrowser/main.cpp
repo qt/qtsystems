@@ -70,11 +70,6 @@ int main(int argc, char *argv[])
 
     ServiceBrowser browser;
     browser.show();
-#ifdef Q_OS_SYMBIAN
-    browser.showMaximized();
-#else
-    browser.show();
-#endif
 
     return app.exec();
 }

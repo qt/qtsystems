@@ -285,10 +285,6 @@ void tst_QServiceManager::initTestCase()
     m_pluginsDirectory = QFINDTESTDATA("plugins");
     QVERIFY2(!m_pluginsDirectory.isEmpty(), "Unable to locate plugins");
 
-#if defined(Q_OS_SYMBIAN)
-    QSfwTestUtil::removeDatabases_symbian();
-#endif // Q_OS_SYMBIAN
-
     // Example XML files specify plugins as 'plugins/foo', so, add parent directory.
     const QFileInfo pluginsDirectory(m_pluginsDirectory);
     QCoreApplication::addLibraryPath(pluginsDirectory.absolutePath());
@@ -313,17 +309,8 @@ void tst_QServiceManager::init()
 #if defined(QT_ADDON_JSONDB_LIB)
     QSfwTestUtil::clearDatabases_jsondb();
 #endif // QT_ADDON_JSONDB_LIB
-#if defined(Q_OS_SYMBIAN)
-    // Wait a millisecond so that QServiceManagers are destroyed and release
-    // the database file (otherwise QFile::remove will get a permission denied -->
-    // in next case, the isEmpty() check fails).
-    QTest::qWait(1);
-#endif // Q_OS_SYMBIAN
     QSfwTestUtil::removeTempUserDb();
     QSfwTestUtil::removeTempSystemDb();
-#if defined(Q_OS_SYMBIAN)
-    QSfwTestUtil::removeDatabases_symbian();
-#endif // Q_OS_SYMBIAN
     QSettings settings("com.nokia.qt.serviceframework.tests", "SampleServicePlugin");
     settings.setValue("installed", false);
 }
@@ -332,9 +319,6 @@ void tst_QServiceManager::cleanupTestCase()
 {
     QSfwTestUtil::removeTempUserDb();
     QSfwTestUtil::removeTempSystemDb();
-#if defined(Q_OS_SYMBIAN)
-    QSfwTestUtil::removeDatabases_symbian();
-#endif
     //process deferred delete events
     //QServiceManager::loadInterface makes use of deleteLater() when
     //cleaning up service objects and their respective QPluginLoader
@@ -444,9 +428,6 @@ void tst_QServiceManager::findServices_data()
 
 void tst_QServiceManager::findServices_scope()
 {
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("There is no difference between user and system scope in symbian");
-#endif // Q_OS_SYMBIAN
 #if defined(QT_ADDON_JSONDB_LIB)
     QSKIP("There is no difference between user and system scope with jsondb");
 #endif // QT_ADDON_JSONDB_LIB
@@ -717,9 +698,6 @@ void tst_QServiceManager::findInterfaces_filter_data()
 
 void tst_QServiceManager::findInterfaces_scope()
 {
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("There is no difference between user and system scope in symbian");
-#endif // Q_OS_SYMBIAN
 #if defined(QT_ADDON_JSONDB_LIB)
     QSKIP("There is no difference between user and system scope with jsondb");
 #endif // QT_ADDON_JSONDB_LIB
@@ -843,11 +821,7 @@ void tst_QServiceManager::loadInterface_descriptor_data()
             QServiceInterfaceDescriptor descriptor;
             QServiceInterfaceDescriptorPrivate *priv = new QServiceInterfaceDescriptorPrivate;
             priv->interfaceName = "com.nokia.qt.TestInterfaceA";    // needed by service plugin implementation
-#if defined (Q_OS_SYMBIAN)
-            priv->attributes[QServiceInterfaceDescriptor::Location] = "plugins/" + m_validPluginPaths.at(i);
-#else
             priv->attributes[QServiceInterfaceDescriptor::Location] =  m_validPluginPaths.at(i);
-#endif  // Q_OS_SYMBIAN
             QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
             QTest::newRow(qPrintable(m_validPluginNames.at(i)))
                     << descriptor
@@ -861,11 +835,8 @@ void tst_QServiceManager::loadInterface_testLoadedObjectAttributes()
     QServiceInterfaceDescriptor descriptor;
     QServiceInterfaceDescriptorPrivate *priv = new QServiceInterfaceDescriptorPrivate;
     priv->interfaceName = "com.nokia.qt.TestInterfaceA";    // needed by service plugin implementation
-#if defined(Q_OS_SYMBIAN)
-    priv->attributes[QServiceInterfaceDescriptor::Location] =  "plugins/" + m_validPluginPaths.at(2);
-#else
     priv->attributes[QServiceInterfaceDescriptor::Location] =  m_validPluginPaths.at(2);
-#endif // Q_OS_SYMBIAN
+
     QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
 
     QServiceManager mgr;
@@ -926,11 +897,7 @@ void tst_QServiceManager::loadLocalTypedInterface()
     QServiceInterfaceDescriptor descriptor;
     QServiceInterfaceDescriptorPrivate *priv = new QServiceInterfaceDescriptorPrivate;
     priv->interfaceName = "com.nokia.qt.TestInterfaceA";    // needed by service plugin implementation
-#if defined(Q_OS_SYMBIAN)
-    priv->attributes[QServiceInterfaceDescriptor::Location] =  "plugins/" + m_validPluginPaths.at(0);
-#else
     priv->attributes[QServiceInterfaceDescriptor::Location] = m_validPluginPaths.at(0);
-#endif // Q_OS_SYMBIAN
     QServiceInterfaceDescriptorPrivate::setPrivate(&descriptor, priv);
 
     //use manual descriptor -> avoid database involvement
@@ -1234,12 +1201,8 @@ void tst_QServiceManager::setInterfaceDefault_descriptor()
 
     QCOMPARE(mgr.interfaceDefault(interfaceName), desc);
 
-#if defined(Q_OS_SYMBIAN)
-    QCOMPARE(mgr.interfaceDefault(interfaceName).isValid(), expectFound);
-#else
     QServiceManager mgrWithOtherScope(scope_find);
     QCOMPARE(mgrWithOtherScope.interfaceDefault(interfaceName).isValid(), expectFound);
-#endif // Q_OS_SYMBIAN
 }
 
 void tst_QServiceManager::setInterfaceDefault_descriptor_data()
@@ -1248,8 +1211,8 @@ void tst_QServiceManager::setInterfaceDefault_descriptor_data()
     QTest::addColumn<QService::Scope>("scope_find");
     QTest::addColumn<bool>("expectFound");
 
-#if defined(Q_OS_SYMBIAN) || defined(QT_ADDON_JSONDB_LIB)
-    // Symbian implementation hard-codes user-scope for everything, do not test any system scope-stuff
+#if defined(QT_ADDON_JSONDB_LIB)
+    // implementation hard-codes user-scope for everything, do not test any system scope-stuff
     // because returned service interface descriptor is always in user-scope
     QTest::newRow("user scope")
                 << QService::UserScope << QService::UserScope << true;
@@ -1263,7 +1226,7 @@ void tst_QServiceManager::setInterfaceDefault_descriptor_data()
             << QService::UserScope << QService::SystemScope << false;
     QTest::newRow("system scope - add, user scope - find")
             << QService::SystemScope << QService::UserScope << true;
-#endif // Q_OS_SYMBIAN || QT_JSONDB
+#endif //QT_JSONDB
 }
 
 void tst_QServiceManager::interfaceDefault()
@@ -1319,8 +1282,8 @@ void tst_QServiceManager::serviceAdded()
         QTRY_COMPARE(spyRemove.count(), 1);
     }
 
-#if !defined (Q_OS_WIN) && !defined (Q_OS_SYMBIAN)
-    // on win and symbian, cannot delete the database while it is in use
+#if !defined (Q_OS_WIN)
+    // on win, cannot delete the database while it is in use
     // try it again after deleting the database
     deleteTestDatabasesAndWaitUntilDone();
 #else
@@ -1364,8 +1327,7 @@ void tst_QServiceManager::serviceAdded_data()
 
     QByteArray file1Data = file1.readAll();
 
-#if defined (Q_OS_SYMBIAN) || defined(QT_ADDON_JSONDB_LIB)
-    // Symbian implementation hard-codes (ignores) scopes for everything, do not test mixed-scope stuff
+#if defined(QT_ADDON_JSONDB_LIB)
     QTest::newRow("SampleService, user scope") << file1Data << "SampleService"
             << QService::SystemScope << QService::SystemScope << true;
     QTest::newRow("TestService, user scope") << file2.readAll() << "TestService"
@@ -1382,7 +1344,7 @@ void tst_QServiceManager::serviceAdded_data()
             << QService::UserScope << QService::SystemScope << false;
     QTest::newRow("modify as system, listen in user") << file1Data << "SampleService"
             << QService::SystemScope << QService::UserScope << true;
-#endif /* Q_OS_SYMBIAN */
+#endif /* Q_ADDON_JSONDB_LIB */
 }
 
 void tst_QServiceManager::serviceRemoved()
@@ -1439,8 +1401,8 @@ void tst_QServiceManager::serviceRemoved()
     }
     listener->params.clear();
 
-#if !defined (Q_OS_WIN) && !defined (Q_OS_SYMBIAN)
-    // on win and symbian, cannot delete the database while it is in use
+#if !defined (Q_OS_WIN)
+    // on win, cannot delete the database while it is in use
     // try it again after deleting the database
     deleteTestDatabasesAndWaitUntilDone();
 #else

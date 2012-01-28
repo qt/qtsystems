@@ -8,6 +8,3 @@ QT -= gui
 
 CONFIG += parallel_test
 
-symbian {
-    TARGET.CAPABILITY = ALL -TCB
-}

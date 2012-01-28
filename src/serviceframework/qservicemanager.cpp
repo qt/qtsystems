@@ -47,8 +47,6 @@
 
 #ifdef QT_ADDON_JSONDB_LIB
     #include "databasemanager_jsondb_p.h"
-#elif defined(Q_OS_SYMBIAN)
-    #include "databasemanager_symbian_p.h"
 #else
     #include "databasemanager_p.h"
 #endif
@@ -75,25 +73,11 @@ static QString qservicemanager_resolveLibraryPath(const QString &libNameOrPath)
     for (int i=0; i<paths.count(); i++) {
         QString libPath = QDir::toNativeSeparators(paths[i]) + QDir::separator() + libNameOrPath;
 
-#ifdef Q_OS_SYMBIAN
-        QFileInfo fi(libPath);
-        if (fi.suffix() == QLatin1String("dll"))
-            libPath = fi.completeBaseName() + QLatin1String(".qtplugin");
-        else
-            libPath += QLatin1String(".qtplugin");
-
-        QLibrary lib(libPath);
-        if (QFile::exists(libPath) && lib.load()) {
-            lib.unload();
-            return libPath;
-        }
-#else
         QLibrary lib(libPath);
         if (lib.load()) {
             lib.unload();
             return lib.fileName();
         }
-#endif
     }
     return QString();
 }
