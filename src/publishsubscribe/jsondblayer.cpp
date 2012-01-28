@@ -294,7 +294,7 @@ void JsonDbHandle::getNotificationQueryAndActions(QString path, QString& query, 
 
     actions = JsonDbClient::NotifyUpdate;
 
-    if (!value(QStringLiteral(""), &object)){
+    if (!value(QStringLiteral(""), &object)) {
         // Neither a settings object nor a setting in a settings object was found
         // Probably the caller wants to subscribe somewhere on the top in the namespace
         query = QString(QStringLiteral("[?identifier=~\"/%1.*/\"]%2")).
