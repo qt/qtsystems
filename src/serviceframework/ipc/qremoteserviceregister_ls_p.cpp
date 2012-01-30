@@ -356,30 +356,38 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 #ifdef QT_MTCLIENT_PRESENT
 void doStart(const QString &location, const QString &connectionToken) {
 
-    QScopedPointer<NotionClient> client(new NotionClient(connection.data()));
+    QScopedPointer<NotionClient> client(new NotionClient());
     QScopedPointer<NotionWaiter> waiter(new NotionWaiter(client.data()));
-    client->setToken(connectionToken);
+    client->setConnectionToken(connectionToken);
     client->setActive(true);
 
     QVariantMap notion;
     notion.insert(QLatin1String("notion"), QLatin1String("ServiceRequest"));
     notion.insert(QLatin1String("service"), location);
+
+    //
+    // XXX TODO: needs error handeling, client->send can fail
+    //           need to add some error handeling.  Return type
+    //           of send has been promissed to change to bool.
+    //           On failure can wait for the signal client->connection->connected
+    //           may also be able to check client->connection->isOpen first
     client->send(notion);
 
     QEventLoop loop;
     QFileSystemWatcher watcher;
     QFileInfo file(QLatin1Literal("/tmp/") + location);
     watcher.addPath(QLatin1Literal("/tmp"));
-    qWarning() << "SFW checking in" << file.path() << "for the socket to come into existance";
+    qWarning() << "SFW checking in" << file.path() << "for the socket to come into existance" << file.filePath();
     QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), &loop, SLOT(quit()));
     QTimer timeout;
     timeout.start(5000);
+    timeout.setSingleShot(true);
     QObject::connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
     while (!file.exists() && timeout.isActive()) {
         qWarning() << "SFW waiting for file deamon to start....";
         loop.exec();
     }
-    qWarning() << "SFW done waiting";
+    qWarning() << "SFW done waiting" << file.exists();
 
 }
 #endif
@@ -389,7 +397,7 @@ void doStart(const QString &location, const QString &connectionToken) {
 */
 QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegister::Entry& entry, const QString& location)
 {
-    qDebug() << "SFW proxyForService" << location;
+    qWarning() << "(all ok) starting SFW proxyForService" << location;
     QLocalSocket* socket = new QLocalSocket();
     socket->connectToServer(location);
 
@@ -398,11 +406,11 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             QString path = location;
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
 #ifdef QT_MTCLIENT_PRESENT
-            qDebug() << "SFW Sending notion to start service";
+
             doStart(location, entry.d->connectionToken);
 
             socket->connectToServer(location);
-            if (!socket->isValid()){
+            if (!socket->waitForConnected()) {
                 qWarning() << "Server failed to start within waiting period";
                 return false;
             }
