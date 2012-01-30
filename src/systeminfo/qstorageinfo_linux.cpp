@@ -115,7 +115,7 @@ qlonglong QStorageInfoPrivate::totalDiskSpace(const QString &drive)
 
 QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 {
-    QFileInfoList fileinfolist = QDir(QString::fromAscii("/dev/disk/by-uuid/")).entryInfoList(QDir::AllEntries | QDir::NoDot | QDir::NoDotDot);
+    QFileInfoList fileinfolist = QDir(QString(QStringLiteral("/dev/disk/by-uuid/"))).entryInfoList(QDir::AllEntries | QDir::NoDot | QDir::NoDotDot);
     if (!fileinfolist.isEmpty()) {
         FILE *fsDescription = setmntent(_PATH_MOUNTED, "r");
         struct mntent entry;
@@ -207,18 +207,18 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
 
         // Now need to guess if it's InternalDrive or RemovableDrive
         QString fsName(QString::fromAscii(entry.mnt_fsname));
-        if (fsName.contains(QString::fromAscii("mapper"))) {
+        if (fsName.contains(QString(QStringLiteral("mapper")))) {
             struct stat status;
             stat(entry.mnt_fsname, &status);
-            fsName = QString::fromAscii("/sys/block/dm-%1/removable").arg(status.st_rdev & 0377);
+            fsName = QString(QStringLiteral("/sys/block/dm-%1/removable")).arg(status.st_rdev & 0377);
         } else {
-            fsName = fsName.section(QString::fromAscii("/"), 2, 3);
+            fsName = fsName.section(QString(QStringLiteral("/")), 2, 3);
             if (!fsName.isEmpty()) {
                 if (fsName.length() > 3) {
-                    if (fsName.right(1) == QString::fromAscii("p"))
+                    if (fsName.right(1) == QString(QStringLiteral("p")))
                         fsName.chop(1);
                 }
-                fsName = QString::fromAscii("/sys/block/") + fsName + QString::fromAscii("/removable");
+                fsName = QString(QStringLiteral("/sys/block/")) + fsName + QString(QStringLiteral("/removable"));
             }
         }
         QFile removable(fsName);

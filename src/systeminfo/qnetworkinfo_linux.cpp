@@ -71,8 +71,8 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, NETWORK_SYSFS_PATH, (QStringLiteral("/sys/class/net/")))
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, WLAN_MASK, (QStringList() << QStringLiteral("wlan*")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, ETHERNET_MASK, (QStringList() << QStringLiteral("eth*") << QStringLiteral("usb*")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, WLAN_MASK, (QStringList() << QString(QStringLiteral("wlan*"))))
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, ETHERNET_MASK, (QStringList() << QString(QStringLiteral("eth*")) << QString(QStringLiteral("usb*"))))
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     : QObject(parent)
@@ -332,7 +332,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
     case QNetworkInfo::WlanMode: {
         QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/address"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/address")));
             if (carrier.open(QIODevice::ReadOnly))
                 return QString::fromAscii(carrier.readAll().simplified().data());
         }
@@ -342,7 +342,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
     case QNetworkInfo::EthernetMode: {
         QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/address"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/address")));
             if (carrier.open(QIODevice::ReadOnly))
                 return QString::fromAscii(carrier.readAll().simplified().data());
         }
@@ -530,14 +530,14 @@ void QNetworkInfoPrivate::onUdevChanged()
 
     QString sysname(QString::fromLocal8Bit(udev_device_get_sysname(udevDevice)));
     if (watchNetworkInterfaceCount) {
-        if (sysname.startsWith(QString::fromUtf8("eth")) || sysname.startsWith(QString::fromUtf8("usb"))) {
+        if (sysname.startsWith(QString(QStringLiteral("eth"))) || sysname.startsWith(QString(QStringLiteral("usb")))) {
             if (0 == strcmp(udev_device_get_action(udevDevice), "add"))
                 ++networkInterfaceCounts[QNetworkInfo::EthernetMode];
             else if (0 == strcmp(udev_device_get_action(udevDevice), "remove"))
                 --networkInterfaceCounts[QNetworkInfo::EthernetMode];
             emit networkInterfaceCountChanged(QNetworkInfo::EthernetMode,
                                                 networkInterfaceCounts[QNetworkInfo::EthernetMode]);
-        } else if (sysname.startsWith(QString::fromUtf8("wlan"))) {
+        } else if (sysname.startsWith(QString(QStringLiteral("wlan")))) {
             if (0 == strcmp(udev_device_get_action(udevDevice), "add"))
                 ++networkInterfaceCounts[QNetworkInfo::WlanMode];
             else if (0 == strcmp(udev_device_get_action(udevDevice), "remove"))
@@ -661,7 +661,7 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        QFile file(QString::fromAscii("/proc/net/wireless"));
+        QFile file(QString(QStringLiteral("/proc/net/wireless")));
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
             return -1;
 
@@ -670,7 +670,7 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
         QString line = in.readLine();
         while (!line.isNull()) {
             if (line.left(6).contains(interfaceName)) {
-                QString token = line.section(QString::fromAscii(" "), 4, 5).simplified();
+                QString token = line.section(QString(QStringLiteral(" ")), 4, 5).simplified();
                 token.chop(1);
                 bool ok;
                 int signalStrength = (int)rint((log(token.toInt(&ok)) / log(92)) * 100.0);
@@ -802,7 +802,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
     case QNetworkInfo::WlanMode: {
         QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/carrier"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/carrier")));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
                 if (carrier.read(&state, 1) == 1 && state == '1')
@@ -815,7 +815,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
     case QNetworkInfo::EthernetMode: {
         QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK());
         if (interface < dirs.size()) {
-            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString::fromAscii("/carrier"));
+            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/carrier")));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
                 if (carrier.read(&state, 1) == 1 && state == '1')

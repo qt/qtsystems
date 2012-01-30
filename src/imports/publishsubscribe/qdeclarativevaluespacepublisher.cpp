@@ -171,11 +171,11 @@ bool QDeclarativeValueSpacePublisher::hasSubscribers() const
 void QDeclarativeValueSpacePublisher::setKeys(const QStringList &keys)
 {
     foreach (const QString &key, keys) {
-        if (key.contains(QRegExp(QString::fromUtf8("[^a-zA-Z0-9]")))
-            || key == QString::fromUtf8("value")
-            || key == QString::fromUtf8("path")
-            || key == QString::fromUtf8("keys")
-            || key == QString::fromUtf8("hasSubscribers")) {
+        if (key.contains(QRegExp(QString(QStringLiteral("[^a-zA-Z0-9]"))))
+            || key == QString(QStringLiteral("value"))
+            || key == QString(QStringLiteral("path"))
+            || key == QString(QStringLiteral("keys"))
+            || key == QString(QStringLiteral("hasSubscribers"))) {
             continue;
         }
 
