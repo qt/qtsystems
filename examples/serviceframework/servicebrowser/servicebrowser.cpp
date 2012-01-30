@@ -78,11 +78,7 @@ void ServiceBrowser::currentInterfaceImplChanged(QListWidgetItem *current, QList
 
     QServiceInterfaceDescriptor descriptor = current->data(Qt::UserRole).value<QServiceInterfaceDescriptor>();
     if (descriptor.isValid()) {
-#if defined(Q_WS_MAEMO_5)
-        defaultInterfaceButton->setText(tr("Set as default implementation for \n%1").arg(descriptor.interfaceName()));
-#else
         defaultInterfaceButton->setText(tr("Set as default implementation for %1").arg(descriptor.interfaceName()));
-#endif
                 //TODO: .arg(descriptor.interfaceName()));
         defaultInterfaceButton->setEnabled(true);
     }

@@ -20,7 +20,5 @@ mtlib|contains(config_test_mtlib, yes) {
 }
 INSTALLS += target sources xml info
 
-maemo5: CONFIG += qt_example
-
 DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 
