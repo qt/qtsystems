@@ -217,10 +217,10 @@ void TestQValueSpaceJsonDb::testLayer_RemoveWatches()
 void TestQValueSpaceJsonDb::testLayer_Children()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.app1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.app1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
@@ -274,7 +274,7 @@ void TestQValueSpaceJsonDb::testLayer_Name()
 void TestQValueSpaceJsonDb::testLayer_NotifyInterest()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testNotifyInterest.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testNotifyInterest.app\", \"setting1\":1}";
 
     // Subscribe for settings objects under com.testNotifyInterest
     JsonDbHandle handle(NULL, "com.pstest.testNotifyInterest", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
@@ -322,7 +322,7 @@ void TestQValueSpaceJsonDb::testLayer_RemoveHandle()
 void TestQValueSpaceJsonDb::testLayer_RemoveSubTree()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
@@ -338,8 +338,8 @@ void TestQValueSpaceJsonDb::testLayer_RemoveSubTree()
 void TestQValueSpaceJsonDb::testLayer_RemoveValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsetValue.app\", \"setting1\":1}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testUnsetValue.system\", \"setting2\":2}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsetValue.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testUnsetValue.system\", \"setting2\":2}";
     createJsonObjects(objects);
 
     try {
@@ -364,7 +364,7 @@ void TestQValueSpaceJsonDb::testLayer_RemoveValue()
 void TestQValueSpaceJsonDb::testLayer_SetProperty()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetProperty.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetProperty.app\", \"setting1\":1}";
 
     // Subscribe for settings objects under com.testSubscribe
     JsonDbHandle handle(NULL, "com.pstest.testSetProperty", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
@@ -394,8 +394,8 @@ void TestQValueSpaceJsonDb::testLayer_SetProperty()
 void TestQValueSpaceJsonDb::testLayer_SetValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetValue.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testSetValue.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetValue.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testSetValue.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
@@ -448,8 +448,8 @@ void TestQValueSpaceJsonDb::testLayer_Sync()
 void TestQValueSpaceJsonDb::testLayer_Value()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
@@ -649,8 +649,8 @@ void TestQValueSpaceJsonDb::testHandle_JsonDbHandle()
 void TestQValueSpaceJsonDb::testHandle_Value()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testValueLayer.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testValueLayer.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
@@ -692,8 +692,8 @@ void TestQValueSpaceJsonDb::testHandle_Value()
 void TestQValueSpaceJsonDb::testHandle_SetValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetValue.app\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testSetValue.system\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetValue.app\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testSetValue.system\", \"settings\": {\"setting2\":2}}";
     createJsonObjects(objects);
 
     try {
@@ -733,8 +733,8 @@ void TestQValueSpaceJsonDb::testHandle_SetValue()
 void TestQValueSpaceJsonDb::testHandle_UnsetValue()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsetValue.app\", \"setting1\":1}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testUnsetValue.system\", \"setting2\":2}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsetValue.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testUnsetValue.system\", \"setting2\":2}";
     createJsonObjects(objects);
 
     try {
@@ -759,7 +759,7 @@ void TestQValueSpaceJsonDb::testHandle_UnsetValue()
 void TestQValueSpaceJsonDb::testHandle_Subscribe()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSubscribe.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSubscribe.app\", \"setting1\":1}";
 
     // Subscribe for settings objects under com.testSubscribe
     JsonDbHandle handle(NULL, "com.pstest.testSubscribe", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
@@ -782,7 +782,7 @@ void TestQValueSpaceJsonDb::testHandle_Subscribe()
 void TestQValueSpaceJsonDb::testHandle_Unsubscribe()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsubscribe.app\", \"setting1\":1}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testUnsubscribe.app\", \"setting1\":1}";
 
     JsonDbHandle handle(NULL, "com.pstest.testUnsubscribe", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
 
@@ -806,10 +806,10 @@ void TestQValueSpaceJsonDb::testHandle_Unsubscribe()
 void TestQValueSpaceJsonDb::testHandle_Children()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.app1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mp.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.app1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sys1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testChildren.sub.app2\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testChildren.sub.sys2\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
@@ -827,7 +827,7 @@ void TestQValueSpaceJsonDb::testHandle_Children()
 void TestQValueSpaceJsonDb::testHandle_RemoveSubTree()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testRemoveSubTree\", \"settings\": {\"setting1\":1}}";
 
     createJsonObjects(objects);
 
@@ -843,7 +843,7 @@ void TestQValueSpaceJsonDb::testHandle_RemoveSubTree()
 void TestQValueSpaceJsonDb::testAPI_PublisherPath()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublisherPath\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublisherPath\", \"settings\": {\"setting1\":1}}";
     createJsonObjects(objects);
 
     QString path = "/com/pstest/PublisherPath";
@@ -855,7 +855,7 @@ void TestQValueSpaceJsonDb::testAPI_PublisherPath()
 void TestQValueSpaceJsonDb::testAPI_PublishSubscribe()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublishSubscribe\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublishSubscribe\", \"settings\": {\"setting1\":1}}";
     createJsonObjects(objects);
 
     QString path = "/com/pstest/PublishSubscribe";
@@ -881,7 +881,7 @@ void TestQValueSpaceJsonDb::testAPI_PublishSubscribe()
 void TestQValueSpaceJsonDb::testAPI_Notification()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mp.settings.ApplicationSettings\", \"identifier\":\"com.pstest.Notification\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.Notification\", \"settings\": {\"setting1\":1}}";
     createJsonObjects(objects);
 
     QString path = "/com/pstest/Notification";
