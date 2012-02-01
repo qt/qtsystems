@@ -55,18 +55,10 @@
 
 #include "qdeclarativevaluespacepublisher_p.h"
 #include <private/qmetaobjectbuilder_p.h>
+#include <private/qobject_p.h>
 #include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
-
-// Copied from qobject_p.h
-struct QAbstractDynamicMetaObject : public QMetaObject
-{
-    virtual ~QAbstractDynamicMetaObject() {}
-    virtual int metaCall(QMetaObject::Call, int _id, void **) { return _id; }
-    virtual int createProperty(const char *, const char *) { return -1; }
-};
-// Copy end
 
 struct QDeclarativeValueSpacePublisherMetaObject : public QAbstractDynamicMetaObject
 {
