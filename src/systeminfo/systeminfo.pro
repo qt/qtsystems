@@ -101,8 +101,16 @@ linux-*: !simulator: {
         DEFINES += QT_NO_BLUEZ
     }
 
+    contains(QT_CONFIG, sfw_netreg) {
+        QT += serviceframework
+        PRIVATE_HEADERS += qnetworkservicewrapper_p.h
+        SOURCES += qnetworkservicewrapper.cpp
+    } else {
+        DEFINES += QT_NO_SFW_NETREG
+    }
+
     contains(QT_CONFIG, dbus): {
-        contains(config_test_ofono, yes) {
+        contains(config_test_ofono, yes) : !contains(QT_CONFIG, sfw_netreg) {
             QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h
             SOURCES += qofonowrapper.cpp
@@ -195,10 +203,16 @@ simulator {
             DEFINES += QT_NO_BLUEZ
         }
 
-        DEFINES += QT_NO_SFW_NETREG
+        contains(QT_CONFIG, sfw_netreg) {
+            QT += serviceframework
+            PRIVATE_HEADERS += qnetworkservicewrapper_p.h
+            SOURCES += qnetworkservicewrapper.cpp
+        } else {
+            DEFINES += QT_NO_SFW_NETREG
+        }
 
         contains(QT_CONFIG, dbus): {
-            contains(config_test_ofono, yes) {
+            contains(config_test_ofono, yes) : !contains(QT_CONFIG, sfw_netreg) {
             QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h \
                                qnetworkinfo_linux_p.h

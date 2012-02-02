@@ -50,52 +50,43 @@
 // We mean it.
 //
 
-#ifndef QNETWORKINFO_LINUX_P_H
-#define QNETWORKINFO_LINUX_P_H
+#ifndef QNETWORKSERVICEWRAPPER_P_H
+#define QNETWORKSERVICEWRAPPER_P_H
 
 #include <qnetworkinfo.h>
 
-#include <QtCore/qmap.h>
+#include <QObject>
+#include <QStringList>
+#include <QServiceInterfaceDescriptor>
+
+#if !defined(QT_NO_SFW_NETREG)
 
 QT_BEGIN_NAMESPACE
 
-class QTimer;
+class QServiceManager;
+class QServiceFilter;
 
-#if !defined(QT_NO_SFW_NETREG)
-class QNetworkServiceWrapper;
-#elif !defined(QT_NO_OFONO)
-class QOfonoWrapper;
-#endif
-
-#if !defined(QT_NO_UDEV)
-class QSocketNotifier;
-struct udev;
-struct udev_monitor;
-#endif // QT_NO_UDEV
-
-class QNetworkInfoPrivate : public QObject
+class QNetworkServiceWrapper : public QObject
 {
     Q_OBJECT
 
 public:
-    QNetworkInfoPrivate(QNetworkInfo *parent = 0);
-    ~QNetworkInfoPrivate();
+    QNetworkServiceWrapper(QObject *parent = 0);
 
-    int networkInterfaceCount(QNetworkInfo::NetworkMode mode);
-    int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
-    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface);
-    QNetworkInfo::NetworkMode currentNetworkMode();
-    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface);
-    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface);
-    QString cellId(int interface);
-    QString currentMobileCountryCode(int interface);
-    QString currentMobileNetworkCode(int interface);
-    QString homeMobileCountryCode(int interface);
-    QString homeMobileNetworkCode(int interface);
-    QString imsi(int interface);
-    QString locationAreaCode(int interface);
-    QString macAddress(QNetworkInfo::NetworkMode mode, int interface);
-    QString networkName(QNetworkInfo::NetworkMode mode, int interface);
+    int getNetworkInterfaceCount();
+    int getSignalStrength(int interfaceIndex);
+    QNetworkInfo::CellDataTechnology getCurrentCellDataTechnology(int interfaceIndex);
+    QNetworkInfo::NetworkStatus getNetworkStatus(int interfaceIndex);
+    QString getCellId(int interfaceIndex);
+    QString getCurrentMcc(int interfaceIndex);
+    QString getCurrentMnc(int interfaceIndex);
+    QString getHomeMcc(int interfaceIndex);
+    QString getHomeMnc(int interfaceIndex);
+    QString getLac(int interfaceIndex);
+    QNetworkInfo::NetworkMode getNetworkMode(int interfaceIndex);
+    QNetworkInfo::NetworkMode getCurrentNetworkMode(QNetworkInfo::NetworkStatus status);
+    QString getImsi(int interfaceIndex);
+    QString getOperatorName(int interfaceIndex);
 
 Q_SIGNALS:
     void cellIdChanged(int interface, const QString &id);
@@ -114,48 +105,52 @@ protected:
     void disconnectNotify(const char *signal);
 
 private Q_SLOTS:
-#if !defined(QT_NO_UDEV)
-    void onUdevChanged();
-#endif // QT_NO_UDEV
-
-    void onTimeout();
+    void onServiceAdded(const QString &serviceName, QService::Scope scope);
+    void onServiceRemoved(const QString &serviceName, QService::Scope scope);
+    void onSignalStrengthChanged(const int strength);
+    void onTechnologyChanged(const QString &technology);
+    void onNetworkStatusChanged(const QString &status);
+    void onCellIdChanged(const uint cellid);
+    void onCurrentMccChanged(const QString &currentMcc);
+    void onCurrentMncChanged(const QString &currentMnc);
+    void onLocationAreaCodeChanged(const uint lac);
+    void onOperatorNameChanged(const QString& name);
+    void onNetworkModeChanged(const QString &technology);
 
 private:
-    QNetworkInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QNetworkInfo)
+    QServiceManager *serviceManager;
+    QMap<int, QServiceInterfaceDescriptor> allNetworkManagerInterfaces;
+    QMap<int, QObject*> loadedNetworkManagerInterfaces;
 
-    int getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode);
-    int getNetworkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
-    QNetworkInfo::NetworkMode getCurrentNetworkMode();
-    QNetworkInfo::NetworkStatus getNetworkStatus(QNetworkInfo::NetworkMode mode, int interface);
-    QString getNetworkName(QNetworkInfo::NetworkMode mode, int interface);
+    bool watchInterfaceCount;
+    bool watchSignalStrengths;
+    bool watchTechnologies;
+    bool watchStatuses;
+    bool watchCellIds;
+    bool watchCurrentMccs;
+    bool watchCurrentMncs;
+    bool watchLacs;
+    bool watchOperatorNames;
+    bool watchNetworkModes;
+    QMap<int, int> signalStrengths;
+    QMap<int, QNetworkInfo::CellDataTechnology> currentCellDataTechnologies;
+    QMap<int, QNetworkInfo::NetworkStatus> networkStatuses;
+    QMap<int, QString> cellIds;
+    QMap<int, QString> currentMccs;
+    QMap<int, QString> currentMncs;
+    QMap<int, QString> lacs;
+    QMap<int, QString> operatorNames;
+    QMap<int, QNetworkInfo::NetworkMode> networkModes;
 
-    bool watchCurrentNetworkMode;
-    bool watchNetworkInterfaceCount;
-    bool watchNetworkSignalStrength;
-    bool watchNetworkStatus;
-    bool watchNetworkName;
-    QNetworkInfo::NetworkMode currentMode;
-    QMap<QNetworkInfo::NetworkMode, int> networkInterfaceCounts;
-    QMap<QPair<QNetworkInfo::NetworkMode, int>, int> networkSignalStrengths;
-    QMap<QPair<QNetworkInfo::NetworkMode, int>, QNetworkInfo::NetworkStatus> networkStatuses;
-    QMap<QPair<QNetworkInfo::NetworkMode, int>, QString> networkNames;
-
-    QTimer *timer;
-
-#if !defined(QT_NO_SFW_NETREG)
-    QNetworkServiceWrapper *networkServiceWrapper;
-#elif !defined(QT_NO_OFONO)
-    QOfonoWrapper *ofonoWrapper;
-#endif
-
-#if !defined(QT_NO_UDEV)
-    QSocketNotifier *udevNotifier;
-    struct udev *udevHandle;
-    struct udev_monitor *udevMonitor;
-#endif // QT_NO_UDEV
+    void initServiceInterfaces();
+    bool loadNetworkManagerInterface(int interfaceIndex);
+    QNetworkInfo::CellDataTechnology technologyStringToEnum(const QString &technology);
+    QNetworkInfo::NetworkMode technologyToMode(const QString &technology);
+    QNetworkInfo::NetworkStatus statusStringToEnum(const QString &status);
 };
 
 QT_END_NAMESPACE
 
-#endif // QNETWORKINFO_LINUX_P_H
+#endif // QT_NO_SFW_NETREG
+
+#endif // QNETWORKSERVICEWRAPPER_P_H
