@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass BatteryInfo QDeclarativeBatteryInfo
-    \inmodule QtSystemInfo
+    \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The BatteryInfo element provides various information about the battery status.
 */

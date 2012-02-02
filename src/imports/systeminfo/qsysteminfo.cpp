@@ -81,9 +81,9 @@ Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoD
 
 /*!
     \qmlclass ScreenSaver QScreenSaver
-    \inmodule QtSystemInfo
+    \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
-    \brief The ScreenSaver element provides information of the screen saver.
+    \brief The ScreenSaver element provides information about the screen saver.
 */
 
 /*!
@@ -98,9 +98,9 @@ Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoD
 
 /*!
     \qmlclass DeviceProfile QDeviceProfile
-    \inmodule QtSystemInfo
+    \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
-    \brief The DeviceProfile element provides information for the profile of the device.
+    \brief The DeviceProfile element provides information about the profile of the device.
 */
 
 /*!

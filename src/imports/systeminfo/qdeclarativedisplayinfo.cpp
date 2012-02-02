@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass DisplayInfo QDisplayInfo
-    \inmodule QtSystemInfo
+    \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The DisplayInfo element provides information about the display of the device.
 */
