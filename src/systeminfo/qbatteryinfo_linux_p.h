@@ -59,7 +59,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_UDEV)
+class QUDevWrapper;
+#else
 class QTimer;
+#endif // QT_NO_UDEV
 
 class QBatteryInfoPrivate : public QObject
 {
@@ -93,7 +97,12 @@ protected:
     void disconnectNotify(const char *signal);
 
 private Q_SLOTS:
+#if !defined(QT_NO_UDEV)
+    void onBatteryDataChanged(int battery, const QByteArray &attribute, const QByteArray &value);
+    void onChargerTypeChanged(const QByteArray &value, bool enabled);
+#else
     void onTimeout();
+#endif // QT_NO_UDEV
 
 private:
     QBatteryInfo * const q_ptr;
@@ -113,8 +122,12 @@ private:
     QMap<int, int> remainingChargingTimes;
     QMap<int, int> maximumCapacities;
     QMap<int, QBatteryInfo::ChargingState> chargingStates;
-    QTimer *timer;
     QBatteryInfo::ChargerType currentChargerType;
+#if !defined(QT_NO_UDEV)
+    QUDevWrapper *uDevWrapper;
+#else
+    QTimer *timer;
+#endif // QT_NO_UDEV
 
     int getBatteryCount();
     int getCurrentFlow(int battery);

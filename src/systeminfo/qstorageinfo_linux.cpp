@@ -54,6 +54,10 @@
 #include <sys/stat.h>
 #include <sys/statfs.h>
 
+#if !defined(QT_NO_UDEV)
+#include <qudevwrapper_p.h>
+#endif // QT_NO_UDEV
+
 #if !defined(QT_NO_UDISKS)
 #include <QtDBus/qdbusconnection.h>
 #include <QtDBus/qdbusinterface.h>
@@ -81,6 +85,10 @@ QStorageInfoPrivate::QStorageInfoPrivate(QStorageInfo *parent)
     , inotifyWatcher(-1)
     , inotifyFileDescriptor(-1)
     , notifier(0)
+#if !defined(QT_NO_UDEV)
+    , udevWrapper(0)
+    , udevWatcher(false)
+#endif // QT_NO_UDEV
 {
 }
 
@@ -160,7 +168,11 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 QStringList QStorageInfoPrivate::allLogicalDrives()
 {
     // No need to update the list if someone is listening to the signal, as it will be updated in that case
+#if !defined(QT_NO_UDEV)
+    if (inotifyWatcher == -1 && !udevWatcher)
+#else
     if (inotifyWatcher == -1)
+#endif // QT_NO_UDEV
         updateLogicalDrives();
 
     return logicalDrives;
@@ -239,15 +251,47 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
 void QStorageInfoPrivate::connectNotify(const char *signal)
 {
     if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0) {
+#if !defined(QT_NO_UDEV)
+        if (!udevWatcher) {
+            if (QFileInfo(QStringLiteral("/etc/mtab")).isSymLink())
+                udevWatcher = true;
+            else
+                udevWatcher = false;
+        }
+#endif // QT_NO_UDEV
+
         updateLogicalDrives();
+
+#if !defined(QT_NO_UDEV)
+        if (!udevWatcher) {
+            setupWatcher();
+        } else {
+            if (!udevWrapper)
+                udevWrapper = new QUDevWrapper(this);
+            connect(udevWrapper, SIGNAL(driveChanged()), this, SLOT(onDriveChanged()));
+        }
+#else
         setupWatcher();
+#endif // QT_NO_UDEV
     }
 }
 
 void QStorageInfoPrivate::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0)
+    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0) {
+#if !defined(QT_NO_UDEV)
+        if (!udevWatcher) {
+            cleanupWatcher();
+        } else {
+            if (!udevWrapper)
+                udevWrapper = new QUDevWrapper(this);
+            disconnect(udevWrapper, SIGNAL(driveChanged()), this, SLOT(onDriveChanged()));
+            udevWatcher = 0;
+        }
+#else
         cleanupWatcher();
+#endif // QT_NO_UDEV
+    }
 }
 
 void QStorageInfoPrivate::cleanupWatcher()
@@ -322,5 +366,25 @@ void QStorageInfoPrivate::onInotifyActivated()
         }
     }
 }
+
+#if !defined(QT_NO_UDEV)
+
+void QStorageInfoPrivate::onDriveChanged()
+{
+    QStringList oldLogicalDrives = logicalDrives;
+    updateLogicalDrives();
+
+    foreach (const QString &drive, oldLogicalDrives) {
+        if (!logicalDrives.contains(drive))
+            emit logicalDriveChanged(drive, false);
+    }
+
+    foreach (const QString &drive, logicalDrives) {
+        if (!oldLogicalDrives.contains(drive))
+            emit logicalDriveChanged(drive, true);
+    }
+}
+
+#endif // QT_NO_UDEV
 
 QT_END_NAMESPACE

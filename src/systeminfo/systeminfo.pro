@@ -123,6 +123,8 @@ linux-*: !simulator: {
         CONFIG += link_pkgconfig
         PKGCONFIG += udev
         LIBS += -ludev
+        PRIVATE_HEADERS += qudevwrapper_p.h
+        SOURCES += qudevwrapper.cpp
     } else {
         DEFINES += QT_NO_UDEV
     }

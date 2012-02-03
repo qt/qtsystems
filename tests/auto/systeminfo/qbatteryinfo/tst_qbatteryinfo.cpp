@@ -79,6 +79,10 @@ void tst_QBatteryInfo::tst_flow()
             QVERIFY(batteryInfo.currentFlow(i) < 0);
             QVERIFY(batteryInfo.remainingChargingTime(i) > 0);
             break;
+        case QBatteryInfo::Full:
+            QVERIFY(batteryInfo.currentFlow(i) <= 0);
+            QVERIFY(batteryInfo.remainingChargingTime(i) == 0);
+            break;
         case QBatteryInfo::NotCharging:
             QVERIFY(batteryInfo.currentFlow(i) == 0);
             QVERIFY(batteryInfo.remainingChargingTime(i) == 0);

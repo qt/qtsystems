@@ -50,64 +50,55 @@
 // We mean it.
 //
 
-#ifndef QSTORAGEINFO_LINUX_P_H
-#define QSTORAGEINFO_LINUX_P_H
+#ifndef QUDEVWRAPPER_P_H
+#define QUDEVWRAPPER_P_H
 
-#include <qstorageinfo.h>
+#include <QtCore/QObject>
+
+#include <libudev.h>
+
+#if !defined(QT_NO_UDEV)
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_UDEV)
-class QUDevWrapper;
-#endif // QT_NO_UDEV
-
 class QSocketNotifier;
 
-class QStorageInfoPrivate : public QObject
+class QUDevWrapper: public QObject
 {
     Q_OBJECT
 
 public:
-    QStorageInfoPrivate(QStorageInfo *parent);
-    ~QStorageInfoPrivate();
-
-    qlonglong availableDiskSpace(const QString &drive);
-    qlonglong totalDiskSpace(const QString &drive);
-    QString uriForDrive(const QString &drive);
-    QStringList allLogicalDrives();
-    QStorageInfo::DriveType driveType(const QString &drive);
+    QUDevWrapper(QObject *parent = 0);
 
 Q_SIGNALS:
-    void logicalDriveChanged(const QString &drive, bool added);
+    void driveChanged();
+    void batteryDataChanged(int battery, const QByteArray &attribute, const QByteArray &value);
+    void chargerTypeChanged(const QByteArray &value, bool enabled);
 
 protected:
     void connectNotify(const char *signal);
     void disconnectNotify(const char *signal);
 
 private:
-    QStorageInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QStorageInfo)
+    Q_DISABLE_COPY(QUDevWrapper)
 
-    int inotifyWatcher;
-    int inotifyFileDescriptor;
+    struct udev *udev;
+    struct udev_monitor *udevMonitor;
+    int udevFd;
     QSocketNotifier *notifier;
-    QStringList logicalDrives;
-#if !defined(QT_NO_UDEV)
-    QUDevWrapper *udevWrapper;
-    bool udevWatcher;
-#endif // QT_NO_UDEV
+    bool watcherEnabled;
+    bool watchPowerSupply;
+    bool watchDrives;
 
-    void cleanupWatcher();
-    void setupWatcher();
-    void updateLogicalDrives();
+    bool addUDevWatcher(const QByteArray &subsystem);
+    bool removeAllUDevWatcher();
 
 private Q_SLOTS:
-    void onInotifyActivated();
-#if !defined(QT_NO_UDEV)
-    void onDriveChanged();
-#endif // QT_NO_UDEV
+    void onUDevChanges();
 };
 
 QT_END_NAMESPACE
 
-#endif // QSTORAGEINFO_LINUX_P_H
+#endif // QT_NO_UDEV
+
+#endif /* QUDEVWRAPPER_P_H */
