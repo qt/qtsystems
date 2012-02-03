@@ -149,25 +149,6 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
     Q_UNUSED(scope)
     m_lastError.setError(DBError::NoError);
 
-    if (!QFile(QLatin1Literal("/tmp/sfw_jsondb.indexes")).exists()) {
-        QStringList fields;
-        fields << QLatin1Literal("service")
-               << QLatin1Literal("interface")
-               << QLatin1Literal("default")
-               << QLatin1Literal("identifier");
-
-        foreach (const QString &field, fields) {
-            QVariantMap index;
-            index.insert(QLatin1Literal("_type"), QLatin1String("Index"));
-            index.insert(QLatin1Literal("typeName"), QLatin1Literal("com.nokia.mp.serviceframework.interface"));
-            index.insert(QLatin1Literal("fieldName"), field);
-            int id = db->create(index);
-            if (!waitForResponse(id)) {
-                qDebug() << "Failed to create index entry" << field << m_lastError.text();
-            }
-        }
-    }
-
     // Check if a service is already registered
     QServiceInterfaceDescriptor interface;
 

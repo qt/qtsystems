@@ -22,7 +22,7 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/voipdialerplug
 xml.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/xmldata
 xml.files = voipdialerservice.xml
 
-INSTALLS += target sources xml addFiles
+INSTALLS += target sources xml
 
 DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 

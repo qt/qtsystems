@@ -144,6 +144,7 @@ signals:
     void threadRun();
     void threadFinished();
     void threadError();
+    void threadRemaining();
 
 private:
     QObject* serviceUnique;
@@ -1125,6 +1126,7 @@ public:
 
 public slots:
     void startFetches();
+    void printProgress();
 
 private slots:
     void setup();
@@ -1136,6 +1138,7 @@ signals:
 
 private:
     int runs;
+    int start_runs;
     bool shared;
     QString lastValue;
     QObject *service;
@@ -1149,6 +1152,7 @@ FetchLotsOfProperties::FetchLotsOfProperties(int runs, bool shared, QObject *par
 {
     this->runs = runs;
     this->shared = shared;
+    this->start_runs = runs;
 }
 
 void FetchLotsOfProperties::run()
@@ -1203,6 +1207,11 @@ void FetchLotsOfProperties::startFetches()
     else {
         quit();
     }
+}
+
+void FetchLotsOfProperties::printProgress()
+{
+    qWarning() << "Thread has" << runs << "left, started with" << start_runs;
 }
 
 void FetchLotsOfProperties::fetchProperty()
@@ -1260,6 +1269,7 @@ void tst_QServiceManager_IPC::verifyThreadSafety()
         connect(fetch, SIGNAL(error()), this, SIGNAL(threadError()));
         connect(fetch, SIGNAL(finished()), this, SIGNAL(threadFinished()));
         connect(fetch, SIGNAL(finished()), fetch, SLOT(deleteLater()));
+        connect(this, SIGNAL(threadRemaining()), fetch, SLOT(printProgress()));
         fetch->start();
     }
     QTRY_COMPARE(ready.count(), threads);
@@ -1268,14 +1278,25 @@ void tst_QServiceManager_IPC::verifyThreadSafety()
 
     qDebug() << "Waiting on" << threads << "threads to finish";
 
-#define THREAD_TIMEOUT 30*10
+#define THREAD_TIMEOUT 30*1000
 
-    int i = THREAD_TIMEOUT;
-    while (((finished.count() + errors.count()) < threads) && (--i > 0)) {
-        QTest::qWait(100);
+    QTimer timer;
+    timer.setInterval(THREAD_TIMEOUT);
+    timer.setSingleShot(true);
+    timer.start();
+
+    QTime start = QTime::currentTime();
+
+    while (((finished.count() + errors.count()) < threads) && (timer.isActive())) {
+        QCoreApplication::processEvents();
+        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
 
-    qDebug() << "Waited" << (THREAD_TIMEOUT - i)/10 << "seconds";
+    qDebug() << "Waited" << start.secsTo(QTime::currentTime()) << "seconds";
+
+    if (finished.count() != threads){
+        emit threadRemaining();
+    }
 
     QCOMPARE(finished.count(), threads);
     QVERIFY2(!errors.count(), "Threads reported errors");
