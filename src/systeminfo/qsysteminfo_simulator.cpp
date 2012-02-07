@@ -47,8 +47,11 @@
 #  include "qdeviceinfo_linux_p.h"
 #endif
 
-QT_BEGIN_NAMESPACE
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#  include "qnetworkinfo_linux_p.h"
+#endif
 
+QT_BEGIN_NAMESPACE
 
 // QBatteryInfoSimulator
 
@@ -164,7 +167,6 @@ void QBatteryInfoSimulator::disconnectNotify(const char *signal)
 
 
 // QDeviceInfoSimulator
-
 
 QDeviceInfoSimulator::QDeviceInfoSimulator(QDeviceInfo *parent)
     : QObject(parent)
@@ -393,5 +395,373 @@ void QStorageInfoSimulator::disconnectNotify(const char *signal)
     if (storageInfoSimulatorBackend && strcmp(signal, SIGNAL(logicalDriveChanged(const QString, bool))) == 0)
         disconnect(storageInfoSimulatorBackend, signal, this, signal);
 }
+
+
+// QNetworkInfoSimulator
+
+QNetworkInfoSimulator::QNetworkInfoSimulator(QNetworkInfo *parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , networkInfoSimulatorBackend(QNetworkInfoSimulatorBackend::getSimulatorBackend())
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    , d_ptr(new QNetworkInfoPrivate())
+#endif
+{
+    SystemInfoConnection::ensureSimulatorConnection();
+}
+
+QNetworkInfoSimulator::~QNetworkInfoSimulator()
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    delete d_ptr;
+#endif
+}
+
+int QNetworkInfoSimulator::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (mode != QNetworkInfo::WlanMode) {
+        if (d_ptr)
+            return d_ptr->networkInterfaceCount(mode);
+        else
+            return -1;
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getNetworkInterfaceCount(mode);
+    return -1;
+}
+
+int QNetworkInfoSimulator::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (mode != QNetworkInfo::WlanMode) {
+        if (d_ptr)
+            return d_ptr->networkSignalStrength(mode, interface);
+        else
+            return -1;
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getNetworkSignalStrength(mode, interface);
+    return -1;
+}
+
+QNetworkInfo::CellDataTechnology QNetworkInfoSimulator::currentCellDataTechnology(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+        if (d_ptr)
+            return d_ptr->currentCellDataTechnology(interface);
+        else
+            return QNetworkInfo::UnknownDataTechnology;
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getCurrentCellDataTechnology(interface);
+    return QNetworkInfo::UnknownDataTechnology;
+}
+
+QNetworkInfo::NetworkMode QNetworkInfoSimulator::currentNetworkMode()
+{
+    QNetworkInfo::NetworkMode mode = QNetworkInfo::UnknownMode;
+    if (networkInfoSimulatorBackend)
+        mode = networkInfoSimulatorBackend->getCurrentNetworkMode();
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    QNetworkInfo::NetworkMode mode2 = QNetworkInfo::UnknownMode;
+        if (d_ptr)
+            mode2 = d_ptr->currentNetworkMode();
+        switch (mode2) {
+        case QNetworkInfo::WlanMode:
+            if (mode != QNetworkInfo::EthernetMode)
+                mode = mode2;
+        default:
+            break;
+        }
+
+#endif
+    return mode;
+}
+
+QNetworkInfo::NetworkStatus QNetworkInfoSimulator::networkStatus(QNetworkInfo::NetworkMode mode, int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (mode != QNetworkInfo::WlanMode) {
+        if (d_ptr)
+            return d_ptr->networkStatus(mode, interface);
+        else
+            return QNetworkInfo::UnknownStatus;
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getNetworkStatus(mode, interface);
+    return QNetworkInfo::UnknownStatus;
+}
+
+QNetworkInterface QNetworkInfoSimulator::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (mode != QNetworkInfo::WlanMode) {
+        if (d_ptr)
+            return d_ptr->interfaceForMode(mode, interface);
+        else
+            return QNetworkInterface();
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getInterfaceForMode(mode, interface);
+    return QNetworkInterface();
+}
+
+QString QNetworkInfoSimulator::cellId(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (d_ptr)
+        return d_ptr->cellId(interface);
+    else
+        return QString();
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getCellId(interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::currentMobileCountryCode(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (d_ptr)
+        return d_ptr->currentMobileCountryCode(interface);
+    else
+        return QString();
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getCurrentMobileCountryCode(interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::currentMobileNetworkCode(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (d_ptr)
+        return d_ptr->currentMobileNetworkCode(interface);
+    else
+        return QString();
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getCurrentMobileNetworkCode(interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::homeMobileCountryCode(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (d_ptr)
+        return d_ptr->homeMobileCountryCode(interface);
+    else
+        return QString();
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getHomeMobileCountryCode(interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::homeMobileNetworkCode(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (d_ptr)
+        return d_ptr->homeMobileNetworkCode(interface);
+    else
+        return QString();
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getHomeMobileNetworkCode(interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::imsi(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (d_ptr)
+        return d_ptr->imsi(interface);
+    else
+        return QString();
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getImsi(interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::locationAreaCode(int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (d_ptr)
+        return d_ptr->locationAreaCode(interface);
+    else
+        return QString();
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getLocationAreaCode(interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::macAddress(QNetworkInfo::NetworkMode mode, int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (mode != QNetworkInfo::WlanMode) {
+        if (d_ptr)
+            return d_ptr->macAddress(mode, interface);
+        else
+            return QString();
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getMacAddress(mode, interface);
+    return QString();
+}
+
+QString QNetworkInfoSimulator::networkName(QNetworkInfo::NetworkMode mode, int interface)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (mode != QNetworkInfo::WlanMode) {
+        if (d_ptr)
+            return d_ptr->networkName(mode, interface);
+        else
+            return QString();
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        return networkInfoSimulatorBackend->getNetworkName(mode, interface);
+    return QString();
+}
+
+void QNetworkInfoSimulator::connectNotify(const char *signal)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+        if (networkInfoSimulatorBackend)
+            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), Qt::UniqueConnection);
+        if (d_ptr)
+            connect(d_ptr, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), Qt::UniqueConnection);
+        return;
+    } else if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            connect(networkInfoSimulatorBackend, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)), Qt::UniqueConnection);
+        if (d_ptr)
+            connect(d_ptr, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)), Qt::UniqueConnection);
+        return;
+    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)), Qt::UniqueConnection);
+        if (d_ptr)
+            connect(d_ptr, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)), Qt::UniqueConnection);
+        return;
+    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), Qt::UniqueConnection);
+        if (d_ptr)
+            connect(d_ptr, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), Qt::UniqueConnection);
+        return;
+    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), Qt::UniqueConnection);
+        if (d_ptr)
+            connect(d_ptr, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), Qt::UniqueConnection);
+        return;
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        connect(networkInfoSimulatorBackend, signal, this, signal, Qt::UniqueConnection);
+}
+
+void QNetworkInfoSimulator::disconnectNotify(const char *signal)
+{
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+        if (networkInfoSimulatorBackend)
+            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
+        if (d_ptr)
+            disconnect(d_ptr, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
+        return;
+    } else if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)));
+        if (d_ptr)
+            disconnect(d_ptr, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)));
+        return;
+    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
+        if (d_ptr)
+            disconnect(d_ptr, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
+        return;
+    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)));
+        if (d_ptr)
+            disconnect(d_ptr, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)));
+        return;
+    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)))  == 0) {
+        if (networkInfoSimulatorBackend)
+            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)));
+        if (d_ptr)
+            disconnect(d_ptr, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)));
+        return;
+    }
+#endif
+    if (networkInfoSimulatorBackend)
+        disconnect(networkInfoSimulatorBackend, signal, this, signal);
+}
+
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+
+void QNetworkInfoSimulator::onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode mode)
+{
+    Q_UNUSED(mode)
+    emit currentNetworkModeChanged(currentNetworkMode());
+}
+
+void QNetworkInfoSimulator::onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count)
+{
+    if (strcmp(sender()->metaObject()->className(), "QNetworkInfoSimulatorBackend") == 0) {
+        if (mode == QNetworkInfo::WlanMode)
+            emit networkInterfaceCountChanged(mode, count);
+    } else {
+        if (mode != QNetworkInfo::WlanMode)
+            emit networkInterfaceCountChanged(mode, count);
+    }
+}
+
+void QNetworkInfoSimulator::onNetworkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
+{
+    if (strcmp(sender()->metaObject()->className(), "QNetworkInfoSimulatorBackend") == 0) {
+        if (mode == QNetworkInfo::WlanMode)
+            emit networkNameChanged(mode, interface, name);
+    } else {
+        if (mode != QNetworkInfo::WlanMode)
+            emit networkNameChanged(mode, interface, name);
+    }
+}
+
+void QNetworkInfoSimulator::onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength)
+{
+    if (strcmp(sender()->metaObject()->className(), "QNetworkInfoSimulatorBackend") == 0) {
+        if (mode == QNetworkInfo::WlanMode)
+            emit networkSignalStrengthChanged(mode, interface, strength);
+    } else {
+        if (mode != QNetworkInfo::WlanMode)
+            emit networkSignalStrengthChanged(mode, interface, strength);
+    }
+}
+
+void QNetworkInfoSimulator::onNetworkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status)
+{
+    if (strcmp(sender()->metaObject()->className(), "QNetworkInfoSimulatorBackend") == 0) {
+        if (mode == QNetworkInfo::WlanMode)
+            emit networkStatusChanged(mode, interface, status);
+    } else {
+        if (mode != QNetworkInfo::WlanMode)
+            emit networkStatusChanged(mode, interface, status);
+    }
+}
+
+#endif
 
 QT_END_NAMESPACE

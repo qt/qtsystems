@@ -76,7 +76,7 @@ class QNetworkInfoPrivate : public QObject
     Q_OBJECT
 
 public:
-    QNetworkInfoPrivate(QNetworkInfo *parent);
+    QNetworkInfoPrivate(QNetworkInfo *parent = 0);
     ~QNetworkInfoPrivate();
 
     int networkInterfaceCount(QNetworkInfo::NetworkMode mode);

@@ -41,7 +41,9 @@
 
 #include <qnetworkinfo.h>
 
-#if defined(Q_OS_LINUX)
+#if defined(QT_SIMULATOR)
+#  include "qsysteminfo_simulator_p.h"
+#elif defined(Q_OS_LINUX)
 #  include "qnetworkinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
 #  include "qnetworkinfo_win_p.h"
@@ -194,7 +196,11 @@ QT_BEGIN_NAMESPACE
 */
 QNetworkInfo::QNetworkInfo(QObject *parent)
     : QObject(parent)
+#if !defined(QT_SIMULATOR)
     , d_ptr(new QNetworkInfoPrivate(this))
+#else
+    , d_ptr(new QNetworkInfoSimulator(this))
+#endif // QT_SIMULATOR
 {
 }
 
@@ -346,7 +352,7 @@ QString QNetworkInfo::networkName(QNetworkInfo::NetworkMode mode, int interface)
 */
 void QNetworkInfo::connectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
@@ -358,7 +364,7 @@ void QNetworkInfo::connectNotify(const char *signal)
 */
 void QNetworkInfo::disconnectNotify(const char *signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (receivers(signal) > 0)
         return;

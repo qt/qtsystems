@@ -145,12 +145,10 @@ simulator {
 
     linux-*: {
         PRIVATE_HEADERS += qdisplayinfo_linux_p.h \
-                           qnetworkinfo_linux_p.h \
                            qscreensaver_linux_p.h \
                            qdeviceprofile_linux_p.h
 
         SOURCES += qdisplayinfo_linux.cpp \
-                   qnetworkinfo_linux.cpp \
                    qscreensaver_linux.cpp \
                    qdeviceprofile_linux.cpp
 
@@ -187,11 +185,16 @@ simulator {
             DEFINES += QT_NO_BLUEZ
         }
 
+        DEFINES += QT_NO_SFW_NETREG
+
         contains(QT_CONFIG, dbus): {
             contains(config_test_ofono, yes) {
             QT += dbus
-            PRIVATE_HEADERS += qofonowrapper_p.h
-            SOURCES += qofonowrapper.cpp
+            PRIVATE_HEADERS += qofonowrapper_p.h \
+                               qnetworkinfo_linux_p.h
+
+            SOURCES += qofonowrapper.cpp \
+                       qnetworkinfo_linux.cpp
             } else {
                 DEFINES += QT_NO_OFONO
             }

@@ -163,4 +163,121 @@ void SystemInfoConnection::setStorageInfoData(const QStorageInfoData &data)
     }
 }
 
+void SystemInfoConnection::setNetworkInfoData(const QNetworkInfoData &data)
+{
+    QNetworkInfoSimulatorBackend *networkInfoBackend = QNetworkInfoSimulatorBackend::getSimulatorBackend();
+
+    int actualCount = networkInfoBackend->getNetworkInterfaceCount(QNetworkInfo::WlanMode);
+    int newCount = data.wLanInfo.count();
+
+    if (newCount < actualCount) {
+        for (int i = actualCount; i > newCount; i--)
+            networkInfoBackend->removeInterface(QNetworkInfo::WlanMode, i - 1);
+    } else if (newCount > actualCount) {
+        for (int i = actualCount; i < newCount; i++) {
+            QNetworkInfoData::WLanInfo info = {{QString(),
+                                               -1,
+                                               QNetworkInfo::WlanMode,
+                                               QNetworkInfo::UnknownStatus},
+                                               QString()};
+            networkInfoBackend->addWlanInterface(info);
+        }
+    }
+
+#if defined(QT_NO_SFW_NETREG) && defined(QT_NO_OFONO)
+    actualCount = networkInfoBackend->getNetworkInterfaceCount(QNetworkInfo::EthernetMode);
+    newCount = data.ethernetInfo.count();
+    if (newCount < actualCount) {
+        for (int i = actualCount; i > newCount; i--)
+            networkInfoBackend->removeInterface(QNetworkInfo::EthernetMode, i - 1);
+    } else if (newCount > actualCount) {
+        for (int i = actualCount; i < newCount; i++) {
+            QNetworkInfoData::EthernetInfo info = {{QString(),
+                                                   -1,
+                                                   QNetworkInfo::EthernetMode,
+                                                   QNetworkInfo::UnknownStatus},
+                                                   QString()};
+            networkInfoBackend->addEthernetInterface(info);
+        }
+    }
+
+    actualCount = networkInfoBackend->getNetworkInterfaceCount(QNetworkInfo::BluetoothMode);
+    newCount = data.bluetoothInfo.count();
+    if (newCount < actualCount) {
+        for (int i = actualCount; i > newCount; i--)
+            networkInfoBackend->removeInterface(QNetworkInfo::BluetoothMode, i - 1);
+    } else if (newCount > actualCount) {
+        for (int i = actualCount; i < newCount; i++) {
+            QNetworkInfoData::BluetoothInfo info = {{QString(),
+                                                    -1,
+                                                    QNetworkInfo::BluetoothMode,
+                                                    QNetworkInfo::UnknownStatus},
+                                                    QString()};
+            networkInfoBackend->addBluetoothInterface(info);
+        }
+    }
+
+    actualCount = networkInfoBackend->getNetworkInterfaceCount(QNetworkInfo::GsmMode);
+    newCount = data.cellularInfo.count();
+    if (newCount < actualCount) {
+        for (int i = actualCount; i > newCount; i--)
+            networkInfoBackend->removeInterface(QNetworkInfo::GsmMode, i - 1);
+    } else if (newCount > actualCount) {
+        for (int i = actualCount; i < newCount; i++) {
+            QNetworkInfoData::CellularInfo info = {{QString(),
+                                                   -1,
+                                                   QNetworkInfo::GsmMode,
+                                                   QNetworkInfo::UnknownStatus},
+                                                   QString(),
+                                                   QString(),
+                                                   QString(),
+                                                   QString(),
+                                                   QString(),
+                                                   QString(),
+                                                   QString(),
+                                                   QNetworkInfo::UnknownDataTechnology};
+            networkInfoBackend->addCellularInterface(info);
+        }
+    }
+#endif
+
+    for (int i = 0; i < data.wLanInfo.count(); i++) {
+        networkInfoBackend->setNetworkName(QNetworkInfo::WlanMode, i, data.wLanInfo[i].basicNetworkInfo.name);
+        networkInfoBackend->setNetworkSignalStrength(QNetworkInfo::WlanMode, i, data.wLanInfo[i].basicNetworkInfo.signalStrength);
+        networkInfoBackend->setNetworkStatus(QNetworkInfo::WlanMode, i, data.wLanInfo[i].basicNetworkInfo.status);
+        networkInfoBackend->setNetworkMacAddress(QNetworkInfo::WlanMode, i, data.wLanInfo[i].macAddress);
+    }
+
+#if defined(QT_NO_SFW_NETREG) && defined(QT_NO_OFONO)
+    for (int i = 0; i < data.ethernetInfo.count(); i++) {
+        networkInfoBackend->setNetworkName(QNetworkInfo::EthernetMode, i, data.ethernetInfo[i].basicNetworkInfo.name);
+        networkInfoBackend->setNetworkSignalStrength(QNetworkInfo::EthernetMode, i, data.ethernetInfo[i].basicNetworkInfo.signalStrength);
+        networkInfoBackend->setNetworkStatus(QNetworkInfo::EthernetMode, i, data.ethernetInfo[i].basicNetworkInfo.status);
+        networkInfoBackend->setNetworkMacAddress(QNetworkInfo::EthernetMode, i, data.ethernetInfo[i].macAddress);
+    }
+
+    for (int i = 0; i < data.bluetoothInfo.count(); i++) {
+        networkInfoBackend->setNetworkName(QNetworkInfo::BluetoothMode, i, data.bluetoothInfo[i].basicNetworkInfo.name);
+        networkInfoBackend->setNetworkSignalStrength(QNetworkInfo::BluetoothMode, i, data.bluetoothInfo[i].basicNetworkInfo.signalStrength);
+        networkInfoBackend->setNetworkStatus(QNetworkInfo::BluetoothMode, i, data.bluetoothInfo[i].basicNetworkInfo.status);
+        networkInfoBackend->setNetworkMacAddress(QNetworkInfo::BluetoothMode, i, data.bluetoothInfo[i].btAddress);
+    }
+
+    for (int i = 0; i < data.cellularInfo.count(); i++) {
+        networkInfoBackend->setNetworkName(data.cellularInfo[i].basicNetworkInfo.mode, i, data.cellularInfo[i].basicNetworkInfo.name);
+        networkInfoBackend->setNetworkSignalStrength(data.cellularInfo[i].basicNetworkInfo.mode, i, data.cellularInfo[i].basicNetworkInfo.signalStrength);
+        networkInfoBackend->setMode(i, data.cellularInfo[i].basicNetworkInfo.mode);
+        networkInfoBackend->setNetworkStatus(data.cellularInfo[i].basicNetworkInfo.mode, i, data.cellularInfo[i].basicNetworkInfo.status);
+        networkInfoBackend->setImsi(i, data.cellularInfo[i].imsi);
+        networkInfoBackend->setCellId(i, data.cellularInfo[i].cellId);
+        networkInfoBackend->setLocationAreaCode(i, data.cellularInfo[i].locationAreaCode);
+        networkInfoBackend->setCurrentMobileCountryCode(i, data.cellularInfo[i].currentMobileCountryCode);
+        networkInfoBackend->setCurrentMobileNetworkCode(i, data.cellularInfo[i].currentMobileNetworkCode);
+        networkInfoBackend->setHomeMobileCountryCode(i, data.cellularInfo[i].homeMobileCountryCode);
+        networkInfoBackend->setHomeMobileNetworkCode(i, data.cellularInfo[i].homeMobileNetworkCode);
+        networkInfoBackend->setCellDataTechnology(i, data.cellularInfo[i].cellData);
+    }
+#endif
+}
+
 QT_END_NAMESPACE

@@ -57,15 +57,21 @@
 #include <qbatteryinfo.h>
 #include <qdeviceinfo.h>
 #include <qstorageinfo.h>
+#include <qnetworkinfo.h>
 
 QT_BEGIN_NAMESPACE
 
 class QBatteryInfoSimulatorBackend;
 class QDeviceInfoSimulatorBackend;
 class QStorageInfoSimulatorBackend;
+class QNetworkInfoSimulatorBackend;
 
 #if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
 class QDeviceInfoPrivate;
+#endif
+
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+class QNetworkInfoPrivate;
 #endif
 
 class QBatteryInfoSimulator : public QObject
@@ -173,6 +179,65 @@ private:
     Q_DECLARE_PUBLIC(QStorageInfo)
 
     QStorageInfoSimulatorBackend *storageInfoSimulatorBackend;
+};
+
+class QNetworkInfoSimulator : public QObject
+{
+    Q_OBJECT
+
+public:
+    QNetworkInfoSimulator(QNetworkInfo *parent);
+    ~QNetworkInfoSimulator();
+
+    int networkInterfaceCount(QNetworkInfo::NetworkMode mode);
+    int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
+    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface);
+    QNetworkInfo::NetworkMode currentNetworkMode();
+    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface);
+    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface);
+    QString cellId(int interface);
+    QString currentMobileCountryCode(int interface);
+    QString currentMobileNetworkCode(int interface);
+    QString homeMobileCountryCode(int interface);
+    QString homeMobileNetworkCode(int interface);
+    QString imsi(int interface);
+    QString locationAreaCode(int interface);
+    QString macAddress(QNetworkInfo::NetworkMode mode, int interface);
+    QString networkName(QNetworkInfo::NetworkMode mode, int interface);
+
+Q_SIGNALS:
+    void cellIdChanged(int interface, const QString &id);
+    void currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);
+    void currentMobileCountryCodeChanged(int interface, const QString &mcc);
+    void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
+    void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
+    void locationAreaCodeChanged(int interface, const QString &lac);
+    void networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
+    void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
+    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
+    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
+private:
+    QNetworkInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QNetworkInfo)
+
+    QNetworkInfoSimulatorBackend *networkInfoSimulatorBackend;
+
+#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+    QNetworkInfoPrivate * const d_ptr;
+    Q_DECLARE_PRIVATE(QNetworkInfo)
+
+public Q_SLOTS:
+    void onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
+    void onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
+    void onNetworkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
+    void onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
+    void onNetworkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
+#endif
 };
 
 QT_END_NAMESPACE

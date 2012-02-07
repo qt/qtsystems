@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 QBatteryInfoSimulatorBackend *QBatteryInfoSimulatorBackend::globalSimulatorBackend = 0;
 QDeviceInfoSimulatorBackend *QDeviceInfoSimulatorBackend::globalSimulatorBackend = 0;
 QStorageInfoSimulatorBackend *QStorageInfoSimulatorBackend::globalSimulatorBackend = 0;
+QNetworkInfoSimulatorBackend *QNetworkInfoSimulatorBackend::globalSimulatorBackend = 0;
 
 
 // QBatteryInfoSimulatorBackend
@@ -529,6 +530,499 @@ bool QStorageInfoSimulatorBackend::hasDriveInfo(const QString &drive)
         return true;
 
     return false;
+}
+
+
+// QNetworkInfoSimulatorBackend
+
+QNetworkInfoSimulatorBackend::QNetworkInfoSimulatorBackend(QNetworkInfo *parent)
+    : QObject(parent)
+{
+}
+
+QNetworkInfoSimulatorBackend::~QNetworkInfoSimulatorBackend()
+{
+}
+
+QNetworkInfoSimulatorBackend *QNetworkInfoSimulatorBackend::getSimulatorBackend()
+{
+    static QMutex mutex;
+
+    mutex.lock();
+    if (!globalSimulatorBackend)
+        globalSimulatorBackend = new QNetworkInfoSimulatorBackend();
+    mutex.unlock();
+
+    return globalSimulatorBackend;
+}
+
+QNetworkInfoData::BasicNetworkInfo *QNetworkInfoSimulatorBackend::basicNetworkInfo(QNetworkInfo::NetworkMode mode, int interface)
+{
+    QNetworkInfoData::BasicNetworkInfo *basic = 0;
+    if (interface >= 0) {
+        switch (mode) {
+        case QNetworkInfo::GsmMode:
+        case QNetworkInfo::CdmaMode:
+        case QNetworkInfo::WcdmaMode:
+        case QNetworkInfo::LteMode:
+        case QNetworkInfo::TdscdmaMode:
+            if (interface < data.cellularInfo.count())
+                basic = &(data.cellularInfo[interface].basicNetworkInfo);
+            break;
+        case QNetworkInfo::WlanMode:
+            if (interface < data.wLanInfo.count()) {
+                basic = &(data.wLanInfo[interface].basicNetworkInfo);
+            }
+            break;
+        case QNetworkInfo::EthernetMode:
+            if (interface <= data.ethernetInfo.count())
+                basic = &(data.ethernetInfo[interface].basicNetworkInfo);
+            break;
+        case QNetworkInfo::BluetoothMode:
+            if (interface <= data.bluetoothInfo.count())
+                basic = &(data.bluetoothInfo[interface].basicNetworkInfo);
+            break;
+        default:
+            break;
+        }
+    }
+    return basic;
+}
+
+bool QNetworkInfoSimulatorBackend::isValidInterface(QNetworkInfo::NetworkMode mode, int interface)
+{
+    switch (mode) {
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
+        if (interface >= 0 && interface < data.cellularInfo.count())
+            return true;
+        else
+            return false;
+    case QNetworkInfo::WlanMode:
+        if (interface >= 0 && interface < data.wLanInfo.count())
+            return true;
+        else
+            return false;
+    case QNetworkInfo::EthernetMode:
+        if (interface >= 0 && interface < data.ethernetInfo.count())
+            return true;
+        else
+            return false;
+    case QNetworkInfo::BluetoothMode:
+        if (interface >= 0 && interface < data.bluetoothInfo.count())
+            return true;
+        else
+            return false;
+    default:
+        break;
+    }
+    return false;
+}
+
+QNetworkInfo::NetworkMode QNetworkInfoSimulatorBackend::getCurrentNetworkMode()
+{
+    if (getNetworkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::EthernetMode;
+    else if (getNetworkStatus(QNetworkInfo::WlanMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::WlanMode;
+    else if (getNetworkStatus(QNetworkInfo::BluetoothMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::BluetoothMode;
+    else if (getNetworkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::WimaxMode;
+    else if (getNetworkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::LteMode;
+    else if (getNetworkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::WcdmaMode;
+    else if (getNetworkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::CdmaMode;
+    else if (getNetworkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::GsmMode;
+    else if (getNetworkStatus(QNetworkInfo::TdscdmaMode, 0) == QNetworkInfo::HomeNetwork)
+        return QNetworkInfo::TdscdmaMode;
+    else if (getNetworkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WimaxMode;
+    else if (getNetworkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::LteMode;
+    else if (getNetworkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::WcdmaMode;
+    else if (getNetworkStatus(QNetworkInfo::CdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::CdmaMode;
+    else if (getNetworkStatus(QNetworkInfo::GsmMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::GsmMode;
+    else if (getNetworkStatus(QNetworkInfo::TdscdmaMode, 0) == QNetworkInfo::Roaming)
+        return QNetworkInfo::TdscdmaMode;
+    else
+        return QNetworkInfo::UnknownMode;
+}
+
+QString QNetworkInfoSimulatorBackend::getNetworkName(QNetworkInfo::NetworkMode mode, int interface)
+{
+    if (isValidInterface(mode, interface)) {
+        QNetworkInfoData::BasicNetworkInfo *basic = basicNetworkInfo(mode, interface);
+        return basic->name;
+    }
+    return QString();
+}
+
+int QNetworkInfoSimulatorBackend::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
+{
+    if (isValidInterface(mode, interface)) {
+        QNetworkInfoData::BasicNetworkInfo *basic = basicNetworkInfo(mode, interface);
+        return basic->signalStrength;
+    }
+    return -1;
+}
+
+QNetworkInfo::NetworkStatus QNetworkInfoSimulatorBackend::getNetworkStatus(QNetworkInfo::NetworkMode mode, int interface)
+{
+    if (isValidInterface(mode, interface)) {
+        QNetworkInfoData::BasicNetworkInfo *basic = basicNetworkInfo(mode, interface);
+        return basic->status;
+    }
+    return QNetworkInfo::UnknownStatus;
+}
+
+QNetworkInfo::NetworkMode QNetworkInfoSimulatorBackend::getMode(QNetworkInfo::NetworkMode mode, int interface)
+{
+    switch (mode) {
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
+        if (isValidInterface(mode, interface)) {
+            QNetworkInfoData::BasicNetworkInfo *basic = basicNetworkInfo(mode, interface);
+            return basic->mode;
+        }
+    case QNetworkInfo::WlanMode:
+        if (isValidInterface(mode, interface))
+            return QNetworkInfo::WlanMode;
+    case QNetworkInfo::EthernetMode:
+        if (isValidInterface(mode, interface))
+            return QNetworkInfo::EthernetMode;
+    case QNetworkInfo::BluetoothMode:
+        if (isValidInterface(mode, interface))
+            return QNetworkInfo::BluetoothMode;
+    default:
+        break;
+    }
+    return QNetworkInfo::UnknownMode;
+}
+
+QString QNetworkInfoSimulatorBackend::getMacAddress(QNetworkInfo::NetworkMode mode, int interface)
+{
+    if (interface >= 0) {
+        switch (mode) {
+        case QNetworkInfo::WlanMode:
+            if (isValidInterface(mode, interface))
+                return data.wLanInfo[interface].macAddress;
+            break;
+        case QNetworkInfo::EthernetMode:
+            if (isValidInterface(mode, interface))
+                return data.ethernetInfo[interface].macAddress;
+            break;
+        case QNetworkInfo::BluetoothMode:
+            if (isValidInterface(mode, interface))
+                return data.bluetoothInfo[interface].btAddress;
+            break;
+        default:
+            break;
+        }
+    }
+    return QString();
+}
+
+QNetworkInterface QNetworkInfoSimulatorBackend::getInterfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
+{
+    Q_UNUSED(mode)
+    Q_UNUSED(interface)
+    return QNetworkInterface();
+}
+
+QString QNetworkInfoSimulatorBackend::getImsi(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].imsi;
+    else
+        return QString();
+}
+
+QString QNetworkInfoSimulatorBackend::getCellId(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].cellId;
+    else
+        return QString();
+}
+
+QString QNetworkInfoSimulatorBackend::getCurrentMobileCountryCode(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].currentMobileCountryCode;
+    else
+        return QString();
+}
+
+QString QNetworkInfoSimulatorBackend::getCurrentMobileNetworkCode(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].currentMobileNetworkCode;
+    else
+        return QString();
+}
+
+QString QNetworkInfoSimulatorBackend::getHomeMobileCountryCode(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].homeMobileCountryCode;
+    else
+        return QString();
+}
+
+QString QNetworkInfoSimulatorBackend::getHomeMobileNetworkCode(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].homeMobileNetworkCode;
+    else
+        return QString();
+}
+
+QString QNetworkInfoSimulatorBackend::getLocationAreaCode(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].locationAreaCode;
+    else
+        return QString();
+}
+
+QNetworkInfo::CellDataTechnology QNetworkInfoSimulatorBackend::getCurrentCellDataTechnology(int interface)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface))
+        return data.cellularInfo[interface].cellData;
+    else
+        return QNetworkInfo::UnknownDataTechnology;
+}
+
+int QNetworkInfoSimulatorBackend::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode)
+{
+    switch (mode) {
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
+        return data.cellularInfo.count();
+    case QNetworkInfo::WlanMode:
+        return data.wLanInfo.count();
+    case QNetworkInfo::EthernetMode:
+        return data.ethernetInfo.count();
+    case QNetworkInfo::BluetoothMode:
+        return data.bluetoothInfo.count();
+    default:
+        break;
+    }
+    return -1;
+}
+
+void QNetworkInfoSimulatorBackend::setImsi(int interface, const QString &id)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].imsi != id))
+        data.cellularInfo[interface].imsi = id;
+}
+
+void QNetworkInfoSimulatorBackend::setCellId(int interface, const QString &id)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].cellId != id)) {
+        data.cellularInfo[interface].cellId = id;
+        emit cellIdChanged(interface, id);
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setLocationAreaCode(int interface, const QString &code)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].locationAreaCode != code)) {
+        data.cellularInfo[interface].locationAreaCode = code;
+        emit locationAreaCodeChanged(interface, code);
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setCurrentMobileCountryCode(int interface, const QString &code)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].currentMobileCountryCode != code)) {
+        data.cellularInfo[interface].currentMobileCountryCode = code;
+        emit currentMobileCountryCodeChanged(interface, code);
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setCurrentMobileNetworkCode(int interface, const QString &code)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].currentMobileNetworkCode != code)) {
+        data.cellularInfo[interface].currentMobileNetworkCode = code;
+        emit currentMobileNetworkCodeChanged(interface, code);
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setHomeMobileCountryCode(int interface, const QString &code)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].homeMobileCountryCode != code))
+        data.cellularInfo[interface].homeMobileCountryCode = code;
+}
+
+void QNetworkInfoSimulatorBackend::setHomeMobileNetworkCode(int interface, const QString &code)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].homeMobileNetworkCode != code))
+        data.cellularInfo[interface].homeMobileNetworkCode = code;
+}
+
+void QNetworkInfoSimulatorBackend::setCellDataTechnology(int interface, QNetworkInfo::CellDataTechnology cellData)
+{
+    if (isValidInterface(QNetworkInfo::GsmMode, interface) && (data.cellularInfo[interface].cellData != cellData)) {
+        data.cellularInfo[interface].cellData = cellData;
+        emit currentCellDataTechnologyChanged(interface, cellData);
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setMode(int interface, QNetworkInfo::NetworkMode mode)
+{
+    switch (mode) {
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
+        if (isValidInterface(mode, interface) && (data.cellularInfo[interface].basicNetworkInfo.mode != mode))
+            data.cellularInfo[interface].basicNetworkInfo.mode = mode;
+    default:
+        break;
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setNetworkName(QNetworkInfo::NetworkMode mode, int interface, const QString &name)
+{
+    if (isValidInterface(mode, interface)) {
+        QNetworkInfoData::BasicNetworkInfo *basic = basicNetworkInfo(mode, interface);
+        if (basic != 0 && basic->name != name) {
+            basic->name = name;
+            emit networkNameChanged(mode, interface, name);
+        }
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setNetworkMacAddress(QNetworkInfo::NetworkMode mode, int interface, const QString &mac)
+{
+    if (interface >= 0) {
+        switch (mode) {
+        case QNetworkInfo::WlanMode:
+            if (isValidInterface(mode, interface))
+                data.wLanInfo[interface].macAddress = mac;
+            break;
+        case QNetworkInfo::EthernetMode:
+            if (isValidInterface(mode, interface))
+                data.ethernetInfo[interface].macAddress = mac;
+            break;
+        case QNetworkInfo::BluetoothMode:
+            if (isValidInterface(mode, interface))
+                data.bluetoothInfo[interface].btAddress = mac;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setNetworkSignalStrength(QNetworkInfo::NetworkMode mode, int interface, int strength)
+{
+    if (isValidInterface(mode, interface)) {
+        QNetworkInfoData::BasicNetworkInfo* basic = basicNetworkInfo(mode, interface);
+        if (basic != 0 && basic->signalStrength != strength) {
+            basic->signalStrength = strength;
+            emit networkSignalStrengthChanged(mode, interface, strength);
+        }
+    }
+}
+
+void QNetworkInfoSimulatorBackend::setNetworkStatus(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status)
+{
+    if (isValidInterface(mode, interface)) {
+        QNetworkInfoData::BasicNetworkInfo* basic = basicNetworkInfo(mode, interface);
+        if (basic != 0 && basic->status != status) {
+            basic->status = status;
+            emit networkStatusChanged(mode, interface, status);
+        }
+    }
+}
+
+void QNetworkInfoSimulatorBackend::addEthernetInterface(QNetworkInfoData::EthernetInfo info)
+{
+    data.ethernetInfo.append(info);
+    emit networkInterfaceCountChanged(info.basicNetworkInfo.mode, getNetworkInterfaceCount(info.basicNetworkInfo.mode));
+}
+
+void QNetworkInfoSimulatorBackend::addWlanInterface(QNetworkInfoData::WLanInfo info)
+{
+    data.wLanInfo.append(info);
+    emit networkInterfaceCountChanged(info.basicNetworkInfo.mode, getNetworkInterfaceCount(info.basicNetworkInfo.mode));
+}
+
+void QNetworkInfoSimulatorBackend::addCellularInterface(QNetworkInfoData::CellularInfo info)
+{
+    data.cellularInfo.append(info);
+    emit networkInterfaceCountChanged(info.basicNetworkInfo.mode, getNetworkInterfaceCount(info.basicNetworkInfo.mode));
+}
+
+void QNetworkInfoSimulatorBackend::addBluetoothInterface(QNetworkInfoData::BluetoothInfo info)
+{
+    data.bluetoothInfo.append(info);
+    emit networkInterfaceCountChanged(info.basicNetworkInfo.mode, getNetworkInterfaceCount(info.basicNetworkInfo.mode));
+}
+
+void QNetworkInfoSimulatorBackend::removeInterface(QNetworkInfo::NetworkMode mode, int interface)
+{
+    clearOrRemoveInterface(mode, interface, false);
+}
+
+void QNetworkInfoSimulatorBackend::clearInterface(QNetworkInfo::NetworkMode mode)
+{
+    clearOrRemoveInterface(mode, 0, true);
+}
+
+void QNetworkInfoSimulatorBackend::clearOrRemoveInterface(QNetworkInfo::NetworkMode mode, int interface, bool clear)
+{
+    switch (mode) {
+    case QNetworkInfo::GsmMode:
+    case QNetworkInfo::CdmaMode:
+    case QNetworkInfo::WcdmaMode:
+    case QNetworkInfo::LteMode:
+    case QNetworkInfo::TdscdmaMode:
+        if (isValidInterface(mode, interface)) {
+            clear ? data.cellularInfo.clear() : data.cellularInfo.remove(interface);
+            emit networkInterfaceCountChanged(mode, getNetworkInterfaceCount(mode));
+        }
+        break;
+    case QNetworkInfo::WlanMode:
+        if (isValidInterface(mode, interface)) {
+            clear ? data.wLanInfo.clear() : data.wLanInfo.remove(interface);
+            emit networkInterfaceCountChanged(mode, getNetworkInterfaceCount(mode));
+        }
+        break;
+    case QNetworkInfo::EthernetMode:
+        if (isValidInterface(mode, interface)) {
+            clear ? data.ethernetInfo.clear() : data.ethernetInfo.remove(interface);
+            emit networkInterfaceCountChanged(mode, getNetworkInterfaceCount(mode));
+        }
+        break;
+    case QNetworkInfo::BluetoothMode:
+        if (isValidInterface(mode, interface)) {
+            clear ? data.bluetoothInfo.clear() : data.bluetoothInfo.remove(interface);
+            emit networkInterfaceCountChanged(mode, getNetworkInterfaceCount(mode));
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 QT_END_NAMESPACE
