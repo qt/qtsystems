@@ -359,7 +359,6 @@ void doStart(const QString &location, const QString &connectionToken) {
     QScopedPointer<NotionClient> client(new NotionClient());
     QScopedPointer<NotionWaiter> waiter(new NotionWaiter(client.data()));
     client->setConnectionToken(connectionToken);
-    client->setActive(true);
 
     QVariantMap notion;
     notion.insert(QLatin1String("notion"), QLatin1String("ServiceRequest"));
