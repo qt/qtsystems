@@ -54,19 +54,11 @@
 #define QJSONDBWRAPPER_P_H
 
 #include <qdeviceinfo.h>
-
-#include <QObject>
-#include <QMap>
-#include <QVariant>
-
-#include <jsondb-global.h>
-
-Q_ADDON_JSONDB_BEGIN_NAMESPACE
-class JsonDbClient;
-Q_ADDON_JSONDB_END_NAMESPACE
-Q_USE_JSONDB_NAMESPACE
+#include <QtJsonDb/qjsondbconnection.h>
+#include <QtJsonDb/qjsondbrequest.h>
 
 QT_BEGIN_NAMESPACE
+
 class QTimer;
 class QEventLoop;
 
@@ -97,29 +89,25 @@ protected:
     void disconnectNotify(const char *signal);
 
 private Q_SLOTS:
-    void onError(int reqId, int code, const QString& message);
-    void onResponse(int reqId, const QVariant &response);
-    void onTimerExpired();
-    void onNotification(const QString &uuid, const QVariant &notification, const QString &action);
+    void onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode error, const QString &message);
+    void onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
+    void onJsonDbRequestFinished();
+    void onJsonDbWatcherNotificationsAvailable();
 
 private:
-    QVariant getSystemPropertyValue(const QString &objectType, const QString &property);
-    QVariant getSystemSettingValue(const QString &settingId, const QString &setting);
+    QJsonValue getSystemPropertyValue(const QString &objectType, const QString &property);
+    QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting);
     bool hasSystemObject(const QString &objectType);
-    QString registerOnChanges(const QString &objectType);
-    bool unregisterOnChanges(const QString &uuid);
     bool waitForResponse();
 
-    JsonDbClient *jsonclient;
-    QMap<int,QVariant> responses;
+    QtJsonDb::QJsonDbConnection *jsonDbConnection;
+    QtJsonDb::QJsonDbWatcher *jsonDbWatcher;
 
     QEventLoop *waitLoop;
     QTimer *timer;
+
     bool watchActivatedLocks;
     bool watchEnabledLocks;
-
-    QString uuidSecurityLockNotifier;
-
     QDeviceInfo::LockTypeFlags activatedLocks;
     QDeviceInfo::LockTypeFlags enabledLocks;
 };

@@ -41,42 +41,30 @@
 
 #include "qjsondbwrapper_p.h"
 
-#include <QTimer>
-#include <QEventLoop>
+#include <QtCore/qeventloop.h>
+#include <QtCore/qtimer.h>
+#include <QtJsonDb/qjsondbreadrequest.h>
+#include <QtJsonDb/qjsondbwatcher.h>
 
-#include <jsondb-client.h>
-
-Q_USE_JSONDB_NAMESPACE
+QT_USE_NAMESPACE_JSONDB
 
 QT_BEGIN_NAMESPACE
-
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_PATH, (QStringLiteral("com.nokia.mt.settings.")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_LOCATION, (QStringLiteral("location")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_SOUNDS, (QStringLiteral("sounds")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_PATH, (QStringLiteral("com.nokia.mt.system.")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_SECURITYLOCK, (QStringLiteral("SecurityLock")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_DEVICEINFO, (QStringLiteral("DeviceInfo")))
-
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_QUERY, (QStringLiteral("[?_type=\"%1\"]")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_NOTIFY, (QStringLiteral("[_type=\"%1\"]")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_OBJECT_REMOVE, (QStringLiteral("{\"_uuid\":\"%1\"}")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SYSTEM_PROPERTY_QUERY, (QStringLiteral("[?_type=\"%1\"][=%2]")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, SETTING_QUERY, (QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"%1\"][=settings]")))
 
 const int JSON_EXPIRATION_TIMER(2000);
 
 QJsonDbWrapper::QJsonDbWrapper(QObject *parent)
     : QObject(parent)
-    , jsonclient(new JsonDbClient(this))
+    , jsonDbConnection(new QJsonDbConnection(this))
+    , jsonDbWatcher(0)
     , waitLoop(0)
     , timer(0)
     , watchActivatedLocks(false)
     , watchEnabledLocks(false)
 {
-    connect(jsonclient, SIGNAL(error(int, int, QString)),
-            this, SLOT(onError(int, int, QString)));
-    connect(jsonclient,SIGNAL(response(int, QVariant)),
-            this,SLOT(onResponse(int, QVariant)));
+    connect(jsonDbConnection, SIGNAL(error(QtJsonDb::QJsonDbConnection::ErrorCode,QString)),
+            this, SLOT(onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode,QString)));
+
+    jsonDbConnection->connectToServer();
 }
 
 QJsonDbWrapper::~QJsonDbWrapper()
@@ -90,7 +78,7 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getActivatedLocks()
 
     QDeviceInfo::LockTypeFlags activeLocks = QDeviceInfo::NoLock;
 
-    if (getSystemPropertyValue(*SYSTEM_SECURITYLOCK(), QStringLiteral("active")).toBool())
+    if (getSystemPropertyValue(QString(QStringLiteral("SecurityLock")), QString(QStringLiteral("active"))).toBool())
         activeLocks |= QDeviceInfo::PinLock;
 
     return activeLocks;
@@ -103,7 +91,7 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getEnabledLocks()
 
     QDeviceInfo::LockTypeFlags enabledLocks = QDeviceInfo::NoLock;
 
-    if (hasSystemObject(*SYSTEM_SECURITYLOCK()))
+    if (hasSystemObject(QString(QStringLiteral("SecurityLock"))))
         enabledLocks |= QDeviceInfo::PinLock;
 
     return enabledLocks;
@@ -111,229 +99,194 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getEnabledLocks()
 
 bool QJsonDbWrapper::hasFeaturePositioning()
 {
-    return getSystemSettingValue(*SETTING_LOCATION(), QStringLiteral("locationServicesFeatureEnabled")).toBool();
+    return getSystemSettingValue(QString(QStringLiteral("location")),
+                                 QString(QStringLiteral("locationServicesFeatureEnabled"))).toBool();
 }
 
 bool QJsonDbWrapper::hasFeatureVibration()
 {
-    QVariant vibration = getSystemSettingValue(*SETTING_SOUNDS(), QStringLiteral("vibrationOn"));
-    if (!vibration.isNull())
-        return true;
-
-    return false;
+    return !getSystemSettingValue(QString(QStringLiteral("sounds")),
+                                  QString(QStringLiteral("vibrationOn"))).isNull();
 }
 
 QString QJsonDbWrapper::getUniqueDeviceID()
 {
-    return getSystemPropertyValue(*SYSTEM_DEVICEINFO(), QStringLiteral("uniqueDeviceId")).toString();
+    return getSystemPropertyValue(QString(QStringLiteral("DeviceInfo")),
+                                  QString(QStringLiteral("uniqueDeviceId"))).toString();
 }
 
 bool QJsonDbWrapper::isVibrationActivated()
 {
-    return getSystemSettingValue(*SETTING_SOUNDS(), QStringLiteral("vibrationOn")).toBool();
+    return getSystemSettingValue(QString(QStringLiteral("sounds")),
+                                 QString(QStringLiteral("vibrationOn"))).toBool();
 }
 
 int QJsonDbWrapper::getRingtoneVolume()
 {
-    int volume = getSystemSettingValue(*SETTING_SOUNDS(), QStringLiteral("ringerVolume")).toInt();
+    int volume = getSystemSettingValue(QString(QStringLiteral("sounds")),
+                                       QString(QStringLiteral("ringerVolume"))).toDouble();
     if (volume >= 0 && volume <= 100)
         return volume;
 
     return -1;
 }
 
-QVariant QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, const QString &property)
+QJsonValue QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, const QString &property)
 {
-    int reqId = 0;
-    QVariant response;
-
-    if (!jsonclient->isConnected())
-        return response;
-
-    reqId = jsonclient->query(SYSTEM_PROPERTY_QUERY()->arg(*SYSTEM_PATH() + objectType).arg(property));
-    if (waitForResponse()) {
-        QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
-        QVariantList tempList(data.toList());
-        if (tempList.size() > 0)
-            response = tempList.at(0);
+    QJsonDbReadRequest request;
+    request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.system.%1\"]")).arg(objectType));
+    connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
+            this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
+    if (jsonDbConnection->send(&request)) {
+        waitForResponse();
+        if (request.status() == QJsonDbRequest::Finished) {
+            QList<QJsonObject> results = request.takeResults();
+            if (results.size() > 0)
+                return results.at(0).value(property);
+        }
     }
-
-    return response;
+    return QJsonValue();
 }
 
-QVariant QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const QString &setting)
+QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const QString &setting)
 {
-    int reqId = 0;
-    QVariant response;
-
-    if (!jsonclient->isConnected())
-        return response;
-
-    reqId = jsonclient->query(SETTING_QUERY()->arg(*SETTING_PATH() + settingId));
-    if (waitForResponse()) {
-        QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
-        QVariantList tempList(data.toList());
-        if (tempList.size() > 0)
-            response = tempList.at(0).toMap().value(setting);
+    QJsonDbReadRequest request;
+    request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.%1\"]"))
+                     .arg(settingId));
+    connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
+            this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
+    if (jsonDbConnection->send(&request)) {
+        waitForResponse();
+        if (request.status() == QJsonDbRequest::Finished) {
+            QList<QJsonObject> results = request.takeResults();
+            if (results.size() > 0)
+                return results.at(0).value(setting);
+        }
     }
-
-    return response;
+    return QJsonValue();
 }
 
 bool QJsonDbWrapper::hasSystemObject(const QString &objectType)
 {
-    int reqId = 0;
-
-    if (!jsonclient->isConnected())
-        return false;
-
-    reqId = jsonclient->query(SYSTEM_OBJECT_QUERY()->arg(*SYSTEM_PATH() + objectType));
-    if (waitForResponse()) {
-        QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
-        QVariantList tempList(data.toList());
-        if (tempList.size() > 0)
-            return true;
+    QJsonDbReadRequest request;
+    request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.system.%1\"]")).arg(objectType));
+    connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
+            this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
+    if (jsonDbConnection->send(&request)) {
+        waitForResponse();
+        return (request.status() == QJsonDbRequest::Finished && request.takeResults().size() > 0);
     }
-
-    return false;
-}
-
-QString QJsonDbWrapper::registerOnChanges(const QString &objectType)
-{
-    int reqId = 0;
-    QString uuid;
-
-    if (!jsonclient->isConnected())
-        return uuid;
-
-    reqId = jsonclient->notify(JsonDbClient::NotifyUpdate | JsonDbClient::NotifyCreate | JsonDbClient::NotifyRemove,
-                               SYSTEM_OBJECT_NOTIFY()->arg(*SYSTEM_PATH() + objectType));
-    if (waitForResponse())
-        uuid = responses.take(reqId).toMap().value(QStringLiteral("_uuid")).toString().remove(QRegExp(QStringLiteral("[{}]")));
-
-    return uuid;
-}
-
-bool QJsonDbWrapper::unregisterOnChanges(const QString &uuid)
-{
-    int reqId = 0;
-
-    if (!jsonclient->isConnected())
-        return false;
-
-    reqId = jsonclient->remove(SYSTEM_OBJECT_REMOVE()->arg(uuid));
-    if (waitForResponse()) {
-        QVariant data = responses.take(reqId).toMap().value(QStringLiteral("data"));
-        if (data.toList().count() > 0)
-            return true;
-    }
-
     return false;
 }
 
 void QJsonDbWrapper::connectNotify(const char *signal)
 {
-    if ((strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
-         || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
-            && (!watchActivatedLocks) && (!watchEnabledLocks)) {
-        connect(jsonclient,SIGNAL(notified(QString,QVariant,QString)),
-                this,SLOT(onNotification(QString,QVariant,QString)),
-                Qt::UniqueConnection);
+    if (watchActivatedLocks && watchEnabledLocks)
+        return;
+
+    bool needWatchActivatedLocks = (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0);
+    if (needWatchActivatedLocks) {
+        if (watchActivatedLocks)
+            return;
+        activatedLocks = getActivatedLocks();
     }
 
-    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
-        activatedLocks = getActivatedLocks();
-        if (uuidSecurityLockNotifier.isEmpty())
-            uuidSecurityLockNotifier = registerOnChanges(*SYSTEM_SECURITYLOCK());
-        if (!uuidSecurityLockNotifier.isEmpty())
-            watchActivatedLocks = true;
-    } else if (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
+    bool needWatchEnabledLocks = (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0);
+    if (needWatchEnabledLocks) {
+        if (watchEnabledLocks)
+            return;
         enabledLocks = getEnabledLocks();
-        if (uuidSecurityLockNotifier.isEmpty())
-            uuidSecurityLockNotifier = registerOnChanges(*SYSTEM_SECURITYLOCK());
-        if (!uuidSecurityLockNotifier.isEmpty())
-            watchEnabledLocks = true;
+    }
+
+    if (needWatchActivatedLocks || needWatchEnabledLocks) {
+        if (!jsonDbWatcher) {
+            jsonDbWatcher = new QJsonDbWatcher(this);
+            jsonDbWatcher->setWatchedActions(QJsonDbWatcher::All);
+            jsonDbWatcher->setQuery(QString(QStringLiteral("[_type=\"com.nokia.mt.system.SecurityLock\"]")));
+            connect(jsonDbWatcher, SIGNAL(notificationsAvailable(int)),
+                    this, SLOT(onJsonDbWatcherNotificationsAvailable()));
+            // TODO: error handling for watcher
+        }
+        jsonDbConnection->addWatcher(jsonDbWatcher);
     }
 }
 
 void QJsonDbWrapper::disconnectNotify(const char *signal)
 {
+    if (!watchActivatedLocks && !watchEnabledLocks)
+        return;
+
     if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
         watchActivatedLocks = false;
     else if (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
         watchEnabledLocks = false;
 
-    if ((strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
-         || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
-            && (!watchActivatedLocks)
-            && (!watchEnabledLocks)) {
-        if (unregisterOnChanges(uuidSecurityLockNotifier))
-            uuidSecurityLockNotifier.clear();
-        disconnect(jsonclient,SIGNAL(notified(QString,QVariant,QString)),
-                   this,SLOT(onNotification(QString,QVariant,QString)));
-    }
+    if (!watchActivatedLocks && !watchEnabledLocks)
+        jsonDbConnection->removeWatcher(jsonDbWatcher);
 }
 
-void QJsonDbWrapper::onNotification(const QString &uuid,
-                                    const QVariant &notification,
-                                    const QString &action)
+void QJsonDbWrapper::onJsonDbWatcherNotificationsAvailable()
 {
-    Q_UNUSED(uuid)
+    if (!watchActivatedLocks && !watchEnabledLocks)
+        return;
 
-    QVariantMap data = notification.toMap();
-    QString objectType = data.value(QStringLiteral("_type")).toString();
-
-    if (objectType.compare(*SYSTEM_PATH() + *SYSTEM_SECURITYLOCK()) == 0) {
+    QList<QJsonDbNotification> notifications = jsonDbWatcher->takeNotifications();
+    if (notifications.size() > 0) {
+        const QJsonDbNotification notification = notifications.at(0);
         if (watchActivatedLocks) {
-            if (action.compare(QStringLiteral("remove")) == 0
-                    && (activatedLocks & QDeviceInfo::PinLock) == QDeviceInfo::PinLock) {
-                activatedLocks &= !QDeviceInfo::PinLock;
-            } else if (data.value(QStringLiteral("active")).toBool()) {
-                if (!(activatedLocks & QDeviceInfo::PinLock) == QDeviceInfo::PinLock) {
-                    activatedLocks |= QDeviceInfo::PinLock;
+            if (notification.action() == QJsonDbWatcher::Removed) {
+                if (watchActivatedLocks && activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                    activatedLocks &= ~QDeviceInfo::PinLock;
                     emit activatedLocksChanged(activatedLocks);
                 }
-            } else if (!data.value(QStringLiteral("active")).toBool()) {
-                if ((activatedLocks & QDeviceInfo::PinLock) == QDeviceInfo::PinLock) {
-                    activatedLocks &= !QDeviceInfo::PinLock;
-                    emit activatedLocksChanged(activatedLocks);
+            } else {
+                if (notification.object().value(QString(QStringLiteral("active"))).toBool()) {
+                    if (!activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                        activatedLocks |= QDeviceInfo::PinLock;
+                        emit activatedLocksChanged(activatedLocks);
+                    }
+                } else {
+                    if (activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                        activatedLocks &= ~QDeviceInfo::PinLock;
+                        emit activatedLocksChanged(activatedLocks);
+                    }
                 }
             }
         }
-        if (watchEnabledLocks && action.compare(QStringLiteral("update")) != 0) {
-            if (action == QStringLiteral("create")) {
-                if (!(enabledLocks & QDeviceInfo::PinLock) == QDeviceInfo::PinLock) {
-                    enabledLocks |= QDeviceInfo::PinLock;
-                    emit enabledLocksChanged(enabledLocks);
-                }
-            } else if (action == QStringLiteral("remove")) {
-                if ((enabledLocks & QDeviceInfo::PinLock) == QDeviceInfo::PinLock) {
-                    enabledLocks &= !QDeviceInfo::PinLock;
-                    emit enabledLocksChanged(enabledLocks);
-                }
+        if (watchEnabledLocks) {
+            if (notification.action() == QJsonDbWatcher::Created) {
+                enabledLocks |= QDeviceInfo::PinLock;
+                emit enabledLocksChanged(enabledLocks);
+            } else if (notification.action() == QJsonDbWatcher::Removed) {
+                enabledLocks &= !QDeviceInfo::PinLock;
+                emit enabledLocksChanged(enabledLocks);
             }
         }
     }
 }
 
-void QJsonDbWrapper::onResponse(int reqId, const QVariant &response)
+void QJsonDbWrapper::onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode error, const QString &message)
 {
-    timer->stop();
-    waitLoop->exit(0);
-    responses.insert(reqId, response);
-}
-
-void QJsonDbWrapper::onError(int reqId, int code, const QString &message)
-{
-    Q_UNUSED (reqId)
-    Q_UNUSED (code)
-    Q_UNUSED (message)
+    Q_UNUSED(error)
+    Q_UNUSED(message)
 
     timer->stop();
     waitLoop->exit(0);
 }
 
-void QJsonDbWrapper::onTimerExpired()
+void QJsonDbWrapper::onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message)
+{
+    Q_UNUSED(error)
+    Q_UNUSED(message)
+
+    timer->stop();
+    waitLoop->exit(0);
+}
+
+void QJsonDbWrapper::onJsonDbRequestFinished()
 {
     timer->stop();
     waitLoop->exit(0);
@@ -341,13 +294,13 @@ void QJsonDbWrapper::onTimerExpired()
 
 bool QJsonDbWrapper::waitForResponse()
 {
-    if (!jsonclient->isConnected())
-        return false;
     if (!waitLoop)
-        waitLoop = new QEventLoop (this);
-    if (!timer)
-        timer = new QTimer (this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(onTimerExpired()));
+        waitLoop = new QEventLoop(this);
+    if (!timer) {
+        timer = new QTimer(this);
+        timer->setSingleShot(true);
+        connect(timer, SIGNAL(timeout()), waitLoop, SLOT(quit()));
+    }
     timer->start(JSON_EXPIRATION_TIMER);
     waitLoop->exec(QEventLoop::AllEvents);
 
