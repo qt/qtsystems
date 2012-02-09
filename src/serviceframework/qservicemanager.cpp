@@ -376,9 +376,6 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
         serviceEntry.d->iface = descriptor.interfaceName();
         serviceEntry.d->service = descriptor.serviceName();
         serviceEntry.d->ifaceVersion = version;
-#ifdef QT_MTCORE_PRESENT
-        serviceEntry.d->connectionToken = property("__internal_notionConnectionToken").toString();
-#endif
 
         QObject* service = QRemoteServiceRegisterPrivate::proxyForService(serviceEntry, location);
         if (!service)

@@ -77,6 +77,7 @@ public:
 
     QServiceInterfaceDescriptor();
     QServiceInterfaceDescriptor(const QServiceInterfaceDescriptor& other);
+    QServiceInterfaceDescriptor(const QVariantMap &map);
     ~QServiceInterfaceDescriptor();
 
     QServiceInterfaceDescriptor& operator=(const QServiceInterfaceDescriptor& other);

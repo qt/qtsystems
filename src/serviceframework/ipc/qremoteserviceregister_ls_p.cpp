@@ -59,7 +59,7 @@
 #include <sys/types.h>          /* See NOTES */
 
 #ifdef QT_MTCLIENT_PRESENT
-#include <mt-client/notionclient.h>
+#include "qservicemanager.h"
 #include <QtAddOnJsonDb/QtAddOnJsonDb>
 #include <QCoreApplication>
 #include <QTextStream>
@@ -199,29 +199,27 @@ private:
 };
 
 #ifdef QT_MTCLIENT_PRESENT
-class NotionWaiter : public QObject
+class ServiceRequestWaiter : public QObject
 {
     Q_OBJECT
 public:
-    NotionWaiter(NotionClient *client, QObject *parent = 0)
-        : QObject(parent),
-          client(client)
+    ServiceRequestWaiter(QObject *request, QObject *parent = 0)
+        : QObject(parent)
     {
-        waitingOnNotion = true;
+        waiting = true;
         loop = new QEventLoop(this);
         timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), loop, SLOT(quit()));
-        connect(client, SIGNAL(notionEvent(QVariantMap)), this, SLOT(notionEvent(QVariantMap)));
-        connect(client, SIGNAL(errorEvent(QString,QString)), this, SLOT(errorEvent(QString,QString)));
+        connect(request, SIGNAL(launched(QString)), loop, SLOT(quit()));
+        connect(request, SIGNAL(failed(QString, QString)), this, SLOT(errorEvent(QString, QString)));
+        connect(request, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)), this, SLOT(ipcFault(QService::UnrecoverableIPCError)));
     }
-    ~NotionWaiter() { }
+    ~ServiceRequestWaiter() { }
 
     void reset() {
-        waitingOnNotion = true;
+        waiting = true;
+        error.clear();
         timer->stop();
-        notion.clear();
-        errorNotion.clear();
-        errorText.clear();
     }
 
     void wait(int ms) {
@@ -231,29 +229,27 @@ public:
         timer->stop();
     }
 
-    bool waitingOnNotion;
-    QVariantMap notion;
-    QString errorNotion;
-    QString errorText;
+    bool waiting;
+    QString error;
 
 protected slots:
-    void notionEvent(const QVariantMap& map ) {
-        waitingOnNotion = false;
-        notion = map;
+    void errorEvent(const QString &, const QString& error) {
+        this->error = error;
+        waiting = false;
         loop->quit();
     }
 
-    void errorEvent(const QString& event, const QString& error) {
-        waitingOnNotion = false;
-        errorNotion = event;
-        errorText = error;
-        loop->quit();
+    void ipcFault(QService::UnrecoverableIPCError) {
+        errorEvent(QString(), QLatin1Literal("Unrecoverable IPC fault, unable to request service start"));
+    }
+
+    void timeout() {
+        errorEvent(QString(), QLatin1Literal("Timeout waiting for reply"));
     }
 
 private:
         QEventLoop *loop;
         QTimer *timer;
-        NotionClient *client;
 };
 
 #endif
@@ -333,17 +329,22 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
 */
 bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QString& ident)
 {
+
+    QString location = ident;
+
     //other IPC mechanisms such as dbus may have to publish the
     //meta object definition for all registered service types
-    QLocalServer::removeServer(ident);
+    QLocalServer::removeServer(location);
     localServer = new QLocalServer(this);
-    if ( !localServer->listen(ident) ) {
+    connect(localServer, SIGNAL(newConnection()), this, SLOT(processIncoming()));
+
+    if ( !localServer->listen(location) ) {
         qWarning() << "Cannot create local socket endpoint";
         return false;
     }
-    connect(localServer, SIGNAL(newConnection()), this, SLOT(processIncoming()));
+
     if (localServer->hasPendingConnections())
-        QTimer::singleShot(0, this, SLOT(processIncoming()));
+        QMetaObject::invokeMethod(this, "processIncoming", Qt::QueuedConnection);
 
     return true;
 }
@@ -354,23 +355,43 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 }
 
 #ifdef QT_MTCLIENT_PRESENT
-void doStart(const QString &location, const QString &connectionToken) {
+void doStart(const QString &location) {
 
-    QScopedPointer<NotionClient> client(new NotionClient());
-    QScopedPointer<NotionWaiter> waiter(new NotionWaiter(client.data()));
-    client->setConnectionToken(connectionToken);
+    if (location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest") ||
+        location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket")) {
+        return;
+    }
 
-    QVariantMap notion;
-    notion.insert(QLatin1String("notion"), QLatin1String("ServiceRequest"));
-    notion.insert(QLatin1String("service"), location);
+    QVariantMap map;
+    map.insert(QLatin1Literal("interfaceName"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest"));
+    map.insert(QLatin1Literal("serviceName"), QLatin1Literal("com.nokia.mt.processmanager"));
+    map.insert(QLatin1Literal("major"), 1);
+    map.insert(QLatin1Literal("minor"), 0);
+    map.insert(QLatin1Literal("Location"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket"));
+    map.insert(QLatin1Literal("ServiceType"), QService::InterProcess);
 
-    //
-    // XXX TODO: needs error handeling, client->send can fail
-    //           need to add some error handeling.  Return type
-    //           of send has been promissed to change to bool.
-    //           On failure can wait for the signal client->connection->connected
-    //           may also be able to check client->connection->isOpen first
-    client->send(notion);
+    QServiceInterfaceDescriptor desc(map);
+    QServiceManager manager;
+    QObject *serviceRequest = manager.loadInterface(desc);
+
+    qWarning() << "Called loadinterface" << serviceRequest;
+
+    if (!serviceRequest) {
+        qWarning() << "Failed to initiate communications with Process manager, can't start service" << location;
+        return;
+    }
+
+    ServiceRequestWaiter waiter(serviceRequest);
+    QMetaObject::invokeMethod(serviceRequest, "startService", Q_ARG(QString, location));
+
+    waiter.wait(5000);
+    if (!waiter.error.isEmpty()) {
+        delete serviceRequest;
+        qWarning() << "Failed to start service, request sent, result" << waiter.error;
+        return;
+    }
+
+    qWarning() << "Starting to look for socket";
 
     QEventLoop loop;
     QFileSystemWatcher watcher;
@@ -383,7 +404,6 @@ void doStart(const QString &location, const QString &connectionToken) {
     timeout.setSingleShot(true);
     QObject::connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
     while (!file.exists() && timeout.isActive()) {
-        qWarning() << "SFW waiting for file deamon to start....";
         loop.exec();
     }
     qWarning() << "SFW done waiting" << file.exists();
@@ -406,7 +426,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
 #ifdef QT_MTCLIENT_PRESENT
 
-            doStart(location, entry.d->connectionToken);
+            doStart(location);
 
             socket->connectToServer(location);
             if (!socket->waitForConnected()) {
@@ -462,7 +482,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
         }
         ipcEndPoint->setParent(proxy);
         endPoint->setParent(proxy);
-        qDebug() << "SFW create object";
+        qWarning() << "SFW create object";
         return proxy;
     }
     return 0;

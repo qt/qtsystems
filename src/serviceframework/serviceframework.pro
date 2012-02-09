@@ -16,8 +16,6 @@ load(qt_module_config)
 jsondb|contains(QT_CONFIG, jsondb): {
     mtlib|contains(config_test_mtlib, yes): {
         DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB QT_MTCLIENT_PRESENT
-        CONFIG += link_pkgconfig
-        PKGCONFIG += mt-client
         QT += jsondb
     }
     !no_wayland: {

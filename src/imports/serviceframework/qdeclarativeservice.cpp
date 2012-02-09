@@ -44,10 +44,6 @@
 #include <QDeclarativeEngine>
 #include <QDeclarativeInfo>
 
-#ifdef QT_MTCLIENT_PRESENT
-#include <mt-client/notionclient.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -257,11 +253,6 @@ void QDeclarativeService::updateDescriptor()
 
     if (m_interface.isEmpty())
         return;
-
-#ifdef QT_MTCLIENT_PRESENT
-    QString notionConnectionToken = NotionClient::connectionToken(this);
-    m_serviceManager->setProperty("__internal_notionConnectionToken", notionConnectionToken);
-#endif
 
     QServiceInterfaceDescriptor new_desc;
 

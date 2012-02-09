@@ -7,8 +7,6 @@ CONFIG += parallel_test
 
 jsondb|contains(QT_CONFIG, jsondb) {
     mtlib|contains(config_test_mtlib, yes) {
-        CONFIG += link_pkgconfig
-        PKGCONFIG += mt-client
         DEFINES += QT_ADDON_JSONDB_LIB
         QT += jsondb jsondb-private
     }
