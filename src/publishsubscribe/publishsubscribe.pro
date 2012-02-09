@@ -42,7 +42,7 @@ unix {
         }
 
         contains(QT_CONFIG,jsondb) {
-            QT += jsondb jsondb-private
+            QT += jsondbcompat jsondbcompat-private
             PRIVATE_HEADERS += jsondblayer_p.h
             SOURCES += jsondblayer.cpp
         } else {
