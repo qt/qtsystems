@@ -65,6 +65,8 @@
 #include <QTextStream>
 #include <QFileSystemWatcher>
 #include "qsecuritypackage_p.h"
+#include <sys/stat.h>
+#include <stdio.h>
 #endif
 
 #ifndef Q_OS_WIN
@@ -330,18 +332,40 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
 bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QString& ident)
 {
 
-    QString location = ident;
-
-    //other IPC mechanisms such as dbus may have to publish the
-    //meta object definition for all registered service types
-    QLocalServer::removeServer(location);
     localServer = new QLocalServer(this);
     connect(localServer, SIGNAL(newConnection()), this, SLOT(processIncoming()));
 
-    if ( !localServer->listen(location) ) {
+#ifdef QT_MTCLIENT_PRESENT
+
+    QString location = ident;
+    location = QDir::cleanPath(QDir::tempPath());
+    location += QLatin1Char('/') + ident;
+
+    // Note safe, but a temporary code
+    QString tempLocation = location + QLatin1Literal(".temp");
+
+    QLocalServer::removeServer(location);
+    QLocalServer::removeServer(tempLocation);
+
+    if ( !localServer->listen(tempLocation) ) {
         qWarning() << "Cannot create local socket endpoint";
         return false;
     }
+
+    ::chmod(tempLocation.toLatin1(), S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IWOTH|S_IROTH);
+    ::rename(tempLocation.toLatin1(), location.toLatin1());
+
+#else
+    //other IPC mechanisms such as dbus may have to publish the
+    //meta object definition for all registered service types
+    QLocalServer::removeServer(ident);
+
+    if ( !localServer->listen(ident) ) {
+        qWarning() << "Cannot create local socket endpoint";
+        return false;
+    }
+#endif
+
 
     if (localServer->hasPendingConnections())
         QMetaObject::invokeMethod(this, "processIncoming", Qt::QueuedConnection);
