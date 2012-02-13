@@ -72,5 +72,10 @@ void QServiceIpcEndPoint::writePackage(QServicePackage newPackage)
     flushPackage(newPackage);
 }
 
+void QServiceIpcEndPoint::getSecurityCredentials(QServiceClientCredentials &)
+{
+}
+
+
 #include "moc_ipcendpoint_p.cpp"
 QT_END_NAMESPACE

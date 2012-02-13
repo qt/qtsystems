@@ -82,7 +82,20 @@ public:
     SharedTestService(QObject* parent = 0)
         : QObject(parent)
     {
+        qFatal("Insecure constructor called, this should never be called if a secured constructor is available");
         resetValue();
+    }
+
+    Q_INVOKABLE SharedTestService(QServiceClientCredentials *creds)
+        : QObject(0)
+    {
+        creds->setClientAccepted(true);
+        resetValue();
+    }
+
+    Q_INVOKABLE void verifyNewServiceClientCredentials(QServiceClientCredentials *creds)
+    {
+        creds->setClientAccepted(true);
     }
 
     QString value() const
@@ -250,8 +263,18 @@ public:
     }
 
     UniqueTestService(QObject* parent = 0)
-        : QObject(parent), m_priority(UniqueTestService::High), m_flags(ThirdBit)
+        : QObject(0)
     {
+        qFatal("Wrong constructor called, must call secure constructor only");
+        abort();
+        resetValue();
+    }
+
+    Q_INVOKABLE UniqueTestService(QServiceClientCredentials *creds)
+        : QObject(0), m_priority(UniqueTestService::High), m_flags(ThirdBit)
+    {
+        // accept everyone
+        creds->setClientAccepted(true);
         resetValue();
     }
 
@@ -445,6 +468,7 @@ class FailureTestServiceCreation : public QObject
 {
     Q_OBJECT
     Q_CLASSINFO("FailureTestServiceCreation", "Fails to be created");
+
 };
 
 class MiscTestService : public QObject
@@ -454,7 +478,15 @@ public:
     MiscTestService(QObject* parent = 0)
         : QObject(parent)
     {
+        qFatal("Invalid constructor called");
     }
+
+    Q_INVOKABLE MiscTestService(QServiceClientCredentials *creds)
+        : QObject(0)
+    {
+        creds->setClientAccepted(true);
+    }
+
 
     Q_INVOKABLE bool addTwice()
     {
@@ -485,6 +517,58 @@ public:
     }
 };
 
+class SecurityTestService : public QObject
+{
+    Q_OBJECT
+public:
+    SecurityTestService(QObject* parent = 0)
+        : QObject(parent)
+    {
+        qFatal("Invalid constructor called");
+    }
+
+    Q_INVOKABLE SecurityTestService(QServiceClientCredentials *creds)
+        : QObject(0)
+    {
+        creds->setClientAccepted(false);
+    }
+};
+
+class GlobalSecurityTestService : public QObject
+{
+    Q_OBJECT
+public:
+    GlobalSecurityTestService(QObject* parent = 0)
+        : QObject(parent)
+    {
+        qFatal("Invalid constructor called");
+        // If this called, fail the rest of the tests, reverse this value
+        disabled = true;
+    }
+
+    Q_INVOKABLE GlobalSecurityTestService(QServiceClientCredentials *creds)
+        : QObject(0)
+    {
+        creds->setClientAccepted(true);
+        disabled = false;
+    }
+
+    Q_INVOKABLE void verifyNewServiceClientCredentials(QServiceClientCredentials *creds)
+    {
+        creds->setClientAccepted(!disabled);
+    }
+
+    Q_INVOKABLE bool disableConnections(bool disable)
+    {
+        this->disabled = disable;
+        return this->disabled;
+    }
+
+private:
+    bool disabled;
+};
+
+
 void unregisterExampleService()
 {
     QServiceManager m;
@@ -504,6 +588,7 @@ void registerExampleService()
     if (!r)
         qWarning() << "Cannot register IPCExampleService" << path;
 }
+
 
 Q_DECLARE_METATYPE(QMetaType::Type);
 
@@ -567,6 +652,18 @@ int main(int argc, char** argv)
             serviceRegister->createEntry<MiscTestService>(
                     "IPCExampleService", "com.nokia.qt.ipcunittest", "3.8");
     creationEntryPriv.setInstantiationType(QRemoteServiceRegister::GlobalInstance);
+
+    // register the class to test creation failure
+    QRemoteServiceRegister::Entry securityEntry =
+            serviceRegister->createEntry<SecurityTestService>(
+                    "IPCExampleService", "com.nokia.qt.ipcunittest", "3.9");
+    securityEntry.setInstantiationType(QRemoteServiceRegister::PrivateInstance);
+
+    // register the class to test creation failure
+    QRemoteServiceRegister::Entry globalSecurityEntry =
+            serviceRegister->createEntry<GlobalSecurityTestService>(
+                    "IPCExampleService", "com.nokia.qt.ipcunittest", "3.10");
+    globalSecurityEntry.setInstantiationType(QRemoteServiceRegister::GlobalInstance);
 
     //publish the registered services
     serviceRegister->publishEntries("qt_sfw_example_ipc_unittest");

@@ -44,6 +44,7 @@
 #include <private/qmetaobjectbuilder_p.h>
 #include "proxyobject_p.h"
 #include "qsignalintercepter_p.h"
+#include "qserviceclientcredentials.h"
 #include <QTimer>
 #include <QEventLoop>
 #include <QEvent>
@@ -395,13 +396,43 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         QMetaObjectBuilder builder(meta);
         builder.serialize(stream);
 
+        QServiceClientCredentials creds;
+        dispatch->getSecurityCredentials(creds);
+
+        // not supported on windows at the moment
+#ifdef QT_MTCLIENT_PRESENT
+//        if (!creds.isValid()) {
+//            disconnected();
+//            return;
+//        }
+//        // default to reject all clients unless accepted
+//        creds.setClientAccepted(false);
+        if (!creds.isValid()) {
+            qWarning() << "SFW Unable to get socket credentials client asking for" << p.d->entry.interfaceName() << p.d->entry.serviceName() << "this may fail in the future";
+            disconnected();
+            return;
+        }
+#endif
+
         //instantiate service object from type register
-        service = m->createObjectInstance(p.d->entry, d->serviceInstanceId);
+        service = m->createObjectInstance(p.d->entry, d->serviceInstanceId, creds);
         if (!service) {
             qWarning() << "Cannot instanciate service object";
             dispatch->writePackage(response);
             return;
         }
+
+        if (!creds.isClientAccepted()) {
+            qWarning() << "SFW Security failure by" <<
+                          creds.getProcessIdentifier() <<
+                          creds.getUserIdentifier() <<
+                          creds.getGroupIdentifier() <<
+                          "requesting" << p.d->entry.interfaceName() << p.d->entry.serviceName();
+            m->removeObjectInstance(p.d->entry, d->serviceInstanceId);
+            disconnected();
+            return;
+        }
+
         d->setupSignalIntercepters(service);
 
         //send meta object

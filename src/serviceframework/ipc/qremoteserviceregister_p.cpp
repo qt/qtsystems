@@ -47,7 +47,10 @@
 QT_BEGIN_NAMESPACE
 
 QRemoteServiceRegisterPrivate::QRemoteServiceRegisterPrivate(QObject* parent)
-    : QObject(parent), iFilter(0)
+    : QObject(parent), iFilter(0),
+      securityOptions(QRemoteServiceRegister::NoOptions),
+      userIdentifier(0), userIdentifierSet(false),
+      groupIdentifier(0), groupIdentifierSet(false)
 {
     setQuitOnLastInstanceClosed(true);
 }
@@ -90,9 +93,51 @@ QRemoteServiceRegister::SecurityFilter QRemoteServiceRegisterPrivate::setSecurit
     return f;
 }
 
+void QRemoteServiceRegisterPrivate::setSecurityOptions(QRemoteServiceRegister::SecurityAccessOptions options)
+{
+    securityOptions = options;
+}
+
 QRemoteServiceRegister::SecurityFilter QRemoteServiceRegisterPrivate::getSecurityFilter()
 {
     return iFilter;
+}
+
+QRemoteServiceRegister::SecurityAccessOptions QRemoteServiceRegisterPrivate::getSecurityOptions() const
+{
+    return securityOptions;
+}
+
+void QRemoteServiceRegisterPrivate::setBaseUserIdentifier(qintptr uid)
+{
+    userIdentifier = uid;
+    userIdentifierSet = true;
+}
+
+qintptr QRemoteServiceRegisterPrivate::getBaseUserIdentifier() const
+{
+    return userIdentifier;
+}
+
+bool QRemoteServiceRegisterPrivate::isBaseUserIdentifierSet() const
+{
+    return userIdentifierSet;
+}
+
+void QRemoteServiceRegisterPrivate::setBaseGroupIdentifier(qintptr gid)
+{
+    groupIdentifier = gid;
+    groupIdentifierSet = true;
+}
+
+qintptr QRemoteServiceRegisterPrivate::getBaseGroupIdentifier() const
+{
+    return groupIdentifier;
+}
+
+bool QRemoteServiceRegisterPrivate::isBaseGroupIdentifierSet() const
+{
+    return groupIdentifierSet;
 }
 
 

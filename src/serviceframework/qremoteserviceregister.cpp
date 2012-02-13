@@ -43,6 +43,7 @@
 #include "qremoteserviceregisterentry_p.h"
 #include "ipc/instancemanager_p.h"
 #include "qremoteserviceregister_p.h"
+#include "qserviceclientcredentials_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -335,6 +336,66 @@ bool QRemoteServiceRegister::quitOnLastInstanceClosed() const
 void QRemoteServiceRegister::setQuitOnLastInstanceClosed(bool quit)
 {
     d->setQuitOnLastInstanceClosed(quit);
+}
+
+/*!
+  \since 5.0
+
+  Set the user id for the socket or pipe.  For backends that use sockets or
+  pipes and provide filesystem based access control.
+
+  */
+
+void QRemoteServiceRegister::setBaseUserIdentifier(qintptr uid)
+{
+    d->setBaseUserIdentifier(uid);
+}
+
+/*!
+  \since 5.0
+
+  Get the user id set on the socket or pipe.
+*/
+
+qintptr QRemoteServiceRegister::getBaseUserIdentifier() const
+{
+    return d->getBaseUserIdentifier();
+}
+
+/*!
+  \since 5.0
+
+  Set the group id for the socket or pipe.  For backends that use sockets or
+  pipes and provide filesystem based access control.
+  */
+
+void QRemoteServiceRegister::setBaseGroupIdentifier(qintptr gid)
+{
+    d->setBaseGroupIdentifier(gid);
+}
+
+/*!
+  \since 5.0
+
+  Get the group id set on the socket or pipe.
+*/
+
+qintptr QRemoteServiceRegister::getBaseGroupIdentifier() const
+{
+    return d->getBaseGroupIdentifier();
+}
+
+/*!
+    \since 5.0
+
+    Set the socket access control.  This sets the file
+    system permissions on that socket.
+
+ */
+
+void QRemoteServiceRegister::setSecurityAccessOptions(SecurityAccessOptions options)
+{
+    d->setSecurityOptions(options);
 }
 
 /*!

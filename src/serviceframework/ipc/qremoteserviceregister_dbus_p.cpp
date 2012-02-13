@@ -48,6 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
+struct dbus_creds
+{
+    int pid;
+    int uid;
+};
+
 class DBusEndPoint : public QServiceIpcEndPoint
 {
     Q_OBJECT
@@ -58,8 +64,9 @@ public:
     {
         Q_ASSERT(interface);
         interface->setParent(this);
-        connect(interface, SIGNAL(packageReceived(QByteArray,int,QString)),
-                this, SLOT(readPackage(QByteArray,int,QString)));
+
+        connect(interface, SIGNAL(packageReceived(QByteArray,int,QString,int,int)),
+                this, SLOT(readPackage(QByteArray,int,QString,int,int)));
 
         if (endType == CLIENT) {
             QDBusServiceWatcher *watcher = new QDBusServiceWatcher(interface->service(),
@@ -107,27 +114,33 @@ protected:
     }
 
 protected slots:
-    void readPackage(const QByteArray &package, int type, const QString &id) {
+    void readPackage(const QByteArray &package, int type, const QString &id, int pid, int uid) {
         // Check that its of a client-server nature
         if (endType != type) {
             // Client to Server
             if (type != SERVER) {
-                readIncoming(package);
+                readIncoming(package, pid, uid);
             } else {
             // Server to Client
                 if (id == packageId) {
-                    readIncoming(package);
+                    readIncoming(package, pid, uid);
                 }
             }
         }
     }
 
-    void readIncoming(const QByteArray &package)
+    void readIncoming(const QByteArray &package, int pid, int uid)
     {
         QDataStream data(package);
         QServicePackage pack;
         data >> pack;
 
+        dbus_creds dcreds;
+
+        dcreds.pid = pid;
+        dcreds.uid = uid;
+
+        creds_list.enqueue(dcreds);
         incoming.enqueue(pack);
         emit readyRead();
     }
@@ -142,11 +155,22 @@ protected slots:
         }
     }
 
+    void getSecurityCredentials(QServiceClientCredentials &creds)
+    {
+        if (!creds_list.isEmpty()) {
+            dbus_creds dcreds = creds_list.dequeue();
+            creds.d->pid = dcreds.pid;
+            creds.d->uid = dcreds.uid;
+            creds.d->gid = -1;
+        }
+    }
+
 private:
     QDBusInterface* interface;
     QString packageId;
     int endType;
     QString instanceId;
+    QQueue<dbus_creds> creds_list;
 };
 
 class DBusSessionAdaptor: public QDBusAbstractAdaptor
@@ -190,7 +214,7 @@ public slots:
     }
 
 signals:
-    void packageReceived(const QByteArray &package, int type, const QString &id);
+    void packageReceived(const QByteArray &package, int type, const QString &id, int uid, int pid);
     void newConnection(int pid, int uid);
 };
 
@@ -289,13 +313,14 @@ bool QRemoteServiceRegisterDBusPrivate::createServiceEndPoint(const QString& ide
 void QRemoteServiceRegisterDBusPrivate::processIncoming(int pid, int uid)
 {
     if (getSecurityFilter()) {
-        QRemoteServiceRegisterCredentials cred;
-        cred.fd = -1;
-        cred.pid = pid;
-        cred.uid = uid;
-        cred.gid = -1;
+        QServiceClientCredentials cred;
+        cred.d->pid = pid;
+        cred.d->uid = uid;
+        cred.d->gid = -1;
 
-        if (!getSecurityFilter()(reinterpret_cast<const void *>(&cred))) {
+        getSecurityFilter()(&cred);
+
+        if (!cred.isClientAccepted()) {
             session->acceptIncoming(false);
 
             // Close service if no instances

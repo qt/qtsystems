@@ -6,6 +6,18 @@
     <description>Example service demoing IPC based services</description>
     <interface>
         <name>com.nokia.qt.ipcunittest</name>
+        <version>3.10</version>
+        <description>Security test case, test global object security</description>
+        <capabilities></capabilities>
+    </interface>
+    <interface>
+        <name>com.nokia.qt.ipcunittest</name>
+        <version>3.9</version>
+        <description>Security test case, reject all connections on a private object</description>
+        <capabilities></capabilities>
+    </interface>
+    <interface>
+        <name>com.nokia.qt.ipcunittest</name>
         <version>3.8</version>
         <description>Misc test code that tests failures and edge cases</description>
         <capabilities></capabilities>

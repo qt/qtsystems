@@ -136,7 +136,7 @@ QList<QRemoteServiceRegister::Entry> InstanceManager::allEntries() const
     if \a entry cannot be mapped to a known meta object. The \a instanceId will
     contain the unique ID for the new service instance.
 */
-QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Entry& entry, QUuid& instanceId)
+QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Entry& entry, QUuid& instanceId, QServiceClientCredentials& creds)
 {
     instanceId = QUuid();
     QMutexLocker ml(&lock);
@@ -151,8 +151,28 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
             service = descr.globalInstance;
             instanceId = descr.globalId;
             descr.globalRefCount++;
+            if (!QMetaObject::invokeMethod(service, "verifyNewServiceClientCredentials", Q_ARG(QServiceClientCredentials*, &creds))){
+#ifdef QT_MTCLIENT_PRESENT
+                qWarning() << "Unable to authenticate new client connection on shared object" << descr.entryData->meta->className();
+#endif
+            }
         } else {
-            service = (*descr.entryData->cptr)();
+            bool hasSecureConstructor = false;
+            const QMetaObject* metaObject = descr.entryData->meta;
+            for (int i = 0; i < metaObject->constructorCount(); ++i) {
+                const QMetaMethod method = metaObject->constructor(i);
+                const QList<QByteArray> params = method.parameterTypes();
+                if (params.at(0) == "QServiceClientCredentials*") {
+                    hasSecureConstructor = true;
+                    service = metaObject->newInstance(Q_ARG(QServiceClientCredentials*, &creds));
+                }
+            }
+            if (!hasSecureConstructor) {
+#ifdef QT_MTCLIENT_PRESENT
+                qWarning() << "caution SFW using constructor without security credentials" << descr.entryData->meta->className();
+#endif
+                service = (*descr.entryData->cptr)();
+            }
             if (!service)
                 return 0;
 
@@ -161,7 +181,22 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
             descr.globalRefCount = 1;
         }
     } else {
-        service = (*descr.entryData->cptr)();
+        bool hasSecureConstructor = false;
+        const QMetaObject* metaObject = descr.entryData->meta;
+        for (int i = 0; i < metaObject->constructorCount(); ++i) {
+            const QMetaMethod method = metaObject->constructor(i);
+            const QList<QByteArray> params = method.parameterTypes();
+            if (params.at(0) == "QServiceClientCredentials*") {
+                hasSecureConstructor = true;
+                service = metaObject->newInstance(Q_ARG(QServiceClientCredentials*, &creds));
+            }
+        }
+        if (!hasSecureConstructor) {
+#ifdef QT_MTCLIENT_PRESENT
+            qWarning() << "caution SFW using constructor without security credentials" << descr.entryData->meta->className();
+#endif
+            service = (*descr.entryData->cptr)();
+        }
         if (!service)
             return 0;
         instanceId = QUuid::createUuid();

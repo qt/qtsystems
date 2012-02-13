@@ -83,20 +83,19 @@ private:
     bool servicePublished;
 };
 
-bool mySecurityFilterFunction(const void *p)
+void mySecurityFilterFunction(QServiceClientCredentials *cred)
 {
-    const QRemoteServiceRegisterCredentials *cred = (const struct QRemoteServiceRegisterCredentials *)p;
-
     // allow the superuser
-    if (cred->uid == 0)
-        return true;
+    if (cred->getUserIdentifier() == 0) {
+        cred->setClientAccepted(false);
+    }
 
-    return false;
+    cred->setClientAccepted(true);
 }
 
-bool alwaysPass(const void * /*p*/)
+void alwaysPass(QServiceClientCredentials *cred)
 {
-    return true;
+    cred->setClientAccepted(true);
 }
 
 void tst_QRemoteServiceRegister::initTestCase()
@@ -234,8 +233,6 @@ Q_DECLARE_METATYPE(QRemoteServiceRegister::Entry);
 
 void tst_QRemoteServiceRegister::tst_instanceClosed()
 {
-    QSKIP("This test does not pass yet");
-
     qRegisterMetaType<QRemoteServiceRegister::Entry>("QRemoteServiceRegister::Entry");
     if(!servicePublished)
         serviceRegister->publishEntries("qt_sfw_example_rsr_unittest");
@@ -249,7 +246,7 @@ void tst_QRemoteServiceRegister::tst_instanceClosed()
 
     delete o;
 
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(spyAll.count(), 1);
 
 }

@@ -49,21 +49,35 @@
 #include <QDebug>
 #include <QExplicitlySharedDataPointer>
 
+#include "qserviceclientcredentials.h"
+
 QT_BEGIN_NAMESPACE
 
 class QRemoteServiceRegisterPrivate;
 class QRemoteServiceRegisterEntryPrivate;
+class QServiceClientCredentialsPrivate;
+class QServiceClientCredentials;
 
 class Q_SERVICEFW_EXPORT QRemoteServiceRegister : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool quitOnLastInstanceClosed READ quitOnLastInstanceClosed WRITE setQuitOnLastInstanceClosed)
+    Q_FLAGS(SocketAccessOption SecurityAccessOptions)
 public:
 
     enum InstanceType {
         GlobalInstance = 0,
         PrivateInstance
     };
+
+    enum SecurityAccessOption {
+        NoOptions = 0x0,
+        UserAccessOption  =   0x01,
+        GroupAccessOption  =  0x02,
+        OtherAccessOption  =  0x04,
+        WorldAccessOption  =  0x07
+    };
+    Q_DECLARE_FLAGS(SecurityAccessOptions, SecurityAccessOption)
 
     typedef QObject *(*CreateServiceFunc)();
 
@@ -114,8 +128,17 @@ public:
     bool quitOnLastInstanceClosed() const;
     void setQuitOnLastInstanceClosed(const bool quit);
 
-    typedef bool (*SecurityFilter)(const void *message);
+    typedef void (*SecurityFilter)(QServiceClientCredentials *creds);
     SecurityFilter setSecurityFilter(SecurityFilter filter);
+
+    SecurityAccessOptions securityAccessOptions() const;
+    void setSecurityAccessOptions(SecurityAccessOptions options);
+
+    qintptr getBaseUserIdentifier() const;
+    void setBaseUserIdentifier(qintptr uid);
+
+    qintptr getBaseGroupIdentifier() const;
+    void setBaseGroupIdentifier(qintptr gid);
 
 Q_SIGNALS:
     void allInstancesClosed();
@@ -128,13 +151,6 @@ private:
                     CreateServiceFunc cptr, const QMetaObject* meta);
 
     QRemoteServiceRegisterPrivate* d;
-};
-
-struct QRemoteServiceRegisterCredentials {
-    int fd;
-    int pid;
-    int uid;
-    int gid;
 };
 
 inline uint qHash(const QRemoteServiceRegister::Entry& e) {

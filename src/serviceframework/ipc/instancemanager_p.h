@@ -82,7 +82,7 @@ public:
 
     int totalInstances() const;
 
-    QObject* createObjectInstance(const QRemoteServiceRegister::Entry& entry, QUuid& instanceId);
+    QObject* createObjectInstance(const QRemoteServiceRegister::Entry& entry, QUuid& instanceId, QServiceClientCredentials& creds);
     void removeObjectInstance(const QRemoteServiceRegister::Entry& entry, const QUuid& instanceId);
 
     static InstanceManager* instance();

@@ -64,7 +64,9 @@ class DBusSession: public QObject, protected QDBusContext
 public:
     DBusSession(QObject* parent = 0)
         : QObject(parent)
-    {}
+    {
+        m_accept = true;
+    }
     ~DBusSession() {}
 
 public slots:
@@ -86,11 +88,18 @@ public slots:
             out.setVersion(QDataStream::Qt_4_6);
             out << pack;
 
-            emit packageReceived(block, type, id);
+            emit packageReceived(block, type, id, -1, -1);
             return block;
+
         }
 
-        emit packageReceived(package, type, id);
+        if (!m_accept)
+            return QByteArray();
+
+        int pid = connection().interface()->servicePid(message().service());
+        int uid = connection().interface()->serviceUid(message().service());
+
+        emit packageReceived(package, type, id, pid, uid);
         return package;
     }
 
@@ -113,7 +122,7 @@ public slots:
     }
 
 Q_SIGNALS:
-    void packageReceived(const QByteArray &package, int type, const QString &id);
+    void packageReceived(const QByteArray &package, int type, const QString &id, int pid, int uid);
     void newConnection(int pid, int uid);
     void closeConnection(const QString& clientId, const QString& instanceId);
 

@@ -62,6 +62,8 @@ public:
 
     void writePackage(QServicePackage newPackage);
 
+    virtual void getSecurityCredentials(QServiceClientCredentials& creds);
+
 Q_SIGNALS:
     void readyRead();
     void disconnected();

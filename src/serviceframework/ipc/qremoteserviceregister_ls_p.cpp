@@ -43,6 +43,8 @@
 #include "qremoteserviceregister_ls_p.h"
 #include "ipcendpoint_p.h"
 #include "objectendpoint_p.h"
+#include "../qserviceclientcredentials.h"
+#include "../qserviceclientcredentials_p.h"
 
 #include <QLocalServer>
 #include <QEventLoop>
@@ -64,7 +66,6 @@
 #include <QCoreApplication>
 #include <QTextStream>
 #include <QFileSystemWatcher>
-#include "qsecuritypackage_p.h"
 #include <sys/stat.h>
 #include <stdio.h>
 #endif
@@ -72,6 +73,7 @@
 #ifndef Q_OS_WIN
 #include <sys/un.h>
 #include <sys/socket.h>
+#include <errno.h>
 #else
 // Needed for ::Sleep, while we wait for a better solution
 #include <Windows.h>
@@ -115,6 +117,37 @@ public:
         disconnect(this, SLOT(ipcfault()));
         socket->close();
     }
+
+    void getSecurityCredentials(QServiceClientCredentials &creds)
+    {
+        //LocalSocketEndPoint owns socket
+        int fd = socket->socketDescriptor();
+#if defined(LOCAL_PEERCRED)
+        struct xucred xuc;
+        socklen_t len = sizeof(struct xucred);
+
+        if (getsockopt(fd, SOL_SOCKET, LOCAL_PEERCRED, &xuc, &len) == 0) {
+            creds.d->pid = -1; // No PID on bsd
+            creds.d->uid = xuc.cr_uid;
+            creds.d->gid = xuc.cr_gid;
+
+        } else {
+            qDebug("SFW getsockopt failed: %s", qPrintable(qt_error_string(errno)));
+        }
+#elif defined(SO_PEERCRED)
+        struct ucred uc;
+        socklen_t len = sizeof(struct ucred);
+
+        if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &uc, &len) == 0) {
+            creds.d->pid = uc.pid;
+            creds.d->uid = uc.uid;
+            creds.d->gid = uc.gid;
+        } else {
+            qDebug("SFW getsockopt failed: %s", qPrintable(qt_error_string(errno)));
+        }
+#endif
+    }
+
 
 Q_SIGNALS:
     void errorUnrecoverableIPCFault(QService::UnrecoverableIPCError);
@@ -277,50 +310,21 @@ void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
 {
     if (localServer->hasPendingConnections()) {
         QLocalSocket* s = localServer->nextPendingConnection();
+
         //LocalSocketEndPoint owns socket
-        int fd = s->socketDescriptor();
+        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(s, this);
+
         if (getSecurityFilter()){
-            QRemoteServiceRegisterCredentials qcred;
-            memset(&qcred, 0, sizeof(QRemoteServiceRegisterCredentials));
-            qcred.fd = fd;
+            QServiceClientCredentials creds;
+            ipcEndPoint->getSecurityCredentials(creds);
 
-#if defined(LOCAL_PEERCRED)
-            struct xucred xuc;
-            socklen_t len = sizeof(struct xucred);
-
-            if (getsockopt(fd, SOL_SOCKET, LOCAL_PEERCRED, &xuc, &len) == 0) {
-                qcred.pid = -1; // No PID on bsd
-                qcred.uid = xuc.cr_uid;
-                qcred.gid = xuc.cr_gid;
-
-            }
-
-#elif defined(SO_PEERCRED)
-            struct ucred uc;
-            socklen_t len = sizeof(struct ucred);
-
-            if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &uc, &len) == 0) {
-                qcred.pid = uc.pid;
-                qcred.uid = uc.uid;
-                qcred.gid = uc.gid;
-            }
-            else {
-                s->close();
-                perror("Failed to get peer credential");
-                return;
-            }
-#else
-            s->close();
-            qWarning("Credentials check unsupprted on this platform");
-            return;
-#endif
             qDebug() << "Security filter call";
-            if (!getSecurityFilter()(reinterpret_cast<const void *>(&qcred))){
+            getSecurityFilter()(&creds);
+            if (!creds.isClientAccepted()) {
                 s->close();
                 return;
             }
         }
-        LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(s, this);
         ObjectEndPoint* endpoint = new ObjectEndPoint(ObjectEndPoint::Service, ipcEndPoint, this);
         Q_UNUSED(endpoint);
     }
@@ -336,6 +340,27 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
     connect(localServer, SIGNAL(newConnection()), this, SLOT(processIncoming()));
 
 #ifdef QT_MTCLIENT_PRESENT
+    QRemoteServiceRegister::SecurityAccessOptions opts = getSecurityOptions();
+
+    if (opts == QRemoteServiceRegister::NoOptions) {
+        localServer->setSocketOptions(QLocalServer::UserAccessOption);
+    } else {
+        QLocalServer::SocketOptions flags = QLocalServer::NoOptions;
+
+        if (opts == QRemoteServiceRegister::UserAccessOption) {
+            flags |= QLocalServer::UserAccessOption;
+        }
+        if (opts == QRemoteServiceRegister::GroupAccessOption) {
+            flags |= QLocalServer::GroupAccessOption;
+        }
+        if (opts == QRemoteServiceRegister::OtherAccessOption) {
+            flags |= QLocalServer::GroupAccessOption;
+        }
+        if (opts == QRemoteServiceRegister::WorldAccessOption) {
+            flags |= QLocalServer::WorldAccessOption;
+        }
+        localServer->setSocketOptions(flags);
+    }
 
     QString location = ident;
     location = QDir::cleanPath(QDir::tempPath());
@@ -347,12 +372,28 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
     QLocalServer::removeServer(location);
     QLocalServer::removeServer(tempLocation);
 
+    localServer->setSocketOptions(QLocalServer::WorldAccessOption);
+
     if ( !localServer->listen(tempLocation) ) {
         qWarning() << "Cannot create local socket endpoint";
         return false;
     }
 
-    ::chmod(tempLocation.toLatin1(), S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IWOTH|S_IROTH);
+    int uid = getuid();
+    int gid = getgid();
+    bool doChown = false;
+    if (isBaseUserIdentifierSet()) {
+        uid = getBaseUserIdentifier();
+        doChown = true;
+    }
+    if (isBaseGroupIdentifierSet()) {
+        gid = getBaseGroupIdentifier();
+        doChown = true;
+    }
+    if (doChown && (-1 == ::chown(tempLocation.toLatin1(), uid, gid))) {
+        qWarning("Failed to chown socket to request uid/gid %d/%d %s", uid. gid, qt_error_string(errno));
+        return false;
+    }
     ::rename(tempLocation.toLatin1(), location.toLatin1());
 
 #else

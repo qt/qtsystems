@@ -137,6 +137,8 @@ private slots:
     void verifyServiceClass();
     void verifyFailures();
 
+    void testServiceSecurity();
+
     void testIpcFailure();
 
 signals:
@@ -228,7 +230,7 @@ void tst_QServiceManager_IPC::initTestCase()
 
     //test that the service is installed
     QList<QServiceInterfaceDescriptor> list = manager->findInterfaces("IPCExampleService");
-    QVERIFY2(list.count() == 5,"unit test specific IPCExampleService not registered/found" );
+    QVERIFY2(list.count() >= 7,"unit test specific IPCExampleService not registered/found" );
     QServiceInterfaceDescriptor d;
     foreach (d, list) {
         if (d.majorVersion() == 3 && d.minorVersion() == 5) {
@@ -387,8 +389,8 @@ void tst_QServiceManager_IPC::verifySharedServiceObject()
     QCOMPARE(mo->className(), "SharedTestService");
     QVERIFY(mo->superClass());
     QCOMPARE(mo->superClass()->className(), "QServiceProxyBase");
-    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 18);
-    QCOMPARE(mo->methodCount(), 24); //20 meta functions available
+    QCOMPARE(mo->methodCount()-mo-> methodOffset(), 19);
+    QCOMPARE(mo->methodCount(), 25); //20 meta functions available
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
@@ -1353,6 +1355,51 @@ void tst_QServiceManager_IPC::testSignalSlotOrdering()
     QVERIFY2(spy.count() == 0, "Verify no signals fired before the invokeMethod returns");
     QTRY_COMPARE(spy.count(), 20);
 }
+
+void tst_QServiceManager_IPC::testServiceSecurity()
+{
+
+    QServiceManager* manager = new QServiceManager(this);
+    QList<QServiceInterfaceDescriptor> list = manager->findInterfaces("IPCExampleService");
+    QServiceInterfaceDescriptor d, dPriv, dGlobal;
+    foreach (QServiceInterfaceDescriptor d, list){
+        if (d.majorVersion() == 3 && d.minorVersion() == 9) {
+            dPriv = d;
+        }
+        if (d.majorVersion() == 3 && d.minorVersion() == 10) {
+            dGlobal = d;
+        }
+    }
+
+    QVERIFY(dPriv.isValid());
+    QVERIFY(dGlobal.isValid());
+
+    // Rejects all connections
+    QObject *o = manager->loadInterface(dPriv);
+    QVERIFY2(o == 0, "Everything should fail security/creation with this interface");
+
+    o = manager->loadInterface(dGlobal);
+    QVERIFY2(o, "Global class should allow the first connection");
+
+    bool status;
+    // make sync call to ensure remote is in the same state
+    QMetaObject::invokeMethod(o, "disableConnections", Q_RETURN_ARG(bool, status), Q_ARG(bool, true));
+    QCOMPARE(status, true);
+
+    // expect a null object back
+    QObject *second = manager->loadInterface(dGlobal);
+    QVERIFY2(second == 0, "Security checks should no longer allow objects to be created");
+
+    // make sync call to ensure remote is in the same state
+    QMetaObject::invokeMethod(o, "disableConnections", Q_RETURN_ARG(bool, status), Q_ARG(bool, false));
+
+    second = manager->loadInterface(dGlobal);
+    QVERIFY2(second != 0, "Object creation should be allowed");
+
+    delete second;
+
+}
+
 
 void tst_QServiceManager_IPC::testIpcFailure()
     {

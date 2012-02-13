@@ -39,68 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QSECURITY_PACKAGE_H
-#define QSECURITY_PACKAGE_H
+
+#ifndef QSERVICECLIENTCREDENTIALS_H
+#define QSERVICECLIENTCREDENTIALS_H
 
 #include "qserviceframeworkglobal.h"
+#include "qserviceclientcredentials_p.h"
+
 #include <QExplicitlySharedDataPointer>
-#include <QSharedData>
-#include <QUuid>
-#include <QVariant>
-#include "qremoteserviceregister.h"
 
 QT_BEGIN_NAMESPACE
 
-class QDataStream;
-class QDebug;
-
-class QSecurityPackagePrivate;
-class Q_AUTOTEST_EXPORT QSecurityPackage
+class  Q_SERVICEFW_EXPORT QServiceClientCredentials
 {
 public:
-    QSecurityPackage();
-    QSecurityPackage(const QSecurityPackage& other);
-    QSecurityPackage& operator=(const QSecurityPackage& other);
-    ~QSecurityPackage();
+    QServiceClientCredentials();
+    virtual ~QServiceClientCredentials();
+
+    QServiceClientCredentials(const QServiceClientCredentials &other)
+        : d(other.d)
+    {
+    }
+
+    qintptr getProcessIdentifier() const;
+    qintptr getUserIdentifier() const;
+    qintptr getGroupIdentifier() const;
 
     bool isValid() const;
 
-    QUuid token() const;
-    void setToken(const QUuid &t);
+    void setClientAccepted(bool isAccepted);
+    bool isClientAccepted() const;
 
-    QExplicitlySharedDataPointer<QSecurityPackagePrivate> d;
+private:
+    QExplicitlySharedDataPointer<QServiceClientCredentialsPrivate> d;
 
-#ifndef QT_NO_DATASTREAM
-    friend QDataStream &operator<<(QDataStream &, const QSecurityPackage&);
-    friend QDataStream &operator>>(QDataStream &, QSecurityPackage&);
-#endif
-
-};
-
-#ifndef QT_NO_DATASTREAM
-QDataStream &operator<<(QDataStream &, const QSecurityPackage&);
-QDataStream &operator>>(QDataStream &, QSecurityPackage&);
-#endif
-
-#ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug, const QSecurityPackage&);
-#endif
-
-class QSecurityPackagePrivate : public QSharedData
-{
-public:
-    QSecurityPackagePrivate()
-    {
-    }
-
-    QUuid token;
-
-    virtual void clean()
-    {
-        token = QUuid();
-    }
+    friend class QServiceIpcEndPoint;
+    friend class LocalSocketEndPoint;
+    friend class DBusEndPoint;
+    friend class QRemoteServiceRegisterDBusPrivate;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QSERVICECLIENTCREDENTIALS_H

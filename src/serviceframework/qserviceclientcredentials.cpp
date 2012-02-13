@@ -39,70 +39,56 @@
 **
 ****************************************************************************/
 
-#ifndef OBJECT_ENDPOINT_DBUS_H
-#define OBJECT_ENDPOINT_DBUS_H
-
-#include "qserviceframeworkglobal.h"
-#include "ipcendpoint_p.h"
-#include "qremoteserviceregister.h"
-#include "qservice.h"
-#include <QPointer>
-#include <QHash>
-#include <QtDBus>
-#include "qservicemetaobject_dbus_p.h"
+#include "qserviceclientcredentials.h"
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-class QServiceMetaObjectDBus;
-class ObjectEndPointPrivate;
-class ObjectEndPoint : public QObject
+QServiceClientCredentials::QServiceClientCredentials()
+    : d(new QServiceClientCredentialsPrivate)
 {
-    Q_OBJECT
-public:
-    enum Type {
-        Service = 0,
-        Client
-    };
+    Q_ASSERT(d);
+}
 
-    ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent = 0);
-    ~ObjectEndPoint();
+QServiceClientCredentials::~QServiceClientCredentials()
+{
+}
 
-    QObject* constructProxy(const QRemoteServiceRegister::Entry& entry);
+qintptr QServiceClientCredentials::getProcessIdentifier() const
+{
+    return d->pid;
+}
 
-    void objectRequest(const QServicePackage& p, QServiceClientCredentials &creds);
-    void methodCall(const QServicePackage& p);
-    void propertyCall(const QServicePackage& p);
+qintptr QServiceClientCredentials::getGroupIdentifier() const
+{
+    return d->gid;
+}
 
-    QString getInstanceId() const;
+qintptr QServiceClientCredentials::getUserIdentifier() const
+{
+    return d->uid;
+}
 
-    QVariant invokeRemote(int metaIndex, const QVariantList& args, int returnType);
-    QVariant invokeRemoteProperty(int metaIndex, const QVariant& arg, int returnType, QMetaObject::Call c);
+bool QServiceClientCredentials::isValid() const
+{
+    return d && (d->pid || d->uid || d->gid);
+}
 
-    void setLookupTable(int *local, int *remote);
+void QServiceClientCredentials::setClientAccepted(bool isAccepted)
+{
+    d->acceptedSet = true;
+    d->accepted = isAccepted;
+}
 
-Q_SIGNALS:
-    void pendingRequestFinished();
-
-public Q_SLOTS:
-    void newPackageReady();
-    void disconnected(const QString& clientId, const QString & instanceId);
-    void unregisterObjectDBus(const QRemoteServiceRegister::Entry& entry, const QUuid& id);
-
-private:
-    void waitForResponse(const QUuid& requestId);
-    QVariant toDBusVariant(const QByteArray& type, const QVariant& arg);
-
-    QServiceIpcEndPoint* dispatch;
-    QPointer<QObject> service;
-    ObjectEndPointPrivate* d;
-
-    QDBusInterface *iface;
-    QServiceMetaObjectDBus *signalsObject;
-    int *localToRemote;
-    int *remoteToLocal;
-
-};
+bool QServiceClientCredentials::isClientAccepted() const
+{
+#ifdef QT_MTCLIENT_PRESENT
+    if (!d->acceptedSet) {
+        qWarning() << "SFW credentials were queried, but service never called setClientAccepted(bool).  Returning default accepted.  This will break in the furture.";
+    }
+#endif
+    return d->accepted;
+}
 
 QT_END_NAMESPACE
 
-#endif //OBJECT_ENDPOINT_DBUS_H

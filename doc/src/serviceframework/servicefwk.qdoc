@@ -556,33 +556,106 @@ files.  It must be run before a service can be used. For example:
 servicefw add <service xml file>
 \endcode
 
-\section3 Service Security Filters
-The service can install a security filter to reject connections from
-some clients. This applies to D-Bus and local socket implementations of IPC.
+\section3 Service Security
+
+Service objects can filter the clients that are allowed to connect to them.
+This is done by creating an invokable constructor that has a
+QServiceClientCredentials as its first and only paramter. For example:
 
 \code
-bool securityFilter(const void *p)
+class ExampleService : public QObject
 {
-    const QRemoteServiceRegisterCredentials *cr = (const struct QRemoteServiceRegisterCredentials *)p;
-    if(cr->uid == 0) {
-        return true; // accept connection
+    Q_OBJECT
+public:
+    ExampleService(QObject* parent = 0)
+        : QObject(parent)
+    {
+        // this constructor will not be called
     }
-    else {
-        retun false; // reject connection
-    }
-}
 
-struct QRemoteServiceRegisterCredentials {
-    int fd;
-    int pid;
-    int uid;
-    int gid;
+    Q_INVOKABLE ExampleService(QServiceClientCredentials *creds)
+        : QObject(0)
+    {
+        if (creds->getUserIdentifier() == 0)
+            creds->setClientAccepted(true);
+        else
+            creds->setClientAccepted(false);
+    }
 };
 \endcode
 
-Returning true accepts the connect, false terminates it.  Certain
-platforms do not provide all the results, and undefined values are
-set to -1. Registration of the filter is done by
+The new invokable constructor will be called instead of the default
+constructor. Client credentials are passed in via the QServiceClientCredetials
+class. If the client wishes to authorize the connection it must call either
+setClientAccepted(true) or call setClientAccepted(false) to reject the client.
+If the client is rejected the constructor should return immediatly, and object
+will be destroyed.
+
+If the object is a global object multiple clients can connect to the same
+object. On construction the secure constructor will be called. For subsequent
+client connections the invokable method "void
+verifyNewServiceClientCredentials(QServiceClientCredentials *creds)"
+will be called to authenticate new client connections. For example a global
+class maybe defined as:
+
+\code
+class GlobalService : public QObject
+{
+    Q_OBJECT
+public:
+    GlobalService(QObject* parent = 0)
+        : QObject(parent)
+    {
+        // this constructor will not be called
+    }
+
+    Q_INVOKABLE GlobalService(QServiceClientCredentials *creds)
+        : QObject(0)
+    {
+        if (creds->getUserIdentifier() == 0)
+            creds->setClientAccepted(true);
+        else
+            creds->setClientAccepted(false);
+    }
+
+    Q_INVOKABLE void verifyNewServiceClientCredentials(QServiceClientCredentials *creds)
+    {
+        if (creds->getUserIdentifier() == 0)
+            creds->setClientAccepted(true);
+        else
+            creds->setClientAccepted(false);
+    }
+};
+
+\endcode
+
+For global objects, when the first client connects the secure
+constructor is called. Subsequent connections will result in
+the verifyNewServiceClientCredentials being called. When the
+last client disconnected the object will be destroyed, and
+the constructor will be called when the next client connects.
+
+\section3 Service Security Filters
+The service can install a security filter to reject connections from
+some clients on initial connection. Service security described above allows
+this to be controlled per object.  This is implemented on D-Bus and
+local socket implementations of IPC.
+
+\code
+void securityFilter(QServiceClientCredentials *creds)
+{
+    if (creds->getUserIdentifier() == 0) {
+        creds->setClientAccepted(true);  // accept the connection
+    } else {
+        creds->setClientAccepted(false); // reject the connection
+    }
+}
+
+\endcode
+
+By calling QServiceClientCredentials::setClientAccepted the connection
+can be terminated or accepted.  Certain platforms do not provide all
+the results, and undefined values are set to -1. Registration of the filter is done by
 calling QRemoteServiceRegister::setSecurityFilter().  Only 1 filter maybe installed
 at one time.
 

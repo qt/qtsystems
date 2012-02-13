@@ -64,16 +64,33 @@ public:
 
     virtual QRemoteServiceRegister::SecurityFilter setSecurityFilter(QRemoteServiceRegister::SecurityFilter filter);
 
+    void setBaseUserIdentifier(qintptr uid);
+    qintptr getBaseUserIdentifier() const;
+    bool isBaseUserIdentifierSet() const;
+
+    void setBaseGroupIdentifier(qintptr gid);
+    qintptr getBaseGroupIdentifier() const;
+    bool isBaseGroupIdentifierSet() const;
+
+    void setSecurityOptions(QRemoteServiceRegister::SecurityAccessOptions options);
+
+
 public slots:
     // Must be implemented in the subclass
     //void processIncoming();
 
 protected:
     virtual QRemoteServiceRegister::SecurityFilter getSecurityFilter();
+    QRemoteServiceRegister::SecurityAccessOptions getSecurityOptions() const;
 
 private:
     bool m_quit;
     QRemoteServiceRegister::SecurityFilter iFilter;
+    QRemoteServiceRegister::SecurityAccessOptions securityOptions;
+    qintptr userIdentifier;
+    bool userIdentifierSet;
+    qintptr groupIdentifier;
+    bool groupIdentifierSet;
 
 public:
     static QObject* proxyForService(const QRemoteServiceRegister::Entry& entry, const QString& location);

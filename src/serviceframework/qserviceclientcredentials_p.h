@@ -39,39 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QREMOTESERVICEREGISTER_LS_P_H
-#define QREMOTESERVICEREGISTER_LS_P_H
 
-#include "qremoteserviceregister.h"
-#include "instancemanager_p.h"
-#include "qserviceinterfacedescriptor.h"
-#include "qremoteserviceregister_p.h"
-#include <QLocalServer>
-#include <QHash>
 
-QT_BEGIN_NAMESPACE
+#ifndef QSERVICECLIENTCREDENTIALS_P_H
+#define QSERVICECLIENTCREDENTIALS_P_H
 
-class ObjectEndPoint;
+#include <QSharedData>
 
-class QRemoteServiceRegisterLocalSocketPrivate: public QRemoteServiceRegisterPrivate
+class  QServiceClientCredentialsPrivate : public QSharedData
 {
-    Q_OBJECT
 public:
-    QRemoteServiceRegisterLocalSocketPrivate(QObject* parent);
-    void publishServices(const QString& ident );
+    QServiceClientCredentialsPrivate()
+    {
+        pid = 0;
+        uid = 0;
+        gid = 0;
+        accepted = true;
+        acceptedSet = false;
+    }
 
-    void getSecurityCredentials(QServiceClientCredentials &creds);
+    int pid;
+    int uid;
+    int gid;
 
-public slots:
-    void processIncoming();
+    bool accepted;
+    bool acceptedSet;
 
-private:
-    bool createServiceEndPoint(const QString& ident);
-
-    QLocalServer* localServer;
-    QList<ObjectEndPoint*> pendingConnections;
 };
 
-QT_END_NAMESPACE
 
-#endif
+
+#endif // QSERVICECLIENTCREDENTIALS_P_H

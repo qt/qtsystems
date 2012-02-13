@@ -37,17 +37,20 @@ PUBLIC_HEADERS += qservice.h \
     qserviceplugininterface.h \
     qserviceinterfacedescriptor.h \
     qservicefilter.h \
-    qremoteserviceregister.h
+    qremoteserviceregister.h \
+    qserviceclientcredentials.h
 PRIVATE_HEADERS += servicemetadata_p.h \
     qserviceinterfacedescriptor_p.h \
-    dberror_p.h
+    dberror_p.h \
+    qserviceclientcredentials_p.h
 SOURCES += servicemetadata.cpp \
     qservicemanager.cpp \
     qserviceplugininterface.cpp \
     qserviceinterfacedescriptor.cpp \
     qservicefilter.cpp \
     dberror.cpp \
-    qremoteserviceregister.cpp
+    qremoteserviceregister.cpp \
+    qserviceclientcredentials.cpp
 
 contains(DEFINES, QT_ADDON_JSONDB_LIB): {
     SOURCES += databasemanager_jsondb.cpp
@@ -59,4 +62,5 @@ contains(DEFINES, QT_ADDON_JSONDB_LIB): {
         databasemanager_p.h \
 }
 
-HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS \
+    qserviceclientcredentials.h

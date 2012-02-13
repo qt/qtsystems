@@ -283,12 +283,15 @@ void ObjectEndPoint::newPackageReady()
     // Client and service side
     while (dispatch->packageAvailable())
     {
+        // must call get getSecurityCredentials everytime you call nextPackage
+        QServiceClientCredentials creds;
+        dispatch->getSecurityCredentials(creds);
         QServicePackage p = dispatch->nextPackage();
         if (!p.isValid())
             continue;
 
         if (p.d->packageType == QServicePackage::ObjectCreation) {
-            objectRequest(p);
+            objectRequest(p, creds);
         } else {
             qWarning() << "Unknown package type received.";
         }
@@ -309,7 +312,7 @@ void ObjectEndPoint::setLookupTable(int *local, int *remote)
     Client receives a package containing the information to connect an interface to the registered
     DBus object.
 */
-void ObjectEndPoint::objectRequest(const QServicePackage& p)
+void ObjectEndPoint::objectRequest(const QServicePackage& p, QServiceClientCredentials& creds)
 {
     if (p.d->responseType != QServicePackage::NotAResponse ) {
         // Client side
@@ -356,10 +359,25 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         QServicePackage response = p.createResponse();
         InstanceManager* iManager = InstanceManager::instance();
 
+        if (!creds.isValid()) {
+            qWarning() << "SFW Unable to get socket credentials client asking for" << p.d->entry.interfaceName() << p.d->entry.serviceName() << "this may fail in the future";
+        }
+
         // Instantiate service object from type register
-        service = iManager->createObjectInstance(p.d->entry, d->serviceInstanceId);
+        service = iManager->createObjectInstance(p.d->entry, d->serviceInstanceId, creds);
         if (!service) {
             qWarning() << "Cannot instantiate service object";
+            dispatch->writePackage(response);
+            return;
+        }
+
+        if (!creds.isClientAccepted()) {
+            qWarning() << "SFW Security failure by" <<
+                          creds.getProcessIdentifier() <<
+                          creds.getUserIdentifier() <<
+                          creds.getGroupIdentifier() <<
+                          "requesting" << p.d->entry.interfaceName() << p.d->entry.serviceName();
+            iManager->removeObjectInstance(p.d->entry, d->serviceInstanceId);
             dispatch->writePackage(response);
             return;
         }
