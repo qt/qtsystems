@@ -128,6 +128,14 @@ linux-*: !simulator: {
     } else {
         DEFINES += QT_NO_UDEV
     }
+
+    contains(config_test_libsysinfo, yes): {
+        CONFIG += link_pkgconfig
+        PKGCONFIG += sysinfo
+        LIBS += -lsysinfo
+    } else: {
+        DEFINES += QT_NO_LIBSYSINFO
+    }
 }
 
 simulator {

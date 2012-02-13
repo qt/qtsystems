@@ -55,6 +55,12 @@
 
 #include <qdeviceinfo.h>
 
+#include <QStringList>
+
+#if !defined(QT_NO_LIBSYSINFO)
+#include <sysinfo.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QTimer;
@@ -106,10 +112,14 @@ private:
     Q_DECLARE_PUBLIC(QDeviceInfo)
 #endif
 
+#if !defined(QT_NO_LIBSYSINFO)
+    QString getSysInfoValue(const char *component);
+#endif
     bool watchThermalState;
     QDeviceInfo::ThermalState currentThermalState;
     QString manufacturerBuffer;
     QString modelBuffer;
+    QStringList imeiBuffer;
     QString productNameBuffer;
     QString uniqueDeviceIDBuffer;
     QString versionBuffer[2];
@@ -123,6 +133,9 @@ private:
 #if !defined(QT_NO_OFONO)
     QOfonoWrapper *ofonoWrapper;
 #endif // QT_NO_OFONO
+#if !defined(QT_NO_LIBSYSINFO)
+    struct system_config *sc;
+#endif
 };
 
 QT_END_NAMESPACE

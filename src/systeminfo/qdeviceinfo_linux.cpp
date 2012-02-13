@@ -77,6 +77,9 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 #if !defined(QT_NO_OFONO)
     , ofonoWrapper(0)
 #endif // QT_NO_OFONO
+#if !defined(QT_NO_LIBSYSINFO)
+    , sc(0)
+#endif // QT_NO_LIBSYSINFO
 {
 }
 
@@ -249,33 +252,35 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::thermalState()
 
 int QDeviceInfoPrivate::imeiCount()
 {
-#if !defined(QT_NO_OFONO)
-    if (QOfonoWrapper::isOfonoAvailable()) {
-        if (!ofonoWrapper)
-            ofonoWrapper = new QOfonoWrapper(this);
-        return ofonoWrapper->allModems().size();
-    }
-#endif
-    return -1;
+    if (imeiBuffer.size() == 0)
+       imei(0);
+
+    return imeiBuffer.size();
 }
 
 QString QDeviceInfoPrivate::imei(int interface)
 {
-#if !defined(QT_NO_OFONO)
+#if !defined(QT_NO_LIBSYSINFO)
+     if (imeiBuffer.size() == 0)
+        imeiBuffer << getSysInfoValue("/certs/npc/esn/gsm");
+
+#elif !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
         QStringList modems = ofonoWrapper->allModems();
-        if (interface >= 0 && interface < modems.size()) {
-            QString modem = ofonoWrapper->allModems().at(interface);
-            if (!modem.isEmpty())
-                return ofonoWrapper->imei(modem);
+        foreach (const QString &modem, modems) {
+           if (!modem.isEmpty())
+              imeiBuffer[interface] = ofonoWrapper->imei(modem);
         }
     }
 #else
     Q_UNUSED(interface)
 #endif
-    return QString();
+    if (interface >= 0 && interface < imeiBuffer.size())
+       return imeiBuffer[interface];
+    else
+       return QString();
 }
 
 QString QDeviceInfoPrivate::manufacturer()
@@ -312,11 +317,10 @@ QString QDeviceInfoPrivate::model()
 
 QString QDeviceInfoPrivate::productName()
 {
-    if (productNameBuffer.isEmpty()) {
-        QFile file(QStringLiteral("/sys/kernel/info/type"));
-        if (file.open(QIODevice::ReadOnly))
-            productNameBuffer = QString::fromLocal8Bit((file.readAll().simplified().data()));
-    }
+#if !defined(QT_NO_LIBSYSINFO)
+    if (productNameBuffer.isEmpty())
+       productNameBuffer = getSysInfoValue("/component/product");
+#else
     if (productNameBuffer.isEmpty()) {
         QProcess lsbRelease;
         lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
@@ -326,6 +330,8 @@ QString QDeviceInfoPrivate::productName()
             productNameBuffer = buffer.section(QChar::fromAscii('\t'), 1, 1).simplified();
         }
     }
+#endif
+
     return productNameBuffer;
 }
 
@@ -500,4 +506,39 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::getThermalState()
     return state;
 }
 
+#if !defined(QT_NO_LIBSYSINFO)
+QString QDeviceInfoPrivate::getSysInfoValue(const char *component)
+{
+   QString value;
+   bool componentExist = false;
+   if (sysinfo_init(&sc) == 0) {
+      char **keys = 0;
+      if (sysinfo_get_keys(sc, &keys) == 0) {
+         size_t i;
+         for (i = 0; keys[i]; ++i) {
+            if (strcmp(keys[i], component) == 0) {
+               componentExist = true;
+               break;
+            }
+         }
+         for (int i = 0; keys[i]; ++i) free(keys[i]);
+         free(keys);
+      }
+      if (componentExist) {
+         uint8_t *data = 0;
+         unsigned long size = 0;
+         if (sysinfo_get_value(sc, component, &data, &size) == 0) {
+            for (unsigned long k = 0; k < size; ++k) {
+               char c = data[k];
+               if (c >= 32 && c <= 126)
+                  value.append(c);
+            }
+            free(data);
+         }
+      }
+   }
+   sysinfo_finish(sc);
+   return value;
+}
+#endif
 QT_END_NAMESPACE
