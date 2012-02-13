@@ -65,6 +65,7 @@ class QDeclarativeBatteryInfo : public QObject
     Q_ENUMS(ChargerType)
     Q_ENUMS(ChargingState)
     Q_ENUMS(EnergyUnit)
+    Q_ENUMS(BatteryStatus)
 
     Q_PROPERTY(bool monitorBatteryCount READ monitorBatteryCount WRITE setMonitorBatteryCount NOTIFY monitorBatteryCountChanged)
     Q_PROPERTY(bool monitorChargerType READ monitorChargerType WRITE setMonitorChargerType NOTIFY monitorChargerTypeChanged)
@@ -73,6 +74,7 @@ class QDeclarativeBatteryInfo : public QObject
     Q_PROPERTY(bool monitorRemainingChargingTime READ monitorRemainingChargingTime WRITE setMonitorRemainingChargingTime NOTIFY monitorRemainingChargingTimeChanged)
     Q_PROPERTY(bool monitorVoltage READ monitorVoltage WRITE setMonitorVoltage NOTIFY monitorVoltageChanged)
     Q_PROPERTY(bool monitorChargingState READ monitorChargingState WRITE setMonitorChargingState NOTIFY monitorChargingStateChanged)
+    Q_PROPERTY(bool monitorBatteryStatus READ monitorBatteryStatus WRITE setMonitorBatteryStatus NOTIFY monitorBatteryStatusChanged)
 
     Q_PROPERTY(int batteryCount READ batteryCount NOTIFY batteryCountChanged)
     Q_PROPERTY(ChargerType chargerType READ chargerType NOTIFY chargerTypeChanged)
@@ -98,6 +100,14 @@ public:
         UnitUnknown = QBatteryInfo::UnitUnknown,
         UnitmAh = QBatteryInfo::UnitmAh,
         UnitmWh = QBatteryInfo::UnitmWh
+    };
+
+    enum BatteryStatus {
+        BatteryStatusUnknown = QBatteryInfo::BatteryStatusUnknown,
+        BatteryEmpty = QBatteryInfo::BatteryEmpty,
+        BatteryLow = QBatteryInfo::BatteryLow,
+        BatteryOk = QBatteryInfo::BatteryOk,
+        BatteryFull = QBatteryInfo::BatteryFull
     };
 
     QDeclarativeBatteryInfo(QObject *parent = 0);
@@ -134,6 +144,10 @@ public:
     EnergyUnit energyUnit() const;
     Q_INVOKABLE int maximumCapacity(int battery) const;
 
+    bool monitorBatteryStatus() const;
+    void setMonitorBatteryStatus(bool monitor);
+    Q_INVOKABLE int batteryStatus(int battery) const;
+
 Q_SIGNALS:
     void monitorBatteryCountChanged();
     void monitorChargerTypeChanged();
@@ -142,6 +156,7 @@ Q_SIGNALS:
     void monitorRemainingCapacityChanged();
     void monitorRemainingChargingTimeChanged();
     void monitorVoltageChanged();
+    void monitorBatteryStatusChanged();
 
     void batteryCountChanged(int count);
     void chargerTypeChanged(ChargerType type);
@@ -150,10 +165,12 @@ Q_SIGNALS:
     void remainingCapacityChanged(int battery, int capacity);
     void remainingChargingTimeChanged(int battery, int seconds);
     void voltageChanged(int battery, int voltage);
+    void batteryStatusChanged(int battery, BatteryStatus status);
 
 private Q_SLOTS:
     void _q_chargerTypeChanged(QBatteryInfo::ChargerType type);
     void _q_chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
+    void _q_batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus status);
 
 private:
     QBatteryInfo *batteryInfo;
@@ -165,6 +182,7 @@ private:
     bool isMonitorRemainingCapacity;
     bool isMonitorRemainingChargingTime;
     bool isMonitorVoltage;
+    bool isMonitorBatteryStatus;
 };
 
 QT_END_NAMESPACE

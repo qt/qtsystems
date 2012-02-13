@@ -144,6 +144,13 @@ QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
     return QBatteryInfo::UnitmWh;
 }
 
+QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
+{
+    Q_UNUSED(battery)
+
+    return QBatteryInfo::BatteryStatusUnknown;
+}
+
 void QBatteryInfoPrivate::connectNotify(const char *signal)
 {
     if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
@@ -153,6 +160,7 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
     } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
     } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
+    } else if (strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0) {
     }
 }
 
@@ -165,6 +173,7 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
     } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
     } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
     } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
+    } else if (strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0) {
     }
 }
 

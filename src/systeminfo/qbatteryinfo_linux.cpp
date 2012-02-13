@@ -69,6 +69,7 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     , watchRemainingCapacity(false)
     , watchRemainingChargingTime(false)
     , watchVoltage(false)
+    , watchBatteryStatus(false)
     , batteryCounts(-1)
     , currentChargerType(QBatteryInfo::UnknownCharger)
 #if !defined(QT_NO_UDEV)
@@ -166,6 +167,14 @@ QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
     return QBatteryInfo::UnitmAh;
 }
 
+QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
+{
+    if (!watchBatteryStatus)
+        return getBatteryStatus(battery);
+
+    return batteryStatuses.value(battery);
+}
+
 void QBatteryInfoPrivate::connectNotify(const char *signal)
 {
 #if !defined(QT_NO_UDEV)
@@ -174,7 +183,7 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
     if (!watchChargerType && strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
         connect(uDevWrapper, SIGNAL(chargerTypeChanged(QByteArray,bool)), this, SLOT(onChargerTypeChanged(QByteArray,bool)));
     } else if (!watchCurrentFlow && !watchVoltage && !watchChargingState && !watchRemainingCapacity
-               && !watchRemainingChargingTime && !watchBatteryCount) {
+               && !watchRemainingChargingTime && !watchBatteryCount && !watchBatteryStatus) {
         connect(uDevWrapper, SIGNAL(batteryDataChanged(int,QByteArray,QByteArray)), this, SLOT(onBatteryDataChanged(int,QByteArray,QByteArray)));
     }
 #else
@@ -219,6 +228,11 @@ void QBatteryInfoPrivate::connectNotify(const char *signal)
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
             chargingStates[i] = getChargingState(i);
+    } else if (strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0) {
+        watchBatteryStatus = true;
+        int count = batteryCount();
+        for (int i = 0; i < count; i++)
+            batteryStatuses[i] = getBatteryStatus(i);
     }
 }
 
@@ -245,6 +259,9 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
     } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
         watchChargingState = false;
         chargingStates.clear();
+    } else if (strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0) {
+        watchBatteryStatus = false;
+        batteryStatuses.clear();
     }
 
 #if !defined(QT_NO_UDEV)
@@ -252,7 +269,7 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
         disconnect(uDevWrapper, SIGNAL(chargerTypeChanged(QByteArray,bool)),
                    this, SLOT(onChargerTypeChanged(QByteArray,bool)));
     } else if (uDevWrapper && !watchCurrentFlow && !watchVoltage && !watchChargingState && !watchRemainingCapacity
-               && !watchRemainingChargingTime && !watchBatteryCount) {
+               && !watchRemainingChargingTime && !watchBatteryCount && !watchBatteryStatus) {
         disconnect(uDevWrapper, SIGNAL(batteryDataChanged(int,QByteArray,QByteArray)),
                    this, SLOT(onBatteryDataChanged(int,QByteArray,QByteArray)));
     }
@@ -260,7 +277,7 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
 
     if (!watchBatteryCount && !watchChargerType && !watchChargingState
             && !watchCurrentFlow && !watchRemainingCapacity
-            && !watchRemainingChargingTime && !watchVoltage) {
+            && !watchRemainingChargingTime && !watchVoltage && !watchBatteryStatus) {
 #if !defined(QT_NO_UDEV)
         if (uDevWrapper)
             delete uDevWrapper;
@@ -335,6 +352,22 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
                 currentFlows[battery] = currentFlow;
                 emit currentFlowChanged(battery, currentFlow);
             }
+        }
+    }
+
+    if (watchBatteryStatus && attribute.contains("capacity_level")) {
+        QBatteryInfo::BatteryStatus batteryStatus = QBatteryInfo::BatteryStatusUnknown;
+        if (qstrcmp(value, "Critical") == 0)
+            batteryStatus = QBatteryInfo::BatteryEmpty;
+        else if (qstrcmp(value, "Low") == 0)
+            batteryStatus = QBatteryInfo::BatteryLow;
+        else if (qstrcmp(value, "Normal") == 0)
+            batteryStatus = QBatteryInfo::BatteryOk;
+        else if (qstrcmp(value, "Full") == 0)
+            batteryStatus = QBatteryInfo::BatteryFull;
+        if (batteryStatuses.value(battery) != batteryStatus) {
+            batteryStatuses[battery] = batteryStatus;
+            emit batteryStatusChanged(battery, batteryStatus);
         }
     }
 }
@@ -418,6 +451,14 @@ void QBatteryInfoPrivate::onTimeout()
             if (chargingStates.value(i) != state) {
                 chargingStates[i] = state;
                 emit chargingStateChanged(i, state);
+            }
+        }
+
+        if (watchBatteryStatus) {
+            QBatteryInfo::BatteryStatus batteryStatus = getBatteryStatus(i);
+            if (batteryStatuses.value(i) != batteryStatus) {
+                batteryStatuses[i] = batteryStatus;
+                emit batteryStatusChanged(i, batteryStatus);
             }
         }
     }
@@ -560,6 +601,25 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::getChargingState(int battery)
         return QBatteryInfo::Full;
 
     return QBatteryInfo::UnknownChargingState;
+}
+
+QBatteryInfo::BatteryStatus QBatteryInfoPrivate::getBatteryStatus(int battery)
+{
+    QFile batteryStatusFile(BATTERY_SYSFS_PATH()->arg(battery) + QStringLiteral("capacity_level"));
+    if (!batteryStatusFile.open(QIODevice::ReadOnly))
+        return QBatteryInfo::BatteryStatusUnknown;
+
+    QByteArray batteryStatus = batteryStatusFile.readAll().simplified();
+    if (qstrcmp(batteryStatus, "Critical") == 0)
+        return QBatteryInfo::BatteryEmpty;
+    else if (qstrcmp(batteryStatus, "Low") == 0)
+        return QBatteryInfo::BatteryLow;
+    else if (qstrcmp(batteryStatus, "Normal") == 0)
+        return QBatteryInfo::BatteryOk;
+    else if (qstrcmp(batteryStatus, "Full") == 0)
+        return QBatteryInfo::BatteryFull;
+
+    return QBatteryInfo::BatteryStatusUnknown;
 }
 
 QT_END_NAMESPACE

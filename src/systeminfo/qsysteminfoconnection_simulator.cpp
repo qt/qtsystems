@@ -114,6 +114,7 @@ void SystemInfoConnection::setBatteryInfoData(const QBatteryInfoData &data)
     batteryInfoBackend->setChargerType(data.chargerType);
     batteryInfoBackend->setEnergyUnit(data.energyMeasurementUnit);
     batteryInfoBackend->setChargingState(data.chargingState);
+    batteryInfoBackend->setBatteryStatus(data.batteryStatus);
 }
 
 void SystemInfoConnection::setDeviceInfoData(const QDeviceInfoData &data)

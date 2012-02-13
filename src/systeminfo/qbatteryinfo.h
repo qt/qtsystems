@@ -61,6 +61,7 @@ class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
     Q_ENUMS(ChargerType)
     Q_ENUMS(ChargingState)
     Q_ENUMS(EnergyUnit)
+    Q_ENUMS(BatteryStatus)
 
     Q_PROPERTY(int batteryCount READ batteryCount NOTIFY batteryCountChanged)
     Q_PROPERTY(ChargerType chargerType READ chargerType NOTIFY chargerTypeChanged)
@@ -88,6 +89,14 @@ public:
         UnitmWh
     };
 
+    enum BatteryStatus {
+        BatteryStatusUnknown = 0,
+        BatteryEmpty,
+        BatteryLow,
+        BatteryOk,
+        BatteryFull
+    };
+
     QBatteryInfo(QObject *parent = 0);
     virtual ~QBatteryInfo();
 
@@ -98,9 +107,9 @@ public:
     int remainingChargingTime(int battery) const;
     int voltage(int battery) const;
     QBatteryInfo::ChargingState chargingState(int battery) const;
-
     QBatteryInfo::ChargerType chargerType() const;
     QBatteryInfo::EnergyUnit energyUnit() const;
+    QBatteryInfo::BatteryStatus batteryStatus(int battery) const;
 
 Q_SIGNALS:
     void batteryCountChanged(int count);
@@ -110,6 +119,7 @@ Q_SIGNALS:
     void remainingCapacityChanged(int battery, int capacity);
     void remainingChargingTimeChanged(int battery, int seconds);
     void voltageChanged(int battery, int voltage);
+    void batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus);
 
 protected:
     void connectNotify(const char *signal);

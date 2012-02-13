@@ -64,6 +64,7 @@ QBatteryInfoSimulatorBackend::QBatteryInfoSimulatorBackend(QObject *parent)
     data.chargingState = QBatteryInfo::UnknownChargingState;
     data.chargerType = QBatteryInfo::UnknownCharger;
     data.energyMeasurementUnit = QBatteryInfo::UnitUnknown;
+    data.batteryStatus = QBatteryInfo::BatteryStatusUnknown;
 }
 
 QBatteryInfoSimulatorBackend::~QBatteryInfoSimulatorBackend()
@@ -141,6 +142,14 @@ QBatteryInfo::EnergyUnit QBatteryInfoSimulatorBackend::getEnergyUnit()
     return data.energyMeasurementUnit;
 }
 
+QBatteryInfo::BatteryStatus QBatteryInfoSimulatorBackend::getBatteryStatus(int battery)
+{
+    if (battery == 0)
+        return data.batteryStatus;
+
+    return QBatteryInfo::BatteryStatusUnknown;
+}
+
 void QBatteryInfoSimulatorBackend::setCurrentFlow(int flow)
 {
     if (data.currentFlow != flow) {
@@ -199,6 +208,14 @@ void QBatteryInfoSimulatorBackend::setEnergyUnit(QBatteryInfo::EnergyUnit unit)
 {
     if (data.energyMeasurementUnit != unit)
         data.energyMeasurementUnit = unit;
+}
+
+void QBatteryInfoSimulatorBackend::setBatteryStatus(QBatteryInfo::BatteryStatus status)
+{
+    if (data.batteryStatus != status) {
+        data.batteryStatus = status;
+        emit batteryStatusChanged(0, status);
+    }
 }
 
 

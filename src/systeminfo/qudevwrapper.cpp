@@ -206,10 +206,13 @@ void QUDevWrapper::onUDevChanges()
                     if (!voltage.isEmpty())
                         emit batteryDataChanged(i, "voltage_now", voltage);
 
-
                     QByteArray currentFlow(udev_device_get_sysattr_value(device, "current_now"));
                     if (!currentFlow.isEmpty())
                         emit batteryDataChanged(i, "current_now", currentFlow);
+
+                    QByteArray batteryStatus(udev_device_get_sysattr_value(device, "capacity_level"));
+                    if (!batteryStatus.isEmpty())
+                        emit batteryDataChanged(i, "capacity_level", batteryStatus);
                 }
             }
         }

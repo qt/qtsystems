@@ -63,6 +63,7 @@ public:
     QBatteryInfo::ChargerType chargerType() { return QBatteryInfo::UnknownCharger; }
     QBatteryInfo::ChargingState chargingState(int) { return QBatteryInfo::UnknownChargingState; }
     QBatteryInfo::EnergyUnit energyUnit() { return QBatteryInfo::UnitUnknown; }
+    QBatteryInfo::BatteryStatus batteryStatus(int) { return QBatteryInfo::BatteryStatusUnknown; }
 };
 QT_END_NAMESPACE
 #endif
@@ -110,6 +111,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QBatteryInfo::BatteryStatus
+    This enum describes the status of the battery.
+
+    \value BatteryStatusUnknown      Battery level undetermined.
+    \value BatteryEmpty              Battery is considered be empty and device needs to shut down.
+    \value BatteryLow                Battery level is low and warnings need to be issued to the user.
+    \value BatteryOk                 Battery level is Ok. It is above "Low" but not "Full".
+    \value BatteryFull               Battery is fully charged.
+*/
+
+/*!
     \fn void QBatteryInfo::batteryCountChanged(int count);
 
     This signal is emitted when the number of batteries available has changed to \a count.
@@ -152,6 +164,12 @@ QT_BEGIN_NAMESPACE
 
     This signal is emitted when the current voltage of the \a battery has changed to \a voltage,
     measured in millivolts (mV).
+*/
+
+/*!
+    \fn void QBatteryInfo::batteryStatusChanged(int battery, int status);
+
+    This signal is emitted when the battery status of the \a battery has changed to \a status.
 */
 
 /*!
@@ -261,6 +279,14 @@ QBatteryInfo::ChargingState QBatteryInfo::chargingState(int battery) const
 QBatteryInfo::EnergyUnit QBatteryInfo::energyUnit() const
 {
     return d_ptr->energyUnit();
+}
+
+/*!
+    Returns the battery status of the given \a battery.
+*/
+QBatteryInfo::BatteryStatus QBatteryInfo::batteryStatus(int battery) const
+{
+    return d_ptr->batteryStatus(battery);
 }
 
 /*!

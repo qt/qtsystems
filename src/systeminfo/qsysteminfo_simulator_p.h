@@ -91,6 +91,7 @@ public:
     QBatteryInfo::ChargerType chargerType();
     QBatteryInfo::ChargingState chargingState(int battery);
     QBatteryInfo::EnergyUnit energyUnit();
+    QBatteryInfo::BatteryStatus batteryStatus(int battery);
 
 Q_SIGNALS:
     void batteryCountChanged(int count);
@@ -100,6 +101,7 @@ Q_SIGNALS:
     void remainingCapacityChanged(int battery, int capacity);
     void remainingChargingTimeChanged(int battery, int seconds);
     void voltageChanged(int battery, int voltage);
+    void batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus);
 
 protected:
     void connectNotify(const char *signal);

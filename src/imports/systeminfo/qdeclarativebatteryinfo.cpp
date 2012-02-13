@@ -63,6 +63,7 @@ QDeclarativeBatteryInfo::QDeclarativeBatteryInfo(QObject *parent)
     , isMonitorRemainingCapacity(false)
     , isMonitorRemainingChargingTime(false)
     , isMonitorVoltage(false)
+    , isMonitorBatteryStatus(false)
 {
 }
 
@@ -433,6 +434,65 @@ QDeclarativeBatteryInfo::EnergyUnit QDeclarativeBatteryInfo::energyUnit() const
 int QDeclarativeBatteryInfo::maximumCapacity(int battery) const
 {
     return batteryInfo->maximumCapacity(battery);
+}
+
+/*!
+    \qmlproperty bool BatteryInfo::monitorBatteryStatus
+
+    This property holds whether or not monitor the change of battery's status.
+
+    \sa onBatteryStatusChanged
+ */
+bool QDeclarativeBatteryInfo::monitorBatteryStatus() const
+{
+    return isMonitorBatteryStatus;
+}
+
+void QDeclarativeBatteryInfo::setMonitorBatteryStatus(bool monitor)
+{
+    if (monitor != isMonitorBatteryStatus) {
+        isMonitorBatteryStatus = monitor;
+        if (monitor) {
+            connect(batteryInfo, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus)),
+                    this, SLOT(_q_batteryStatusChanged(int,QBatteryInfo::BatteryStatus)));
+        } else {
+            disconnect(batteryInfo, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus)),
+                       this, SLOT(_q_batteryStatusChanged(int,QBatteryInfo::BatteryStatus)));
+        }
+        emit monitorBatteryStatusChanged();
+    }
+}
+
+/*!
+    \qmlmethod BatteryStatus BatteryInfo::batteryStatus(int battery)
+
+    Returns the status of the given \a battery. Possible values are:
+    \list
+    \o BatteryInfo.BatteryStatusUnknown
+    \o BatteryInfo.BatteryEmpty
+    \o BatteryInfo.BatteryLow
+    \o BatteryInfo.BatteryOk
+    \o BatteryInfo.BatteryFull
+    \endlist
+
+    \sa onBatteryStatusChanged
+*/
+int QDeclarativeBatteryInfo::batteryStatus(int battery) const
+{
+    return batteryInfo->batteryStatus(battery);
+}
+
+/*!
+    \qmlsignal BatteryInfo::onBatteryStatusChanged(int battery, BatteryStatus status)
+
+    This handler is called when status of \a battery has changed to \a status.
+    Note that it won't be called unless monitorBatteryStatus is set true.
+
+    \sa batteryStatus, monitorBatteryStatus
+ */
+void QDeclarativeBatteryInfo::_q_batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus status)
+{
+    emit batteryStatusChanged(battery, static_cast<BatteryStatus>(status));
 }
 
 QT_END_NAMESPACE

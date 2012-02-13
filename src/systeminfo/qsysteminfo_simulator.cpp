@@ -139,6 +139,14 @@ QBatteryInfo::EnergyUnit QBatteryInfoSimulator::energyUnit()
     return QBatteryInfo::UnitUnknown;
 }
 
+QBatteryInfo::BatteryStatus QBatteryInfoSimulator::batteryStatus(int battery)
+{
+    if (batteryInfoSimulatorBackend)
+        return batteryInfoSimulatorBackend->getBatteryStatus(battery);
+
+    return QBatteryInfo::BatteryStatusUnknown;
+}
+
 void QBatteryInfoSimulator::connectNotify(const char *signal)
 {
     if (batteryInfoSimulatorBackend && (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0
@@ -147,7 +155,8 @@ void QBatteryInfoSimulator::connectNotify(const char *signal)
                                         || strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0
                                         || strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0
                                         || strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0
-                                        || strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0)) {
+                                        || strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0
+                                        || strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0)) {
         connect(batteryInfoSimulatorBackend, signal, this, signal);
     }
 }
@@ -160,7 +169,8 @@ void QBatteryInfoSimulator::disconnectNotify(const char *signal)
                                         || strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0
                                         || strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0
                                         || strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0
-                                        || strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0)) {
+                                        || strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0
+                                        || strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0)) {
         disconnect(batteryInfoSimulatorBackend, signal, this, signal);
     }
 }

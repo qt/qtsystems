@@ -107,6 +107,7 @@ void tst_QBatteryInfo::tst_invalid()
     QVERIFY(batteryInfo.remainingChargingTime(-1) == -1);
     QVERIFY(batteryInfo.voltage(-1) == -1);
     QVERIFY(batteryInfo.chargingState(-1) == QBatteryInfo::UnknownChargingState);
+    QVERIFY(batteryInfo.batteryStatus(-1) == QBatteryInfo::BatteryStatusUnknown);
 
     int count = batteryInfo.batteryCount();
     QVERIFY(batteryInfo.currentFlow(count) == 0);
@@ -115,6 +116,7 @@ void tst_QBatteryInfo::tst_invalid()
     QVERIFY(batteryInfo.remainingChargingTime(count) == -1);
     QVERIFY(batteryInfo.voltage(count) == -1);
     QVERIFY(batteryInfo.chargingState(count) == QBatteryInfo::UnknownChargingState);
+    QVERIFY(batteryInfo.batteryStatus(count) == QBatteryInfo::BatteryStatusUnknown);
 }
 
 QTEST_MAIN(tst_QBatteryInfo)
