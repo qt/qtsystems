@@ -51,7 +51,6 @@
 #ifdef QT_ADDON_JSONDB_LIB
 #include <jsondb-client.h>
 #include <jsondb-global.h>
-#include <private/jsondb-strings_p.h>
 #include <QSignalSpy>
 
 const QLatin1String kQuery("query");
@@ -156,7 +155,7 @@ void QSfwTestUtil::clearDatabases_jsondb()
 
     QVariantMap query;
     query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"]")
-                 .arg(JsonDbString::kTypeStr));
+                 .arg(QLatin1Literal("_type")));
 
     db->find(query);
     do {
