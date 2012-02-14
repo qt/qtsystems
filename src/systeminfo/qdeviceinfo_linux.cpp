@@ -165,7 +165,10 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::Sim:
-#if !defined(QT_NO_OFONO)
+#if !defined(QT_NO_LIBSYSINFO)
+        if (imeiCount() > 0)
+            return true;
+#elif !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
