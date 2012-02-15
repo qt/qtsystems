@@ -106,7 +106,7 @@ DatabaseManager::DatabaseManager(): db(new JsonDbClient(QString(), this)), m_not
 
     if (!db->isConnected()) {
         QEventLoop l;
-        QTimer::singleShot(5000, &l, SLOT(quit()));
+        QTimer::singleShot(30000, &l, SLOT(quit()));
         QObject::connect(db, SIGNAL(statusChanged()), &l, SLOT(quit()));
         l.exec();
         if (db->status() != JsonDbClient::Ready) {
