@@ -79,8 +79,8 @@ linux-*: !simulator: {
         DEFINES += QT_NO_X11
     }
 
-    contains(QT_CONFIG, jsondb): {
-        QT += jsondb
+    !isEmpty(QT.jsondbcompat.name){
+        QT +=  jsondbcompat
         PRIVATE_HEADERS += qjsondbwrapper_p.h
         SOURCES += qjsondbwrapper.cpp
     } else: {
@@ -170,8 +170,8 @@ simulator {
             DEFINES += QT_NO_X11
         }
 
-        contains(QT_CONFIG, jsondb): {
-            QT += jsondb
+        !isEmpty(QT.jsondbcompat.name){
+            QT +=  jsondbcompat
             PRIVATE_HEADERS += qjsondbwrapper_p.h \
                                qdeviceinfo_linux_p.h
 
