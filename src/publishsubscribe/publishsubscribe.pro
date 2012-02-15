@@ -41,7 +41,7 @@ unix {
             DEFINES += QT_NO_GCONFLAYER
         }
 
-        contains(QT_CONFIG,jsondb) {
+        contains(QT_CONFIG,jsondbcompat) {
             QT += jsondbcompat jsondbcompat-private
             PRIVATE_HEADERS += jsondblayer_p.h
             SOURCES += jsondblayer.cpp
