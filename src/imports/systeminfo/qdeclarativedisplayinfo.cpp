@@ -143,7 +143,7 @@ int QDeclarativeDisplayInfo::physicalWidth(int screen) const
 }
 
 /*!
-    \qmlmethod enum DisplayInfo::backlightState(int screen)
+    \qmlmethod BacklightState DisplayInfo::backlightState(int screen)
 
     Returns the backlight state of the given \a screen. Possible values are:
     \list

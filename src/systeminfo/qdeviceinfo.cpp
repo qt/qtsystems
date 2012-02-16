@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
     \enum QDeviceInfo::ThermalState
     This enum describes the thermal state:
 
-    \value UnknownThermal   The thermal state is unKnown.
+    \value UnknownThermal   The thermal state is unknown.
     \value NormalThermal    The thermal state is normal.
     \value WarningThermal   The thermal state is warning.
     \value AlertThermal     The thermal state is alert.

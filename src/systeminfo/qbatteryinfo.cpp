@@ -167,7 +167,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QBatteryInfo::batteryStatusChanged(int battery, int status);
+    \fn void QBatteryInfo::batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus status);
 
     This signal is emitted when the battery status of the \a battery has changed to \a status.
 */
