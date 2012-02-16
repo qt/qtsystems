@@ -154,7 +154,7 @@ void QSfwTestUtil::clearDatabases_jsondb()
     QList<QVariant> args;
 
     QVariantMap query;
-    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mp.serviceframework.interface\"]")
+    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mt.serviceframework.interface\"]")
                  .arg(QLatin1Literal("_type")));
 
     db->find(query);
