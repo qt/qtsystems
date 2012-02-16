@@ -205,8 +205,11 @@ simulator {
 
         contains(QT_CONFIG, sfw_netreg) {
             QT += serviceframework
-            PRIVATE_HEADERS += qnetworkservicewrapper_p.h
-            SOURCES += qnetworkservicewrapper.cpp
+            PRIVATE_HEADERS += qnetworkservicewrapper_p.h \
+                               qnetworkinfo_linux_p.h
+
+            SOURCES += qnetworkservicewrapper.cpp \
+                       qnetworkinfo_linux.cpp
         } else {
             DEFINES += QT_NO_SFW_NETREG
         }

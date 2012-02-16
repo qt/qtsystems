@@ -483,7 +483,7 @@ void QNetworkServiceWrapper::onServiceRemoved(const QString &serviceName, QServi
     Q_UNUSED(scope)
 
     int interfaceIndex = -1;
-    QList<int> interfaceIndexes;
+    QList<int> interfaceIndexes = allNetworkManagerInterfaces.keys();
     foreach (const int interface, interfaceIndexes) {
         if (serviceName == allNetworkManagerInterfaces.value(interface).serviceName()) {
             interfaceIndex = interface;
