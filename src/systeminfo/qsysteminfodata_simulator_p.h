@@ -185,38 +185,38 @@ Q_DECLARE_METATYPE(QStorageInfoData)
 Q_DECLARE_METATYPE(QScreenSaverData)
 Q_DECLARE_METATYPE(QDeviceProfileData)
 
-Q_SYSTEMINFO_EXPORT void qt_registerSystemInfoTypes();
+void qt_registerSystemInfoTypes();
 
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BasicNetworkInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BasicNetworkInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::EthernetInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::EthernetInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::WLanInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::WLanInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BluetoothInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BluetoothInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::CellularInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData::CellularInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QNetworkInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QNetworkInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Feature s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceInfo::Feature &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Version s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDisplayInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDisplayInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QStorageInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QStorageInfoData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QStorageInfoData::DriveInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QStorageInfoData::DriveInfo &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QScreenSaverData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator<<(QDataStream &out, const QDeviceProfileData &s);
-Q_SYSTEMINFO_EXPORT QDataStream &operator>>(QDataStream &in, QDeviceProfileData &s);
+QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BasicNetworkInfo &s);
+QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BasicNetworkInfo &s);
+QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::EthernetInfo &s);
+QDataStream &operator>>(QDataStream &in, QNetworkInfoData::EthernetInfo &s);
+QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::WLanInfo &s);
+QDataStream &operator>>(QDataStream &in, QNetworkInfoData::WLanInfo &s);
+QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BluetoothInfo &s);
+QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BluetoothInfo &s);
+QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::CellularInfo &s);
+QDataStream &operator>>(QDataStream &in, QNetworkInfoData::CellularInfo &s);
+QDataStream &operator<<(QDataStream &out, const QNetworkInfoData &s);
+QDataStream &operator>>(QDataStream &in, QNetworkInfoData &s);
+QDataStream &operator<<(QDataStream &out, const QDeviceInfoData &s);
+QDataStream &operator>>(QDataStream &in, QDeviceInfoData &s);
+QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Feature s);
+QDataStream &operator>>(QDataStream &in, QDeviceInfo::Feature &s);
+QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Version s);
+QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s);
+QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
+QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
+QDataStream &operator<<(QDataStream &out, const QDisplayInfoData &s);
+QDataStream &operator>>(QDataStream &in, QDisplayInfoData &s);
+QDataStream &operator<<(QDataStream &out, const QStorageInfoData &s);
+QDataStream &operator>>(QDataStream &in, QStorageInfoData &s);
+QDataStream &operator<<(QDataStream &out, const QStorageInfoData::DriveInfo &s);
+QDataStream &operator>>(QDataStream &in, QStorageInfoData::DriveInfo &s);
+QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s);
+QDataStream &operator>>(QDataStream &in, QScreenSaverData &s);
+QDataStream &operator<<(QDataStream &out, const QDeviceProfileData &s);
+QDataStream &operator>>(QDataStream &in, QDeviceProfileData &s);
 
 QT_END_NAMESPACE
 
