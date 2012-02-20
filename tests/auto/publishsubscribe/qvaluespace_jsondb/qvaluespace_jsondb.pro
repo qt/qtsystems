@@ -5,8 +5,8 @@
 #-------------------------------------------------
 
 QT       += testlib
-QT       += jsondb
-QT       += jsondb-private
+QT       += jsondbcompat
+QT       += jsondbcompat-private
 QT       += declarative
 QT       += publishsubscribe
 QT       -= gui
