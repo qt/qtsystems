@@ -51,6 +51,8 @@
 #include <QVarLengthArray>
 #include <QTime>
 #include <QCoreApplication>
+#include <QFile>
+#include <QStringList>
 
 QT_BEGIN_NAMESPACE
 
@@ -411,6 +413,22 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
             qWarning() << "SFW Unable to get socket credentials client asking for" << p.d->entry.interfaceName() << p.d->entry.serviceName() << "this may fail in the future";
             disconnected();
             return;
+        }
+        QString testingdata = QLatin1Literal("/tmp/sfwtestdata/") +  p.d->entry.interfaceName();
+        qDebug() << "Looing for" << testingdata;
+        if (QFile::exists(testingdata)) {
+            QFile data(testingdata);
+            data.open(QIODevice::ReadOnly);
+            const QString line = QString::fromLatin1(data.readLine(128)).simplified();
+            const QStringList list = line.split(QLatin1Char(' '), QString::SkipEmptyParts);
+            if (list.count() != 3) {
+                qWarning() << "File needs to be [pid] [uid] [gid]";
+            }
+            else {
+                creds.d->pid = list.at(0).toInt();
+                creds.d->uid = list.at(1).toInt();
+                creds.d->gid = list.at(2).toInt();
+            }
         }
 #endif
 

@@ -77,6 +77,7 @@ private:
     friend class LocalSocketEndPoint;
     friend class DBusEndPoint;
     friend class QRemoteServiceRegisterDBusPrivate;
+    friend class ObjectEndPoint;
 };
 
 QT_END_NAMESPACE

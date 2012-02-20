@@ -530,6 +530,7 @@ public:
     Q_INVOKABLE SecurityTestService(QServiceClientCredentials *creds)
         : QObject(0)
     {
+        qDebug() << "Creds" << creds->getProcessIdentifier() << creds->getUserIdentifier() << creds->getGroupIdentifier();
         creds->setClientAccepted(false);
     }
 };
