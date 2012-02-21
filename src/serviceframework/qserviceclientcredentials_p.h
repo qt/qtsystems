@@ -46,6 +46,8 @@
 
 #include <QSharedData>
 
+QT_BEGIN_NAMESPACE
+
 class  QServiceClientCredentialsPrivate : public QSharedData
 {
 public:
@@ -67,6 +69,6 @@ public:
 
 };
 
-
+QT_END_NAMESPACE
 
 #endif // QSERVICECLIENTCREDENTIALS_P_H

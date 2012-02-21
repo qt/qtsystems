@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "../qserviceclientcredentials_p.h"
 #include "qremoteserviceregister_p.h"
 #include "instancemanager_p.h"
 

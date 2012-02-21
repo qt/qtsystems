@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qserviceclientcredentials_p.h"
 #include "qserviceclientcredentials.h"
 #include <QDebug>
 
@@ -48,6 +49,11 @@ QServiceClientCredentials::QServiceClientCredentials()
     : d(new QServiceClientCredentialsPrivate)
 {
     Q_ASSERT(d);
+}
+
+QServiceClientCredentials::QServiceClientCredentials(const QServiceClientCredentials &other)
+    : d(other.d)
+{
 }
 
 QServiceClientCredentials::~QServiceClientCredentials()

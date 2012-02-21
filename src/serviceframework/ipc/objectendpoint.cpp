@@ -45,6 +45,7 @@
 #include "proxyobject_p.h"
 #include "qsignalintercepter_p.h"
 #include "qserviceclientcredentials.h"
+#include "../qserviceclientcredentials_p.h"
 #include <QTimer>
 #include <QEventLoop>
 #include <QEvent>

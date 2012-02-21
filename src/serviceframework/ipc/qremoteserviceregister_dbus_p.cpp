@@ -41,6 +41,7 @@
 
 #include "qremoteserviceregister_p.h"
 #include "qremoteserviceregister_dbus_p.h"
+#include "qserviceclientcredentials_p.h"
 
 #include <QDataStream>
 #include <QTimer>

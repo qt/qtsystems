@@ -62,5 +62,4 @@ contains(DEFINES, QT_ADDON_JSONDB_LIB): {
         databasemanager_p.h \
 }
 
-HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS \
-    qserviceclientcredentials.h
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS

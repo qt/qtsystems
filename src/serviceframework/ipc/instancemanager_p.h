@@ -45,6 +45,7 @@
 #include <qserviceframeworkglobal.h>
 #include "qremoteserviceregister.h"
 #include "qremoteserviceregisterentry_p.h"
+#include <private/qserviceclientcredentials_p.h>
 #include <QHash>
 #include <QMutexLocker>
 #include <QMetaObject>

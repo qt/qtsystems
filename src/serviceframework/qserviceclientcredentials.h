@@ -44,22 +44,19 @@
 #define QSERVICECLIENTCREDENTIALS_H
 
 #include "qserviceframeworkglobal.h"
-#include "qserviceclientcredentials_p.h"
-
+#include <QSharedData>
 #include <QExplicitlySharedDataPointer>
 
 QT_BEGIN_NAMESPACE
 
+class QServiceClientCredentialsPrivate;
 class  Q_SERVICEFW_EXPORT QServiceClientCredentials
 {
 public:
     QServiceClientCredentials();
     virtual ~QServiceClientCredentials();
 
-    QServiceClientCredentials(const QServiceClientCredentials &other)
-        : d(other.d)
-    {
-    }
+    QServiceClientCredentials(const QServiceClientCredentials &other);
 
     qintptr getProcessIdentifier() const;
     qintptr getUserIdentifier() const;

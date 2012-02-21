@@ -47,6 +47,8 @@
 #include <QQueue>
 
 #include "qservicepackage_p.h"
+#include "../qserviceclientcredentials_p.h"
+#include "../qserviceclientcredentials.h"
 
 QT_BEGIN_NAMESPACE
 

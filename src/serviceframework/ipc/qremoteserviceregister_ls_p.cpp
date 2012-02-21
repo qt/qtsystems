@@ -43,8 +43,8 @@
 #include "qremoteserviceregister_ls_p.h"
 #include "ipcendpoint_p.h"
 #include "objectendpoint_p.h"
-#include "../qserviceclientcredentials.h"
 #include "../qserviceclientcredentials_p.h"
+#include "../qserviceclientcredentials.h"
 
 #include <QLocalServer>
 #include <QEventLoop>
@@ -145,6 +145,9 @@ public:
         } else {
             qDebug("SFW getsockopt failed: %s", qPrintable(qt_error_string(errno)));
         }
+#else
+        Q_UNUSED(creds);
+        Q_UNUSED(fd);
 #endif
     }
 
