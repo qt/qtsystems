@@ -190,7 +190,7 @@ void ServiceBrowser::reloadAttributesList()
             .arg(QString(metaObject->className())));
     for (int i=0; i<metaObject->methodCount(); i++) {
         QMetaMethod method = metaObject->method(i);
-        attributesListWidget->addItem("[METHOD] " + QString(method.signature()));
+        attributesListWidget->addItem("[METHOD] " + QString(method.methodSignature()));
     }
     for (int i=0; i<metaObject->propertyCount(); i++) {
         QMetaProperty property = metaObject->property(i);

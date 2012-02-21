@@ -402,7 +402,7 @@ void tst_QServiceManager_IPC::verifySharedServiceObject()
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
-//        qDebug() << "Methods" << i << mo->method(i).signature();
+//        qDebug() << "Methods" << i << mo->method(i).methodSignature();
 //    }
 
     //test properties
@@ -432,7 +432,7 @@ void tst_QServiceManager_IPC::verifySharedServiceObject()
             case QMetaMethod::Method:
                 type = "method"; break;
             }
-            qDebug() << "    " << i << "." << method.signature() << type;
+            qDebug() << "    " << i << "." << method.methodSignature() << type;
         }
 
         qDebug() << "------------------- Meta Properties --------";
@@ -596,7 +596,7 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
     //actual function presence will be tested later
 
 //    for (int i = 0; i < mo->methodCount(); i++) {
-//        qDebug() << "Methods" << i << mo->method(i).signature();
+//        qDebug() << "Methods" << i << mo->method(i).methodSignature();
 //    }
 
     //test properties
@@ -626,7 +626,7 @@ void tst_QServiceManager_IPC::verifyUniqueServiceObject()
             case QMetaMethod::Method:
                 type = "method"; break;
             }
-            qDebug() << "    " << i << "." << method.signature() << type;
+            qDebug() << "    " << i << "." << method.methodSignature() << type;
         }
 
         qDebug() << "------------------- Meta Properties --------";

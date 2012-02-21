@@ -127,7 +127,7 @@ public:
             for (int i = mo->methodOffset(); i < mo->methodCount(); ++i) {
                 const QMetaMethod method = mo->method(i);
                 if (method.methodType() == QMetaMethod::Signal) {
-                    QByteArray signal = method.signature();
+                    QByteArray signal = method.methodSignature();
                     //add '2' for signal - see QSIGNAL_CODE
                     ServiceSignalIntercepter* intercept =
                         new ServiceSignalIntercepter(service, "2"+signal, parent );
@@ -578,7 +578,7 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
 
         }
         if (!result)
-            qWarning( "%s::%s cannot be called.", service->metaObject()->className(), method.signature());
+            qWarning( "%s::%s cannot be called.", service->metaObject()->className(), method.methodSignature().constData());
     } else {
         //client side
         Q_ASSERT(d->endPointType == ObjectEndPoint::Client);

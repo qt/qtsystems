@@ -93,7 +93,7 @@ QServiceProxy::QServiceProxy(const QByteArray& metadata, ObjectEndPoint* endPoin
 
         for (int i = 0; i < local->methodCount(); i++){
             const QMetaMethod m = local->method(i);
-            int r = remote->indexOfMethod(m.signature());
+            int r = remote->indexOfMethod(m.methodSignature().constData());
             d->localToRemote[i] = r;
             if (r > 0)
                 d->remoteToLocal[r] = i;
@@ -140,7 +140,7 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
         const int pTypesCount = pTypes.count();
         QVariantList args ;
         if (pTypesCount > 10) {
-            qWarning() << "Cannot call" << method.signature() << ". More than 10 parameter.";
+            qWarning() << "Cannot call" << method.methodSignature() << ". More than 10 parameter.";
             return id;
         }
         for (int i=0; i < pTypesCount; i++) {
@@ -152,7 +152,7 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
                 args << *reinterpret_cast<const QVariant(*)>(a[i+1]);
             } else if ( variantType == 0 ){
                 qWarning("%s: argument %s has unknown type. Use qRegisterMetaType to register it.",
-                        method.signature(), t.data());
+                        method.methodSignature().constData(), t.data());
                 return id;
             } else {
                 args << QVariant(variantType, a[i+1]);

@@ -237,7 +237,7 @@ QObject* ObjectEndPoint::constructProxy(const QRemoteServiceRegister::Entry& ent
         for (int i = mo->methodOffset(); i < mo->methodCount(); i++) {
             const QMetaMethod mm = mo->method(i);
             if (mm.methodType() == QMetaMethod::Signal) {
-                QByteArray sig(mm.signature());
+                QByteArray sig(mm.methodSignature());
 
                 bool customType = false;
 
@@ -448,7 +448,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p, QServiceClientCrede
             QString returnType = mm.typeName();
             if (returnType == "") returnType = "void";
 
-            qDebug() << "METHOD" << type << ":" << returnType << mm.signature();
+            qDebug() << "METHOD" << type << ":" << returnType << mm.methodSignature();
         }
         qDebug() << "++++++++++++++++++++++++++++++++++++++++++++++++++++";
         if (!iface)
@@ -478,7 +478,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p, QServiceClientCrede
             QString returnType = mm.typeName();
             if (returnType == "") returnType = "void";
 
-            qDebug() << "METHOD" << type << ":" << returnType << mm.signature();
+            qDebug() << "METHOD" << type << ":" << returnType << mm.methodSignature();
         }
         qDebug() << "+++++++++++++++++++++++++++++++++++++++++++++++++++";
 #endif
@@ -663,7 +663,7 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
     QDBusMessage msg;
 
     // Find the method name and try a direct DBus call
-    QString methodName(QLatin1String(method.signature()));
+    QString methodName(QLatin1String(method.methodSignature().constData()));
     methodName.truncate(methodName.indexOf(QLatin1String("(")));
 
     if (method.methodType() == QMetaMethod::Slot || method.methodType() == QMetaMethod::Method) {
@@ -711,7 +711,7 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
             }
         }
     } else {
-        qWarning( "%s::%s cannot be called.", service->metaObject()->className(), method.signature());
+        qWarning( "%s::%s cannot be called.", service->metaObject()->className(), method.methodSignature().constData());
     }
 
     return QVariant();

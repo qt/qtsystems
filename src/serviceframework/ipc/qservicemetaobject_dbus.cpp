@@ -121,7 +121,7 @@ void QServiceMetaObjectDBus::connectMetaSignals(bool signalsObject) {
 
 
             if (mm.methodType() == QMetaMethod::Signal) {
-                QByteArray sig(mm.signature());
+                QByteArray sig(mm.methodSignature());
                 bool customType = false;
                 const QList<QByteArray> pTypes = mm.parameterTypes();
                 const int pTypesCount = pTypes.count();
@@ -144,7 +144,7 @@ void QServiceMetaObjectDBus::connectMetaSignals(bool signalsObject) {
 
                 // Connects the service signal to the corresponding DBus service signal
                 if (customType) {
-                    QByteArray signal = mm.signature();
+                    QByteArray signal = mm.methodSignature();
                     ServiceMetaSignalIntercepter *intercept =
                         new ServiceMetaSignalIntercepter(d->service, "2"+signal, this);
                     intercept->setMetaIndex(i);
@@ -166,7 +166,7 @@ void QServiceMetaObjectDBus::activateMetaSignal(int id, const QVariantList& args
 
     // Converts the argument list to values supported by the QtDBus type system
     QVariantList convertedList = args;
-    QByteArray sig(method.signature());
+    QByteArray sig(method.methodSignature());
     QList<QByteArray> params = method.parameterTypes();
 
     for (int i = 0; i < params.size(); i++) {
@@ -243,7 +243,7 @@ const QMetaObject* QServiceMetaObjectDBus::dbusMetaObject(bool signalsObject) co
             }
 
             // Convert QVariant and custom argument types to QDBusVariants
-            QByteArray sig(mm.signature());
+            QByteArray sig(mm.methodSignature());
             const QList<QByteArray> pTypes = mm.parameterTypes();
             const int pTypesCount = pTypes.count();
             for (int i=0; i < pTypesCount; i++) {
@@ -355,7 +355,7 @@ int QServiceMetaObjectDBus::qt_metacall(QMetaObject::Call c, int id, void **a)
         // as desired over DBus without the use of adaptors. Temporary
         // methods propertyRead and propertyReset are added to the published
         // meta object and relay the correct property call
-        QString methodName(QLatin1String(method.signature()));
+        QString methodName(QLatin1String(method.methodSignature().constData()));
         methodName.truncate(methodName.indexOf(QLatin1String("(")));
 
         if (methodName == QLatin1String("propertyRead")) {
@@ -373,7 +373,7 @@ int QServiceMetaObjectDBus::qt_metacall(QMetaObject::Call c, int id, void **a)
         ////////////////////////////////////////////////////////////////////
 
         // Find the corresponding signature to our service object
-        QByteArray sig(method.signature());
+        QByteArray sig(method.methodSignature());
         int count = methodName.size() + 1;
         const QList<QByteArray> xTypes = method.parameterTypes();
         const int xTypesCount = xTypes.count();
