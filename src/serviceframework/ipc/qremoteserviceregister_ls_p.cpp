@@ -391,7 +391,7 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
         doChown = true;
     }
     if (doChown && (-1 == ::chown(tempLocation.toLatin1(), uid, gid))) {
-        qWarning("Failed to chown socket to request uid/gid %d/%d %s", uid. gid, qt_error_string(errno));
+        qWarning() << "Failed to chown socket to request uid/gid" << uid << gid << qt_error_string(errno);
         return false;
     }
     ::rename(tempLocation.toLatin1(), location.toLatin1());
