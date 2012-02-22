@@ -86,12 +86,12 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 {
     switch (feature) {
-    case QDeviceInfo::Bluetooth:
+    case QDeviceInfo::BluetoothFeature:
         if (QDir(QStringLiteral("/sys/class/bluetooth/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
-    case QDeviceInfo::Camera: {
+    case QDeviceInfo::CameraFeature: {
         const QString devfsPath(QStringLiteral("/dev/"));
         const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QStringLiteral("video*"), QDir::System);
         foreach (const QString &dir, dirs) {
@@ -108,12 +108,12 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
     }
 
-    case QDeviceInfo::FmRadio:
+    case QDeviceInfo::FmRadioFeature:
         if (QDir(QStringLiteral("/sys/class/video4linux/")).entryList(QStringList() << QStringLiteral("radio*")).size() > 0)
             return true;
         return false;
 
-    case QDeviceInfo::FmTransmitter: {
+    case QDeviceInfo::FmTransmitterFeature: {
         const QString devfsPath(QStringLiteral("/dev/"));
         const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QStringLiteral("radio*"), QDir::System);
         foreach (const QString &dir, dirs) {
@@ -130,26 +130,26 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
     }
 
-    case QDeviceInfo::Infrared:
+    case QDeviceInfo::InfraredFeature:
         // TODO: find the kernel interface for this
         return false;
 
-    case QDeviceInfo::Led:
+    case QDeviceInfo::LedFeature:
         if (QDir(QStringLiteral("/sys/class/leds/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
-    case QDeviceInfo::MemoryCard:
+    case QDeviceInfo::MemoryCardFeature:
         if (QDir(QStringLiteral("/sys/class/mmc_host/")).entryList(QStringList() << QStringLiteral("mmc*")).size() > 0)
             return true;
         return false;
 
-    case QDeviceInfo::Usb:
+    case QDeviceInfo::UsbFeature:
         if (QDir(QStringLiteral("/sys/bus/usb/devices/")).entryList(QStringList() << QStringLiteral("usb*")).size() > 0)
             return true;
         return false;
 
-    case QDeviceInfo::Vibration:
+    case QDeviceInfo::VibrationFeature:
         // TODO: find the kernel interface for this
 #if !defined(QT_NO_JSONDB)
         if (!jsondbWrapper)
@@ -158,13 +158,13 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 #endif
         return false;
 
-    case QDeviceInfo::Wlan:
+    case QDeviceInfo::WlanFeature:
         if ((QDir(QStringLiteral("/sys/class/ieee80211/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
                 || (QDir(QStringLiteral("/sys/class/net/")).entryList(QStringList() << QStringLiteral("wlan*")).size() > 0))
             return true;
         return false;
 
-    case QDeviceInfo::Sim:
+    case QDeviceInfo::SimFeature:
 #if !defined(QT_NO_LIBSYSINFO)
         if (imeiCount() > 0)
             return true;
@@ -177,7 +177,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 #endif
         return false;
 
-    case QDeviceInfo::Positioning:
+    case QDeviceInfo::PositioningFeature:
         // TODO: find the kernel interface for this
 #if !defined(QT_NO_JSONDB)
         if (!jsondbWrapper)
@@ -186,7 +186,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 #endif
         return false;
 
-    case QDeviceInfo::VideoOut: {
+    case QDeviceInfo::VideoOutFeature: {
         const QString devfsPath(QStringLiteral("/dev/"));
         const QStringList dirs = QDir(devfsPath).entryList(QStringList() << QStringLiteral("video*"), QDir::System);
         foreach (const QString &dir, dirs) {
@@ -205,12 +205,12 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
     }
 
-    case QDeviceInfo::Haptics:
+    case QDeviceInfo::HapticsFeature:
         if (QDir(QStringLiteral("/sys/class/haptic/")).entryList(QDir::Dirs | QDir::NoDotAndDotDot).size() > 0)
             return true;
         return false;
 
-    case QDeviceInfo::Nfc:
+    case QDeviceInfo::NfcFeature:
         // As of now, it's the only supported NFC device in the kernel
         return QFile::exists(QStringLiteral("/dev/pn544"));
     }

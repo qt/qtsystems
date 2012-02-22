@@ -134,20 +134,20 @@ void tst_QDeviceInfo::tst_uniqueDeviceID()
 void tst_QDeviceInfo::tst_hasFeature()
 {
     QList<QDeviceInfo::Feature> featureList;
-    featureList << QDeviceInfo::Bluetooth
-                << QDeviceInfo::Camera
-                << QDeviceInfo::FmRadio
-                << QDeviceInfo::FmTransmitter
-                << QDeviceInfo::Haptics
-                << QDeviceInfo::Infrared
-                << QDeviceInfo::Led
-                << QDeviceInfo::MemoryCard
-                << QDeviceInfo::Positioning
-                << QDeviceInfo::Sim
-                << QDeviceInfo::Usb
-                << QDeviceInfo::Vibration
-                << QDeviceInfo::VideoOut
-                << QDeviceInfo::Wlan;
+    featureList << QDeviceInfo::BluetoothFeature
+                << QDeviceInfo::CameraFeature
+                << QDeviceInfo::FmRadioFeature
+                << QDeviceInfo::FmTransmitterFeature
+                << QDeviceInfo::HapticsFeature
+                << QDeviceInfo::InfraredFeature
+                << QDeviceInfo::LedFeature
+                << QDeviceInfo::MemoryCardFeature
+                << QDeviceInfo::PositioningFeature
+                << QDeviceInfo::SimFeature
+                << QDeviceInfo::UsbFeature
+                << QDeviceInfo::VibrationFeature
+                << QDeviceInfo::VideoOutFeature
+                << QDeviceInfo::WlanFeature;
 
     foreach (QDeviceInfo::Feature feature, featureList) {
         bool isPresent = deviceInfo->hasFeature(feature);

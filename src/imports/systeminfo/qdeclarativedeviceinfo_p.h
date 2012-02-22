@@ -79,21 +79,21 @@ class QDeclarativeDeviceInfo : public QObject
 
 public:
     enum Feature {
-        Bluetooth = QDeviceInfo::Bluetooth,
-        Camera = QDeviceInfo::Camera,
-        FmRadio = QDeviceInfo::FmRadio,
-        FmTransmitter = QDeviceInfo::FmTransmitter,
-        Infrared = QDeviceInfo::Infrared,
-        Led = QDeviceInfo::Led,
-        MemoryCard = QDeviceInfo::MemoryCard,
-        Usb = QDeviceInfo::Usb,
-        Vibration = QDeviceInfo::Vibration,
-        Wlan = QDeviceInfo::Wlan,
-        Sim = QDeviceInfo::Sim,
-        Positioning = QDeviceInfo::Positioning,
-        VideoOut = QDeviceInfo::VideoOut,
-        Haptics = QDeviceInfo::Haptics,
-        Nfc = QDeviceInfo::Nfc
+        BluetoothFeature = QDeviceInfo::BluetoothFeature,
+        CameraFeature = QDeviceInfo::CameraFeature,
+        FmRadioFeature = QDeviceInfo::FmRadioFeature,
+        FmTransmitterFeature = QDeviceInfo::FmTransmitterFeature,
+        InfraredFeature = QDeviceInfo::InfraredFeature,
+        LedFeature = QDeviceInfo::LedFeature,
+        MemoryCardFeature = QDeviceInfo::MemoryCardFeature,
+        UsbFeature = QDeviceInfo::UsbFeature,
+        VibrationFeature = QDeviceInfo::VibrationFeature,
+        WlanFeature = QDeviceInfo::WlanFeature,
+        SimFeature = QDeviceInfo::SimFeature,
+        PositioningFeature = QDeviceInfo::PositioningFeature,
+        VideoOutFeature = QDeviceInfo::VideoOutFeature,
+        HapticsFeature = QDeviceInfo::HapticsFeature,
+        NfcFeature = QDeviceInfo::NfcFeature
     };
 
     enum LockType {

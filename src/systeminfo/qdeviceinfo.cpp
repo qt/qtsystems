@@ -82,21 +82,21 @@ QT_BEGIN_NAMESPACE
     \enum QDeviceInfo::Feature
     This enum describes the features of the device.
 
-    \value Bluetooth      Bluetooth feature.
-    \value Camera         Camera feature.
-    \value FmRadio        Frequency modulation (FM) radio feature.
-    \value FmTransmitter  Frequency modulation (FM) radio transmitter feature.
-    \value Infrared       Infrared communication feature.
-    \value Led            Light-emitting diode (LED) feature.
-    \value MemoryCard     Memory card feature.
-    \value Usb            Universal system bus (USB) feature.
-    \value Vibration      Vibration feature.
-    \value Wlan           Wireless local area network (WLAN) feature.
-    \value Sim            Subscriber identity module (SIM) feature.
-    \value Positioning    Positioning feature, e.g. Global Positioning System (GPS).
-    \value VideoOut       Video out feature.
-    \value Haptics        Haptics feature, the platform can provide audio and/or visual and/or vibration feedback.
-    \value Nfc            Near Field Communication (NFC) feature.
+    \value BluetoothFeature      Bluetooth feature.
+    \value CameraFeature         Camera feature.
+    \value FmRadioFeature        Frequency modulation (FM) radio feature.
+    \value FmTransmitterFeature  Frequency modulation (FM) radio transmitter feature.
+    \value InfraredFeature       Infrared communication feature.
+    \value LedFeature            Light-emitting diode (LED) feature.
+    \value MemoryCardFeature     Memory card feature.
+    \value UsbFeature            Universal system bus (USB) feature.
+    \value VibrationFeature      Vibration feature.
+    \value WlanFeature           Wireless local area network (WLAN) feature.
+    \value SimFeature            Subscriber identity module (SIM) feature.
+    \value PositioningFeature    Positioning feature, e.g. Global Positioning System (GPS).
+    \value VideoOutFeature       Video out feature.
+    \value HapticsFeature        Haptics feature, the platform can provide audio and/or visual and/or vibration feedback.
+    \value NfcFeature            Near Field Communication (NFC) feature.
 */
 
 /*!

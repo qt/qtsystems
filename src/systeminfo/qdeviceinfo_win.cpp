@@ -66,7 +66,7 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 {
     switch (feature) {
-    case QDeviceInfo::Bluetooth: {
+    case QDeviceInfo::BluetoothFeature: {
         BLUETOOTH_DEVICE_SEARCH_PARAMS searchParameter;
         searchParameter.dwSize = sizeof(BLUETOOTH_DEVICE_SEARCH_PARAMS);
         searchParameter.fReturnAuthenticated = TRUE;
@@ -87,7 +87,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         }
     }
 
-    case QDeviceInfo::Wlan: {
+    case QDeviceInfo::WlanFeature: {
         bool supportsWlan(false);
         DWORD negotiatedVersion;
         HANDLE handle;
@@ -103,10 +103,10 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return supportsWlan;
     }
 
-    case QDeviceInfo::VideoOut:
+    case QDeviceInfo::VideoOutFeature:
         return (GetSystemMetrics(SM_CMONITORS) > 0);
 
-    case QDeviceInfo::Infrared: {
+    case QDeviceInfo::InfraredFeature: {
         WSADATA wsaData;
         if (0 == WSAStartup(MAKEWORD(1,1), &wsaData)) {
             SOCKET irdaSocket = socket(AF_IRDA, SOCK_STREAM, 0);
@@ -118,7 +118,7 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
     }
 
-    case QDeviceInfo::Camera: {
+    case QDeviceInfo::CameraFeature: {
         char name[256];
         char version[256];
         for (WORD i = 0; i < 10; i++) {

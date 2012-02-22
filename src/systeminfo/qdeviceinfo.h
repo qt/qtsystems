@@ -71,21 +71,21 @@ class Q_SYSTEMINFO_EXPORT QDeviceInfo : public QObject
 
 public:
     enum Feature {
-        Bluetooth = 0,
-        Camera,
-        FmRadio,
-        FmTransmitter,
-        Infrared,
-        Led,
-        MemoryCard,
-        Usb,
-        Vibration,
-        Wlan,
-        Sim,
-        Positioning,
-        VideoOut,
-        Haptics,
-        Nfc
+        BluetoothFeature = 0,
+        CameraFeature,
+        FmRadioFeature,
+        FmTransmitterFeature,
+        InfraredFeature,
+        LedFeature,
+        MemoryCardFeature,
+        UsbFeature,
+        VibrationFeature,
+        WlanFeature,
+        SimFeature,
+        PositioningFeature,
+        VideoOutFeature,
+        HapticsFeature,
+        NfcFeature
     };
 
     enum LockType {

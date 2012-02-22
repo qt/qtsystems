@@ -209,21 +209,21 @@ QDeclarativeDeviceInfo::ThermalState QDeclarativeDeviceInfo::thermalState() cons
     Returns true if the \a feature is supported, otherwise false. The following features can be
     queried:
     \list
-    \o Bluetooth      Bluetooth feature.
-    \o Camera         Camera feature.
-    \o FmRadio        Frequency modulation (FM) radio feature.
-    \o FmTransmitter  Frequency modulation (FM) radio transmitter feature.
-    \o Infrared       Infrared communication feature.
-    \o Led            Light-emitting diode (LED) feature.
-    \o MemoryCard     Memory card feature.
-    \o Usb            Universal system bus (USB) feature.
-    \o Vibration      Vibration feature.
-    \o Wlan           Wireless local area network (WLAN) feature.
-    \o Sim            Subscriber identity module (SIM) feature.
-    \o Positioning    Positioning feature, e.g. Global Positioning System (GPS).
-    \o VideoOut       Video out feature.
-    \o Haptics        Haptics feature, the platform can provide audio and/or visual and/or vibration feedback.
-    \o Nfc            Near Field Communication (NFC) feature
+    \o BluetoothFeature      Bluetooth feature.
+    \o CameraFeature         Camera feature.
+    \o FmRadioFeature        Frequency modulation (FM) radio feature.
+    \o FmTransmitterFeature  Frequency modulation (FM) radio transmitter feature.
+    \o InfraredFeature       Infrared communication feature.
+    \o LedFeature            Light-emitting diode (LED) feature.
+    \o MemoryCardFeature     Memory card feature.
+    \o UsbFeature            Universal system bus (USB) feature.
+    \o VibrationFeature      Vibration feature.
+    \o WlanFeature           Wireless local area network (WLAN) feature.
+    \o SimFeature            Subscriber identity module (SIM) feature.
+    \o PositioningFeature    Positioning feature, e.g. Global Positioning System (GPS).
+    \o VideoOutFeature       Video out feature.
+    \o HapticsFeature        Haptics feature, the platform can provide audio and/or visual and/or vibration feedback.
+    \o NfcFeature            Near Field Communication (NFC) feature
     \endlist
 */
 bool QDeclarativeDeviceInfo::hasFeature(QDeclarativeDeviceInfo::Feature feature) const
