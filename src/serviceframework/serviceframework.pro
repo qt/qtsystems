@@ -6,7 +6,7 @@ QPRO_PWD = $PWD
 CONFIG += module
 MODULE_PRI = ../../modules/qt_serviceframework.pri
 
-QT = core sql script
+QT = core sql
 
 DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
