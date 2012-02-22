@@ -484,10 +484,9 @@ int QBatteryInfoPrivate::getCurrentFlow(int battery)
     bool ok = false;
     int flow = current.readAll().simplified().toInt(&ok);
     if (ok) {
-        if (state == QBatteryInfo::Charging || state == QBatteryInfo::Full)
+        if (state == QBatteryInfo::Charging || state == QBatteryInfo::Full
+                || QBatteryInfo::Discharging)
             return flow / -1000;
-        else if (state == QBatteryInfo::Discharging)
-            return flow / 1000;
     }
 
     return 0;
@@ -517,7 +516,7 @@ int QBatteryInfoPrivate::getRemainingChargingTime(int battery)
 
     int remaining = 0;
     QFile timeToFull(BATTERY_SYSFS_PATH()->arg(battery) + QStringLiteral("time_to_full_avg"));
-    if (timeToFull.QIODevice::ReadOnly) {
+    if (timeToFull.open(QIODevice::ReadOnly)) {
         bool ok = false;
         remaining = timeToFull.readAll().simplified().toInt(&ok);
         if (ok)
