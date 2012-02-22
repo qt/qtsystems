@@ -96,7 +96,7 @@ int QDeviceProfilePrivate::voiceRingtoneVolume()
     return -1;
 }
 
-QDeviceProfile::ProfileType QDeviceProfilePrivate::profileType()
+QDeviceProfile::ProfileType QDeviceProfilePrivate::currentProfileType()
 {
 #if !defined(QT_NO_JSONDB)
     if (!jsondbWrapper)

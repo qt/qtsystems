@@ -70,7 +70,7 @@ public:
     bool isVibrationActivated();
     int messageRingtoneVolume();
     int voiceRingtoneVolume();
-    QDeviceProfile::ProfileType profileType();
+    QDeviceProfile::ProfileType currentProfileType();
 
 private:
     QDeviceProfile * const q_ptr;

@@ -53,7 +53,7 @@ public:
     bool isVibrationActivated() { return false; }
     int messageRingtoneVolume() { return -1; }
     int voiceRingtoneVolume() { return -1; }
-    QDeviceProfile::ProfileType profileType() { return QDeviceProfile::UnknownProfile; }
+    QDeviceProfile::ProfileType currentProfileType() { return QDeviceProfile::UnknownProfile; }
 };
 QT_END_NAMESPACE
 #endif
@@ -128,14 +128,14 @@ int QDeviceProfile::voiceRingtoneVolume() const
 }
 
 /*!
-    \property QDeviceProfile::profileType
+    \property QDeviceProfile::currentProfileType
     \brief The current activated profile.
 
     Returns the type for this profile.
 */
-QDeviceProfile::ProfileType QDeviceProfile::profileType() const
+QDeviceProfile::ProfileType QDeviceProfile::currentProfileType() const
 {
-    return d_ptr->profileType();
+    return d_ptr->currentProfileType();
 }
 
 QT_END_NAMESPACE

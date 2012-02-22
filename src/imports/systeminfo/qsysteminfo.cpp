@@ -124,7 +124,7 @@ Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoD
  */
 
 /*!
-    \qmlproperty enum DeviceProfile::profileType
+    \qmlproperty enum DeviceProfile::currentProfileType
 
     Returns the type of the current profile, possible types are:
     \list
