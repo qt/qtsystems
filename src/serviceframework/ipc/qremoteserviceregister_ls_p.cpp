@@ -343,6 +343,7 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
     connect(localServer, SIGNAL(newConnection()), this, SLOT(processIncoming()));
 
 #ifdef QT_MTCLIENT_PRESENT
+/*
     QRemoteServiceRegister::SecurityAccessOptions opts = getSecurityOptions();
 
     if (opts == QRemoteServiceRegister::NoOptions) {
@@ -364,7 +365,7 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
         }
         localServer->setSocketOptions(flags);
     }
-
+*/
     QString location = ident;
     location = QDir::cleanPath(QDir::tempPath());
     location += QLatin1Char('/') + ident;
@@ -375,13 +376,12 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
     QLocalServer::removeServer(location);
     QLocalServer::removeServer(tempLocation);
 
-    localServer->setSocketOptions(QLocalServer::WorldAccessOption);
-
     if ( !localServer->listen(tempLocation) ) {
-        qWarning() << "Cannot create local socket endpoint";
+        qWarning() << "SFW Cannot create local socket endpoint";
         return false;
     }
 
+    ::chmod(tempLocation.toLatin1(), S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IWOTH|S_IROTH);
     int uid = getuid();
     int gid = getgid();
     bool doChown = false;
@@ -423,7 +423,22 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 }
 
 #ifdef QT_MTCLIENT_PRESENT
-void doStart(const QString &location) {
+
+#define SFW_PROCESS_TIMEOUT 5000
+
+void doStart(const QString &location, QLocalSocket *socket) {
+
+    QEventLoop loop;
+    QFileSystemWatcher watcher;
+    QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), &loop, SLOT(quit()));
+    watcher.addPath(QLatin1Literal("/tmp"));
+
+    socket->connectToServer(location);
+    if (socket->waitForConnected(SFW_PROCESS_TIMEOUT)) {
+        return;
+    }
+
+    qWarning() << "SFW unable to connect to service, trying to start it. " << socket->errorString();
 
     if (location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest") ||
         location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket")) {
@@ -452,29 +467,32 @@ void doStart(const QString &location) {
     ServiceRequestWaiter waiter(serviceRequest);
     QMetaObject::invokeMethod(serviceRequest, "startService", Q_ARG(QString, location));
 
-    waiter.wait(5000);
+    waiter.wait(SFW_PROCESS_TIMEOUT);
     if (!waiter.error.isEmpty()) {
         delete serviceRequest;
         qWarning() << "Failed to start service, request sent, result" << waiter.error;
         return;
     }
 
-    qWarning() << "Starting to look for socket";
+    qWarning() << "SFW Starting to look for socket";
 
-    QEventLoop loop;
-    QFileSystemWatcher watcher;
     QFileInfo file(QLatin1Literal("/tmp/") + location);
-    watcher.addPath(QLatin1Literal("/tmp"));
     qWarning() << "SFW checking in" << file.path() << "for the socket to come into existance" << file.filePath();
-    QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), &loop, SLOT(quit()));
+
     QTimer timeout;
-    timeout.start(5000);
+    timeout.start(SFW_PROCESS_TIMEOUT);
     timeout.setSingleShot(true);
     QObject::connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
-    while (!file.exists() && timeout.isActive()) {
+    QObject::connect(socket, SIGNAL(connected()), &loop, SLOT(quit()));
+    while (timeout.isActive()) {
         loop.exec();
+        if (socket->isValid())
+            break;
+        socket->connectToServer(location);
     }
-    qWarning() << "SFW done waiting" << file.exists();
+    qWarning() << "SFW done waiting. Socket exists:" << file.exists() <<
+                  "timeout is active" << timeout.isActive() <<
+                  "isSocketValid" << socket->isValid();
 
 }
 #endif
@@ -485,23 +503,19 @@ void doStart(const QString &location) {
 QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegister::Entry& entry, const QString& location)
 {
     qWarning() << "(all ok) starting SFW proxyForService" << location;
+
     QLocalSocket* socket = new QLocalSocket();
+
+#ifdef QT_MTCLIENT_PRESENT
+    doStart(location, socket);
+#else
+
     socket->connectToServer(location);
 
     if (!socket->waitForConnected()){
         if (!socket->isValid()) {
             QString path = location;
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
-#ifdef QT_MTCLIENT_PRESENT
-
-            doStart(location);
-
-            socket->connectToServer(location);
-            if (!socket->waitForConnected()) {
-                qWarning() << "Server failed to start within waiting period";
-                return false;
-            }
-#else
             // If we have autotests enable, check for the service in .
 #ifdef QT_BUILD_INTERNAL
             QFile file(QStringLiteral("./") + path);
@@ -535,9 +549,9 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             else {
                 qWarning() << "Server could not be started";
             }
-#endif
         }
     }
+#endif
     if (socket->isValid()){
         LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(socket);
         ObjectEndPoint* endPoint = new ObjectEndPoint(ObjectEndPoint::Client, ipcEndPoint);
