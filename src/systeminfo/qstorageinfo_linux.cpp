@@ -217,6 +217,11 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
             break;
         }
 
+        if (strcmp(entry.mnt_type, "rootfs") == 0) {
+            type = QStorageInfo::InternalDrive;
+            break;
+        }
+
         // Now need to guess if it's InternalDrive or RemovableDrive
         QString fsName(QString::fromAscii(entry.mnt_fsname));
         if (fsName.contains(QString(QStringLiteral("mapper")))) {
@@ -227,8 +232,14 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
             fsName = fsName.section(QString(QStringLiteral("/")), 2, 3);
             if (!fsName.isEmpty()) {
                 if (fsName.length() > 3) {
-                    if (fsName.right(1) == QString(QStringLiteral("p")))
+                    if (fsName.right(1) == QString(QStringLiteral("p"))) {
                         fsName.chop(1);
+                    } else {
+                        if (QDir(QStringLiteral("/dev/")).entryList(QStringList() << (fsName + QStringLiteral("p*"))).isEmpty()) {
+                            type = QStorageInfo::RemovableDrive;
+                            break;
+                        }
+                    }
                 }
                 fsName = QString(QStringLiteral("/sys/block/")) + fsName + QString(QStringLiteral("/removable"));
             }
