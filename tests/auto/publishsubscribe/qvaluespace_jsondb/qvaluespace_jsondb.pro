@@ -7,7 +7,6 @@
 QT       += testlib
 QT       += jsondbcompat
 QT       += jsondbcompat-private
-QT       += qml
 QT       += publishsubscribe
 QT       -= gui
 
@@ -44,3 +43,5 @@ HEADERS += \
 QMAKE_EXTRA_TARGETS = check
 check.depends = $$TARGET
 check.commands = ./$$TARGET
+
+DEFINES += QT_NO_GCONFLAYER

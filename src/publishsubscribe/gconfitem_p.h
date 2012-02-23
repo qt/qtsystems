@@ -53,6 +53,8 @@
 #ifndef GCONFITEM_P_H
 #define GCONFITEM_P_H
 
+#if !defined(QT_NO_GCONFLAYER)
+
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -86,5 +88,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GCONFLAYER
 
 #endif // GCONFITEM_P_H

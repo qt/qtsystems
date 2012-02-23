@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#if !defined(QT_NO_JSONDBLAYER)
+
 #include "jsondblayer_p.h"
 #include <private/jsondb-connection_p.h>
 
@@ -479,13 +481,6 @@ bool JsonDbLayer::notifyInterest(Handle handle, bool interested)
     return true;
 }
 
-unsigned int JsonDbLayer::order()
-{
-    DEBUG_MSG("JsonDbLayer::order()");
-
-    return 0x1000;
-}
-
 void JsonDbLayer::removeHandle(Handle handle)
 {
     DEBUG_MSG("JsonDbLayer::removeHandle(Handle handle)");
@@ -603,7 +598,6 @@ void JsonDbLayer::jsonDbHandleChanged()
 
 
 Q_GLOBAL_STATIC(JsonDbLayer, jsonDbLayer)
-QVALUESPACE_AUTO_INSTALL_LAYER(JsonDbLayer)
 
 
 
@@ -614,3 +608,5 @@ JsonDbLayer *JsonDbLayer::instance()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_JSONDBLAYER

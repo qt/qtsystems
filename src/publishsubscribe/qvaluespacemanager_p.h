@@ -65,16 +65,13 @@ public:
     QValueSpaceManager();
 
     void init();
-    void install(QAbstractValueSpaceLayer * layer);
-    void install(QValueSpace::LayerCreateFunc func);
-    QList<QAbstractValueSpaceLayer *> const & getLayers();
+    QList<QAbstractValueSpaceLayer *> const &getLayers();
 
     static QValueSpaceManager *instance();
 
 private:
     bool initialized;
     QList<QAbstractValueSpaceLayer *> layers;
-    QList<QValueSpace::LayerCreateFunc> funcs;
 };
 
 QT_END_NAMESPACE

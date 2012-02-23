@@ -39,12 +39,13 @@
 **
 ****************************************************************************/
 
+#if !defined(QT_NO_GCONFLAYER)
+
 #include "gconflayer_p.h"
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(GConfLayer, gConfLayer)
-QVALUESPACE_AUTO_INSTALL_LAYER(GConfLayer)
 
 GConfLayer::GConfLayer()
 {
@@ -69,11 +70,6 @@ QString GConfLayer::name()
 QUuid GConfLayer::id()
 {
     return QVALUESPACE_GCONF_LAYER;
-}
-
-unsigned int GConfLayer::order()
-{
-    return 0;
 }
 
 QValueSpace::LayerOptions GConfLayer::layerOptions() const
@@ -415,3 +411,5 @@ void GConfLayer::notifyChanged(const QString &key, const QVariant & /*value*/)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GCONFLAYER

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     \ingroup publishsubscribe
 
     When multiple Value Space layers are available QValueSpacePublisher only publishes values to
-    the layer with the highest order.  The layers that QValueSpacePublisher can access can be
+    the layer with the highest priority.  The layers that QValueSpacePublisher can access can be
     limited by specifying either a \l {QValueSpace::LayerOption}{filter} or a QUuid at construction
     time.
 
@@ -187,7 +187,7 @@ QValueSpacePublisher::QValueSpacePublisher(const QString &path, QObject *parent)
     \a path. The \a filter parameter is used to limit which layer this QValueSpacePublisher will
     access.
 
-    The constructed Value Space publisher will access the layer with the highest order that matches
+    The constructed Value Space publisher will access the layer with the highest priority that matches
     \a filter and for which \a path is a valid path.
 
     If no suitable layer is found, the constructed QValueSpacePublisher will be unconnected.

@@ -53,6 +53,8 @@
 #ifndef JSONDBLAYER_P_H
 #define JSONDBLAYER_P_H
 
+#if !defined(QT_NO_JSONDBLAYER)
+
 #include "qvaluespace_p.h"
 
 #include <jsondb-client.h>
@@ -201,7 +203,7 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
         // Returns the set of children of handle.
         QSet<QString> children(Handle handle);
 
-        // Returns a globally unique identifier for the layer. This id is used to break ordering ties.
+        // Returns a globally unique identifier for the layer.
         QUuid id();
 
         // Returns a new opaque handle for the requested subPath of parent. If parent is an
@@ -221,11 +223,6 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
         // have a matching call with interested set to false.
         // Returns true if the notification was successfully sent; otherwise returns false.
         bool notifyInterest(Handle handle, bool interested);
-
-        // Return the position in the Value Space layer stack that this layer should reside.
-        // Higher numbers mean the layer has a higher precedence and its values will "shadow"
-        // those below it. If two layers specify the same ordering, the id() value is used to break the tie.
-        unsigned int order();
 
         // Releases a handle previously returned from QAbstractValueSpaceLayer::item().
         void removeHandle(Handle handle);
@@ -279,5 +276,7 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_JSONDBLAYER
 
 #endif // JSONDBLAYER_P_H

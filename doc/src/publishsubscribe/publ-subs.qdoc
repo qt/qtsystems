@@ -79,39 +79,46 @@
     subscribers to \c {/Device/Buttons} to be notified when anything "button" related changes.
 
     Internally, the Value Space consists of an arbitrary number of data source trees, or layers, which
-    are stacked on top of each other to form the final unified view.  If a "higher" layer contains an
-    item, it shadows the value of items in the layers below it.  Consider the Value Space item
-    \c {/Device/Buttons}.  If two layers contained this item, the value in the layer with the higher
-    layer order would shadow that with the lower layer order.  However, if only the layer with the
-    lower order contained this item, it would be visible through the QValueSpaceSubscriber class, even
-    if the higher order layer contained sub-items such as \c {/Device/Buttons/1}.  That is, layer
-    shadowing occurs by value not by path.
-
-    Layer order is fixed and is defined in the layer implementation.
+    are stacked on top of each other to form the final unified view.  If two layers contain the same
+    item, e.g. \c {/Device/Buttons}, the value in the layer with a higher priority will shadow that
+    with the layer of the lower priority.  However, if only the layer with the lower priority contained
+    this item, it would be visible through the QValueSpaceSubscriber class, even if the higher priority
+    layer contained sub-items such as \c {/Device/Buttons/1}.  That is, layer shadowing occurs by value
+    not by path. Layer priority is fixed and is defined in the layer implementation.
 
     The following Value Space layers are available:
 
     \table
         \header
+            \li Operating System
             \li Layer
             \li Description
         \row
-            \li Volatile Registry Layer
-            \li The Volatile Registry layer provides a non-permanent Value Space backing store using
-               volatile keys stored in the Windows' registry.  The Volatile Registry layer is only
-               available on Windows platforms.
-               The Volatile Registry layer has an order of 0x1000.
-        \row
+            \li {1, 2} Windows
             \li Non-volatile Registry Layer
             \li The Non-volatile Registry layer provides a permanent Value Space backing store using
-               keys stored in the Windows' registry.  The Non-volatile Registry layer is only available
-               on Windows platforms.
-               The Non-volatile Registry layer has an order of 0.
+                keys stored in the Windows' registry.
+                \br
+                The Non-volatile Registry layer has a higher priority.
         \row
+            \li Volatile Registry Layer
+            \li The Volatile Registry layer provides a non-permanent Value Space backing store using
+                volatile keys stored in the Windows' registry.
+                \br
+                The Volatile Registry layer has a lower priority.
+        \row
+            \li {1, 2} Linux
             \li \l{GConf Layer}
             \li The GConf Layer provides a permanent Value Space backing store using GConf. This
-               layer is only available on Linux where the GConf is available.
-               The GConf Layer has an order of 0.
+                layer is only available on systems where the GConf is available.
+                \br
+                The GConf Layer has a higher priority.
+        \row
+            \li JsonDb Layer
+            \li The JsonDb Layer provides a permanent Value Space backing store using QtJsonDb. This
+                layer is only available on systems where the QtJsonDb is available.
+                \br
+                The JsonDb Layer has a lower priority.
     \endtable
 
     \section1 Detailed Layer Descriptions

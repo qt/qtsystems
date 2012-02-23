@@ -40,15 +40,19 @@ unix {
         } else {
             DEFINES += QT_NO_GCONFLAYER
         }
-
-        contains(QT_CONFIG,jsondbcompat) {
-            QT += jsondbcompat jsondbcompat-private
-            PRIVATE_HEADERS += jsondblayer_p.h
-            SOURCES += jsondblayer.cpp
-        } else {
-            DEFINES += QT_NO_JSONDBLAYER
-        }
+    } else {
+        DEFINES += QT_NO_GCONFLAYER
     }
+
+    contains(QT_CONFIG,jsondbcompat) {
+        QT += jsondbcompat jsondbcompat-private
+        PRIVATE_HEADERS += jsondblayer_p.h
+        SOURCES += jsondblayer.cpp
+    } else {
+        DEFINES += QT_NO_JSONDBLAYER
+    }
+} else {
+    DEFINES += QT_NO_GCONFLAYER QT_NO_JSONDBLAYER
 }
 
 win32: {

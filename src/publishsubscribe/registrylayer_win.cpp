@@ -41,13 +41,12 @@
 
 #include "registrylayer_win_p.h"
 
+#if defined(Q_OS_WIN)
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(NonVolatileRegistryLayer, nonVolatileRegistryLayer)
-QVALUESPACE_AUTO_INSTALL_LAYER(NonVolatileRegistryLayer)
-
 Q_GLOBAL_STATIC(VolatileRegistryLayer, volatileRegistryLayer)
-QVALUESPACE_AUTO_INSTALL_LAYER(VolatileRegistryLayer)
 
 void CALLBACK qVolatileRegistryLayerCallback(PVOID lpParameter, BOOLEAN)
 {
@@ -93,11 +92,6 @@ QUuid VolatileRegistryLayer::id()
     return QVALUESPACE_VOLATILEREGISTRY_LAYER;
 }
 
-unsigned int VolatileRegistryLayer::order()
-{
-    return 0x1000;
-}
-
 QValueSpace::LayerOptions VolatileRegistryLayer::layerOptions() const
 {
     return QValueSpace::TransientLayer | QValueSpace::WritableLayer;
@@ -126,11 +120,6 @@ QString NonVolatileRegistryLayer::name()
 QUuid NonVolatileRegistryLayer::id()
 {
     return QVALUESPACE_NONVOLATILEREGISTRY_LAYER;
-}
-
-unsigned int NonVolatileRegistryLayer::order()
-{
-    return 0;
 }
 
 QValueSpace::LayerOptions NonVolatileRegistryLayer::layerOptions() const
@@ -1103,3 +1092,5 @@ bool RegistryLayer::notifyInterest(Handle, bool)
 }
 
 QT_END_NAMESPACE
+
+#endif // Q_OS_WIN

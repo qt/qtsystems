@@ -54,8 +54,6 @@ class QValueSpacePublisherPrivate;
 
 class Q_PUBLISHSUBSCRIBE_EXPORT QValueSpacePublisher : public QObject
 {
-    friend class QAbstractValueSpaceLayer;
-
     Q_OBJECT
 
 public:

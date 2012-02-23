@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#if !defined(QT_NO_GCONFLAYER)
+
 #include "gconfitem_p.h"
 
 #include <QtCore/qdebug.h>
@@ -496,3 +498,5 @@ void GConfItem::update_value(bool emit_signal, const QString &key, const QVarian
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GCONFLAYER

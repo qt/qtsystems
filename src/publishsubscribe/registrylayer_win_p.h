@@ -64,6 +64,8 @@
 #include <QMutex>
 #include <QDebug>
 
+#if defined(Q_OS_WIN)
+
 // Define win32 version to pull in RegisterWaitForSingleObject and UnregisterWait.
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
@@ -167,7 +169,6 @@ public:
     QString name();
 
     QUuid id();
-    unsigned int order();
 
     QValueSpace::LayerOptions layerOptions() const;
 
@@ -186,7 +187,6 @@ public:
     QString name();
 
     QUuid id();
-    unsigned int order();
 
     QValueSpace::LayerOptions layerOptions() const;
 
@@ -194,5 +194,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // Q_OS_WIN
 
 #endif // REGISTRYLAYER_WIN_P_H

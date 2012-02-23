@@ -56,23 +56,7 @@ QT_BEGIN_NAMESPACE
     \internal
 
     To create a new layer in the Value Space subclass this class and reimplement all of the virtual
-    functions. The new layer is installed by either calling QValueSpace::installLayer() or by using
-    the QVALUESPACE_AUTO_INSTALL_LAYER() macro in your implementation file.
-*/
-
-/*!
-    \internal
-    \macro QVALUESPACE_AUTO_INSTALL_LAYER(className)
-    \relates QAbstractValueSpaceLayer
-
-    This macro installs a new Value Space layer, specifyed by \a className.
-
-    The method \c {className *className::instance()} must exist and return a pointer to an instance
-    of the layer to install. This method will only be invoked \e {after} QApplication has been
-    constructed, making it safe to use any Qt class in your layer's constructor.
-
-    This macro can only be used once for any given class and it should be used where the
-    implementation is written rather than in a header file.
+    functions. The available layers are installed when QValueSpaceManager::init() is called.
 */
 
 /*!
@@ -114,15 +98,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QUuid QAbstractValueSpaceLayer::id()
 
-    Returns a globally unique identifier for the layer.  This id is used to break ordering ties.
-*/
-
-/*!
-    \fn unsigned int QAbstractValueSpaceLayer::order()
-
-    Return the position in the Value Space layer stack that this layer should reside.  Higher
-    numbers mean the layer has a higher precedence and its values will "shadow" those below it.
-    If two layers specify the same ordering, the id() value is used to break the tie.
+    Returns a globally unique identifier for the layer.
 */
 
 /*!
@@ -316,65 +292,6 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
 */
 
 /*!
-    \typedef QValueSpace::LayerCreateFunc
-    \internal
-
-    Support type used by the QVALUESPACE_AUTO_INSTALL_LAYER() macro.
-*/
-
-/*!
-    \class QValueSpace::AutoInstall
-    \internal
-
-    Support class used by the QVALUESPACE_AUTO_INSTALL_LAYER() macro.
-*/
-
-/*!
-    \fn QValueSpace::AutoInstall::AutoInstall(LayerCreateFunc func)
-
-    Installs the Value Space layer at static construction time by calling the layer creation
-    function \a func.
-*/
-
-/*!
-    \internal
-
-    Used by Value Space layer implementations to install themselves into the system.  \a layer
-    should be a pointer to the layer to install.
-
-    \sa QVALUESPACE_AUTO_INSTALL_LAYER()
-*/
-void QValueSpace::installLayer(QAbstractValueSpaceLayer *layer)
-{
-    QValueSpaceManager::instance()->install(layer);
-}
-
-/*!
-    \internal
-
-    Called by the QVALUESPACE_AUTO_INSTALL_LAYER() macro to install the layer at static
-    initialization time.
-*/
-void QValueSpace::installLayer(LayerCreateFunc func)
-{
-    QValueSpaceManager::instance()->install(func);
-}
-
-/*!
-    \macro QVALUESPACE_SHAREDMEMORY_LAYER
-    \relates QValueSpace
-
-    The UUID of the Shared Memory layer as a QUuid.  The actual UUID value is
-    {d81199c1-6f60-4432-934e-0ce4d37ef252}.
-
-    This value can be passed to the constructor of QValueSpacePublisher or QValueSpaceSubscriber to
-    force the constructed object to only access the Shared Memory layer.
-
-    You can test if the Shared Memory layer is available by checking if the list returned by
-    QValueSpace::availableLayers() contains this value.
-*/
-
-/*!
     \macro QVALUESPACE_VOLATILEREGISTRY_LAYER
     \relates QValueSpace
 
@@ -423,19 +340,19 @@ void QValueSpace::installLayer(LayerCreateFunc func)
     \macro QVALUESPACE_JSONDB_LAYER
     \relates QValueSpace
 
-    The UUID of the GConf layer as a QUuid.  The actual UUID value is
+    The UUID of the JsonDb layer as a QUuid.  The actual UUID value is
     {a167384c-6acf-2738-c8d5-a088ac6ec2d6}.
 
     This value can be passed to the constructor of QValueSpacePublisher or QValueSpaceSubscriber to
-    force the constructed object to only access the JSONDB layer.
+    force the constructed object to only access the JsonDb layer.
 
-    You can test if the JSONDB layer is available by checking if the list returned by
-    QValueSpace::availableLayers() contains this value. The JSONDB layer is only available on Linux
+    You can test if the JsonDb layer is available by checking if the list returned by
+    QValueSpace::availableLayers() contains this value. The JsonDb layer is only available on Linux
     platforms.
 */
 
 /*!
-    Returns a list of QUuids of all of the available layers.
+    Returns a list of QUuids of all of the available layers, sorted in the priority order.
 */
 QList<QUuid> QValueSpace::availableLayers()
 {

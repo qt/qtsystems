@@ -76,7 +76,6 @@ public:
     virtual bool startup() = 0;
     virtual bool value(Handle handle, QVariant *data) = 0;
     virtual bool value(Handle handle, const QString &subPath, QVariant *data) = 0;
-    virtual unsigned int order() = 0;
     virtual void removeHandle(Handle handle) = 0;
     virtual void setProperty(Handle handle, Properties properties) = 0;
     virtual Handle item(Handle parent, const QString &subPath) = 0;
@@ -104,23 +103,6 @@ protected:
 Q_SIGNALS:
     void handleChanged(quintptr);
 };
-
-namespace QValueSpace {
-    typedef QAbstractValueSpaceLayer *(*LayerCreateFunc)();
-    Q_PUBLISHSUBSCRIBE_EXPORT void installLayer(LayerCreateFunc func);
-    Q_PUBLISHSUBSCRIBE_EXPORT void installLayer(QAbstractValueSpaceLayer *layer);
-
-    struct AutoInstall {
-        AutoInstall(LayerCreateFunc func) { installLayer(func); }
-    };
-}
-
-#define QVALUESPACE_AUTO_INSTALL_LAYER(name) \
-QAbstractValueSpaceLayer * _qvaluespaceauto_layercreate_ ## name() \
-{ \
-  return name::instance(); \
-} \
-static QValueSpace::AutoInstall _qvaluespaceauto_ ## name(_qvaluespaceauto_layercreate_ ## name);
 
 QT_END_NAMESPACE
 

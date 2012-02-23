@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qvaluespacemanager_p.h"
+#include "gconflayer_p.h"
+#include "jsondblayer_p.h"
+#include "registrylayer_win_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -59,13 +62,20 @@ void QValueSpaceManager::init()
 {
     if (initialized)
         return;
-
-    // Install all the dormant layers
-    for (int ii = 0; ii < funcs.count(); ++ii)
-        install(funcs[ii]());
-    funcs.clear();
-
     initialized = true;
+
+    // make sure layers are installed in the priority order from high to low
+#if defined(Q_OS_LINUX)
+#if !defined(QT_NO_GCONFLAYER)
+    layers.append(GConfLayer::instance());
+#endif
+#if !defined(QT_NO_JSONDBLAYER)
+    layers.append(JsonDbLayer::instance());
+#endif
+#elif defined(Q_OS_WIN)
+    layers.append(NonVolatileRegistryLayer::instance());
+    layers.append(VolatileRegistryLayer::instance());
+#endif
 
     for (int ii = 0; ii < layers.count(); ++ii) {
         if (!layers.at(ii)->startup()) {
@@ -75,21 +85,7 @@ void QValueSpaceManager::init()
     }
 }
 
-void QValueSpaceManager::install(QAbstractValueSpaceLayer * layer)
-{
-    Q_ASSERT(!initialized);
-    Q_ASSERT(layer);
-
-    layers.append(layer);
-}
-
-void QValueSpaceManager::install(QValueSpace::LayerCreateFunc func)
-{
-    Q_ASSERT(!initialized);
-    funcs.append(func);
-}
-
-QList<QAbstractValueSpaceLayer *> const & QValueSpaceManager::getLayers()
+QList<QAbstractValueSpaceLayer *> const &QValueSpaceManager::getLayers()
 {
     init(); // Fallback init
 

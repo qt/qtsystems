@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     \ingroup publishsubscribe
 
     By default QValueSpaceSubscriber can read values from and report change notifications for all
-    available Value Space layers.  Only data from the layer with the highest order and that
+    available Value Space layers.  Only data from the layer with the highest priority and that
     contains the specific key is returned by this class.
 
     The layers that QValueSpaceSubscriber accesses can be limited by specifying either a

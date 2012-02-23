@@ -53,6 +53,8 @@
 #ifndef GCONFLAYER_P_H
 #define GCONFLAYER_P_H
 
+#if !defined(QT_NO_GCONFLAYER)
+
 #include <qvaluespacepublisher.h>
 
 #include "gconfitem_p.h"
@@ -79,7 +81,6 @@ protected:
     bool startup();
     bool value(Handle handle, QVariant *data);
     bool value(Handle handle, const QString &subPath, QVariant *data);
-    unsigned int order();
     void removeHandle(Handle handle);
     void setProperty(Handle handle, Properties properties);
     Handle item(Handle parent, const QString &subPath);
@@ -140,5 +141,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GCONFLAYER
 
 #endif //GCONFLAYER_P_H
