@@ -396,13 +396,13 @@ QStorageInfo::DriveType QStorageInfoSimulator::driveType(const QString &drive)
 }
 void QStorageInfoSimulator::connectNotify(const char *signal)
 {
-    if (storageInfoSimulatorBackend && strcmp(signal, SIGNAL(logicalDriveChanged(const QString, bool))) == 0)
+    if (storageInfoSimulatorBackend && strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0)
         connect(storageInfoSimulatorBackend, signal, this, signal);
 }
 
 void QStorageInfoSimulator::disconnectNotify(const char *signal)
 {
-    if (storageInfoSimulatorBackend && strcmp(signal, SIGNAL(logicalDriveChanged(const QString, bool))) == 0)
+    if (storageInfoSimulatorBackend && strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0)
         disconnect(storageInfoSimulatorBackend, signal, this, signal);
 }
 
