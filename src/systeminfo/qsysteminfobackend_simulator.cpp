@@ -254,21 +254,21 @@ QDeviceInfoSimulatorBackend *QDeviceInfoSimulatorBackend::getSimulatorBackend()
 
 void QDeviceInfoSimulatorBackend::initFeatureList()
 {
-    data.featureList.insert(QDeviceInfo::Bluetooth, false);
-    data.featureList.insert(QDeviceInfo::Camera, false);
-    data.featureList.insert(QDeviceInfo::FmRadio, false);
-    data.featureList.insert(QDeviceInfo::FmTransmitter, false);
-    data.featureList.insert(QDeviceInfo::Infrared, false);
-    data.featureList.insert(QDeviceInfo::Led, false);
-    data.featureList.insert(QDeviceInfo::MemoryCard, false);
-    data.featureList.insert(QDeviceInfo::Usb, false);
-    data.featureList.insert(QDeviceInfo::Vibration, false);
-    data.featureList.insert(QDeviceInfo::Wlan, false);
-    data.featureList.insert(QDeviceInfo::Sim, false);
-    data.featureList.insert(QDeviceInfo::Positioning, false);
-    data.featureList.insert(QDeviceInfo::VideoOut, false);
-    data.featureList.insert(QDeviceInfo::Haptics, false);
-    data.featureList.insert(QDeviceInfo::Nfc, false);
+    data.featureList.insert(QDeviceInfo::BluetoothFeature, false);
+    data.featureList.insert(QDeviceInfo::CameraFeature, false);
+    data.featureList.insert(QDeviceInfo::FmRadioFeature, false);
+    data.featureList.insert(QDeviceInfo::FmTransmitterFeature, false);
+    data.featureList.insert(QDeviceInfo::InfraredFeature, false);
+    data.featureList.insert(QDeviceInfo::LedFeature, false);
+    data.featureList.insert(QDeviceInfo::MemoryCardFeature, false);
+    data.featureList.insert(QDeviceInfo::UsbFeature, false);
+    data.featureList.insert(QDeviceInfo::VibrationFeature, false);
+    data.featureList.insert(QDeviceInfo::WlanFeature, false);
+    data.featureList.insert(QDeviceInfo::SimFeature, false);
+    data.featureList.insert(QDeviceInfo::PositioningFeature, false);
+    data.featureList.insert(QDeviceInfo::VideoOutFeature, false);
+    data.featureList.insert(QDeviceInfo::HapticsFeature, false);
+    data.featureList.insert(QDeviceInfo::NfcFeature, false);
 }
 
 void QDeviceInfoSimulatorBackend::initImeiList()
