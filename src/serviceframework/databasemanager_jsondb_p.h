@@ -61,17 +61,18 @@
 #include "qservicefilter.h"
 #include "dberror_p.h"
 
-#include <jsondb-global.h>
-Q_ADDON_JSONDB_BEGIN_NAMESPACE
-class JsonDbClient;
-class JsonDbNotification;
-Q_ADDON_JSONDB_END_NAMESPACE
-Q_USE_JSONDB_NAMESPACE
+#include <QtJsonDb/qjsondbglobal.h>
 
 #ifdef QT_SFW_SERVICEDATABASE_GENERATE
 #undef Q_AUTOTEST_EXPORT
 #define Q_AUTOTEST_EXPORT
 #endif
+
+QT_BEGIN_NAMESPACE_JSONDB
+class QJsonDbConnection;
+class QJsonDbRequest;
+class QJsonDbWatcher;
+QT_END_NAMESPACE_JSONDB
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -106,23 +107,18 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
         void serviceRemoved(const QString &serviceName, DatabaseManager::DbScope scope);
 
     private slots:
-        void handleResponse( int id, const QVariant& data );
-        void handleError( int id, int code, const QString& message );
-        void handleDisconnect();
-        void handleNotified(const QString &, const QtJsonDb::JsonDbNotification &);
+        void onNotificationsAvailable();
 
     private:
-        JsonDbClient *db;
+        QT_PREPEND_NAMESPACE_JSONDB(QJsonDbConnection) *db;
+        QT_PREPEND_NAMESPACE_JSONDB(QJsonDbWatcher) *dbwatcher;
         DBError m_lastError;
-        int m_id;
-        QVariant m_data;
         QEventLoop m_eventLoop;
         bool m_notenabled;
-        QString m_notuuid;
         QHash<QString, int> m_services;
 
     private:
-        bool waitForResponse(int id);
+        bool sendRequest(QT_PREPEND_NAMESPACE_JSONDB(QJsonDbRequest) *r);
 };
 
 QT_END_NAMESPACE

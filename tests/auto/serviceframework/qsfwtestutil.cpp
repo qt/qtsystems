@@ -49,16 +49,14 @@
 #include <QTimer>
 
 #ifdef QT_ADDON_JSONDB_LIB
-#include <jsondb-client.h>
-#include <jsondb-global.h>
 #include <QSignalSpy>
+#include <QtJsonDb/qjsondbconnection.h>
+#include <QtJsonDb/qjsondbreadrequest.h>
+#include <QtJsonDb/qjsondbwriterequest.h>
 
-const QLatin1String kQuery("query");
+Q_DECLARE_METATYPE(QtJsonDb::QJsonDbRequest::ErrorCode)
 
-Q_ADDON_JSONDB_BEGIN_NAMESPACE
-class JsonDbClient;
-Q_ADDON_JSONDB_END_NAMESPACE
-Q_USE_JSONDB_NAMESPACE
+QT_USE_NAMESPACE_JSONDB
 
 #endif
 
@@ -134,34 +132,28 @@ void QSfwTestUtil::removeDirectory(const QString &path)
 
 void QSfwTestUtil::clearDatabases_jsondb()
 {
-    JsonDbClient *db = new JsonDbClient(QString());
-    if (!db->isConnected()) {
-        QEventLoop l;
-        QTimer::singleShot(5000, &l, SLOT(quit()));
-        QObject::connect(db, SIGNAL(statusChanged()), &l, SLOT(quit()));
-        l.exec();
-        if (db->status() != JsonDbClient::Ready) {
-            qDebug() << "Jsondb not ready" << db->status();
-            qWarning() << "Failed to connect to jsondb, expect mass failure";
-            return;
-        }
-    }
-    QSignalSpy response(db, SIGNAL(response(int,QVariant)));
-    QSignalSpy error(db, SIGNAL(error(int,int,QString)));
-    QSignalSpy discon(db, SIGNAL(disconnected()));
+
+    qRegisterMetaType<QtJsonDb::QJsonDbRequest::ErrorCode>("QtJsonDb::QJsonDbRequest::ErrorCode");
+
+    QJsonDbConnection *db = QJsonDbConnection::defaultConnection();
+    db->connectToServer();
+
     bool waiting = true;
 
-    QList<QVariant> args;
+    QList<QJsonObject> args;
 
-    QVariantMap query;
-    query.insert(kQuery, QString::fromLatin1("[?%1=\"com.nokia.mt.serviceframework.interface\"]")
-                 .arg(QLatin1Literal("_type")));
+    QJsonDbReadRequest request;
+    request.setQuery(QStringLiteral("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
 
-    db->find(query);
+    QSignalSpy response(&request, SIGNAL(finished()));
+    QSignalSpy error(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    QSignalSpy discon(db, SIGNAL(disconnected()));
+
+    db->send(&request);
     do {
         QCoreApplication::processEvents();
         if (response.count()){
-            args = response.first();
+            args = request.takeResults();
             waiting = false;
         }
         if (error.count() || discon.count()) {
@@ -173,27 +165,19 @@ void QSfwTestUtil::clearDatabases_jsondb()
         return;
     }
 
-    QVariant v = args.at(1).value<QVariant>();
-    QVariantMap vm = v.toMap();
+    QJsonDbRemoveRequest rm(args);
 
-    QList<QVariant> list = vm[QLatin1String("data")].toList();
-    if (list.isEmpty()) {
-        return;
-    }
-    foreach (const QVariant &v, list) {
-        QVariantMap x;
-        x.insert(QLatin1String("_uuid"), v.toMap()[QLatin1String("_uuid")]);
-        response.clear();
-        error.clear();
-        db->remove(x);
-        waiting = true;
-        do {
-            QCoreApplication::processEvents();
-            if (response.count() || error.count() || discon.count()) {
-                waiting = false;
-            }
-        } while (waiting);
-    }
+    QSignalSpy response2(&rm, SIGNAL(finished()));
+    QSignalSpy error2(&rm, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+
+    db->send(&rm);
+    waiting = true;
+    do {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+        if (response2.count() || error2.count() || discon.count()) {
+            waiting = false;
+        }
+    } while (waiting);
 }
 
 #endif

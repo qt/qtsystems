@@ -62,7 +62,6 @@
 
 #ifdef QT_MTCLIENT_PRESENT
 #include "qservicemanager.h"
-#include <QtAddOnJsonDb/QtAddOnJsonDb>
 #include <QCoreApplication>
 #include <QTextStream>
 #include <QFileSystemWatcher>
