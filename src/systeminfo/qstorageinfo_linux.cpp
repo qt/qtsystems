@@ -228,12 +228,29 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
             fsName = fsName.section(QString(QStringLiteral("/")), 2, 3);
             if (!fsName.isEmpty()) {
                 if (fsName.length() > 3) {
-                    if (fsName.right(1) == QString(QStringLiteral("p"))) {
-                        fsName.chop(1);
-                    } else {
-                        if (QDir(QStringLiteral("/dev/")).entryList(QStringList() << (fsName + QStringLiteral("p*"))).isEmpty()) {
-                            type = QStorageInfo::RemovableDrive;
-                            break;
+                    // only take the parent of the device
+                    if (fsName.at(fsName.size() -1).isDigit() && fsName.at(fsName.size() - 2) == QChar(QLatin1Char('p')))
+                        fsName.chop(2);
+                    if (fsName.startsWith(QString(QStringLiteral("mmc")))) {
+                        // "removable" attribute is set only for removable media, and we may have internal mmc cards
+                        fsName = QString(QStringLiteral("/sys/block/")) + fsName + QString(QStringLiteral("/device/uevent"));
+                        QFile file(fsName);
+                        if (file.open(QIODevice::ReadOnly)) {
+                            QByteArray buf = file.readLine();
+                            while (buf.size() > 0) {
+                                if (qstrncmp(buf.constData(), "MMC_TYPE=", 9) == 0) {
+                                    if (qstrncmp(buf.constData() + 9, "MMC", 3) == 0)
+                                        type = QStorageInfo::InternalDrive;
+                                    else if (qstrncmp(buf.constData() + 9, "SD", 2) == 0)
+                                        type = QStorageInfo::RemovableDrive;
+                                    if (type != QStorageInfo::UnknownDrive) {
+                                        endmntent(fsDescription);
+                                        return type;
+                                    }
+                                    break;  // fall back to check the "removable" attribute
+                                }
+                                buf = file.readLine();
+                            }
                         }
                     }
                 }
