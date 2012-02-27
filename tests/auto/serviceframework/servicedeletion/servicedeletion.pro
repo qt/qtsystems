@@ -1,8 +1,6 @@
 TARGET = tst_servicedeletion
 CONFIG += testcase
 
-CONFIG += core servoiceframewok
-
 QT = core serviceframework testlib
 QT -= gui
 
