@@ -652,7 +652,7 @@ bool DatabaseManager::sendRequest(QJsonDbRequest *request)
     connect(request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             &m_eventLoop, SLOT(quit()));
 
-    static const int JSON_EXPIRATION_TIMER = 2000;
+    static const int JSON_EXPIRATION_TIMER = 15000;
 
     QTimer timer;
     timer.setSingleShot(true);
