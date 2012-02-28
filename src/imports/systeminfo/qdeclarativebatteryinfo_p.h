@@ -159,13 +159,13 @@ Q_SIGNALS:
     void monitorBatteryStatusChanged();
 
     void batteryCountChanged(int count);
-    void chargerTypeChanged(ChargerType type);
-    void chargingStateChanged(int battery, ChargingState state);
+    void chargerTypeChanged(int type);
+    void chargingStateChanged(int battery, int state);
     void currentFlowChanged(int battery, int flow);
     void remainingCapacityChanged(int battery, int capacity);
     void remainingChargingTimeChanged(int battery, int seconds);
     void voltageChanged(int battery, int voltage);
-    void batteryStatusChanged(int battery, BatteryStatus status);
+    void batteryStatusChanged(int battery, int status);
 
 private Q_SLOTS:
     void _q_chargerTypeChanged(QBatteryInfo::ChargerType type);
