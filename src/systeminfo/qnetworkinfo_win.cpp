@@ -162,6 +162,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::networkStatus(QNetworkInfo::Net
     return QNetworkInfo::UnknownStatus;
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
 {
     Q_UNUSED(interface)
@@ -183,6 +184,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 
     return QNetworkInterface();
 }
+#endif // QT_NO_NETWORKINTERFACE
 
 QString QNetworkInfoPrivate::cellId(int interface)
 {

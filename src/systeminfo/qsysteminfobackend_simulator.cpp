@@ -752,12 +752,14 @@ QString QNetworkInfoSimulatorBackend::getMacAddress(QNetworkInfo::NetworkMode mo
     return QString();
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkInfoSimulatorBackend::getInterfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
 {
     Q_UNUSED(mode)
     Q_UNUSED(interface)
     return QNetworkInterface();
 }
+#endif // QT_NO_NETWORKINTERFACE
 
 QString QNetworkInfoSimulatorBackend::getImsi(int interface)
 {

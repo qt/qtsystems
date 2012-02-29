@@ -86,7 +86,9 @@ public:
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface);
     QNetworkInfo::NetworkMode currentNetworkMode();
     QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface);
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface);
+#endif // QT_NO_NETWORKINTERFACE
     QString cellId(int interface);
     QString currentMobileCountryCode(int interface);
     QString currentMobileNetworkCode(int interface);

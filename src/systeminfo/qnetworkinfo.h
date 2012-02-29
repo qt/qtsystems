@@ -100,7 +100,9 @@ public:
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface) const;
     QNetworkInfo::NetworkMode currentNetworkMode() const;
     QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface) const;
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface) const;
+#endif // QT_NO_NETWORKINTERFACE
     QString cellId(int interface) const;
     QString currentMobileCountryCode(int interface) const;
     QString currentMobileNetworkCode(int interface) const;

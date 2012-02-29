@@ -224,7 +224,9 @@ public:
     QNetworkInfo::NetworkMode getCurrentNetworkMode();
     QString getImsi(int interface);
     QNetworkInfo::NetworkStatus getNetworkStatus(QNetworkInfo::NetworkMode mode, int interface);
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface getInterfaceForMode(QNetworkInfo::NetworkMode mode, int interface);
+#endif // QT_NO_NETWORKINTERFACE
     QString getCellId(int interface);
     QString getCurrentMobileCountryCode(int interface);
     QString getCurrentMobileNetworkCode(int interface);

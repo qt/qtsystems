@@ -59,7 +59,9 @@ public:
     QNetworkInfo::CellDataTechnology currentCellDataTechnology(int) { return QNetworkInfo::UnknownDataTechnology; }
     QNetworkInfo::NetworkMode currentNetworkMode() { return QNetworkInfo::UnknownMode; }
     QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode, int) { return QNetworkInfo::UnknownStatus; }
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode, int) { return QNetworkInterface(); }
+#endif // QT_NO_NETWORKINTERFACE
     QString cellId(int) { return QString(); }
     QString currentMobileCountryCode(int) { return QString(); }
     QString currentMobileNetworkCode(int) { return QString(); }
@@ -255,6 +257,7 @@ QNetworkInfo::NetworkStatus QNetworkInfo::networkStatus(QNetworkInfo::NetworkMod
     return d_ptr->networkStatus(mode, interface);
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 /*!
     Returns the first found interface for \a interface of \a mode. If none is found, or it can't be
     represented by QNetworkInterface (e.g. Bluetooth), and empty object is returned.
@@ -263,6 +266,7 @@ QNetworkInterface QNetworkInfo::interfaceForMode(QNetworkInfo::NetworkMode mode,
 {
     return d_ptr->interfaceForMode(mode, interface);
 }
+#endif // QT_NO_NETWORKINTERFACE
 
 /*!
     Returns the cell ID of the connected tower or based station for \a interface. If this information

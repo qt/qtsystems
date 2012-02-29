@@ -506,6 +506,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoSimulator::networkStatus(QNetworkInfo::N
     return QNetworkInfo::UnknownStatus;
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkInfoSimulator::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
 {
 #if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
@@ -520,6 +521,7 @@ QNetworkInterface QNetworkInfoSimulator::interfaceForMode(QNetworkInfo::NetworkM
         return networkInfoSimulatorBackend->getInterfaceForMode(mode, interface);
     return QNetworkInterface();
 }
+#endif // QT_NO_NETWORKINTERFACE
 
 QString QNetworkInfoSimulator::cellId(int interface)
 {
