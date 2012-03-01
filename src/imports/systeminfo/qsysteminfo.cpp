@@ -128,10 +128,10 @@ Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoD
 
     Returns the type of the current profile, possible types are:
     \list
-    \o UnknownProfile    Profile unknown or on error.
-    \o SilentProfile     Neither sound nor vibration is on.
-    \o NormalProfile     Normal sound is on.
-    \o VibrationProfile  Only vibration is on, and sound is off.
-    \o BeepProfile       Only beep is on.
+    \li UnknownProfile    Profile unknown or on error.
+    \li SilentProfile     Neither sound nor vibration is on.
+    \li NormalProfile     Normal sound is on.
+    \li VibrationProfile  Only vibration is on, and sound is off.
+    \li BeepProfile       Only beep is on.
     \endlist
  */

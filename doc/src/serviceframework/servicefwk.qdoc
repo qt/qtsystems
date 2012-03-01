@@ -149,7 +149,7 @@ or whether it is valid for the current user only. The system default is used if 
 scope has not been defined. This enables users to customize their personal preferences.
 By default the first service installing a so far unknown interface becomes the system wide default selection.
 
-\section3 \bold{QObject based services}
+\section3 \b{QObject based services}
 
 This is the most common way of interacting with services.
 
@@ -163,7 +163,7 @@ The above invocation of the file storage object's deleteFile() function is done 
 QMetaObject. The client does not require any knowledge of the objects actual type and therefore
 does not have to link against a service specific library.
 
-\section3 \bold{Typed services}
+\section3 \b{Typed services}
 
 So far all lookup mechanism returned a QObject pointer. This pointer can be
 utilized by introspecting the object, using Qt's meta object system.
@@ -264,26 +264,26 @@ The elements and attributes have the following meanings:
 
 \table
     \header
-        \o Element \o SubElement \o Description
+        \li Element \li SubElement \li Description
     \row
-        \o SFW
-        \o
-        \o The service framework XML version tag that encapsulates the service XML. Must provide the
+        \li SFW
+        \li
+        \li The service framework XML version tag that encapsulates the service XML. Must provide the
            version attribute that follows the \e major.minor notation and must equate to supported
            Qt Service Framework versions. This means the minimum version is 1.0 however users are
            recommended to always specify the highest available version.
     \row
-        \o service
-        \o
-        \o The \e service tag can contain an arbitrary number of \e interface tags and one description tag.
+        \li service
+        \li
+        \li The \e service tag can contain an arbitrary number of \e interface tags and one description tag.
     \row
-        \o "
-        \o description
-        \o A user readable description of the purpose of the service.
+        \li "
+        \li description
+        \li A user readable description of the purpose of the service.
     \row
-        \o "
-        \o filepath
-        \o The absolute path and name of the plug-in to be loaded when this
+        \li "
+        \li filepath
+        \li The absolute path and name of the plug-in to be loaded when this
            service is requested. Alternatively if the plug-in name only is
            provided the standard library paths (see QCoreApplication::libraryPaths())
            are used to find the plug-in.
@@ -292,51 +292,51 @@ The elements and attributes have the following meanings:
            should be removed to enable cross platform resolution. QLibrary
            is used to determine the platform specific parts of the plugin.
     \row
-        \o "
-        \o ipcaddress
-        \o The socket name or path that the inter-process service will be published
+        \li "
+        \li ipcaddress
+        \li The socket name or path that the inter-process service will be published
            on that will provide clients with remote access. Should be the same name
            as the executable for the service without any suffix such as ".exe" etc.
     \row
-        \o "
-        \o name
-        \o The name of the service.
+        \li "
+        \li name
+        \li The name of the service.
     \row
-        \o interface
-        \o
-        \o The \e interface describes the properties of the interface.
+        \li interface
+        \li
+        \li The \e interface describes the properties of the interface.
     \row
-        \o "
-        \o capabilities
-        \o This property is a list of arbitrary strings which are
+        \li "
+        \li capabilities
+        \li This property is a list of arbitrary strings which are
            interpreted as permissions/capabilities. The list elements are
            comma-separated and spaces after commas are not permitted.
            This list can be empty.
     \row
-        \o "
-        \o name
-        \o The name of the interface using the Java class name notation. (e.g. com.nokia.qt.TestService)
+        \li "
+        \li name
+        \li The name of the interface using the Java class name notation. (e.g. com.nokia.qt.TestService)
     \row
-        \o "
-        \o version
-        \o This property contains the interface and implementation version.
+        \li "
+        \li version
+        \li This property contains the interface and implementation version.
         The version tag follows the \e major.minor notation. The major
         version indicates the interface version the minor version the
         implementation version.
 
-           The version number \bold must be greater than 1.0. The version
+           The version number \b must be greater than 1.0. The version
            cannot be less than 1.0 because the Service Framework is
            dependent on the fact that services must be binary compatible
            between major versions, and services with versions less than 1.0
            are unlikely to be binary compatible with later versions.
     \row
-        \o "
-        \o description
-        \o A user readable description of the purpose of the interface.
+        \li "
+        \li description
+        \li A user readable description of the purpose of the interface.
     \row
-        \o "
-        \o customproperty
-        \o An implementation specific key value pair which can be used for
+        \li "
+        \li customproperty
+        \li An implementation specific key value pair which can be used for
         filtering or as description.
 
 \endtable
@@ -476,10 +476,10 @@ a combination of the service description supplied in the service XML file. An
 example of this, using the previous sample XML description, is provided below.
 
 \table 90%
-\header \o D-Bus Concept  \o Derived Name
-\row    \o Service Name   \o "com.qtmobility.sfw.TestService"
-\row    \o Object Path    \o "/com/nokia/qt/ILocation/1/4/"
-\row    \o Interface      \o ""
+\header \li D-Bus Concept  \li Derived Name
+\row    \li Service Name   \li "com.qtmobility.sfw.TestService"
+\row    \li Object Path    \li "/com/nokia/qt/ILocation/1/4/"
+\row    \li Interface      \li ""
 \endtable
 
 \section3 Limitations
@@ -685,7 +685,7 @@ at \l{QML Service Framework Plugin}.
 
 \section1 Examples
 \list
-    \o \l{dialer}{Declarative Serviceframework Dialer}
+    \li \l{dialer}{Declarative Serviceframework Dialer}
 \endlist
 
 */

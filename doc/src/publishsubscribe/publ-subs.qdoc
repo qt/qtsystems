@@ -93,23 +93,23 @@
 
     \table
         \header
-            \o Layer
-            \o Description
+            \li Layer
+            \li Description
         \row
-            \o Volatile Registry Layer
-            \o The Volatile Registry layer provides a non-permanent Value Space backing store using
+            \li Volatile Registry Layer
+            \li The Volatile Registry layer provides a non-permanent Value Space backing store using
                volatile keys stored in the Windows' registry.  The Volatile Registry layer is only
                available on Windows platforms.
                The Volatile Registry layer has an order of 0x1000.
         \row
-            \o Non-volatile Registry Layer
-            \o The Non-volatile Registry layer provides a permanent Value Space backing store using
+            \li Non-volatile Registry Layer
+            \li The Non-volatile Registry layer provides a permanent Value Space backing store using
                keys stored in the Windows' registry.  The Non-volatile Registry layer is only available
                on Windows platforms.
                The Non-volatile Registry layer has an order of 0.
         \row
-            \o \l{GConf Layer}
-            \o The GConf Layer provides a permanent Value Space backing store using GConf. This
+            \li \l{GConf Layer}
+            \li The GConf Layer provides a permanent Value Space backing store using GConf. This
                layer is only available on Linux where the GConf is available.
                The GConf Layer has an order of 0.
     \endtable
@@ -120,7 +120,7 @@
 
     The Qt Publish Subscribe module can be used to access the GConf configuration system.
 
-    \section3 \bold{Limitations of GConf Layer}
+    \section3 \b{Limitations of GConf Layer}
 
     GConf can natively store only a limited set of QVariant data types. These types are Bool, Int, Double,
     String, StringList and List. When publishing other data types the values are automatically serialized

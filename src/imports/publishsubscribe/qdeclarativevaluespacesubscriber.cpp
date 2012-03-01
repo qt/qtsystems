@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     \brief The QValueSpaceSubscriber class allows applications to read and subscribe to Value Space.
 
     Each \l ValueSpaceSubscriber element represents a single value or path in the Value Space. The
-    path is set using the \i path property.
+    path is set using the \e path property.
 
     Note that unlike the C++ class QValueSpaceSubscriber, the QML element has no default path. A path
     must be set before the subscriber will connect to the Value Space and begin receiving notifications.
@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    The value is accessed using the \i value property:
+    The value is accessed using the \e value property:
 
     \code
     Text {

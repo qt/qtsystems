@@ -140,12 +140,12 @@ QString QDeclarativeStorageInfo::uriForDrive(const QString &drive) const
 
     Returns the type of the given \a drive. Possible values are:
     \list
-    \o UnknownDrive    Drive type unknown.
-    \o InternalDrive   Internal mass storage drive, e.g. hard drive.
-    \o RemovableDrive  Removable drive, e.g. memory card.
-    \o RemoteDrive     Network drive.
-    \o CdromDrive      CD-ROM.
-    \o RamDrive        Virtual drive made in RAM memory.
+    \li UnknownDrive    Drive type unknown.
+    \li InternalDrive   Internal mass storage drive, e.g. hard drive.
+    \li RemovableDrive  Removable drive, e.g. memory card.
+    \li RemoteDrive     Network drive.
+    \li CdromDrive      CD-ROM.
+    \li RamDrive        Virtual drive made in RAM memory.
     \endlist
 */
 int QDeclarativeStorageInfo::driveType(const QString &drive) const

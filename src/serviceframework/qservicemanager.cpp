@@ -640,7 +640,7 @@ bool QServiceManager::removeService(const QString& serviceName)
 
     Returns true if the operation succeeded, and false otherwise.
 
-    \bold {Note:} When in system scope, the \a service must be a system-wide
+    \b {Note:} When in system scope, the \a service must be a system-wide
     service rather than a user-specific service; otherwise, this will fail.
 */
 bool QServiceManager::setInterfaceDefault(const QString &service, const QString &interfaceName)
@@ -668,7 +668,7 @@ bool QServiceManager::setInterfaceDefault(const QString &service, const QString 
 
     Returns true if the operation succeeded, and false otherwise.
 
-    \bold {Note:} When in system scope, the \a descriptor must refer to a
+    \b {Note:} When in system scope, the \a descriptor must refer to a
     system-wide service rather than a user-specific service; otherwise, this
     will fail.
 */

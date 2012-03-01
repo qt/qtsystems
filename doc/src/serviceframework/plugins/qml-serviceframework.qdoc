@@ -152,7 +152,7 @@
 
     \section1 Examples
     \list
-        \o \l{dialer}{Declarative Serviceframework Dialer Example}
+        \li \l{dialer}{Declarative Serviceframework Dialer Example}
     \endlist
 
     \section1 QML Elements

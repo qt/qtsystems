@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
 
     Emitted whenever any value under the current path changes.
 
-    \bold {Note:} that if a value changes multiple times in quick succession, only the most recent
+    \b {Note:} that if a value changes multiple times in quick succession, only the most recent
     value may be accessible via the value() function.
 */
 

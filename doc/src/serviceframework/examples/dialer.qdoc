@@ -34,16 +34,16 @@
 
 \brief This example demonstrates the usage of the Service Framework's QML API.
 
-\bold {Execution}
+\b {Execution}
 
 This example requires the example dialer services to be registered in order
 for the application to discover and load the services. This can be done by using the
 service framework command line tool to add the corresponding service XML file:
 
 \list
-    \o servicefw add landlinedialerplugin.xml
-    \o servicefw add remotedialerservice.xml
-    \o servicefw dbusservice removedialerservice.xml dialer_service
+    \li servicefw add landlinedialerplugin.xml
+    \li servicefw add remotedialerservice.xml
+    \li servicefw dbusservice removedialerservice.xml dialer_service
 \endlist
 
 These deployment commands will register the remote IPC-based service, and the Landline dialer plugign. The last
@@ -51,7 +51,7 @@ line features the ability to create an autostarting file for D-Bus if the platfo
 
 To run the example
 \list
-    \o dialer
+    \li dialer
 \endlist
 
 The XML files for all example services can be found in the QtMobility build directory
@@ -66,7 +66,7 @@ autostart feature can be initialised by running the service framework tool:
 For other platforms that fall use QLocalSocket, then if the services
 binary can be found in your path it'll auto start the service.
 
-\bold {Explanation}
+\b {Explanation}
 
 This example should demonstrate how to use the Service Framework to
 access a list of services in a QML context. A library plugin provides QML with elements
@@ -83,14 +83,14 @@ The following steps outline how to make a QML based application using the Servic
 It is assumed that QtMobility has been successfully built and environment variables have been set
 as per \l {Installation Guide}.
 
-\bold {Service Framework in QML:}
+\b {Service Framework in QML:}
 
 To include the Service Framework QML plugin we need to import it as follows:
 
 \snippet serviceframework/dialer/content/DialerList.qml 4
 
 
-\bold {The Services:}
+\b {The Services:}
 
 The services are implemented as a sevices and a shared library and can be register in the service framework.
 After the service is registered it can be used in different applications.
@@ -139,7 +139,7 @@ want to access in out QML script later.
 \snippet serviceframework/voipdialerplugin/voipdialer.h 0
 
 
-\bold {Service access on the QML side}
+\b {Service access on the QML side}
 
 
 The QML elements are implemented in 4 different qml scripting files
@@ -171,7 +171,7 @@ Another component can be created for highliting a list item:
 
 \snippet serviceframework/dialer/content/DialerList.qml 3
 
-\bold {Service signals and function calls on the QML site}
+\b {Service signals and function calls on the QML site}
 
 In sfw-kinetic-example.qml we define a control named DialScreen and implement
 the function onDial and onHangup.

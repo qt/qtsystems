@@ -106,16 +106,16 @@ void QDeclarativeNetworkInfo::setMonitorCurrentNetworkMode(bool monitor)
 
     This property holds the current network mode. Possible values are:
     \list
-    \o UnknownMode
-    \o GsmMode
-    \o CdmaMode
-    \o WcdmaMode
-    \o WlanMode
-    \o EthernetMode
-    \o BluetoothMode
-    \o WimaxMode
-    \o LteMode
-    \o TdscdmaMode
+    \li UnknownMode
+    \li GsmMode
+    \li CdmaMode
+    \li WcdmaMode
+    \li WlanMode
+    \li EthernetMode
+    \li BluetoothMode
+    \li WimaxMode
+    \li LteMode
+    \li TdscdmaMode
     \endlist
  */
 QDeclarativeNetworkInfo::NetworkMode QDeclarativeNetworkInfo::currentNetworkMode() const
@@ -250,11 +250,11 @@ void QDeclarativeNetworkInfo::setMonitorCurrentCellDataTechnology(bool monitor)
 
     Returns the current cell data technology of the given \a interface. Possible values are:
     \list
-    \o UnknownDataTechnology
-    \o GprsDataTechnology
-    \o EdgeDataTechnology
-    \o UmtsDataTechnology
-    \o HspaDataTechnology
+    \li UnknownDataTechnology
+    \li GprsDataTechnology
+    \li EdgeDataTechnology
+    \li UmtsDataTechnology
+    \li HspaDataTechnology
     \endlist
  */
 int QDeclarativeNetworkInfo::currentCellDataTechnology(int interface) const
@@ -305,14 +305,14 @@ void QDeclarativeNetworkInfo::setMonitorNetworkStatus(bool monitor)
 
     Returns the status of the given \a mode and \a interface. Possible values are:
     \list
-    \o UnknownStatus
-    \o NoNetworkAvailable
-    \o EmergencyOnly
-    \o Searching
-    \o Busy
-    \o Denied
-    \o HomeNetwork
-    \o Roaming
+    \li UnknownStatus
+    \li NoNetworkAvailable
+    \li EmergencyOnly
+    \li Searching
+    \li Busy
+    \li Denied
+    \li HomeNetwork
+    \li Roaming
     \endlist
  */
 int QDeclarativeNetworkInfo::networkStatus(QDeclarativeNetworkInfo::NetworkMode mode, int interface) const

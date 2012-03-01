@@ -101,25 +101,25 @@ public:
 
     This is a brief example. Assuming that the system knows the services S1 - S6 which require capabilities as stated below:
     \table
-        \header     \o Service  \o Required capabilities
-        \row        \o S1       \o \{\}
-        \row        \o S2       \o \{A\}
-        \row        \o S3       \o \{A,B\}
-        \row        \o S4       \o \{A,B,C,D\}
-        \row        \o S5       \o \{A,D\}
-        \row        \o S6       \o \{F\}
+        \header     \li Service  \li Required capabilities
+        \row        \li S1       \li \{\}
+        \row        \li S2       \li \{A\}
+        \row        \li S3       \li \{A,B\}
+        \row        \li S4       \li \{A,B,C,D\}
+        \row        \li S5       \li \{A,D\}
+        \row        \li S6       \li \{F\}
     \endtable
 
     The matching rules would apply as follows:
 
     \table
-        \header     \o Matching rule    \o Filter's capabilities    \o Matching services
-        \row        \o MatchLoadable    \o \{\}                       \o S1
-        \row        \o MatchLoadable    \o \{A\}                      \o S1, S2
-        \row        \o MatchLoadable    \o \{A,B,C\}                  \o S1, S2, S3
-        \row        \o MatchMinimum     \o \{\}                       \o S1, S2, S3, S4, S5, S6
-        \row        \o MatchMinimum     \o \{A\}                      \o S2, S3, S4, S5
-        \row        \o MatchMinimum     \o \{A,B,C\}                  \o S4
+        \header     \li Matching rule    \li Filter's capabilities    \li Matching services
+        \row        \li MatchLoadable    \li \{\}                       \li S1
+        \row        \li MatchLoadable    \li \{A\}                      \li S1, S2
+        \row        \li MatchLoadable    \li \{A,B,C\}                  \li S1, S2, S3
+        \row        \li MatchMinimum     \li \{\}                       \li S1, S2, S3, S4, S5, S6
+        \row        \li MatchMinimum     \li \{A\}                      \li S2, S3, S4, S5
+        \row        \li MatchMinimum     \li \{A,B,C\}                  \li S4
     \endtable
 
     \value MatchMinimum     The filter matches any service that requires at least the given

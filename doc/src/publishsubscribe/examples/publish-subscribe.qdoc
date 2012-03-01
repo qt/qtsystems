@@ -41,15 +41,15 @@
 
     \table
         \header
-            \o Parameter
-            \o Description
+            \li Parameter
+            \li Description
         \row
-            \o -publisher
-            \o Publish values in the Value Space and create a dialog to control those values
+            \li -publisher
+            \li Publish values in the Value Space and create a dialog to control those values
                directly.
         \row
-            \o -subscriber
-            \o Create a dialog to view Value Space items.
+            \li -subscriber
+            \li Create a dialog to view Value Space items.
     \endtable
 
     \section2 Publisher

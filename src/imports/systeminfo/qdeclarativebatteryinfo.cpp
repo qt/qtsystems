@@ -144,10 +144,10 @@ void QDeclarativeBatteryInfo::setMonitorChargerType(bool monitor)
 
     This property holds the type of the charger. Possible values are:
     \list
-    \o BatteryInfo.UnknownCharger
-    \o BatteryInfo.WallCharger
-    \o BatteryInfo.USBCharger
-    \o BatteryInfo.VariableCurrentCharger
+    \li BatteryInfo.UnknownCharger
+    \li BatteryInfo.WallCharger
+    \li BatteryInfo.USBCharger
+    \li BatteryInfo.VariableCurrentCharger
     \endlist
 */
 QDeclarativeBatteryInfo::ChargerType QDeclarativeBatteryInfo::chargerType() const
@@ -384,11 +384,11 @@ void QDeclarativeBatteryInfo::setMonitorChargingState(bool monitor)
 
     Returns the charging state of the given \a battery. Possible values are:
     \list
-    \o BatteryInfo.UnknownChargingState
-    \o BatteryInfo.NotCharging
-    \o BatteryInfo.Charging
-    \o BatteryInfo.Discharging
-    \o BatteryInfo.Full
+    \li BatteryInfo.UnknownChargingState
+    \li BatteryInfo.NotCharging
+    \li BatteryInfo.Charging
+    \li BatteryInfo.Discharging
+    \li BatteryInfo.Full
     \endlist
 
     \sa onChargingStateChanged
@@ -416,9 +416,9 @@ void QDeclarativeBatteryInfo::_q_chargingStateChanged(int battery, QBatteryInfo:
 
     This property holds the energy unit used. Possible values are:
     \list
-    \o BatteryInfo.UnitUnknown
-    \o BatteryInfo.UnitmAh
-    \o BatteryInfo.UnitmWh
+    \li BatteryInfo.UnitUnknown
+    \li BatteryInfo.UnitmAh
+    \li BatteryInfo.UnitmWh
     \endlist
 */
 QDeclarativeBatteryInfo::EnergyUnit QDeclarativeBatteryInfo::energyUnit() const
@@ -468,11 +468,11 @@ void QDeclarativeBatteryInfo::setMonitorBatteryStatus(bool monitor)
 
     Returns the status of the given \a battery. Possible values are:
     \list
-    \o BatteryInfo.BatteryStatusUnknown
-    \o BatteryInfo.BatteryEmpty
-    \o BatteryInfo.BatteryLow
-    \o BatteryInfo.BatteryOk
-    \o BatteryInfo.BatteryFull
+    \li BatteryInfo.BatteryStatusUnknown
+    \li BatteryInfo.BatteryEmpty
+    \li BatteryInfo.BatteryLow
+    \li BatteryInfo.BatteryOk
+    \li BatteryInfo.BatteryFull
     \endlist
 
     \sa onBatteryStatusChanged

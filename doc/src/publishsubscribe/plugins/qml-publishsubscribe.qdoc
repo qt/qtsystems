@@ -90,6 +90,6 @@
 
     \section1 Examples
     \list
-        \o \l {battery-charge}{Accessing Publish and Subscribe from QML}
+        \li \l {battery-charge}{Accessing Publish and Subscribe from QML}
     \endlist
 */

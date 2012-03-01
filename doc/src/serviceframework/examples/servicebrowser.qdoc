@@ -36,11 +36,11 @@
     This example shows how to use the Service Framework to:
 
     \list
-    \o Register and unregister services
-    \o Find available services
-    \o Find the interfaces that are implemented by a service
-    \o Look up the attributes for an interface implementation using the meta-object system
-    \o Set a default interface implementation
+    \li Register and unregister services
+    \li Find available services
+    \li Find the interfaces that are implemented by a service
+    \li Look up the attributes for an interface implementation using the meta-object system
+    \li Set a default interface implementation
     \endlist
 
     \image servicebrowser.png Screenshot of the Service Browser example
@@ -53,9 +53,9 @@
     The bottom-left pane shows the interfaces implemented by the service selected in the top-left pane. Each entry in this list shows:
 
     \list
-    \o The name and version of the implemented interface
-    \o The service that provides this implementation (in brackets)
-    \o Whether the implementation is the default for its interface
+    \li The name and version of the implemented interface
+    \li The service that provides this implementation (in brackets)
+    \li Whether the implementation is the default for its interface
     \endlist
 
     The right-hand pane shows the attributes of an interface implementation that are invokable through the Qt meta-object system. Such attributes include signals, slots, properties and methods marked with the \c Q_INVOKABLE macro. If the "Selected implementation" radio button is checked, this view shows the attributes of the selected implementation in the bottom-left pane; otherwise, it shows the attributes of the \e default implementation for the interface of the selected implementation.
