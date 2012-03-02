@@ -100,7 +100,7 @@ private:
     bool hasSystemObject(const QString &objectType);
     bool waitForResponse();
 
-    QtJsonDb::QJsonDbConnection *jsonDbConnection;
+    QtJsonDb::QJsonDbConnection jsonDbConnection;
     QtJsonDb::QJsonDbWatcher *jsonDbWatcher;
 
     QEventLoop *waitLoop;

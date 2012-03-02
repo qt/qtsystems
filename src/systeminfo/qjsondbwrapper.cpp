@@ -54,17 +54,16 @@ const int JSON_EXPIRATION_TIMER(2000);
 
 QJsonDbWrapper::QJsonDbWrapper(QObject *parent)
     : QObject(parent)
-    , jsonDbConnection(new QJsonDbConnection(this))
     , jsonDbWatcher(0)
     , waitLoop(0)
     , timer(0)
     , watchActivatedLocks(false)
     , watchEnabledLocks(false)
 {
-    connect(jsonDbConnection, SIGNAL(error(QtJsonDb::QJsonDbConnection::ErrorCode,QString)),
+    connect(&jsonDbConnection, SIGNAL(error(QtJsonDb::QJsonDbConnection::ErrorCode,QString)),
             this, SLOT(onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode,QString)));
 
-    jsonDbConnection->connectToServer();
+    jsonDbConnection.connectToServer();
 }
 
 QJsonDbWrapper::~QJsonDbWrapper()
@@ -138,7 +137,7 @@ QJsonValue QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, con
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
     connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
-    if (jsonDbConnection->send(&request)) {
+    if (jsonDbConnection.send(&request)) {
         waitForResponse();
         if (request.status() == QJsonDbRequest::Finished) {
             QList<QJsonObject> results = request.takeResults();
@@ -157,7 +156,7 @@ QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
     connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
-    if (jsonDbConnection->send(&request)) {
+    if (jsonDbConnection.send(&request)) {
         waitForResponse();
         if (request.status() == QJsonDbRequest::Finished) {
             QList<QJsonObject> results = request.takeResults();
@@ -175,7 +174,7 @@ bool QJsonDbWrapper::hasSystemObject(const QString &objectType)
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
     connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
-    if (jsonDbConnection->send(&request)) {
+    if (jsonDbConnection.send(&request)) {
         waitForResponse();
         return (request.status() == QJsonDbRequest::Finished && request.takeResults().size() > 0);
     }
@@ -210,7 +209,7 @@ void QJsonDbWrapper::connectNotify(const char *signal)
                     this, SLOT(onJsonDbWatcherNotificationsAvailable()));
             // TODO: error handling for watcher
         }
-        jsonDbConnection->addWatcher(jsonDbWatcher);
+        jsonDbConnection.addWatcher(jsonDbWatcher);
     }
 }
 
@@ -225,7 +224,7 @@ void QJsonDbWrapper::disconnectNotify(const char *signal)
         watchEnabledLocks = false;
 
     if (!watchActivatedLocks && !watchEnabledLocks)
-        jsonDbConnection->removeWatcher(jsonDbWatcher);
+        jsonDbConnection.removeWatcher(jsonDbWatcher);
 }
 
 void QJsonDbWrapper::onJsonDbWatcherNotificationsAvailable()
