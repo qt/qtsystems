@@ -66,19 +66,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_UDISKS)
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_SERVICE, (QStringLiteral("org.freedesktop.UDisks")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_PATH, (QStringLiteral("/org/freedesktop/UDisks")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_INTERFACE, (QStringLiteral("org.freedesktop.UDisks")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_DEVICE_INTERFACE, (QStringLiteral("org.freedesktop.UDisks.Device")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_PROPERTY_INTERFACE, (QStringLiteral("org.freedesktop.DBus.Properties")))
-
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_GET, (QStringLiteral("Get")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_ENUMERATE_DEVICES, (QStringLiteral("EnumerateDevices")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_MOUNT_PATH, (QStringLiteral("DeviceMountPaths")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, UDISKS_UUID, (QStringLiteral("IdUuid")))
-#endif // QT_NO_UDISKS
-
 QStorageInfoPrivate::QStorageInfoPrivate(QStorageInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
@@ -145,16 +132,25 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 
 #if !defined(QT_NO_UDISKS)
     QDBusReply<QList<QDBusObjectPath> > reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(*UDISKS_SERVICE(), *UDISKS_PATH(), *UDISKS_INTERFACE(), *UDISKS_ENUMERATE_DEVICES()));
+                QDBusMessage::createMethodCall(QString(QStringLiteral("org.freedesktop.UDisks")),
+                                               QString(QStringLiteral("/org/freedesktop/UDisks")),
+                                               QString(QStringLiteral("org.freedesktop.UDisks")),
+                                               QString(QStringLiteral("EnumerateDevices")));
     if (reply.isValid()) {
         QList<QDBusObjectPath> paths = reply.value();
         foreach (const QDBusObjectPath &path, paths) {
-            QDBusInterface interface(*UDISKS_SERVICE(), path.path(), *UDISKS_PROPERTY_INTERFACE(), QDBusConnection::systemBus());
+            QDBusInterface interface(QString(QStringLiteral("org.freedesktop.UDisks")), path.path(),
+                                     QString(QStringLiteral("org.freedesktop.DBus.Properties")),
+                                     QDBusConnection::systemBus());
             if (!interface.isValid())
                 continue;
-            QDBusReply<QVariant> reply = interface.call(*UDISKS_GET(), *UDISKS_DEVICE_INTERFACE(), *UDISKS_MOUNT_PATH());
+            QDBusReply<QVariant> reply = interface.call(QString(QStringLiteral("Get")),
+                                                        QString(QStringLiteral("org.freedesktop.UDisks.Device")),
+                                                        QString(QStringLiteral("DeviceMountPaths")));
             if (reply.isValid() && reply.value().toString() == drive) {
-                reply = interface.call(*UDISKS_GET(), *UDISKS_DEVICE_INTERFACE(), *UDISKS_UUID());
+                reply = interface.call(QString(QStringLiteral("Get")),
+                                       QString(QStringLiteral("org.freedesktop.UDisks.Device")),
+                                       QString(QStringLiteral("IdUuid")));
                 if (reply.isValid())
                     return reply.value().toString();
             }
