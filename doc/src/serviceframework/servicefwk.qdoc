@@ -490,7 +490,7 @@ For example, quint64 is generally equivalent to qulonglong, but
 all unsigned 64 bit values must be defined as qulonglong or they will
 not work with the dbus implementation. For more details and the current
 state of the limitation please refer to bug QTMOBILITY-1694 available at
-http://bugreports.qt.nokia.com/browse/QTMOBILITY-1694.
+http://bugreports.qt-project.org/browse/QTMOBILITY-1694.
 
 A current known limitation for Qt Service Framework using QtDBus for IPC is
 that enumerators cannot be read due to lack of support on D-Bus.  This will be
