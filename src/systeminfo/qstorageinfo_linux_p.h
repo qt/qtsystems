@@ -94,7 +94,9 @@ private:
     QStringList logicalDrives;
 #if !defined(QT_NO_UDEV)
     QUDevWrapper *udevWrapper;
-    bool udevWatcher;
+    int needsUDevWatcher;   // -1: unknown; 0: no need;
+                            // 1: needed, but not currently watching;
+                            // 2: needed and currently watching
 #endif // QT_NO_UDEV
 
     void cleanupWatcher();
