@@ -274,10 +274,8 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
 
 void QStorageInfoPrivate::connectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0) {
-        updateLogicalDrives();
+    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0)
         setupWatcher();
-    }
 }
 
 void QStorageInfoPrivate::disconnectNotify(const char *signal)
@@ -315,6 +313,8 @@ void QStorageInfoPrivate::cleanupWatcher()
 
 void QStorageInfoPrivate::setupWatcher()
 {
+    updateLogicalDrives();
+
 #if !defined(QT_NO_UDEV)
     if (needsUDevWatcher == -1)
         needsUDevWatcher = QFileInfo(QStringLiteral("/etc/mtab")).isSymLink();

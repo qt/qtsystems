@@ -56,7 +56,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeStorageInfo::QDeclarativeStorageInfo(QObject *parent)
     : QObject(parent)
     , storageInfo(new QStorageInfo(this))
-    , isMonitorAllLogicalDrives(false)
 {
 }
 
@@ -68,37 +67,13 @@ QDeclarativeStorageInfo::~QDeclarativeStorageInfo()
 }
 
 /*!
-    \qmlproperty bool StorageInfo::monitorAllLogicalDrives
-
-    This property triggers the active monitoring of all available logical drives.
- */
-bool QDeclarativeStorageInfo::monitorAllLogicalDrives() const
-{
-    return isMonitorAllLogicalDrives;
-}
-
-void QDeclarativeStorageInfo::setMonitorAllLogicalDrives(bool monitor)
-{
-    if (monitor != isMonitorAllLogicalDrives) {
-        isMonitorAllLogicalDrives = monitor;
-        if (monitor) {
-            connect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)),
-                    this, SIGNAL(logicalDriveChanged(QString,bool)));
-        } else {
-            disconnect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)),
-                       this, SIGNAL(logicalDriveChanged(QString,bool)));
-        }
-        emit monitorAllLogicalDrivesChanged();
-    }
-}
-
-/*!
     \qmlproperty stringlist StorageInfo::allLogicalDrives
 
     This property holds a list of all the available logical drives.
 */
 QStringList QDeclarativeStorageInfo::allLogicalDrives() const
 {
+    connect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)), this, SIGNAL(logicalDriveChanged(QString,bool)));
     return storageInfo->allLogicalDrives();
 }
 
