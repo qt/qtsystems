@@ -201,7 +201,7 @@ bool DatabaseManager::registerService(ServiceMetaDataResults &service, DbScope s
         if (interface.attribute(QServiceInterfaceDescriptor::ServiceDescription).isValid())
             interfaceData.insert(QLatin1String("servicedescription"), interface.attribute(QServiceInterfaceDescriptor::ServiceDescription).toString());
         if (interface.attribute(QServiceInterfaceDescriptor::ServiceType).isValid())
-            interfaceData.insert(QLatin1String("servicetype"), interface.attribute(QServiceInterfaceDescriptor::ServiceType).toInt());
+            interfaceData.insert(QLatin1String("servicetype"), interface.attribute(QServiceInterfaceDescriptor::ServiceType).toString());
         QString caps = interface.attribute(QServiceInterfaceDescriptor::Capabilities).toString();
         if (!caps.isEmpty())
             interfaceData.insert(QLatin1String("capabilities"), QJsonArray::fromStringList(caps.split(QLatin1Char(','))));
@@ -377,7 +377,7 @@ QList<QServiceInterfaceDescriptor>  DatabaseManager::getInterfaces(const QServic
                 interface.d->major = v.value(QLatin1String("version")).toString().split(QLatin1String(".")).at(0).toInt();
                 interface.d->minor = v.value(QLatin1String("version")).toString().split(QLatin1String(".")).at(1).toInt();
                 if (v.contains(QLatin1String("servicetype")))
-                    interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = static_cast<int>(v.value(QLatin1String("servicetype")).toDouble());
+                    interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = v.value(QLatin1String("servicetype")).toString().toInt();
                 if (v.contains(QLatin1String("location")))
                     interface.d->attributes[QServiceInterfaceDescriptor::Location] = v.value(QLatin1String("location")).toString();
                 if (v.contains(QLatin1String("description")))
@@ -475,7 +475,7 @@ QServiceInterfaceDescriptor DatabaseManager::interfaceDefault(const QString &int
     interface.d->major = entry.value(QLatin1String("version")).toString().split(QLatin1String(".")).at(0).toInt();
     interface.d->minor = entry.value(QLatin1String("version")).toString().split(QLatin1String(".")).at(1).toInt();
     if (entry.contains(QLatin1String("servicetype")))
-        interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = static_cast<int>(entry.value(QLatin1String("servicetype")).toDouble());
+        interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = entry.value(QLatin1String("servicetype")).toString().toInt();
     if (entry.contains(QLatin1String("location")))
         interface.d->attributes[QServiceInterfaceDescriptor::Location] = entry.value(QLatin1String("location")).toString();
     if (entry.contains(QLatin1String("description")))

@@ -63,10 +63,15 @@
 #ifdef QT_MTCLIENT_PRESENT
 #include "qservicemanager.h"
 #include <QCoreApplication>
+#include <QTime>
 #include <QTextStream>
 #include <QFileSystemWatcher>
+#include <QSocketNotifier>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <sys/inotify.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 
 #ifndef Q_OS_WIN
@@ -241,39 +246,23 @@ class ServiceRequestWaiter : public QObject
     Q_OBJECT
 public:
     ServiceRequestWaiter(QObject *request, QObject *parent = 0)
-        : QObject(parent)
+        : QObject(parent), receivedLaunched(false)
     {
-        waiting = true;
-        loop = new QEventLoop(this);
-        timer = new QTimer(this);
-        connect(timer, SIGNAL(timeout()), loop, SLOT(quit()));
-        connect(request, SIGNAL(launched(QString)), loop, SLOT(quit()));
-        connect(request, SIGNAL(failed(QString, QString)), this, SLOT(errorEvent(QString, QString)));
-        connect(request, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)), this, SLOT(ipcFault(QService::UnrecoverableIPCError)));
+        connect(request, SIGNAL(launched(QString)), this, SIGNAL(ok()));
     }
     ~ServiceRequestWaiter() { }
 
-    void reset() {
-        waiting = true;
-        error.clear();
-        timer->stop();
-    }
+    QString errorString;
+    bool receivedLaunched;
 
-    void wait(int ms) {
-        timer->setInterval(ms);
-        timer->start();
-        loop->exec();
-        timer->stop();
-    }
-
-    bool waiting;
-    QString error;
+signals:
+    void ok();
+    void error();
 
 protected slots:
-    void errorEvent(const QString &, const QString& error) {
-        this->error = error;
-        waiting = false;
-        loop->quit();
+    void errorEvent(const QString &, const QString& errorString) {
+        this->errorString = errorString;
+        emit error();
     }
 
     void ipcFault(QService::UnrecoverableIPCError) {
@@ -281,12 +270,14 @@ protected slots:
     }
 
     void timeout() {
+        qWarning() << "SFW Timeout talking to the process manager?? exect failure";
         errorEvent(QString(), QLatin1Literal("Timeout waiting for reply"));
     }
 
-private:
-        QEventLoop *loop;
-        QTimer *timer;
+    void launched() {
+        receivedLaunched = true;
+        emit ok();
+    }
 };
 
 #endif
@@ -427,20 +418,28 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 
 void doStart(const QString &location, QLocalSocket *socket) {
 
-    QEventLoop loop;
-    QFileSystemWatcher watcher;
-    QObject::connect(&watcher, SIGNAL(directoryChanged(QString)), &loop, SLOT(quit()));
-    watcher.addPath(QLatin1Literal("/tmp"));
+    QLatin1Literal fmt("hh:mm:ss.zzz");
+
+    int fd = ::inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
+    int wd = ::inotify_add_watch(fd, "/tmp/", IN_MOVED_TO|IN_CREATE);
+
+    QSocketNotifier notifier(fd, QSocketNotifier::Read);
+    notifier.setEnabled(true);
 
     socket->connectToServer(location);
     if (socket->waitForConnected(SFW_PROCESS_TIMEOUT)) {
+        ::inotify_rm_watch(fd, wd);
+        ::close(fd);
         return;
     }
 
-    qWarning() << "SFW unable to connect to service, trying to start it. " << socket->errorString();
+    qWarning() << QTime::currentTime().toString(fmt)
+               << "SFW unable to connect to service, trying to start it. " << socket->errorString();
 
     if (location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest") ||
         location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket")) {
+        ::inotify_rm_watch(fd, wd);
+        ::close(fd);
         return;
     }
 
@@ -456,42 +455,105 @@ void doStart(const QString &location, QLocalSocket *socket) {
     QServiceManager manager;
     QObject *serviceRequest = manager.loadInterface(desc);
 
-    qWarning() << "Called loadinterface" << serviceRequest;
+    qWarning() << QTime::currentTime().toString(fmt)
+               << "Called loadinterface" << serviceRequest;
 
     if (!serviceRequest) {
         qWarning() << "Failed to initiate communications with Process manager, can't start service" << location;
+        ::inotify_rm_watch(fd, wd);
+        ::close(fd);
         return;
     }
 
     ServiceRequestWaiter waiter(serviceRequest);
+
     QMetaObject::invokeMethod(serviceRequest, "startService", Q_ARG(QString, location));
 
-    waiter.wait(SFW_PROCESS_TIMEOUT);
-    if (!waiter.error.isEmpty()) {
-        delete serviceRequest;
-        qWarning() << "Failed to start service, request sent, result" << waiter.error;
-        return;
-    }
-
-    qWarning() << "SFW Starting to look for socket";
-
     QFileInfo file(QLatin1Literal("/tmp/") + location);
-    qWarning() << "SFW checking in" << file.path() << "for the socket to come into existance" << file.filePath();
+    qWarning() << QTime::currentTime().toString(fmt)
+               << "SFW checking in" << file.path() << "for the socket to come into existance" << file.filePath();
+
+    int socketfd = ::socket(PF_UNIX, SOCK_STREAM, 0);
+
+    // set non blocking so we can try to connect and it wont wait
+    int flags = ::fcntl(socketfd, F_GETFL, 0);
+    fcntl(socketfd, F_SETFL, flags | O_NONBLOCK);
+
+    struct sockaddr_un name;
+    name.sun_family = PF_UNIX;
+
+    QString fullPath(QLatin1Literal("/tmp/"));
+    fullPath += location;
+
+    ::memcpy(name.sun_path, fullPath.toLatin1().data(),
+             fullPath.toLatin1().size() + 1);
+
+    QSocketNotifier connectNotifier(socketfd, QSocketNotifier::Write);
+    connectNotifier.setEnabled(false);
 
     QTimer timeout;
     timeout.start(SFW_PROCESS_TIMEOUT);
     timeout.setSingleShot(true);
+
+    QEventLoop loop;
     QObject::connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
     QObject::connect(socket, SIGNAL(connected()), &loop, SLOT(quit()));
+    QObject::connect(&notifier, SIGNAL(activated(int)), &loop, SLOT(quit()));
+    QObject::connect(&connectNotifier, SIGNAL(activated(int)), &loop, SLOT(quit()));
+    QObject::connect(&waiter, SIGNAL(error()), &loop, SLOT(quit()));
+
+    int ret = ::connect(socketfd, (struct sockaddr *)&name, sizeof(name));
+    if (ret == -1) {
+        qWarning() << QTime::currentTime().toString(fmt)
+                   << "Failed to connect" << qt_error_string(errno);
+    } else {
+        connectNotifier.setEnabled(true);
+    }
+
     while (timeout.isActive()) {
         loop.exec();
-        if (socket->isValid())
+        notifier.setEnabled(false);
+#define INOTIFY_SIZE (sizeof(struct inotify_event)+1024)
+        char buffer[INOTIFY_SIZE];
+        int n;
+        while ((n = ::read(fd, buffer, INOTIFY_SIZE)) == INOTIFY_SIZE) {
+        }
+        if (n == -1 && errno != EAGAIN) {
+            qWarning() << QTime::currentTime().toString(fmt)
+                       << "Failed to read inotity, fall back to timeout" << qt_error_string(errno);
+        } else {
+            notifier.setEnabled(true);
+        }
+        ret = ::connect(socketfd, (struct sockaddr *)&name, sizeof(name));
+        if (ret == -1) {
+            if (errno == EISCONN) {
+                qWarning() << QTime::currentTime().toString(fmt)
+                           <<  "SFW Connected to service";
+                if (!waiter.receivedLaunched) {
+                    qWarning() << "SFW asked the PM for a start, PM never replied, application started...something appears broken";
+                }
+                socket->setSocketDescriptor(socketfd, QLocalSocket::ConnectedState);
+                connectNotifier.setEnabled(false);
+                break;
+            } else {
+                connectNotifier.setEnabled(false);
+            }
+        } else {
+            connectNotifier.setEnabled(true);
+        }
+        if (!waiter.errorString.isEmpty()) {
+            qWarning() << "SFW Error talking to PM" << waiter.errorString;
             break;
-        socket->connectToServer(location);
+        }
     }
-    qWarning() << "SFW done waiting. Socket exists:" << file.exists() <<
-                  "timeout is active" << timeout.isActive() <<
-                  "isSocketValid" << socket->isValid();
+    qWarning() << QTime::currentTime().toString(fmt) <<
+                 "SFW done waiting. Socket exists:" << file.exists() <<
+                 "timeout is active" << timeout.isActive() <<
+                 "isSocketValid" << socket->isValid() <<
+                 "pm reply" << waiter.receivedLaunched;
+
+    ::inotify_rm_watch(fd, wd);
+    ::close(fd);
 
 }
 #endif
