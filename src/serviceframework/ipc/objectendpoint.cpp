@@ -69,6 +69,7 @@ public:
     bool isFinished;
     void* result;
     QEventLoop *loop;
+    QString error;
 };
 
 class ServiceSignalIntercepter : public QSignalIntercepter
@@ -105,6 +106,7 @@ public:
     ObjectEndPointPrivate()
     {
         functionReturned = false;
+        waitingOnReturnUuid = QUuid();
     }
 
     ~ObjectEndPointPrivate()
@@ -169,6 +171,7 @@ public:
 
     // user on the client side
     bool functionReturned;
+    QUuid waitingOnReturnUuid;
 };
 
 ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent)
@@ -202,6 +205,7 @@ void ObjectEndPoint::disconnected()
         InstanceManager::instance()->removeObjectInstance(d->entry, d->serviceInstanceId);
     }
     foreach (Response *r, openRequests) {
+        r->error = QLatin1Literal("end point disconnected");
         r->loop->exit(-1);
     }
 
@@ -238,7 +242,7 @@ QObject* ObjectEndPoint::constructProxy(const QRemoteServiceRegister::Entry & en
         else
             service = reinterpret_cast<QServiceProxy* >(response->result);
     } else {
-        qDebug() << "response passed but not finished";
+        qDebug() << Q_FUNC_INFO << "response passed but not finished";
         return 0;
     }
 
@@ -336,6 +340,7 @@ void ObjectEndPoint::propertyCall(const QServicePackage& p)
             response->isFinished = true;
             if (p.d->responseType == QServicePackage::Failed) {
                 response->result = 0;
+                response->error = QLatin1Literal("QServicePackaged::Failed");
                 response->loop->exit(-1);
                 qWarning() << "Service method call failed";
                 return;
@@ -364,6 +369,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         Response* response = openRequests.value(p.d->messageId);
         if (p.d->responseType == QServicePackage::Failed) {
             response->result = 0;
+            response->error = QLatin1Literal("objectRequest QServicePackage::Failed");
             response->isFinished = true;
             response->loop->exit(-1);
             qWarning() << "Service instantiation failed";
@@ -579,13 +585,16 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
         //client side
         Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
 
-        d->functionReturned = true;
+        if (d->waitingOnReturnUuid == p.d->messageId) {
+            d->functionReturned = true;
+        }
 
         Response* response = openRequests.value(p.d->messageId);
         if (response){
             response->isFinished = true;
             if (p.d->responseType == QServicePackage::Failed) {
                 response->result = 0;
+                response->error = QLatin1Literal("methodCall QServicePakcage::Failed");
                 response->loop->exit(-1);
                 return;
             }
@@ -635,7 +644,7 @@ QVariant ObjectEndPoint::invokeRemoteProperty(int metaIndex, const QVariant& arg
                 delete resultPointer;
             }
         } else {
-            qDebug() << "response passed but not finished";
+            qDebug() << Q_FUNC_INFO << "response passed but not finished";
         }
 
         openRequests.take(p.d->messageId);
@@ -675,8 +684,12 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
         Response* response = new Response();
         openRequests.insert(p.d->messageId, response);
 
+        d->waitingOnReturnUuid = p.d->messageId;
+
         dispatch->writePackage(p);
         waitForResponse(p.d->messageId);
+
+        d->waitingOnReturnUuid = QUuid();
 
         QVariant result;
         if (response->isFinished) {
@@ -688,7 +701,7 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
                 delete resultPointer;
             }
         } else {
-            qDebug() << "response passed but not finished";
+            qDebug() << Q_FUNC_INFO << "response passed but not finished";
         }
 
         openRequests.take(p.d->messageId);
