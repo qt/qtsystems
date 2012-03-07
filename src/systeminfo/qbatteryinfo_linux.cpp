@@ -279,8 +279,10 @@ void QBatteryInfoPrivate::disconnectNotify(const char *signal)
             && !watchCurrentFlow && !watchRemainingCapacity
             && !watchRemainingChargingTime && !watchVoltage && !watchBatteryStatus) {
 #if !defined(QT_NO_UDEV)
-        if (uDevWrapper)
+        if (uDevWrapper) {
             delete uDevWrapper;
+            uDevWrapper = 0;
+        }
 #else
         timer->stop();
 #endif // QT_NO_UDEV
