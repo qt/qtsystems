@@ -491,7 +491,7 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
 
         QMetaMethod method = service->metaObject()->method(metaIndex);
         const bool isSignal = (method.methodType() == QMetaMethod::Signal);
-        const int returnType = QMetaType::type(method.typeName());
+        const int returnType = method.returnType();
 
         if (isSignal) {
             Q_ASSERT(d->endPointType == ObjectEndPoint::Client);

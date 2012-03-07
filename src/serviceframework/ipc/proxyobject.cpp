@@ -133,7 +133,7 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 
         QMetaMethod method = d->meta->method(metaIndex);
 
-        const int returnType = QMetaType::type(method.typeName());
+        const int returnType = method.returnType();
 
         //process arguments
         const QList<QByteArray> pTypes = method.parameterTypes();
