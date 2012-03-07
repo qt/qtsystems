@@ -67,6 +67,17 @@ QDeclarativeNetworkInfo::QDeclarativeNetworkInfo(QObject *parent)
     , isMonitorLocationAreaCode(false)
     , isMonitorNetworkName(false)
 {
+    connect(networkInfo, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)),
+            this, SLOT(_q_networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
+    connect(networkInfo, SIGNAL(currentCellDataTechnologyChanged(int,QNetworkInfo::CellDataTechnology)),
+            this, SLOT(_q_currentCellDataTechnologyChanged(int,QNetworkInfo::CellDataTechnology)));
+    connect(networkInfo, SIGNAL(cellIdChanged(int,QString)), this, SIGNAL(cellIdChanged(int,QString)));
+    connect(networkInfo, SIGNAL(currentMobileCountryCodeChanged(int,QString)),
+            this, SIGNAL(currentMobileCountryCodeChanged(int,QString)));
+    connect(networkInfo, SIGNAL(currentMobileNetworkCodeChanged(int,QString)),
+            this, SIGNAL(currentMobileNetworkCodeChanged(int,QString)));
+    connect(networkInfo, SIGNAL(locationAreaCodeChanged(int,QString)),
+            this, SIGNAL(locationAreaCodeChanged(int,QString)));
 }
 
 /*!
@@ -120,6 +131,8 @@ void QDeclarativeNetworkInfo::setMonitorCurrentNetworkMode(bool monitor)
  */
 QDeclarativeNetworkInfo::NetworkMode QDeclarativeNetworkInfo::currentNetworkMode() const
 {
+    connect(networkInfo, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)),
+            this, SIGNAL(currentNetworkModeChanged()));
     return static_cast<QDeclarativeNetworkInfo::NetworkMode>(networkInfo->currentNetworkMode());
 }
 
@@ -175,7 +188,7 @@ void QDeclarativeNetworkInfo::_q_networkSignalStrengthChanged(QNetworkInfo::Netw
 /*!
     \qmlproperty bool NetworkInfo::monitorNetworkInterfaceCount
 
-    This property holds whether or not monitor the change of network interface count.
+    This property is obsoleted, and will be removed soon. You don't need to use it at all.
  */
 bool QDeclarativeNetworkInfo::monitorNetworkInterfaceCount() const
 {
@@ -223,7 +236,7 @@ void QDeclarativeNetworkInfo::_q_networkInterfaceCountChanged(QNetworkInfo::Netw
 /*!
     \qmlproperty bool NetworkInfo::monitorCurrentCellDataTechnology
 
-    This property holds whether or not monitor the change of current cell data technology.
+    This property is obsoleted, and will be removed soon. You don't need to use it at all.
  */
 bool QDeclarativeNetworkInfo::monitorCurrentCellDataTechnology() const
 {
@@ -336,7 +349,7 @@ void QDeclarativeNetworkInfo::_q_networkStatusChanged(QNetworkInfo::NetworkMode 
 /*!
     \qmlproperty bool NetworkInfo::monitorCellId
 
-    This property holds whether or not monitor the change of cell IDs.
+    This property is obsoleted, and will be removed soon. You don't need to use it at all.
  */
 bool QDeclarativeNetworkInfo::monitorCellId() const
 {
@@ -383,7 +396,7 @@ QString QDeclarativeNetworkInfo::cellId(int interface) const
 /*!
     \qmlproperty bool NetworkInfo::monitorCurrentMobileCountryCode
 
-    This property holds whether or not monitor the change of current mobile country code.
+    This property is obsoleted, and will be removed soon. You don't need to use it at all.
  */
 bool QDeclarativeNetworkInfo::monitorCurrentMobileCountryCode() const
 {
@@ -428,7 +441,7 @@ QString QDeclarativeNetworkInfo::currentMobileCountryCode(int interface) const
 /*!
     \qmlproperty bool NetworkInfo::monitorCurrentMobileNetworkCode
 
-    This property holds whether or not monitor the change of current mobile network code.
+    This property is obsoleted, and will be removed soon. You don't need to use it at all.
  */
 bool QDeclarativeNetworkInfo::monitorCurrentMobileNetworkCode() const
 {
@@ -473,7 +486,7 @@ QString QDeclarativeNetworkInfo::currentMobileNetworkCode(int interface) const
 /*!
     \qmlproperty bool NetworkInfo::monitorLocationAreaCode
 
-    This property holds whether or not monitor the change of location area code.
+    This property is obsoleted, and will be removed soon. You don't need to use it at all.
  */
 bool QDeclarativeNetworkInfo::monitorLocationAreaCode() const
 {

@@ -66,18 +66,20 @@ class QDeclarativeNetworkInfo : public QObject
     Q_ENUMS(NetworkMode)
     Q_ENUMS(NetworkStatus)
 
-    Q_PROPERTY(bool monitorCurrentNetworkMode READ monitorCurrentNetworkMode WRITE setMonitorCurrentNetworkMode NOTIFY monitorCurrentNetworkModeChanged)
     Q_PROPERTY(bool monitorNetworkSignalStrength READ monitorNetworkSignalStrength WRITE setMonitorNetworkSignalStrength NOTIFY monitorNetworkSignalStrengthChanged)
+    Q_PROPERTY(bool monitorNetworkStatus READ monitorNetworkStatus WRITE setMonitorNetworkStatus NOTIFY monitorNetworkStatusChanged)
+    Q_PROPERTY(bool monitorNetworkName READ monitorNetworkName WRITE setMonitorNetworkName NOTIFY monitorNetworkNameChanged)
+
+    Q_PROPERTY(NetworkMode currentNetworkMode READ currentNetworkMode NOTIFY currentNetworkModeChanged)
+
+    // obsoleted
+    Q_PROPERTY(bool monitorCurrentNetworkMode READ monitorCurrentNetworkMode WRITE setMonitorCurrentNetworkMode NOTIFY monitorCurrentNetworkModeChanged)
     Q_PROPERTY(bool monitorNetworkInterfaceCount READ monitorNetworkInterfaceCount WRITE setMonitorNetworkInterfaceCount NOTIFY monitorNetworkInterfaceCountChanged)
     Q_PROPERTY(bool monitorCurrentCellDataTechnology READ monitorCurrentCellDataTechnology WRITE setMonitorCurrentCellDataTechnology NOTIFY monitorCurrentCellDataTechnologyChanged)
-    Q_PROPERTY(bool monitorNetworkStatus READ monitorNetworkStatus WRITE setMonitorNetworkStatus NOTIFY monitorNetworkStatusChanged)
     Q_PROPERTY(bool monitorCellId READ monitorCellId WRITE setMonitorCellId NOTIFY monitorCellIdChanged)
     Q_PROPERTY(bool monitorCurrentMobileCountryCode READ monitorCurrentMobileCountryCode WRITE setMonitorCurrentMobileCountryCode NOTIFY monitorCurrentMobileCountryCodeChanged)
     Q_PROPERTY(bool monitorCurrentMobileNetworkCode READ monitorCurrentMobileNetworkCode WRITE setMonitorCurrentMobileNetworkCode NOTIFY monitorCurrentMobileNetworkCodeChanged)
     Q_PROPERTY(bool monitorLocationAreaCode READ monitorLocationAreaCode WRITE setMonitorLocationAreaCode NOTIFY monitorLocationAreaCodeChanged)
-    Q_PROPERTY(bool monitorNetworkName READ monitorNetworkName WRITE setMonitorNetworkName NOTIFY monitorNetworkNameChanged)
-
-    Q_PROPERTY(NetworkMode currentNetworkMode READ currentNetworkMode NOTIFY currentNetworkModeChanged)
 
 public:
     enum CellDataTechnology {
