@@ -41,8 +41,8 @@
 
 #include "qdeclarativeservice_p.h"
 
-#include <QDeclarativeEngine>
-#include <QDeclarativeInfo>
+#include <QQmlEngine>
+#include <QQmlInfo>
 
 QT_BEGIN_NAMESPACE
 
@@ -575,14 +575,14 @@ void QDeclarativeServiceList::updateFilterResults()
 }
 
 /*!
-    \qmlproperty QDeclarativeListProperty ServiceList::services
+    \qmlproperty QQmlListProperty ServiceList::services
 
     This property holds the list of \l Service elements that match
     the Service::interfaceName and minimum Service::versionNumber properties.
 */
-QDeclarativeListProperty<QDeclarativeService> QDeclarativeServiceList::services()
+QQmlListProperty<QDeclarativeService> QDeclarativeServiceList::services()
 {
-    return QDeclarativeListProperty<QDeclarativeService>(this,
+    return QQmlListProperty<QDeclarativeService>(this,
             0,
             s_append,
             s_count,
@@ -608,23 +608,23 @@ void QDeclarativeServiceList::listUpdated()
         emit resultsChanged();
 }
 
-void QDeclarativeServiceList::s_append(QDeclarativeListProperty<QDeclarativeService> *prop, QDeclarativeService *service)
+void QDeclarativeServiceList::s_append(QQmlListProperty<QDeclarativeService> *prop, QDeclarativeService *service)
 {
     QDeclarativeServiceList* list = static_cast<QDeclarativeServiceList*>(prop->object);
     list->m_services.append(service);
     list->listUpdated();
 }
-int QDeclarativeServiceList::s_count(QDeclarativeListProperty<QDeclarativeService> *prop)
+int QDeclarativeServiceList::s_count(QQmlListProperty<QDeclarativeService> *prop)
 {
     return static_cast<QDeclarativeServiceList*>(prop->object)->m_services.count();
 }
 
-QDeclarativeService* QDeclarativeServiceList::s_at(QDeclarativeListProperty<QDeclarativeService> *prop, int index)
+QDeclarativeService* QDeclarativeServiceList::s_at(QQmlListProperty<QDeclarativeService> *prop, int index)
 {
     return static_cast<QDeclarativeServiceList*>(prop->object)->m_services[index];
 }
 
-void QDeclarativeServiceList::s_clear(QDeclarativeListProperty<QDeclarativeService> *prop)
+void QDeclarativeServiceList::s_clear(QQmlListProperty<QDeclarativeService> *prop)
 {
     QDeclarativeServiceList* list = static_cast<QDeclarativeServiceList*>(prop->object);
     qDeleteAll(list->m_services);

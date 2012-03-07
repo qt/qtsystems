@@ -10,7 +10,7 @@ qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 INSTALLS += qmldir
 
-QT += declarative publishsubscribe core-private
+QT += qml publishsubscribe core-private
 
 SOURCES += publishsubscribe.cpp \
            qdeclarativevaluespacepublisher.cpp \

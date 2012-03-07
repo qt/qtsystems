@@ -9,7 +9,7 @@ qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 INSTALLS += qmldir
 
-QT += declarative systeminfo
+QT += qml systeminfo
 
 HEADERS += \
     qdeclarativebatteryinfo_p.h \

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qdeclarativeextensionplugin.h>
-#include <QtDeclarative/qdeclarative.h>
+#include <QtQml/qqmlextensionplugin.h>
+#include <QtQml/qqml.h>
 
 #include "qdeclarativebatteryinfo_p.h"
 #include "qdeclarativedeviceinfo_p.h"
@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSystemInfoDeclarativeModule : public QDeclarativeExtensionPlugin
+class QSystemInfoDeclarativeModule : public QQmlExtensionPlugin
 {
     Q_OBJECT
 

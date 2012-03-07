@@ -11,7 +11,7 @@ qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 INSTALLS += qmldir target
 
-QT += declarative serviceframework
+QT += qml serviceframework
 
 HEADERS += qdeclarativeservice_p.h
 

@@ -7,7 +7,7 @@
 QT       += testlib
 QT       += jsondbcompat
 QT       += jsondbcompat-private
-QT       += declarative
+QT       += qml
 QT       += publishsubscribe
 QT       -= gui
 

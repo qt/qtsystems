@@ -45,14 +45,14 @@
 #include <QtCore>
 #include <qserviceinterfacedescriptor.h>
 #include <qservicemanager.h>
-#include <qdeclarative.h>
-#include <qdeclarativelist.h>
+#include <qqml.h>
+#include <qqmllist.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeService : public QObject, public QDeclarativeParserStatus {
+class QDeclarativeService : public QObject, public QQmlParserStatus {
     Q_OBJECT
-    Q_INTERFACES(QDeclarativeParserStatus)
+    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
     Q_PROPERTY(QString serviceName READ serviceName WRITE setServiceName NOTIFY serviceNameChanged)
     Q_PROPERTY(int majorVersion READ majorVersion WRITE setMajorVersion NOTIFY majorVersionChanged)
@@ -120,15 +120,15 @@ private:
 };
 
 
-class QDeclarativeServiceList : public QObject, public QDeclarativeParserStatus {
+class QDeclarativeServiceList : public QObject, public QQmlParserStatus {
     Q_OBJECT
-    Q_INTERFACES(QDeclarativeParserStatus)
+    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QString serviceName READ serviceName WRITE setServiceName NOTIFY serviceNameChanged)
     Q_PROPERTY(QString interfaceName READ interfaceName WRITE setInterfaceName NOTIFY interfaceNameChanged)
     Q_PROPERTY(int majorVersion READ majorVersion WRITE setMajorVersion NOTIFY majorVersionChanged)
     Q_PROPERTY(int minorVersion READ minorVersion WRITE setMinorVersion NOTIFY minorVersionChanged)
     Q_PROPERTY(bool monitorServiceRegistrations READ monitorServiceRegistrations WRITE setMonitorServiceRegistrations NOTIFY monitorServiceRegistrationsChanged)
-    Q_PROPERTY(QDeclarativeListProperty<QDeclarativeService> services READ services NOTIFY resultsChanged)
+    Q_PROPERTY(QQmlListProperty<QDeclarativeService> services READ services NOTIFY resultsChanged)
 
     Q_PROPERTY(MatchRule versionMatch READ versionMatch WRITE setVersionMatch NOTIFY versionMatchChanged)
     Q_ENUMS(MatchRule)
@@ -142,7 +142,7 @@ public:
     QDeclarativeServiceList();
     ~QDeclarativeServiceList();
 
-    QDeclarativeListProperty<QDeclarativeService> services();
+    QQmlListProperty<QDeclarativeService> services();
 
     void setServiceName(const QString& service);
     QString serviceName() const;
@@ -170,7 +170,7 @@ public:
 
 Q_SIGNALS:
     void resultsChanged();
-    void servicesChanged(const QDeclarativeListProperty<QDeclarativeService>&);
+    void servicesChanged(const QQmlListProperty<QDeclarativeService>&);
     void serviceNameChanged();
     void interfaceNameChanged();
     void minorVersionChanged();
@@ -195,12 +195,10 @@ private:
     bool m_componentComplete;
     bool m_dynamicUpdates;
 
-    static void s_append(QDeclarativeListProperty<QDeclarativeService> *prop, QDeclarativeService *service);
-    static int s_count(QDeclarativeListProperty<QDeclarativeService> *prop);
-    static QDeclarativeService* s_at(QDeclarativeListProperty<QDeclarativeService> *prop, int index);
-    static void s_clear(QDeclarativeListProperty<QDeclarativeService> *prop);
-
-
+    static void s_append(QQmlListProperty<QDeclarativeService> *prop, QDeclarativeService *service);
+    static int s_count(QQmlListProperty<QDeclarativeService> *prop);
+    static QDeclarativeService* s_at(QQmlListProperty<QDeclarativeService> *prop, int index);
+    static void s_clear(QQmlListProperty<QDeclarativeService> *prop);
 };
 
 QT_END_NAMESPACE

@@ -13,7 +13,7 @@ SOURCES += voipdialer.cpp \
 
 TARGET = voipdialerplugin
 
-contains(QT_CONFIG, declarative):DEFINES += DECLARATIVE
+contains(QT_CONFIG, qml):DEFINES += DECLARATIVE
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/voipdialerplugin

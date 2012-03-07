@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qdeclarativeextensionplugin.h>
-#include <QtDeclarative/qdeclarative.h>
+#include <QtQml/qqmlextensionplugin.h>
+#include <QtQml/qqml.h>
 
 #include "qdeclarativevaluespacepublisher_p.h"
 #include "qdeclarativevaluespacesubscriber_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QSubscriberDeclarativeModule : public QDeclarativeExtensionPlugin
+class QSubscriberDeclarativeModule : public QQmlExtensionPlugin
 {
     Q_OBJECT
 public:

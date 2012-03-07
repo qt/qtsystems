@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qdeclarativeextensionplugin.h>
-#include <QtDeclarative/qdeclarative.h>
+#include <QtQml/qqmlextensionplugin.h>
+#include <QtQml/qqml.h>
 
 #include "qdeclarativeservice_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QServiceDeclarativeModule : public QDeclarativeExtensionPlugin
+class QServiceDeclarativeModule : public QQmlExtensionPlugin
 {
     Q_OBJECT
 
