@@ -729,14 +729,24 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
         QString line = in.readLine();
         while (!line.isNull()) {
             if (line.left(6).contains(interfaceName)) {
-                QString token = line.section(QString(QStringLiteral(" ")), 4, 5).simplified();
+                // A typical wireless received signal power over a network falls into the range of (-120, -20),
+                // we shift the dbm value, which is read from the field "Quality - level" in "/proc/net/wireless",
+                // from (-120, -20) to (0, 100) by adding 120. In case of outliers, we restrict them to the
+                // corresponding boundary value.
+                QString token = line.section(QString(QStringLiteral(" ")), 3, 3, QString::SectionSkipEmpty).simplified();
                 token.chop(1);
                 bool ok;
-                int signalStrength = (int)rint((log(token.toInt(&ok)) / log(92)) * 100.0);
-                if (ok)
+                int signalStrength = token.toInt(&ok);
+                if (ok) {
+                    signalStrength += 120;
+                    if (signalStrength > 100)
+                        signalStrength = 100;
+                    else if (signalStrength < 0)
+                        signalStrength = 0;
                     return signalStrength;
-                else
+                } else {
                     return -1;
+                }
             }
             line = in.readLine();
         }
