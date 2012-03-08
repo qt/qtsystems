@@ -43,8 +43,8 @@
 #include <QtCore/QString>
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
-#include <QJSValue>
-#include <QJSEngine>
+#include <QtQml/QJSValue>
+#include <QtQml/QJSEngine>
 #include <qvaluespace.h>
 #include "qvaluespace_p.h"
 #include "qvaluespacepublisher.h"
@@ -71,15 +71,12 @@ private Q_SLOTS:
     void testLayer_Id();
     void testLayer_Item();
     void testLayer_LayerOptions();
-    void testLayer_Name();
     void testLayer_NotifyInterest();
-    void testLayer_Order();
     void testLayer_RemoveHandle();
     void testLayer_RemoveSubTree();
     void testLayer_RemoveValue();
     void testLayer_SetProperty();
     void testLayer_SetValue();
-    void testLayer_Startup();
     void testLayer_SupportsInterestNotification();
     void testLayer_Sync();
     void testLayer_Value();
@@ -253,11 +250,6 @@ void TestQValueSpaceJsonDb::testLayer_LayerOptions()
              && (layer->layerOptions() | QValueSpace::PermanentLayer), "Not implemented!");
 }
 
-void TestQValueSpaceJsonDb::testLayer_Name()
-{
-    QVERIFY2(layer->name() == "JSON DB Layer", "JSON DB layer name");
-}
-
 void TestQValueSpaceJsonDb::testLayer_NotifyInterest()
 {
     QStringList objects;
@@ -286,11 +278,6 @@ void TestQValueSpaceJsonDb::testLayer_NotifyInterest()
     } catch(...) {
         return;
     }
-}
-
-void TestQValueSpaceJsonDb::testLayer_Order()
-{
-    QVERIFY2(layer->order() == 0x1000, "order() failed!");
 }
 
 void TestQValueSpaceJsonDb::testLayer_RemoveHandle()
@@ -414,11 +401,6 @@ void TestQValueSpaceJsonDb::testLayer_SetValue()
         JsonDbHandle handle4(NULL, "com.pstest.testSetValue.system2", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
         QVERIFY2(!layer->setValue(NULL, quintptr(&handle4), "", 42), "setValue() failed!");
     } catch(...) {}
-}
-
-void TestQValueSpaceJsonDb::testLayer_Startup()
-{
-    QVERIFY2(layer->startup() == true, "startup() failed!");
 }
 
 void TestQValueSpaceJsonDb::testLayer_SupportsInterestNotification()

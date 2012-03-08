@@ -76,9 +76,6 @@ public:
     static GConfLayer *instance();
 
 protected:
-    QString name();
-
-    bool startup();
     bool value(Handle handle, QVariant *data);
     bool value(Handle handle, const QString &subPath, QVariant *data);
     void removeHandle(Handle handle);

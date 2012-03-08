@@ -83,8 +83,6 @@ public:
     ~RegistryLayer();
 
     /* Common functions */
-    bool startup();
-
     Handle item(Handle parent, const QString &path);
     void removeHandle(Handle handle);
     void setProperty(Handle handle, Properties);
@@ -166,8 +164,6 @@ public:
     ~VolatileRegistryLayer();
 
     /* Common functions */
-    QString name();
-
     QUuid id();
 
     QValueSpace::LayerOptions layerOptions() const;
@@ -184,8 +180,6 @@ public:
     ~NonVolatileRegistryLayer();
 
     /* Common functions */
-    QString name();
-
     QUuid id();
 
     QValueSpace::LayerOptions layerOptions() const;

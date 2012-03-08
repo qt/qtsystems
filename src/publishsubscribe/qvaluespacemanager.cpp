@@ -76,13 +76,6 @@ void QValueSpaceManager::init()
     layers.append(NonVolatileRegistryLayer::instance());
     layers.append(VolatileRegistryLayer::instance());
 #endif
-
-    for (int ii = 0; ii < layers.count(); ++ii) {
-        if (!layers.at(ii)->startup()) {
-            layers.removeAt(ii);
-            --ii;
-        }
-    }
 }
 
 QList<QAbstractValueSpaceLayer *> const &QValueSpaceManager::getLayers()

@@ -456,13 +456,6 @@ QValueSpace::LayerOptions JsonDbLayer::layerOptions() const
     return QValueSpace::WritableLayer | QValueSpace::PermanentLayer;
 }
 
-QString JsonDbLayer::name()
-{
-    DEBUG_MSG("JsonDbLayer::name()");
-
-    return QStringLiteral("JSON DB Layer");
-}
-
 bool JsonDbLayer::notifyInterest(Handle handle, bool interested)
 {
     DEBUG_MSG("JsonDbLayer::notifyInterest(Handle handle, bool interested)");
@@ -521,13 +514,6 @@ void JsonDbLayer::setProperty(Handle handle, Properties properties)
         disconnect(h, SIGNAL(valueChanged()), this, SLOT(jsonDbHandleChanged()));
         h->unsubscribe();
     }
-}
-
-bool JsonDbLayer::startup()
-{
-    DEBUG_MSG("JsonDbLayer::startup()");
-
-    return true;
 }
 
 bool JsonDbLayer::supportsInterestNotification() const

@@ -8,7 +8,7 @@ QT       += testlib
 QT       += jsondbcompat
 QT       += jsondbcompat-private
 QT       += publishsubscribe
-QT       -= gui
+QT       += qml
 
 TARGET = tst_testpublishsubscribe
 target.path = /usr/bin

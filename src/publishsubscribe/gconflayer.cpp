@@ -62,11 +62,6 @@ GConfLayer::~GConfLayer()
     }
 }
 
-QString GConfLayer::name()
-{
-    return QLatin1String("GConf Layer");
-}
-
 QUuid GConfLayer::id()
 {
     return QVALUESPACE_GCONF_LAYER;
@@ -80,11 +75,6 @@ QValueSpace::LayerOptions GConfLayer::layerOptions() const
 GConfLayer *GConfLayer::instance()
 {
     return gConfLayer();
-}
-
-bool GConfLayer::startup()
-{
-    return true;
 }
 
 bool GConfLayer::value(Handle handle, QVariant *data)

@@ -82,11 +82,6 @@ VolatileRegistryLayer::~VolatileRegistryLayer()
 {
 }
 
-QString VolatileRegistryLayer::name()
-{
-    return QLatin1String("Volatile Registry Layer");
-}
-
 QUuid VolatileRegistryLayer::id()
 {
     return QVALUESPACE_VOLATILEREGISTRY_LAYER;
@@ -110,11 +105,6 @@ NonVolatileRegistryLayer::NonVolatileRegistryLayer()
 
 NonVolatileRegistryLayer::~NonVolatileRegistryLayer()
 {
-}
-
-QString NonVolatileRegistryLayer::name()
-{
-    return QLatin1String("Non-Volatile Registry Layer");
 }
 
 QUuid NonVolatileRegistryLayer::id()
@@ -163,11 +153,6 @@ RegistryLayer::~RegistryLayer()
 
         removeHandle(Handle(i.value()));
     }
-}
-
-bool RegistryLayer::startup()
-{
-    return true;
 }
 
 bool RegistryLayer::value(Handle handle, QVariant *data)

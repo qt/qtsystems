@@ -214,9 +214,6 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
         // Returns the QValueSpace::LayerOptions describing this layer.
         QValueSpace::LayerOptions layerOptions() const;
 
-        // Returns the name of the Value Space layer. This name is only used for diagnostics purposes.
-        QString name();
-
         // Registers or unregisters that the caller is interested in handle and any subpaths under
         // it. If interested is true interest in handle is registered; otherwise it is unregistered.
         // The caller should ensure that all calls to this function with interested set to true
@@ -245,10 +242,6 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
         // Returns true on success; otherwise returns false.
         // IMPORTANT: if there is no object with given path then no new object is created!
         bool setValue(QValueSpacePublisher *creator, Handle handle, const QString &subPath, const QVariant &value);
-
-        // Called by the Value Space system to initialize each layer.
-        // Returns true upon success; otherwise returns false.
-        bool startup();
 
         // Returns true if the layer supports interest notifications; otherwise returns false.
         bool supportsInterestNotification() const;

@@ -213,7 +213,6 @@ QValueSpacePublisher::QValueSpacePublisher(QValueSpace::LayerOptions filter, con
 
     \sa isConnected()
 */
-
 QValueSpacePublisher::QValueSpacePublisher(const QUuid &uuid, const QString &path, QObject *parent)
     : QObject(parent)
     , d_ptr(new QValueSpacePublisherPrivate(path, uuid))

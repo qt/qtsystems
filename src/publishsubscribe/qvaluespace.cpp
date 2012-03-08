@@ -82,20 +82,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QString QAbstractValueSpaceLayer::name()
-
-    Returns the name of the Value Space layer. This name is only used for diagnostics purposes.
-*/
-
-/*!
-    \fn bool QAbstractValueSpaceLayer::startup()
-
-    Called by the Value Space system to initialize each layer.
-
-    Returns true upon success; otherwise returns false.
-*/
-
-/*!
     \fn QUuid QAbstractValueSpaceLayer::id()
 
     Returns a globally unique identifier for the layer.

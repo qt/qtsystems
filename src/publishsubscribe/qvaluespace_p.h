@@ -73,14 +73,12 @@ public:
 
     enum Properties { Publish = 0x00000001 };
 
-    virtual bool startup() = 0;
     virtual bool value(Handle handle, QVariant *data) = 0;
     virtual bool value(Handle handle, const QString &subPath, QVariant *data) = 0;
     virtual void removeHandle(Handle handle) = 0;
     virtual void setProperty(Handle handle, Properties properties) = 0;
     virtual Handle item(Handle parent, const QString &subPath) = 0;
     virtual QSet<QString> children(Handle handle) = 0;
-    virtual QString name() = 0;
     virtual QUuid id() = 0;
     virtual QValueSpace::LayerOptions layerOptions() const = 0;
 

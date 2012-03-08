@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    qvaluespace \
+    qvaluespace
 
-# jsondb|contains(config_test_jsondb, yes): SUBDIRS += qvaluespace_jsondb
+contains(QT_CONFIG,jsondbcompat): SUBDIRS += qvaluespace_jsondb
