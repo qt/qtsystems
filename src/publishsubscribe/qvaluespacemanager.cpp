@@ -44,44 +44,58 @@
 #include "jsondblayer_p.h"
 #include "registrylayer_win_p.h"
 
+#include <QtCore/qmutex.h>
+#include <QtCore/qthread.h>
+#include <QtCore/private/qcoreapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QValueSpaceManager, valueSpaceManager)
+static QBasicAtomicPointer<QValueSpaceManager> valueSpaceManager_ptr;
 
 QValueSpaceManager *QValueSpaceManager::instance()
 {
-    return valueSpaceManager();
+    QValueSpaceManager *ptr = valueSpaceManager_ptr.loadAcquire();
+    if (!ptr) {
+        static QBasicMutex valueSpaceManager_mutex;
+        QMutexLocker locker(&valueSpaceManager_mutex);
+        if (!(ptr = valueSpaceManager_ptr.loadAcquire())) {
+            ptr = new QValueSpaceManager;
+
+            // make sure layers are installed in the priority order from high to low
+#if defined(Q_OS_LINUX)
+#if !defined(QT_NO_GCONFLAYER)
+            ptr->layers.append(GConfLayer::instance());
+#endif
+#if !defined(QT_NO_JSONDBLAYER)
+            ptr->layers.append(JsonDbLayer::instance());
+#endif
+#elif defined(Q_OS_WIN)
+            ptr->layers.append(NonVolatileRegistryLayer::instance());
+            ptr->layers.append(VolatileRegistryLayer::instance());
+#endif
+
+            // move all layers to a worker thread
+            if (ptr->layers.size() > 0) {
+                QThread *valueSpaceThread = new QThread();
+                valueSpaceThread->setObjectName(QStringLiteral("valueSpaceThread"));
+                valueSpaceThread->moveToThread(QCoreApplicationPrivate::mainThread());
+                for (int i = 0; i < ptr->layers.size(); ++i)
+                    ptr->layers[i]->moveToThread(valueSpaceThread);
+                valueSpaceThread->start();
+            }
+
+            valueSpaceManager_ptr.storeRelease(ptr);
+        }
+    }
+    return ptr;
 }
 
 QValueSpaceManager::QValueSpaceManager()
-    : initialized(false)
 {
-}
-
-void QValueSpaceManager::init()
-{
-    if (initialized)
-        return;
-    initialized = true;
-
-    // make sure layers are installed in the priority order from high to low
-#if defined(Q_OS_LINUX)
-#if !defined(QT_NO_GCONFLAYER)
-    layers.append(GConfLayer::instance());
-#endif
-#if !defined(QT_NO_JSONDBLAYER)
-    layers.append(JsonDbLayer::instance());
-#endif
-#elif defined(Q_OS_WIN)
-    layers.append(NonVolatileRegistryLayer::instance());
-    layers.append(VolatileRegistryLayer::instance());
-#endif
 }
 
 QList<QAbstractValueSpaceLayer *> const &QValueSpaceManager::getLayers()
 {
-    init(); // Fallback init
-
     return layers;
 }
 

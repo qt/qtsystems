@@ -63,14 +63,11 @@ class QValueSpaceManager
 {
 public:
     QValueSpaceManager();
-
-    void init();
-    QList<QAbstractValueSpaceLayer *> const &getLayers();
-
     static QValueSpaceManager *instance();
 
+    QList<QAbstractValueSpaceLayer *> const &getLayers();
+
 private:
-    bool initialized;
     QList<QAbstractValueSpaceLayer *> layers;
 };
 
