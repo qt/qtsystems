@@ -57,9 +57,9 @@
 
 #include "qvaluespace_p.h"
 
-#include <jsondb-client.h>
-
-Q_USE_JSONDB_NAMESPACE
+#include <QJsonDbConnection>
+#include <QJsonDbWatcher>
+#include <QJsonDbReadRequest>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,11 +99,35 @@ QT_BEGIN_NAMESPACE
 #define IDENTIFIER QStringLiteral("identifier")
 #define SETTINGS_FILTER QStringLiteral("[?_type in [\"com.nokia.mt.settings.ApplicationSettings\", \"com.nokia.mt.settings.SystemSettings\"]]")
 
+class JsonDbSyncCall: public QObject
+{
+    Q_OBJECT
+
+    public:
+        JsonDbSyncCall(const QString &query, QList<QJsonObject> *result);
+        ~JsonDbSyncCall();
+
+    public slots:
+        void createSyncRequest();
+        void handleResponse(int id);
+        void handleError(QtJsonDb::QJsonDbRequest::ErrorCode id, QString code);
+
+    private:
+        const QString &mQuery;
+        QList<QJsonObject> *mResult;
+        QtJsonDb::QJsonDbConnection *mConnection;
+        QtJsonDb::QJsonDbReadRequest *mRequest;
+
+        void timerEvent(QTimerEvent *event);
+};
+
+
+
 class JsonDbPath
 {
     public:
         JsonDbPath();
-        JsonDbPath(QString path);
+        explicit JsonDbPath(QString path);
         JsonDbPath(const JsonDbPath &other);
 
         inline QString getPath() const { return path; }
@@ -165,22 +189,23 @@ class JsonDbHandle : public QObject
 
     private slots:
         void onError(int id, int code, const QString & message);
-        void onNotified(const QString & notifyUuid, const JsonDbNotification & notification);
+        void onNotificationsAvailable(int);
 
     private:
         JsonDbPath path;
-        JsonDbClient* client;
-        QString notificationUUID;
+        QtJsonDb::QJsonDbConnection *client;
+        QtJsonDb::QJsonDbWatcher *watcher;
+        bool connected;
 
-        static QVariantMap getObject(const QString &identifier, const QString &property);
-        static QVariant getResponse(const QString& query);
+        static QJsonObject getObject(const QString &identifier, const QString &property);
+        static QList<QJsonObject> getResponse(const QString& query);
         QString getWholePath(const QString &path) const;
-        static bool checkIfObjectValid(const QVariantMap &object);
-        static bool checkIfObjectValidZero(const QVariantMap &object);
-        static QString getObjectQuery(QString &identifier);
-        static QString getSettingQuery(QString &identifier);
+        static QString getObjectQuery(const QString &identifier);
+        static QString getSettingQuery(const QString &identifier);
 
-        void getNotificationQueryAndActions(QString path, QString& query, JsonDbClient::NotifyTypes& actions);
+        void getNotificationQueryAndActions(QString path, QString query, QtJsonDb::QJsonDbWatcher::Actions &actions);
+
+        void doUpdateRequest(const QJsonObject&);
 };
 
 

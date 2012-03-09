@@ -40,12 +40,11 @@ unix {
         } else {
             DEFINES += QT_NO_GCONFLAYER
         }
-    } else {
-        DEFINES += QT_NO_GCONFLAYER
     }
 
-    contains(QT_CONFIG,jsondbcompat) {
-        QT += jsondbcompat jsondbcompat-private
+    contains(QT_CONFIG,jsondb) {
+        QT += jsondb
+
         PRIVATE_HEADERS += jsondblayer_p.h
         SOURCES += jsondblayer.cpp
     } else {
