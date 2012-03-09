@@ -96,21 +96,6 @@ QT_BEGIN_NAMESPACE
     value may be accessible via the value() function.
 */
 
-/*!
-    \property QValueSpaceSubscriber::path
-
-    This property holds the current path that the QValueSpaceSubscriber refers to.
-
-    Settings this property causes the QValueSpaceSubscriber to disconnect and reconnect to the
-    Value Space with the new path.  As a result all signal/slot connections are disconnected.
-*/
-
-/*!
-    \property QValueSpaceSubscriber::value
-
-    This property holds the value of the path that this QValueSpaceSubscriber refers to.
-*/
-
 void QValueSpaceSubscriberPrivateProxy::handleChanged(quintptr handle)
 {
     QAbstractValueSpaceLayer *layer = qobject_cast<QAbstractValueSpaceLayer *>(sender());
@@ -319,12 +304,12 @@ QValueSpaceSubscriber::~QValueSpaceSubscriber()
 }
 
 /*!
-    Sets the path to \a path.
+    \property QValueSpaceSubscriber::path
 
-    Calling this function causes the QValueSpaceSubscriber to disconnect and reconnect to the value
-    space with the new \a path.
+    This property holds the current path that the QValueSpaceSubscriber refers to.
 
-    Calling this function disconnects all signal/slot connections.
+    Settings this property causes the QValueSpaceSubscriber to disconnect and reconnect to the
+    Value Space with the new path.  As a result all signal/slot connections are disconnected.
 */
 void QValueSpaceSubscriber::setPath(const QString &path)
 {
@@ -341,6 +326,11 @@ void QValueSpaceSubscriber::setPath(const QString &path)
     disconnect();
 
     d = new QValueSpaceSubscriberPrivate(path);
+}
+
+QString QValueSpaceSubscriber::path() const
+{
+    return d->path;
 }
 
 /*!
@@ -363,11 +353,6 @@ void QValueSpaceSubscriber::setPath(QValueSpaceSubscriber *subscriber)
     disconnect();
 
     d = subscriber->d;
-}
-
-QString QValueSpaceSubscriber::path() const
-{
-    return d->path;
 }
 
 /*!
@@ -427,10 +412,10 @@ bool QValueSpaceSubscriber::isConnected() const
 
     \code
         QValueSpaceSubscriber base("/Settings");
-        QValueSpaceSubscriber equiv("/Settings/Nokia/General/Mappings");
+        QValueSpaceSubscriber equiv("/Settings/QtProject/General/Mappings");
 
         // Is true
-        equiv.value() == base.value("Nokia/General/Mappings");
+        equiv.value() == base.value("QtProject/General/Mappings");
     \endcode
 */
 QVariant QValueSpaceSubscriber::value(const QString & subPath, const QVariant &def) const
@@ -456,6 +441,11 @@ QVariant QValueSpaceSubscriber::value(const QString & subPath, const QVariant &d
     return def;
 }
 
+/*!
+    \property QValueSpaceSubscriber::value
+
+    This property holds the value of the path that this QValueSpaceSubscriber refers to.
+*/
 QVariant QValueSpaceSubscriber::valuex(const QVariant &def) const
 {
     QMutexLocker locker(&d->lock);
@@ -491,14 +481,14 @@ void QValueSpaceSubscriber::disconnectNotify(const char *signal)
     containing:
 
     \code
-    /Settings/Nokia/Device
-    /Settings/Nokia/Other
+    /Settings/QtProject/Device
+    /Settings/QtProject/Other
     /Settings/Qt
     /Device/Buttons
     \endcode
 
     \c { QValueSpaceSubscriber("/Settings").subPaths() } will return a list containing
-    \c { { Nokia, Qt } } in no particular order.
+    \c { { QtProject, Qt } } in no particular order.
 */
 QStringList QValueSpaceSubscriber::subPaths() const
 {
