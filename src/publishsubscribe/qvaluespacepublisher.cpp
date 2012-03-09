@@ -223,7 +223,7 @@ QValueSpacePublisher::QValueSpacePublisher(const QUuid &uuid, const QString &pat
 */
 QValueSpacePublisher::~QValueSpacePublisher()
 {
-    if (!d_ptr->layer)
+    if (!isConnected())
         return;
 
     if (d_ptr->hasSet && !(d_ptr->layer->layerOptions() & QValueSpace::PermanentLayer))
@@ -264,8 +264,10 @@ bool QValueSpacePublisher::isConnected() const
 */
 void QValueSpacePublisher::sync()
 {
-    if (!d_ptr || !d_ptr->layer)
+    if (!isConnected()) {
+        qWarning("sync called on unconnected QValueSpacePublisher.");
         return;
+    }
 
     d_ptr->layer->sync();
 }
@@ -287,7 +289,7 @@ void QValueSpacePublisher::sync()
 void QValueSpacePublisher::setValue(const QString &name, const QVariant &data)
 {
     if (!isConnected()) {
-        qWarning("setAttribute called on unconnected QValueSpacePublisher.");
+        qWarning("setValue called on unconnected QValueSpacePublisher.");
         return;
     }
 
@@ -316,7 +318,7 @@ void QValueSpacePublisher::setValue(const QString &name, const QVariant &data)
 void QValueSpacePublisher::resetValue(const QString &name)
 {
     if (!isConnected()) {
-        qWarning("removeAttribute called on unconnected QValueSpacePublisher.");
+        qWarning("resetValue called on unconnected QValueSpacePublisher.");
         return;
     }
 
@@ -325,26 +327,13 @@ void QValueSpacePublisher::resetValue(const QString &name)
 
 /*!
     \reimp
-
-    Registers this QValueSpacePublisher for notifications when QValueSpaceSubscribers are
-    interested in values under path().
-
-    Generally you do not need to call this function as it is automatically called when
-    connections are made to this classes signals.  \a member is the signal that has been connected.
-
-    If you reimplement this virtual function it is important that you call this implementation from
-    your implementation.
-
-    \sa interestChanged()
 */
-void QValueSpacePublisher::connectNotify(const char *member)
+void QValueSpacePublisher::connectNotify(const char *signal)
 {
-    if (!d_ptr->hasWatch && d_ptr->layer && (*member - '0') == QSIGNAL_CODE) {
+    if (!d_ptr->hasWatch && isConnected() && qstrcmp(signal, SIGNAL(interestChanged(QString,bool))) == 0) {
         d_ptr->layer->addWatch(this, d_ptr->handle);
         d_ptr->hasWatch = true;
     }
-
-    QObject::connectNotify(member);
 }
 
 QT_END_NAMESPACE

@@ -312,6 +312,9 @@ QValueSpaceSubscriber::QValueSpaceSubscriber(const QUuid &uuid, const QString &p
 */
 QValueSpaceSubscriber::~QValueSpaceSubscriber()
 {
+     if (!isConnected())
+         return;
+
     d->disconnect(this);
 }
 
@@ -325,6 +328,11 @@ QValueSpaceSubscriber::~QValueSpaceSubscriber()
 */
 void QValueSpaceSubscriber::setPath(const QString &path)
 {
+    if (!isConnected()) {
+        qWarning("setPath called on unconnected QValueSpaceSubscriber.");
+        return;
+    }
+
     if (this->path() == path)
         return;
 
@@ -345,6 +353,11 @@ void QValueSpaceSubscriber::setPath(const QString &path)
 */
 void QValueSpaceSubscriber::setPath(QValueSpaceSubscriber *subscriber)
 {
+    if (!isConnected()) {
+        qWarning("setPath called on unconnected QValueSpaceSubscriber.");
+        return;
+    }
+
     d->disconnect(this);
 
     disconnect();
@@ -363,6 +376,11 @@ QString QValueSpaceSubscriber::path() const
 */
 void QValueSpaceSubscriber::cd(const QString &path)
 {
+    if (!isConnected()) {
+        qWarning("cd called on unconnected QValueSpaceSubscriber.");
+        return;
+    }
+
     if (path.startsWith(QLatin1Char('/')))
         setPath(path);
     else
@@ -374,6 +392,11 @@ void QValueSpaceSubscriber::cd(const QString &path)
 */
 void QValueSpaceSubscriber::cdUp()
 {
+    if (!isConnected()) {
+        qWarning("cdUp called on unconnected QValueSpaceSubscriber.");
+        return;
+    }
+
     if (path() == QLatin1String("/"))
         return;
 
@@ -412,6 +435,11 @@ bool QValueSpaceSubscriber::isConnected() const
 */
 QVariant QValueSpaceSubscriber::value(const QString & subPath, const QVariant &def) const
 {
+    if (!isConnected()) {
+        qWarning("value called on unconnected QValueSpaceSubscriber.");
+        return QVariant();
+    }
+
     QVariant value;
     if (subPath.isEmpty()) {
         for (int ii = d->readers.count(); ii > 0; --ii) {
@@ -441,31 +469,21 @@ QVariant QValueSpaceSubscriber::valuex(const QVariant &def) const
 }
 
 /*!
-    \internal
-
-    Registers for change notifications in response to connection to the contentsChanged()
-    \a signal.
+    \reimp
 */
 void QValueSpaceSubscriber::connectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(contentsChanged())) == 0)
+    if (isConnected() && qstrcmp(signal, SIGNAL(contentsChanged())) == 0)
         d->connect(this);
-    else
-        QObject::connectNotify(signal);
 }
 
 /*!
-    \internal
-
-    Unregisters for change notifications in response to disconnection from the contentsChanged()
-    \a signal.
+    \reimp
 */
 void QValueSpaceSubscriber::disconnectNotify(const char *signal)
 {
-    if (strcmp(signal, SIGNAL(contentsChanged())) == 0)
+    if (isConnected() && qstrcmp(signal, SIGNAL(contentsChanged())) == 0)
         d->disconnect(this);
-    else
-        QObject::disconnectNotify(signal);
 }
 
 /*!
@@ -484,6 +502,11 @@ void QValueSpaceSubscriber::disconnectNotify(const char *signal)
 */
 QStringList QValueSpaceSubscriber::subPaths() const
 {
+    if (!isConnected()) {
+        qWarning("subPaths called on unconnected QValueSpaceSubscriber.");
+        return QStringList();
+    }
+
     QSet<QString> rv;
     for (int ii = 0; ii < d->readers.count(); ++ii)
         rv.unite(d->readers[ii].first->children(d->readers[ii].second));
