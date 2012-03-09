@@ -67,6 +67,10 @@ public:
     int qt_metacall(QMetaObject::Call c, int id, void **a);
     void *qt_metacast(const char* className);
 
+protected:
+    void connectNotify(const char *signal);
+    void timerEvent(QTimerEvent *);
+
 private:
     QServiceProxyBasePrivate* d;
 };

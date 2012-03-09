@@ -208,8 +208,6 @@ void ObjectEndPoint::disconnected()
         r->error = QLatin1Literal("end point disconnected");
         r->loop->exit(-1);
     }
-
-    deleteLater();
 }
 
 /*

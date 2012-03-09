@@ -43,6 +43,9 @@
 #include <private/qmetaobjectbuilder_p.h>
 #include "qremoteserviceregisterentry_p.h"
 
+#include <qtimer.h>
+#include <qcoreevent.h>
+
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -241,6 +244,7 @@ public:
     QMetaObject* meta;
     ObjectEndPoint* endPoint;
     int ipcfailure;
+    int timerId;
 };
 
 QServiceProxyBase::QServiceProxyBase(ObjectEndPoint *endpoint, QObject *parent)
@@ -251,6 +255,7 @@ QServiceProxyBase::QServiceProxyBase(ObjectEndPoint *endpoint, QObject *parent)
     d->meta = 0;
     d->endPoint = endpoint;
     d->ipcfailure = -1;
+    d->timerId = startTimer(1000);
 
     QMetaObjectBuilder sup;
     sup.setClassName("QServiceProxyBase");
@@ -265,6 +270,23 @@ QServiceProxyBase::~QServiceProxyBase()
     if (d->meta)
         qFree(d->meta);
     delete d;
+}
+
+void QServiceProxyBase::connectNotify(const char *signal)
+{
+    if (strcmp("2errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)", signal) == 0) {
+        killTimer(d->timerId);
+    }
+}
+
+void QServiceProxyBase::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == d->timerId) {
+        qWarning() << this << "Someone is using SFW incorrectly. No one connected to errorUnrecoverableIPCFault for class" << this->metaObject()->className();
+        killTimer(d->timerId);
+    } else {
+        QObject::timerEvent(e);
+    }
 }
 
 //provide custom Q_OBJECT implementation

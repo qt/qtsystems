@@ -737,6 +737,15 @@ void QServiceManager::disconnectNotify(const char *signal)
     }
 }
 
+bool QServiceManager::event(QEvent *e)
+{
+    if (e->type() == QEvent::ThreadChange) {
+        qWarning() << "QServiceManager CANNOT BE MOVED THREADS!";
+    }
+
+    return QObject::event(e);
+}
+
 #include "moc_qservicemanager.cpp"
 #include "qservicemanager.moc"
 QT_END_NAMESPACE

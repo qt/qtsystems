@@ -248,7 +248,10 @@ public:
     ServiceRequestWaiter(QObject *request, QObject *parent = 0)
         : QObject(parent), receivedLaunched(false)
     {
-        connect(request, SIGNAL(launched(QString)), this, SIGNAL(ok()));
+        connect(request, SIGNAL(launched(QString)), this, SLOT(launched()));
+        connect(request, SIGNAL(failed(QString, QString)), this, SLOT(errorEvent(QString, QString)));
+        connect(request, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                this, SLOT(ipcFault(QService::UnrecoverableIPCError)));
     }
     ~ServiceRequestWaiter() { }
 
@@ -275,6 +278,7 @@ protected slots:
     }
 
     void launched() {
+        qWarning() << "SFW got laucnhed from PM";
         receivedLaunched = true;
         emit ok();
     }
@@ -552,6 +556,7 @@ void doStart(const QString &location, QLocalSocket *socket) {
                  "isSocketValid" << socket->isValid() <<
                  "pm reply" << waiter.receivedLaunched;
 
+    delete serviceRequest;
     ::inotify_rm_watch(fd, wd);
     ::close(fd);
 
