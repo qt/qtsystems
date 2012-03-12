@@ -6,10 +6,10 @@ QT += publishsubscribe
     DEFINES += QT_NO_GCONFLAYER
 }
 
-!contains(QT_CONFIG, jsondbcompat) {
+!contains(QT_CONFIG, jsondb) {
     DEFINES += QT_NO_JSONDBLAYER
 } else {
-    QT += jsondbcompat jsondbcompat-private
+    QT += jsondb
 }
 
 SOURCES += tst_qvaluespace.cpp
