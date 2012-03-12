@@ -105,7 +105,7 @@ bool QJsonDbWrapper::hasFeaturePositioning()
 bool QJsonDbWrapper::hasFeatureVibration()
 {
     return !getSystemSettingValue(QString(QStringLiteral("sounds")),
-                                  QString(QStringLiteral("vibrationOn"))).isNull();
+                                  QString(QStringLiteral("vibrationOn"))).isUndefined();
 }
 
 QString QJsonDbWrapper::getUniqueDeviceID()
@@ -157,7 +157,7 @@ QJsonValue QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, con
 QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const QString &setting)
 {
     QJsonDbReadRequest request;
-    request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.%1\"]"))
+    request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.%1\"][={settings:settings}]"))
                      .arg(settingId));
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
@@ -167,7 +167,7 @@ QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const
         if (request.status() == QJsonDbRequest::Finished) {
             QList<QJsonObject> results = request.takeResults();
             if (results.size() > 0)
-                return results.at(0).value(setting);
+                return results.at(0).value(QStringLiteral("settings")).toObject().value(setting);
         }
     }
     return QJsonValue();
