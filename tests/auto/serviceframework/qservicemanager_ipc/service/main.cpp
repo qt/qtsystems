@@ -43,6 +43,8 @@
 #include <qremoteserviceregister.h>
 #include <qservicemanager.h>
 #include <QDebug>
+#include <QTest>
+#include <QFileInfo>
 
 #include <qservicefilter.h> //only used to test custom metatype
 #ifdef QT_BUILD_INTERNAL
@@ -580,14 +582,21 @@ void registerExampleService()
 {
     unregisterExampleService();
     QServiceManager m;
-#ifdef TESTDATA_DIR
-    const QString path = QString(TESTDATA_DIR) + "../xmldata/ipcexampleservice.xml";
-#else
-    const QString path = QCoreApplication::applicationDirPath() + "/../xmldata/ipcexampleservice.xml";
-#endif
+
+    // Because the service destination directory and install directory are different
+    // from standard, use qmake-time hard-coded paths to search the service XML
+    QString path = QString(TESTDATA_INSTALL_DIR) + "xmldata/ipcexampleservice.xml";
+    if (!QFileInfo(path).exists()) {
+        path = QString(TESTDATA_SRC_DIR) + "xmldata/ipcexampleservice.xml";
+        if (!QFileInfo(path).exists()) {
+            path = QFINDTESTDATA("xmldata/ipcexampleservice.xml");
+        }
+    }
+
     bool r = m.addService(path);
-    if (!r)
+    if (!r) {
         qWarning() << "Cannot register IPCExampleService" << path;
+    }
 }
 
 

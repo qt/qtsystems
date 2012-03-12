@@ -10,6 +10,4 @@ QT -= gui
 SOURCES += tst_servicemetadata.cpp
 
 
-addFiles.files = testdata/*
-addFiles.path = testdata
-DEPLOYMENT += addFiles
+TESTDATA += testdata/*

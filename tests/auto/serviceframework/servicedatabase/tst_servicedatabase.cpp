@@ -116,7 +116,7 @@ static const QString securityTokenStranger("SecurityTokenStranger");
 
 void ServiceDatabaseUnitTest::testRegistration()
 {
-    QDir testdir = QDir(TESTDATA_DIR "/testdata" );
+    QDir testdir = QDir(QFINDTESTDATA("testdata"));
 
     ServiceMetaData parser(testdir.absoluteFilePath("ServiceAcme.xml"));
     QVERIFY(parser.extractMetadata());
@@ -1370,7 +1370,7 @@ void ServiceDatabaseUnitTest::unregister()
 
     //  == check that the service can be registered again
     //     after it has been unregistered ==
-    QDir testdir = QDir(TESTDATA_DIR "/testdata" );
+    QDir testdir = QDir(QFINDTESTDATA("testdata"));
     ServiceMetaData parser(testdir.absoluteFilePath("ServiceDharma_Flame.xml"));
     QVERIFY(parser.extractMetadata());
     QVERIFY(registerService(parser.parseResults()));
@@ -1515,7 +1515,7 @@ void ServiceDatabaseUnitTest::securityTokens() {
     // Clear databases just in case
     database.close();
     QFile::remove(database.databasePath());
-    QDir testdir = QDir(TESTDATA_DIR "/testdata" );
+    QDir testdir = QDir(QFINDTESTDATA("testdata"));
     QVERIFY(database.open());
     database.m_databasePath = QDir::toNativeSeparators(QDir::currentPath().append("/services.db"));
 

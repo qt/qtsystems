@@ -119,11 +119,7 @@ void tst_QServiceDeletion::publishService()
     QRemoteServiceRegister *serviceRegister = new QRemoteServiceRegister(this);
 
     QString serviceName = "TestService";
-#ifdef SRCDIR
-    QString xmlFilename = QString(SRCDIR) + "/xmldata/testdeletion.xml";
-#else
-    QString xmlFilename = QCoreApplication::applicationDirPath() + "/xmldata/testdeletion.xml";
-#endif
+    QString xmlFilename = QFINDTESTDATA("xmldata/testdeletion.xml");
     QString interfaceName = "com.nokia.test.services.TestService";
     QString interfaceVersion = "1.0";
     QString ipcAddress = "test_service";

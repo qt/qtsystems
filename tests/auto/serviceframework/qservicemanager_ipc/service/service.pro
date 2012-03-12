@@ -19,19 +19,10 @@ jsondb|contains(QT_CONFIG, jsondb) {
 }
 
 QT += serviceframework serviceframework-private
-
-
+QT += testlib # QFINDTESTDATA
+DEFINES += TESTDATA_INSTALL_DIR=\\\"$$[QT_INSTALL_TESTS]/tst_qservicemanager_ipc/\\\"
+DEFINES += TESTDATA_SRC_DIR=\\\"$$PWD/\\\"
 SOURCES += main.cpp
-!mtlib:!contains(config_test_mtlib, yes): DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
 
-RPM_PACKAGE_NAME = $$(RPM_PACKAGE_NAME)
-isEmpty(RPM_PACKAGE_NAME) {
-    RPM_PACKAGE_NAME = unknown-package
-}
-QMAKE_EXTRA_VARIABLES += RPM_PACKAGE_NAME
-
-target.path = $$[QT_INSTALL_LIBS]/$(EXPORT_RPM_PACKAGE_NAME)-tests/tst_client
-
-addFiles.files = ../xmldata/*
-addFiles.path = $$[QT_INSTALL_LIBS]/$(EXPORT_RPM_PACKAGE_NAME)-tests/tst_client/xmldata
-INSTALLS += addFiles
+target.path = $$[QT_INSTALL_TESTS]/tst_qservicemanager_ipc
+INSTALLS += target

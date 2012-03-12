@@ -20,8 +20,4 @@ SOURCES += tst_qservicemanager.cpp \
            ../qsfwtestutil.cpp
 
 
-addFiles.files = xml/testserviceplugin.xml \
-                    xml/sampleservice.xml \
-                    xml/sampleservice2.xml
-addFiles.path = xml
-DEPLOYMENT += addFiles
+TESTDATA += xml/*

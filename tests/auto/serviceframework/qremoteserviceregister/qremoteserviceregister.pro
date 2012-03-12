@@ -7,8 +7,5 @@ QT -= gui
 SOURCES += tst_qremoteserviceregister.cpp
 HEADERS += service.h
 
-!mtlib:!contains(config_test_mtlib, yes): DEFINES += SRCDIR=\\\"$$PWD/\\\"
+TESTDATA += xmldata/*
 
-addFiles.files = xmldata/*
-addFiles.path = xmldata
-DEPLOYMENT += addFiles

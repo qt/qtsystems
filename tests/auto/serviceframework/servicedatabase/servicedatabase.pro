@@ -3,14 +3,7 @@ CONFIG += testcase
 
 QT = core sql serviceframework serviceframework-private testlib
 
-addFiles.files = testdata/*
-addFiles.path = testdata
-DEPLOYMENT += addFiles
-
-
-!mtlib:!contains(config_test_mtlib, yes) {
-    DEFINES += TESTDATA_DIR=\\\"$$PWD/\\\"
-}
+TESTDATA += testdata/*
 
 # Input 
 SOURCES += tst_servicedatabase.cpp \

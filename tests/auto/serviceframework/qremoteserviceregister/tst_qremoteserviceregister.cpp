@@ -117,11 +117,7 @@ void tst_QRemoteServiceRegister::initTestCase()
     serviceRegister->setSecurityFilter(mySecurityFilterFunction);
 
     QServiceManager* manager = new QServiceManager(this);
-#ifdef SRCDIR
-    const QString path = QString(SRCDIR) + "/xmldata/rsrexampleservice.xml";
-#else
-    const QString path = QCoreApplication::applicationDirPath() + "/xmldata/rsrexampleservice.xml";
-#endif
+    const QString path = QFINDTESTDATA("/xmldata/rsrexampleservice.xml");
     bool r = manager->addService(path);
     QVERIFY2(r, qPrintable(QString("Cannot register RSRExampleService - %1").arg(path)));
 
