@@ -289,16 +289,15 @@ QString QDeviceInfoPrivate::imei(int interface)
 QString QDeviceInfoPrivate::manufacturer()
 {
     if (manufacturerBuffer.isEmpty()) {
-        QStringList paths;
-        paths << QStringLiteral("/sys/kernel/info/make") << QStringLiteral("/sys/devices/virtual/dmi/id/sys_vendor");
-        foreach (const QString &path, paths) {
-            QFile file(path);
-            if (file.open(QIODevice::ReadOnly)) {
-                manufacturerBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
-                break;
-            }
-        }
+#if !defined(QT_NO_LIBSYSINFO)
+        manufacturerBuffer = getSysInfoValue("/component/manufacturer");
+#else
+        QFile file("/sys/devices/virtual/dmi/id/sys_vendor");
+        if (file.open(QIODevice::ReadOnly))
+            manufacturerBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
+#endif
     }
+
     return manufacturerBuffer;
 }
 
