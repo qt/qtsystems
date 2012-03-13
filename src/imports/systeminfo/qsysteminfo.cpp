@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 class QSystemInfoDeclarativeModule : public QQmlExtensionPlugin
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface" FILE "systeminfo.json")
 
 public:
     virtual void registerTypes(const char *uri)
@@ -76,8 +77,6 @@ public:
 QT_END_NAMESPACE
 
 #include "qsysteminfo.moc"
-
-Q_EXPORT_PLUGIN2(qsysteminfodeclarativemodule, QT_PREPEND_NAMESPACE(QSystemInfoDeclarativeModule))
 
 /*!
     \qmlclass ScreenSaver QScreenSaver

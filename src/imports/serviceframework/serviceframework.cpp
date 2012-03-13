@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 class QServiceDeclarativeModule : public QQmlExtensionPlugin
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface" FILE "serviceframework.json")
 
 public:
     virtual void registerTypes(const char *uri)
@@ -67,6 +68,3 @@ public:
 
 QT_END_NAMESPACE
 #include "serviceframework.moc"
-
-Q_EXPORT_PLUGIN2(qservicedeclarativemodule, QT_PREPEND_NAMESPACE(QServiceDeclarativeModule));
-

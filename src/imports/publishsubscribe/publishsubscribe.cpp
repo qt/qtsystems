@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 class QSubscriberDeclarativeModule : public QQmlExtensionPlugin
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface" FILE "publishsubscribe.json")
+
 public:
     virtual void registerTypes(const char *uri)
     {
@@ -65,6 +67,3 @@ public:
 QT_END_NAMESPACE
 
 #include "publishsubscribe.moc"
-
-Q_EXPORT_PLUGIN2(qsubscriberdeclarativemodule, QT_PREPEND_NAMESPACE(QSubscriberDeclarativeModule))
-
