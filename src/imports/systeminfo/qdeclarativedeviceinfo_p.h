@@ -69,8 +69,6 @@ class QDeclarativeDeviceInfo : public QObject
 
     Q_FLAGS(LockType LockTypeFlags)
 
-    Q_PROPERTY(bool monitorActivatedLocks READ monitorActivatedLocks WRITE setMonitorActivatedLocks NOTIFY monitorActivatedLocksChanged)
-    Q_PROPERTY(bool monitorEnabledLocks READ monitorEnabledLocks WRITE setMonitorEnabledLocks NOTIFY monitorEnabledLocksChanged)
     Q_PROPERTY(bool monitorThermalState READ monitorThermalState WRITE setMonitorThermalState NOTIFY monitorThermalStateChanged)
 
     Q_PROPERTY(LockTypeFlags activatedLocks READ activatedLocks NOTIFY activatedLocksChanged)
@@ -119,12 +117,7 @@ public:
     QDeclarativeDeviceInfo(QObject *parent = 0);
     virtual ~QDeclarativeDeviceInfo();
 
-    bool monitorActivatedLocks() const;
-    void setMonitorActivatedLocks(bool monitor);
     LockTypeFlags activatedLocks() const;
-
-    bool monitorEnabledLocks() const;
-    void setMonitorEnabledLocks(bool monitor);
     LockTypeFlags enabledLocks() const;
 
     bool monitorThermalState() const;
@@ -141,8 +134,6 @@ public:
     Q_INVOKABLE QString version(Version type) const;
 
 Q_SIGNALS:
-    void monitorActivatedLocksChanged();
-    void monitorEnabledLocksChanged();
     void monitorThermalStateChanged();
 
     void activatedLocksChanged();
@@ -152,8 +143,6 @@ Q_SIGNALS:
 private:
     QDeviceInfo *deviceInfo;
 
-    bool isMonitorActivatedLocks;
-    bool isMonitorEnabledLocks;
     bool isMonitorThermalState;
 };
 

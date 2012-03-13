@@ -56,8 +56,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeDeviceInfo::QDeclarativeDeviceInfo(QObject *parent)
     : QObject(parent)
     , deviceInfo(new QDeviceInfo(this))
-    , isMonitorActivatedLocks(false)
-    , isMonitorEnabledLocks(false)
     , isMonitorThermalState(false)
 {
 }
@@ -67,31 +65,6 @@ QDeclarativeDeviceInfo::QDeclarativeDeviceInfo(QObject *parent)
  */
 QDeclarativeDeviceInfo::~QDeclarativeDeviceInfo()
 {
-}
-
-/*!
-    \qmlproperty bool DeviceInfo::monitorActivatedLocks
-
-    This property holds whether or not monitor the change of activated locks.
- */
-bool QDeclarativeDeviceInfo::monitorActivatedLocks() const
-{
-    return isMonitorActivatedLocks;
-}
-
-void QDeclarativeDeviceInfo::setMonitorActivatedLocks(bool monitor)
-{
-    if (monitor != isMonitorActivatedLocks) {
-        isMonitorActivatedLocks = monitor;
-        if (monitor) {
-            connect(deviceInfo, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags)),
-                    this, SIGNAL(activatedLocksChanged()));
-        } else {
-            disconnect(deviceInfo, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags)),
-                       this, SIGNAL(activatedLocksChanged()));
-        }
-        emit monitorActivatedLocksChanged();
-    }
 }
 
 /*!
@@ -106,6 +79,9 @@ void QDeclarativeDeviceInfo::setMonitorActivatedLocks(bool monitor)
 */
 QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::activatedLocks() const
 {
+    connect(deviceInfo, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags)),
+            this, SIGNAL(activatedLocksChanged()));
+
     QDeviceInfo::LockTypeFlags locks(deviceInfo->activatedLocks());
     LockTypeFlags declarativeLocks(NoLock);
     if (locks.testFlag(QDeviceInfo::PinLock))
@@ -113,31 +89,6 @@ QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::activatedLocks() c
     if (locks.testFlag(QDeviceInfo::TouchOrKeyboardLock))
         declarativeLocks |= TouchOrKeyboardLock;
     return declarativeLocks;
-}
-
-/*!
-    \qmlproperty bool DeviceInfo::monitorEnabledLocks
-
-    This property holds whether or not monitor the change of enabled locks.
- */
-bool QDeclarativeDeviceInfo::monitorEnabledLocks() const
-{
-    return isMonitorEnabledLocks;
-}
-
-void QDeclarativeDeviceInfo::setMonitorEnabledLocks(bool monitor)
-{
-    if (monitor != isMonitorEnabledLocks) {
-        isMonitorEnabledLocks = monitor;
-        if (monitor) {
-            connect(deviceInfo, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags)),
-                    this, SIGNAL(enabledLocksChanged()));
-        } else {
-            disconnect(deviceInfo, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags)),
-                       this, SIGNAL(enabledLocksChanged()));
-        }
-        emit monitorActivatedLocksChanged();
-    }
 }
 
 /*!
@@ -152,6 +103,9 @@ void QDeclarativeDeviceInfo::setMonitorEnabledLocks(bool monitor)
 */
 QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::enabledLocks() const
 {
+    connect(deviceInfo, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags)),
+            this, SIGNAL(enabledLocksChanged()));
+
     QDeviceInfo::LockTypeFlags locks(deviceInfo->enabledLocks());
     LockTypeFlags declarativeLocks(NoLock);
     if (locks.testFlag(QDeviceInfo::PinLock))
