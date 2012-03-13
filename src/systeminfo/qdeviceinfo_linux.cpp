@@ -305,16 +305,17 @@ QString QDeviceInfoPrivate::manufacturer()
 QString QDeviceInfoPrivate::model()
 {
     if (modelBuffer.isEmpty()) {
-        QStringList paths;
-        paths << QStringLiteral("/sys/kernel/info/model") << QStringLiteral("/sys/devices/virtual/dmi/id/product_name");
-        foreach (const QString &path, paths) {
-            QFile file(path);
-            if (file.open(QIODevice::ReadOnly)) {
-                modelBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
-                break;
-            }
-        }
+#if !defined(QT_NO_JSONDB)
+        if (!jsondbWrapper)
+            jsondbWrapper = new QJsonDbWrapper(this);
+        modelBuffer = jsondbWrapper->getModel();
+#else
+        QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_name"));
+        if (file.open(QIODevice::ReadOnly))
+            modelBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
+#endif
     }
+
     return modelBuffer;
 }
 

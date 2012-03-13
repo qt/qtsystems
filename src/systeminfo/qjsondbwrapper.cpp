@@ -114,6 +114,12 @@ QString QJsonDbWrapper::getUniqueDeviceID()
                                   QString(QStringLiteral("uniqueDeviceId"))).toString();
 }
 
+QString QJsonDbWrapper::getModel()
+{
+    return getSystemSettingValue(QString(QStringLiteral("sw_variant_configuration")),
+                                 QString(QStringLiteral("productName"))).toString();
+}
+
 bool QJsonDbWrapper::isVibrationActivated()
 {
     return getSystemSettingValue(QString(QStringLiteral("sounds")),

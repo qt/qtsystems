@@ -75,6 +75,7 @@ public:
     bool hasFeaturePositioning();
     bool hasFeatureVibration();
     QString getUniqueDeviceID();
+    QString getModel();
 
     // DeviceProfile Interface
     bool isVibrationActivated();
