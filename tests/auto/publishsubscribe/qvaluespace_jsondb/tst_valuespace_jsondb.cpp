@@ -264,6 +264,7 @@ private Q_SLOTS:
     void testAPI_PublisherPath();
     void testAPI_PublishSubscribe();
     void testAPI_Notification();
+    void testAPI_cd();
 
 public slots:
     void contentsChanged();
@@ -965,6 +966,16 @@ void TestQValueSpaceJsonDb::testAPI_Notification()
     QTest::qWait(WAIT_FOR);
     QCOMPARE(subscriber.value(name).toInt(), value);
     QCOMPARE(spy.count(), 1);
+}
+
+void TestQValueSpaceJsonDb::testAPI_cd()
+{
+    QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
+                                     "/com/pstest/cd");
+    QVERIFY(subscriber.path() == "/com/pstest/cd");
+
+    subscriber.cd("/com/pstest/cd/sub");
+    QVERIFY(subscriber.path() == "/com/pstest/cd/sub");
 }
 
 void TestQValueSpaceJsonDb::contentsChanged()
