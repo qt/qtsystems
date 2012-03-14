@@ -80,6 +80,9 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getActivatedLocks()
     if (getSystemPropertyValue(QString(QStringLiteral("SecurityLock")), QString(QStringLiteral("active"))).toBool())
         activeLocks |= QDeviceInfo::PinLock;
 
+    if (getSystemPropertyValue(QString(QStringLiteral("Lockscreen")), QString(QStringLiteral("isLocked"))).toBool())
+        activeLocks |= QDeviceInfo::TouchOrKeyboardLock;
+
     return activeLocks;
 }
 
@@ -92,6 +95,9 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::getEnabledLocks()
 
     if (hasSystemObject(QString(QStringLiteral("SecurityLock"))))
         enabledLocks |= QDeviceInfo::PinLock;
+
+    if (hasSystemObject(QString(QStringLiteral("Lockscreen"))))
+        enabledLocks |= QDeviceInfo::TouchOrKeyboardLock;
 
     return enabledLocks;
 }
@@ -210,12 +216,16 @@ void QJsonDbWrapper::connectNotify(const char *signal)
         if (!jsonDbWatcher) {
             jsonDbWatcher = new QJsonDbWatcher(this);
             jsonDbWatcher->setWatchedActions(QJsonDbWatcher::All);
-            jsonDbWatcher->setQuery(QString(QStringLiteral("[_type=\"com.nokia.mt.system.SecurityLock\"]")));
+            jsonDbWatcher->setQuery(QString(QStringLiteral("[?_type in [\"com.nokia.mt.system.SecurityLock\",\"com.nokia.mt.system.Lockscreen\"]]")));
             connect(jsonDbWatcher, SIGNAL(notificationsAvailable(int)),
                     this, SLOT(onJsonDbWatcherNotificationsAvailable()));
             // TODO: error handling for watcher
         }
         jsonDbConnection.addWatcher(jsonDbWatcher);
+        if (needWatchActivatedLocks)
+            watchActivatedLocks = true;
+        if (needWatchEnabledLocks)
+            watchEnabledLocks = true;
     }
 }
 
@@ -241,32 +251,58 @@ void QJsonDbWrapper::onJsonDbWatcherNotificationsAvailable()
     QList<QJsonDbNotification> notifications = jsonDbWatcher->takeNotifications();
     if (notifications.size() > 0) {
         const QJsonDbNotification notification = notifications.at(0);
+        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toAscii();
         if (watchActivatedLocks) {
             if (notification.action() == QJsonDbWatcher::Removed) {
-                if (watchActivatedLocks && activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                if (activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)
+                        && strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
+                    activatedLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
+                    emit activatedLocksChanged(activatedLocks);
+                } else if (activatedLocks.testFlag(QDeviceInfo::PinLock)
+                           && strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0) {
                     activatedLocks &= ~QDeviceInfo::PinLock;
                     emit activatedLocksChanged(activatedLocks);
                 }
             } else {
-                if (notification.object().value(QString(QStringLiteral("active"))).toBool()) {
-                    if (!activatedLocks.testFlag(QDeviceInfo::PinLock)) {
-                        activatedLocks |= QDeviceInfo::PinLock;
-                        emit activatedLocksChanged(activatedLocks);
+                if (strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
+                    if (notification.object().value(QString(QStringLiteral("isLocked"))).toBool()) {
+                        if (!activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
+                            activatedLocks |= QDeviceInfo::TouchOrKeyboardLock;
+                            emit activatedLocksChanged(activatedLocks);
+                        }
+                    } else {
+                        if (activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
+                            activatedLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
+                            emit activatedLocksChanged(activatedLocks);
+                        }
                     }
-                } else {
-                    if (activatedLocks.testFlag(QDeviceInfo::PinLock)) {
-                        activatedLocks &= ~QDeviceInfo::PinLock;
-                        emit activatedLocksChanged(activatedLocks);
+                } else if (strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0) {
+                    if (notification.object().value(QString(QStringLiteral("active"))).toBool()) {
+                        if (!activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                            activatedLocks |= QDeviceInfo::PinLock;
+                            emit activatedLocksChanged(activatedLocks);
+                        }
+                    } else {
+                        if (activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                            activatedLocks &= ~QDeviceInfo::PinLock;
+                            emit activatedLocksChanged(activatedLocks);
+                        }
                     }
                 }
             }
         }
         if (watchEnabledLocks) {
             if (notification.action() == QJsonDbWatcher::Created) {
-                enabledLocks |= QDeviceInfo::PinLock;
+                if (strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0)
+                    enabledLocks |= QDeviceInfo::TouchOrKeyboardLock;
+                else if (strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0)
+                    enabledLocks |= QDeviceInfo::PinLock;
                 emit enabledLocksChanged(enabledLocks);
             } else if (notification.action() == QJsonDbWatcher::Removed) {
-                enabledLocks &= !QDeviceInfo::PinLock;
+                if (strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0)
+                    enabledLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
+                else if (strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0)
+                    enabledLocks &= ~QDeviceInfo::PinLock;
                 emit enabledLocksChanged(enabledLocks);
             }
         }
