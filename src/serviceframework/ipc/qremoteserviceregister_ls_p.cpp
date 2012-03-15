@@ -195,9 +195,15 @@ protected slots:
         while (socket->bytesAvailable()) {
 
             if (pending_bytes == 0) { /* New packet */
-                QDataStream in_size(socket);
-                in_size >> pending_bytes;
-                pending_buf.clear();
+                QByteArray data = socket->read(4 - pending_header.length());
+                pending_header.append(data);
+                if (pending_header.length() == 4) {
+                    QDataStream in_size(&pending_header, QIODevice::ReadOnly);
+                    in_size.setVersion(QDataStream::Qt_4_6);
+                    in_size >> pending_bytes;
+                    pending_buf.clear();
+                    pending_header.clear();
+                }
             }
 
             if (pending_bytes) { /* read any new data and add to buffer */
@@ -236,6 +242,7 @@ protected slots:
 private:
     QLocalSocket* socket;
     QRemoteServiceRegisterLocalSocketPrivate *serviceRegPriv;
+    QByteArray pending_header;
     QByteArray pending_buf;
     quint32 pending_bytes;
 };

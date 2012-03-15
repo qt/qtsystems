@@ -112,7 +112,7 @@ QDataStream &operator>>(QDataStream &in, QServicePackage& package)
     quint32 storedMagicNumber;
     in >> storedMagicNumber;
     if (storedMagicNumber != magicNumber) {
-        qWarning() << "Datastream doesn't provide serialized QServiceFilter";
+        qWarning() << Q_FUNC_INFO << "Datastream doesn't provide serialized QServiceFilter";
         return in;
     }
 
