@@ -47,6 +47,8 @@
 #include <Winsock2.h>
 #include <windows.h>
 #include <Vfw.h>
+#include <Ws2bth.h>
+#include <Bthsdpdef.h>
 #include <BluetoothAPIs.h>
 #include <Wlanapi.h>
 
