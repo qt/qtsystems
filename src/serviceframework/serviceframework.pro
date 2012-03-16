@@ -6,7 +6,7 @@ QPRO_PWD = $PWD
 CONFIG += module
 MODULE_PRI = ../../modules/qt_serviceframework.pri
 
-QT = core sql
+QT = core
 
 DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
@@ -56,6 +56,7 @@ contains(DEFINES, QT_ADDON_JSONDB_LIB): {
     SOURCES += databasemanager_jsondb.cpp
     PRIVATE_HEADERS += databasemanager_jsondb_p.h
 } else {
+    QT += sql
     SOURCES += servicedatabase.cpp \
         databasemanager.cpp
     PRIVATE_HEADERS += servicedatabase_p.h \
