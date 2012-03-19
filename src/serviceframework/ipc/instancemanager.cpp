@@ -165,6 +165,7 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
                 if (params.at(0) == "QServiceClientCredentials*") {
                     hasSecureConstructor = true;
                     service = metaObject->newInstance(Q_ARG(QServiceClientCredentials*, &creds));
+                    break;
                 }
             }
             if (!hasSecureConstructor) {
@@ -189,6 +190,7 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
             if (params.at(0) == "QServiceClientCredentials*") {
                 hasSecureConstructor = true;
                 service = metaObject->newInstance(Q_ARG(QServiceClientCredentials*, &creds));
+                break;
             }
         }
         if (!hasSecureConstructor) {

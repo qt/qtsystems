@@ -136,11 +136,11 @@ public:
 
     Error error() const;
 
+    bool event(QEvent *);
+
 protected:
     void connectNotify(const char *signal);
     void disconnectNotify(const char *signal);
-
-    bool event(QEvent *);
 
 Q_SIGNALS:
     void serviceAdded(const QString& serviceName, QService::Scope scope);
