@@ -45,47 +45,86 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QServiceClientCredentials
+    \brief The QServiceClientCredentials class holds credentials for the service client.
+
+    This class is used when implementing service security. It allows the service to check
+    the credentials of the client and then accept or reject the client.
+*/
+
+/*!
+    \internal
+*/
 QServiceClientCredentials::QServiceClientCredentials()
     : d(new QServiceClientCredentialsPrivate)
 {
     Q_ASSERT(d);
 }
 
+/*!
+    \internal
+*/
 QServiceClientCredentials::QServiceClientCredentials(const QServiceClientCredentials &other)
     : d(other.d)
 {
 }
 
+/*!
+    \internal
+*/
 QServiceClientCredentials::~QServiceClientCredentials()
 {
 }
 
+/*!
+    Returns the process identifier for the client. On Unix systems this is the PID
+    of the client process.
+*/
 qintptr QServiceClientCredentials::getProcessIdentifier() const
 {
     return d->pid;
 }
 
+/*!
+    Returns the group identifier for the client. On Unix systems this is the GID
+    of the client process.
+*/
 qintptr QServiceClientCredentials::getGroupIdentifier() const
 {
     return d->gid;
 }
 
+/*!
+    Returns the user identifier for the client. On Unix systems this is the UID
+    of the client process.
+*/
 qintptr QServiceClientCredentials::getUserIdentifier() const
 {
     return d->uid;
 }
 
+/*!
+    Returns true if this object is valid.
+*/
 bool QServiceClientCredentials::isValid() const
 {
     return d && (d->pid || d->uid || d->gid);
 }
 
+/*!
+    Called by the service to accept or reject the client. Set \a isAccepted
+    to true to accept the client.
+*/
 void QServiceClientCredentials::setClientAccepted(bool isAccepted)
 {
     d->acceptedSet = true;
     d->accepted = isAccepted;
 }
 
+/*!
+    Returns true if the client has been accepted, false otherwise.
+*/
 bool QServiceClientCredentials::isClientAccepted() const
 {
 #ifdef QT_MTCLIENT_PRESENT
