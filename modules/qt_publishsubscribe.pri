@@ -11,7 +11,7 @@ QT.publishsubscribe.sources = $$QT_MODULE_BASE/src/publishsubscribe
 QT.publishsubscribe.libs = $$QT_MODULE_LIB_BASE
 QT.publishsubscribe.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.publishsubscribe.imports = $$QT_MODULE_IMPORT_BASE
-QT.publishsubscribe.depends = core network
+QT.publishsubscribe.depends = core
 QT.publishsubscribe.DEFINES = QT_PUBLISHSUBSCRIBE_LIB
 
 QT_CONFIG += publishsubscribe
