@@ -46,7 +46,7 @@ import QtJsonDb 1.0 as JsonDb
 Item {
     id: jsonDbHandler
 
-    property var partition: JsonDb.partition("com.nokia.qtjsondb.System")
+    property var partition: JsonDb.partition("com.nokia.mt.System")
     property var objectsToDelete: []
     property var count
 
