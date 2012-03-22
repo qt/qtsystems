@@ -413,7 +413,7 @@ void JsonDbHandle::onError(int, int, const QString&)
     DEBUG_SIGNATURE
 }
 
-void JsonDbHandle::getNotificationQueryAndActions(QString path, QString query, QtJsonDb::QJsonDbWatcher::Actions& actions)
+void JsonDbHandle::getNotificationQueryAndActions(QString path, QString &query, QtJsonDb::QJsonDbWatcher::Actions& actions)
 {
     DEBUG_SIGNATURE
 

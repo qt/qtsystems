@@ -203,7 +203,7 @@ class JsonDbHandle : public QObject
         static QString getObjectQuery(const QString &identifier);
         static QString getSettingQuery(const QString &identifier);
 
-        void getNotificationQueryAndActions(QString path, QString query, QtJsonDb::QJsonDbWatcher::Actions &actions);
+        void getNotificationQueryAndActions(QString path, QString &query, QtJsonDb::QJsonDbWatcher::Actions &actions);
 
         void doUpdateRequest(const QJsonObject&);
 };
