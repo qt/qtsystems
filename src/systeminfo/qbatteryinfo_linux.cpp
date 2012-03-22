@@ -304,9 +304,9 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
     if (watchChargingState && attribute.contains("status")) {
         QBatteryInfo::ChargingState state = QBatteryInfo::UnknownChargingState;
         if (qstrcmp(value, "Charging") == 0)
-            state = QBatteryInfo::NotCharging;
-        else if (qstrcmp(value, "Not charging") == 0)
             state = QBatteryInfo::Charging;
+        else if (qstrcmp(value, "Not charging") == 0)
+            state = QBatteryInfo::NotCharging;
         else if (qstrcmp(value, "Discharging") == 0)
             state = QBatteryInfo::Discharging;
         else if (qstrcmp(value, "Full") == 0)
