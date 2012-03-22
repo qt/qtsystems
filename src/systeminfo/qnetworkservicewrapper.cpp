@@ -284,7 +284,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             // ensure networkMode slot is connected to technologyChanged signal so it is easier to pass current mode in networkSignalStrengthChanged signal
             if (!watchNetworkModes) {
                 networkModes[interfaceIndex] = getNetworkMode(interfaceIndex);
-                connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(QString)));
+                connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(const QString&)));
             }
             signalStrengths[interfaceIndex] = getSignalStrength(interfaceIndex);
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(signalBarsChanged(int)), this, SLOT(onSignalStrengthChanged(int)));
@@ -298,7 +298,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             // ensure networkMode slot is connected to technologyChanged signal so it is easier to pass current mode in networkStatusChanged signal
             if (!watchNetworkModes) {
                 networkModes[interfaceIndex] = getNetworkMode(interfaceIndex);
-                connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(QString)));
+                connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(const QString&)));
             }
             networkStatuses[interfaceIndex] = getNetworkStatus(interfaceIndex);
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(registrationStatusChanged(const QString&)), this, SLOT(onNetworkStatusChanged(const QString&)));
@@ -344,7 +344,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             // ensure networkMode slot is connected to technologyChanged signal so it is easier to pass current mode in networkNameChanged signal
             if (!watchNetworkModes) {
                 networkModes[interfaceIndex] = getNetworkMode(interfaceIndex);
-                connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(QString)));
+                connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(const QString&)));
             }
             operatorNames[interfaceIndex] = getOperatorName(interfaceIndex);
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(providerNameChanged(const QString&)), this, SLOT(onOperatorNameChanged(const QString&)));
@@ -407,7 +407,7 @@ void QNetworkServiceWrapper::disconnectNotify(const char *signal)
 
     if (watchNetworkModes && !watchSignalStrengths && !watchStatuses && !watchOperatorNames) {
         foreach (const int interfaceIndex, interfaceIndexes)
-            disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(QString&)));
+            disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onNetworkModeChanged(const QString&)));
         watchNetworkModes = false;
     }
 }
