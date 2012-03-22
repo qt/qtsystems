@@ -425,7 +425,7 @@ void JsonDbHandle::getNotificationQueryAndActions(QString path, QString &query, 
         // Neither a settings object nor a setting in a settings object was found
         // Probably the caller wants to subscribe somewhere on the top in the namespace
         query = QString(QStringLiteral("[?identifier startsWith \"%1\"]%2")).
-                    arg(path.replace(QStringLiteral("."), QStringLiteral("\\."))).
+                    arg(path).
                     arg(SETTINGS_FILTER);
 
         actions |= QtJsonDb::QJsonDbWatcher::Created | QtJsonDb::QJsonDbWatcher::Removed;
