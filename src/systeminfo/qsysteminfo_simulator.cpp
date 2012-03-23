@@ -479,11 +479,13 @@ QNetworkInfo::NetworkMode QNetworkInfoSimulator::currentNetworkMode()
     QNetworkInfo::NetworkMode mode2 = QNetworkInfo::UnknownMode;
         if (d_ptr)
             mode2 = d_ptr->currentNetworkMode();
-        switch (mode2) {
+        switch (mode) {
         case QNetworkInfo::WlanMode:
-            if (mode != QNetworkInfo::EthernetMode)
+            if (mode2 == QNetworkInfo::EthernetMode)
                 mode = mode2;
+            break;
         default:
+            mode = mode2;
             break;
         }
 
