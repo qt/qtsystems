@@ -598,7 +598,9 @@ void QNetworkServiceWrapper::onNetworkModeChanged(const QString &technology)
 
 QNetworkInfo::CellDataTechnology QNetworkServiceWrapper::technologyStringToEnum(const QString &technology)
 {
-    if (technology == QString::fromUtf8("edge"))
+    if (technology == QString::fromUtf8("gsm"))
+        return QNetworkInfo::GprsDataTechnology;
+    else if (technology == QString::fromUtf8("edge"))
         return QNetworkInfo::EdgeDataTechnology;
     else if (technology == QString::fromUtf8("umts"))
         return QNetworkInfo::UmtsDataTechnology;
