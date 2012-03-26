@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 QDeclarativeStorageInfo::QDeclarativeStorageInfo(QObject *parent)
     : QObject(parent)
     , storageInfo(new QStorageInfo(this))
+    , isMonitorAllLogicalDrives(false)
 {
 }
 
@@ -64,6 +65,31 @@ QDeclarativeStorageInfo::QDeclarativeStorageInfo(QObject *parent)
  */
 QDeclarativeStorageInfo::~QDeclarativeStorageInfo()
 {
+}
+
+/*!
+    \qmlproperty bool StorageInfo::monitorAllLogicalDrives
+
+    This property is obsoleted, and will be removed soon. You don't need to use it at all.
+ */
+bool QDeclarativeStorageInfo::monitorAllLogicalDrives() const
+{
+    return isMonitorAllLogicalDrives;
+}
+
+void QDeclarativeStorageInfo::setMonitorAllLogicalDrives(bool monitor)
+{
+    if (monitor != isMonitorAllLogicalDrives) {
+        isMonitorAllLogicalDrives = monitor;
+        if (monitor) {
+            connect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)),
+                    this, SIGNAL(logicalDriveChanged(QString,bool)));
+        } else {
+            disconnect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)),
+                       this, SIGNAL(logicalDriveChanged(QString,bool)));
+        }
+        emit monitorAllLogicalDrivesChanged();
+    }
 }
 
 /*!

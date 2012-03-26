@@ -66,6 +66,9 @@ class QDeclarativeStorageInfo : public QObject
 
     Q_PROPERTY(QStringList allLogicalDrives READ allLogicalDrives NOTIFY logicalDriveChanged)
 
+    // obsoleted
+    Q_PROPERTY(bool monitorAllLogicalDrives READ monitorAllLogicalDrives WRITE setMonitorAllLogicalDrives NOTIFY monitorAllLogicalDrivesChanged)
+
 public:
     enum DriveType {
         UnknownDrive = QStorageInfo::UnknownDrive,
@@ -79,6 +82,8 @@ public:
     QDeclarativeStorageInfo(QObject *parent = 0);
     virtual ~QDeclarativeStorageInfo();
 
+    bool monitorAllLogicalDrives() const;
+    void setMonitorAllLogicalDrives(bool monitor);
     QStringList allLogicalDrives() const;
 
     Q_INVOKABLE qlonglong availableDiskSpace(const QString &drive) const;
@@ -87,10 +92,14 @@ public:
     Q_INVOKABLE int driveType(const QString &drive) const;
 
 Q_SIGNALS:
+    void monitorAllLogicalDrivesChanged();
+
     void logicalDriveChanged(const QString &drive, bool added);
 
 private:
     QStorageInfo *storageInfo;
+
+    bool isMonitorAllLogicalDrives;
 };
 
 QT_END_NAMESPACE
