@@ -264,6 +264,8 @@ private Q_SLOTS:
     void testAPI_PublisherPath();
     void testAPI_PublishSubscribe();
     void testAPI_Notification();
+    void testAPI_NotificationSetting();
+    void testAPI_NotificationUnique();
     void testAPI_cd();
 
 public slots:
@@ -892,11 +894,11 @@ void TestQValueSpaceJsonDb::testAPI_PublisherPath()
 void TestQValueSpaceJsonDb::testAPI_PublishSubscribe()
 {
     QStringList objects;
-    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublishSubscribe\", \"settings\": {\"setting1\":1}}";
-    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.PublishSubscribe.abcdefg\", \"settings\": {\"setting2\":2}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.PublishSubscribe.first\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.PublishSubscribe.second\", \"settings\": {\"setting2\":2}}";
     jsonDbHandler.createJsonObjects(objects);
 
-    QString path = "/com/pstest/PublishSubscribe";
+    QString path = "/com/pstest/PublishSubscribe/first";
     QString name = "setting1";
     int value = 42;
 
@@ -928,7 +930,8 @@ void TestQValueSpaceJsonDb::testAPI_PublishSubscribe()
     QVERIFY(objectMap[QStringLiteral("settings")].toMap()[QStringLiteral("setting1")].toInt() == 42);
 
     // Try to read the whole system settings object
-    subscriber.setPath("/com/pstest/PublishSubscribe/abcdefg");
+    subscriber.setPath("/com/pstest/PublishSubscribe/second");
+    QVERIFY(subscriber.path() == "/com/pstest/PublishSubscribe/second");
     wholeObject = subscriber.value();
     QVERIFY(wholeObject.isValid());
 
@@ -966,6 +969,72 @@ void TestQValueSpaceJsonDb::testAPI_Notification()
     QTest::qWait(WAIT_FOR);
     QCOMPARE(subscriber.value(name).toInt(), value);
     QCOMPARE(spy.count(), 1);
+}
+
+void TestQValueSpaceJsonDb::testAPI_NotificationSetting()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.Notification\", \"settings\": {\"setting1\":1, \"setting2\":2}}";
+    jsonDbHandler.createJsonObjects(objects);
+
+    int value = 42;
+
+    QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
+                                     "/com/pstest/Notification/setting2");
+    connect(&subscriber, SIGNAL(contentsChanged()), this, SLOT(contentsChanged()));
+    QVERIFY(subscriber.isConnected());
+    QCOMPARE(subscriber.value().toInt(), 2);
+
+    QSignalSpy spy(&subscriber, SIGNAL(contentsChanged()));
+    QVERIFY(spy.isValid());
+    QCOMPARE(spy.count(), 0);
+
+    QValueSpacePublisher publisher("/com/pstest/Notification/setting1");
+    QVERIFY(publisher.isConnected());
+    publisher.setValue("", value);
+    publisher.sync();
+
+    QTest::qWait(WAIT_FOR);
+    QCOMPARE(spy.count(), 1);
+}
+
+void TestQValueSpaceJsonDb::testAPI_NotificationUnique()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.Notification1\", \"settings\": {\"setting1\":1}}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.Notification2\", \"settings\": {\"setting2\":2}}";
+    jsonDbHandler.createJsonObjects(objects);
+
+    int value = 42;
+
+    QValueSpaceSubscriber subscriber1(QValueSpace::PermanentLayer | QValueSpace::WritableLayer, "/com/pstest/Notification1");
+    connect(&subscriber1, SIGNAL(contentsChanged()), this, SLOT(contentsChanged()));
+    QVERIFY(subscriber1.isConnected());
+    QCOMPARE(subscriber1.value("setting1").toInt(), 1);
+
+    QValueSpaceSubscriber subscriber2(QValueSpace::PermanentLayer | QValueSpace::WritableLayer, "/com/pstest/Notification2");
+    connect(&subscriber2, SIGNAL(contentsChanged()), this, SLOT(contentsChanged()));
+    QVERIFY(subscriber2.isConnected());
+    QCOMPARE(subscriber2.value("setting2").toInt(), 2);
+
+    QSignalSpy spy1(&subscriber1, SIGNAL(contentsChanged()));
+    QVERIFY(spy1.isValid());
+    QCOMPARE(spy1.count(), 0);
+
+    QSignalSpy spy2(&subscriber2, SIGNAL(contentsChanged()));
+    QVERIFY(spy2.isValid());
+    QCOMPARE(spy2.count(), 0);
+
+    QValueSpacePublisher publisher("/com/pstest/Notification1");
+    QVERIFY(publisher.isConnected());
+    publisher.setValue("setting1", value);
+    publisher.sync();
+
+    QTest::qWait(WAIT_FOR);
+    QCOMPARE(subscriber1.value("setting1").toInt(), value);
+    QCOMPARE(spy1.count(), 1);
+
+    QCOMPARE(spy2.count(), 0);
 }
 
 void TestQValueSpaceJsonDb::testAPI_cd()
