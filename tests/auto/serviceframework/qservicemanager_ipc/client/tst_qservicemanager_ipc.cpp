@@ -464,31 +464,31 @@ void tst_QServiceManager_IPC::verifySharedMethods_data()
 
     //list of all slots, signals and invokable functions
     QTest::newRow("signalWithIntParam(int)")
-        << QByteArray("signalWithIntParam(int)") <<  (int)( QMetaMethod::Signal) << QByteArray("");
+        << QByteArray("signalWithIntParam(int)") <<  (int)( QMetaMethod::Signal) << QByteArray("void");
     QTest::newRow("signalWithVariousParam(QVariant,QString,QServiceFilter)")
-        << QByteArray("signalWithVariousParam(QVariant,QString,QServiceFilter)") <<  (int)( QMetaMethod::Signal) << QByteArray("");
+        << QByteArray("signalWithVariousParam(QVariant,QString,QServiceFilter)") <<  (int)( QMetaMethod::Signal) << QByteArray("void");
     QTest::newRow("valueChanged()")
-        << QByteArray("valueChanged()") <<  (int)( QMetaMethod::Signal) << QByteArray("");
+        << QByteArray("valueChanged()") <<  (int)( QMetaMethod::Signal) << QByteArray("void");
     QTest::newRow("triggerSignalWithIntParam()")
-        << QByteArray("triggerSignalWithIntParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithIntParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("triggerSignalWithVariousParam()")
-        << QByteArray("triggerSignalWithVariousParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithVariousParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("triggerSignalWithIntParamExecute()")
-        << QByteArray("triggerSignalWithIntParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithIntParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("triggerSignalWithVariousParamExecute()")
-        << QByteArray("triggerSignalWithVariousParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithVariousParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testSlot()")
-        << QByteArray("testSlot()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlot()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testSlotWithArgs(QByteArray,int,QVariant)")
-        << QByteArray("testSlotWithArgs(QByteArray,int,QVariant)") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlotWithArgs(QByteArray,int,QVariant)") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testSlotWithCustomArg(QServiceFilter)")
-        << QByteArray("testSlotWithCustomArg(QServiceFilter)") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlotWithCustomArg(QServiceFilter)") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testSlotWidthComplexArg(QVariantHash)")
-            << QByteArray("testSlotWithComplexArg(QVariantHash)") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+            << QByteArray("testSlotWithComplexArg(QVariantHash)") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
 
     //QServiceInterfaceDescriptor has not been declared as meta type
     QTest::newRow("testSlotWithUnknownArg(QServiceInterfaceDescriptor)")
-        << QByteArray("testSlotWithUnknownArg(QServiceInterfaceDescriptor)") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlotWithUnknownArg(QServiceInterfaceDescriptor)") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testFunctionWithReturnValue(int)")
         << QByteArray("testFunctionWithReturnValue(int)") <<  (int)( QMetaMethod::Method) << QByteArray("QString");
     QTest::newRow("testFunctionWithVariantReturnValue(QVariant)")
@@ -498,7 +498,7 @@ void tst_QServiceManager_IPC::verifySharedMethods_data()
     QTest::newRow("slotConfirmation()")
         << QByteArray("slotConfirmation()") <<  (int)( QMetaMethod::Method) << QByteArray("uint");
     QTest::newRow("setConfirmationHash(uint)")
-        << QByteArray("setConfirmationHash(uint)") <<  (int)( QMetaMethod::Method) << QByteArray("");
+        << QByteArray("setConfirmationHash(uint)") <<  (int)( QMetaMethod::Method) << QByteArray("void");
 }
 
 void tst_QServiceManager_IPC::verifySharedMethods()
@@ -668,31 +668,31 @@ void tst_QServiceManager_IPC::verifyUniqueMethods_data()
 
     //list of all slots, signals and invokable functions
     QTest::newRow("signalWithIntParam(int)")
-        << QByteArray("signalWithIntParam(int)") <<  (int)( QMetaMethod::Signal) << QByteArray("");
+        << QByteArray("signalWithIntParam(int)") <<  (int)( QMetaMethod::Signal) << QByteArray("void");
     QTest::newRow("signalWithVariousParam(QVariant,QString,QServiceFilter,QVariant)")
-        << QByteArray("signalWithVariousParam(QVariant,QString,QServiceFilter,QVariant)") <<  (int)( QMetaMethod::Signal) << QByteArray("");
+        << QByteArray("signalWithVariousParam(QVariant,QString,QServiceFilter,QVariant)") <<  (int)( QMetaMethod::Signal) << QByteArray("void");
     QTest::newRow("valueChanged()")
-        << QByteArray("valueChanged()") <<  (int)( QMetaMethod::Signal) << QByteArray("");
+        << QByteArray("valueChanged()") <<  (int)( QMetaMethod::Signal) << QByteArray("void");
     QTest::newRow("priorityChanged()")
-        << QByteArray("priorityChanged()") <<  (int)( QMetaMethod::Signal) << QByteArray("");
+        << QByteArray("priorityChanged()") <<  (int)( QMetaMethod::Signal) << QByteArray("void");
     QTest::newRow("triggerSignalWithIntParam()")
-        << QByteArray("triggerSignalWithIntParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithIntParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("triggerSignalWithVariousParam()")
-        << QByteArray("triggerSignalWithVariousParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithVariousParam()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("triggerSignalWithIntParamExecute()")
-        << QByteArray("triggerSignalWithIntParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithIntParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("triggerSignalWithVariousParamExecute()")
-        << QByteArray("triggerSignalWithVariousParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("triggerSignalWithVariousParamExecute()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testSlot()")
-        << QByteArray("testSlot()") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlot()") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testSlotWithArgs(QByteArray,int,QVariant)")
-        << QByteArray("testSlotWithArgs(QByteArray,int,QVariant)") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlotWithArgs(QByteArray,int,QVariant)") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testSlotWithCustomArg(QServiceFilter)")
-        << QByteArray("testSlotWithCustomArg(QServiceFilter)") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlotWithCustomArg(QServiceFilter)") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
 
     //QServiceInterfaceDescriptor has not been declared as meta type
     QTest::newRow("testSlotWithUnknownArg(QServiceInterfaceDescriptor)")
-        << QByteArray("testSlotWithUnknownArg(QServiceInterfaceDescriptor)") <<  (int)( QMetaMethod::Slot) << QByteArray("");
+        << QByteArray("testSlotWithUnknownArg(QServiceInterfaceDescriptor)") <<  (int)( QMetaMethod::Slot) << QByteArray("void");
     QTest::newRow("testFunctionWithReturnValue(int)")
         << QByteArray("testFunctionWithReturnValue(int)") <<  (int)( QMetaMethod::Method) << QByteArray("QString");
     QTest::newRow("testFunctionWithVariantReturnValue(QVariant)")
@@ -702,7 +702,7 @@ void tst_QServiceManager_IPC::verifyUniqueMethods_data()
     QTest::newRow("slotConfirmation()")
         << QByteArray("slotConfirmation()") <<  (int)( QMetaMethod::Method) << QByteArray("uint");
     QTest::newRow("setConfirmationHash(uint)")
-        << QByteArray("setConfirmationHash(uint)") <<  (int)( QMetaMethod::Method) << QByteArray("");
+        << QByteArray("setConfirmationHash(uint)") <<  (int)( QMetaMethod::Method) << QByteArray("void");
 }
 
 void tst_QServiceManager_IPC::verifyUniqueMethods()
@@ -716,8 +716,8 @@ void tst_QServiceManager_IPC::verifyUniqueMethods()
     const int index = meta->indexOfMethod(signature.constData());
     QVERIFY(index>=0);
     QMetaMethod method = meta->method(index);
-    QCOMPARE(metaMethodType, (int)method.methodType());
-    QCOMPARE(returnType, QByteArray(method.typeName()));
+    QCOMPARE((int)method.methodType(), metaMethodType);
+    QCOMPARE(QByteArray(method.typeName()), returnType);
 }
 
 void tst_QServiceManager_IPC::verifyUniqueProperties_data()
