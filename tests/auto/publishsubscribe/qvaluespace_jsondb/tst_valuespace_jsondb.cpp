@@ -266,13 +266,19 @@ private Q_SLOTS:
     void testAPI_Notification();
     void testAPI_NotificationSetting();
     void testAPI_NotificationUnique();
+    void testAPI_ReadSystemSettingsObject();
     void testAPI_cd();
+    void testAPI_MultipleWrites();
+    void testAPI_MultipleWritesWithNotifications();
 
 public slots:
     void contentsChanged();
+    void onMultipleWritesWithNotifications();
 
 private:
     JsonDbLayer *layer;
+    bool changed;
+    bool value;
 
     JsonDbHandler jsonDbHandler;
 };
@@ -811,7 +817,7 @@ void TestQValueSpaceJsonDb::testHandle_Subscribe()
     objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSubscribe.app\", \"setting1\":1}";
 
     // Subscribe for settings objects under com.testSubscribe
-    JsonDbHandle handle(NULL, "com.pstest.testSubscribe", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+    JsonDbHandle handle(NULL, "/com/pstest/testSubscribe/app", QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
     handle.subscribe();
 
     QSignalSpy spy(&handle, SIGNAL(valueChanged()));
@@ -820,7 +826,7 @@ void TestQValueSpaceJsonDb::testHandle_Subscribe()
 
     jsonDbHandler.createJsonObjects(objects);
 
-    QTest::qWait(WAIT_FOR);
+    QTest::qWait(500);//WAIT_FOR);
     QCOMPARE(spy.count(), 1);
 }
 
@@ -1037,6 +1043,25 @@ void TestQValueSpaceJsonDb::testAPI_NotificationUnique()
     QCOMPARE(spy2.count(), 0);
 }
 
+void TestQValueSpaceJsonDb::testAPI_ReadSystemSettingsObject()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.nokia.mt.settings\"}";
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.nokia.mt.settings.ReadSystemSettingsObject\", \"settings\": {\"setting1\":1}}";
+    jsonDbHandler.createJsonObjects(objects);
+
+    QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
+                                     "com.nokia.mt.settings.ReadSystemSettingsObject");
+    QVERIFY(subscriber.isConnected());
+    QVariant settingsObject = subscriber.value();
+    QVERIFY(settingsObject.isValid());
+
+    QVariantMap map = settingsObject.toMap();
+    QVERIFY(map.contains("settings"));
+    QVERIFY(map.value("settings").toMap().contains("setting1"));
+    QVERIFY(map.value("settings").toMap().value("setting1").toInt() == 1);
+}
+
 void TestQValueSpaceJsonDb::testAPI_cd()
 {
     QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
@@ -1045,6 +1070,80 @@ void TestQValueSpaceJsonDb::testAPI_cd()
 
     subscriber.cd("/com/pstest/cd/sub");
     QVERIFY(subscriber.path() == "/com/pstest/cd/sub");
+}
+
+void TestQValueSpaceJsonDb::testAPI_MultipleWrites()
+{
+    QStringList objects;
+    objects<<QString("{\"_type\":\"%1\", \"identifier\":\"%2\", \"settings\":{%3}")
+             .arg("com.nokia.mt.settings.SystemSettings")
+             .arg("com.pstest.testAPI_MultipleWrites")
+             .arg("\"setting1\":0}, \"setting2\":true, \"setting3\":\"\"");
+    jsonDbHandler.createJsonObjects(objects);
+
+    QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
+                                     "com.pstest.testAPI_MultipleWrites");
+    QVERIFY(subscriber.isConnected());
+
+    QValueSpacePublisher publisher("/com/pstest/Notification/setting1");
+    QVERIFY(publisher.isConnected());
+
+    for (int i = 0; i < 10; i++) {
+        qDebug()<<"LOOP"<<i + 1;
+        publisher.setValue("setting1", i + 1);
+        publisher.setValue("setting2", (i % 2) == 1);
+        publisher.setValue("setting3", QString::number(i));
+
+        publisher.sync();
+        QTest::qWait(WAIT_FOR * 2);
+
+        QVERIFY(subscriber.value("setting1").toInt() == i + 1);
+        QVERIFY(subscriber.value("setting2").toBool() == ((i % 2) == 1));
+        QVERIFY(subscriber.value("setting3").toString() == QString::number(i));
+    }
+}
+
+void TestQValueSpaceJsonDb::testAPI_MultipleWritesWithNotifications()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mt.settings.SystemSettings\", \"identifier\":\"com.pstest.testAPI_MultipleWritesWithNotifications\", \"settings\": {\"setting1\":false}}";
+    jsonDbHandler.createJsonObjects(objects);
+
+    QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
+                                     "/com/pstest/testAPI_MultipleWritesWithNotifications");
+    QVERIFY(subscriber.isConnected());
+
+    connect(&subscriber, SIGNAL(contentsChanged()), this, SLOT(onMultipleWritesWithNotifications()));
+
+    QValueSpacePublisher publisher("/com/pstest/testAPI_MultipleWritesWithNotifications");
+    QVERIFY(publisher.isConnected());
+
+    bool nextValue = true;
+
+    for (int i = 0; i < 50; i++) {
+        qDebug()<<"LOOP"<<i + 1;
+
+        changed = false;
+
+        publisher.setValue("setting1", nextValue);
+
+        nextValue = !nextValue;
+
+        while (!changed) {
+            QTest::qWait(1);
+        }
+
+        QVERIFY(value == !nextValue);
+    }
+}
+
+void TestQValueSpaceJsonDb::onMultipleWritesWithNotifications()
+{
+    changed = true;
+    static QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
+                                            "/com/pstest/testAPI_MultipleWritesWithNotifications");
+
+    value = subscriber.value("setting1").toBool();
 }
 
 void TestQValueSpaceJsonDb::contentsChanged()

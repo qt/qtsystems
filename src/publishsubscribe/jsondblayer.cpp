@@ -140,8 +140,6 @@ QStringList JsonDbPath::getIdentifier(const QString &path)
 JsonDbSyncCall::JsonDbSyncCall(const QString &query, QList<QJsonObject> *result):
     mQuery(query), mResult(result), mConnection(NULL), mRequest(NULL)
 {
-
-
     startTimer(WAIT_FOR_THREAD_TIMEOUT);
 }
 
@@ -379,7 +377,7 @@ void JsonDbHandle::subscribe()
     QtJsonDb::QJsonDbWatcher::Actions actions;
 
     getNotificationQueryAndActions(getWholePath(QStringLiteral("")), query, actions);
-
+    DEBUG_MSG(query)
     if (!client) {
         client = new QtJsonDb::QJsonDbConnection();
         client->connectToServer();
