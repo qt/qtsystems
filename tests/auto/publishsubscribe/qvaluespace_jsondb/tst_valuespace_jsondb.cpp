@@ -826,7 +826,7 @@ void TestQValueSpaceJsonDb::testHandle_Subscribe()
 
     jsonDbHandler.createJsonObjects(objects);
 
-    QTest::qWait(500);//WAIT_FOR);
+    QTest::qWait(WAIT_FOR);
     QCOMPARE(spy.count(), 1);
 }
 
@@ -1075,17 +1075,17 @@ void TestQValueSpaceJsonDb::testAPI_cd()
 void TestQValueSpaceJsonDb::testAPI_MultipleWrites()
 {
     QStringList objects;
-    objects<<QString("{\"_type\":\"%1\", \"identifier\":\"%2\", \"settings\":{%3}")
+    objects<<QString("{\"_type\":\"%1\", \"identifier\":\"%2\", \"settings\":{%3}}")
              .arg("com.nokia.mt.settings.SystemSettings")
              .arg("com.pstest.testAPI_MultipleWrites")
-             .arg("\"setting1\":0}, \"setting2\":true, \"setting3\":\"\"");
+             .arg("\"setting1\":0, \"setting2\":true, \"setting3\":\"\"");
     jsonDbHandler.createJsonObjects(objects);
 
     QValueSpaceSubscriber subscriber(QValueSpace::PermanentLayer | QValueSpace::WritableLayer,
-                                     "com.pstest.testAPI_MultipleWrites");
+                                     "/com/pstest/testAPI_MultipleWrites");
     QVERIFY(subscriber.isConnected());
 
-    QValueSpacePublisher publisher("/com/pstest/Notification/setting1");
+    QValueSpacePublisher publisher("/com/pstest/testAPI_MultipleWrites");
     QVERIFY(publisher.isConnected());
 
     for (int i = 0; i < 10; i++) {

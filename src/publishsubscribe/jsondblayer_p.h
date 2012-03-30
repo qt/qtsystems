@@ -60,6 +60,7 @@
 #include <QJsonDbConnection>
 #include <QJsonDbWatcher>
 #include <QJsonDbReadRequest>
+#include <QJsonDbUpdateRequest>
 
 QT_BEGIN_NAMESPACE
 
@@ -105,18 +106,23 @@ class JsonDbSyncCall: public QObject
 
     public:
         JsonDbSyncCall(const QString &query, QList<QJsonObject> *result);
+        JsonDbSyncCall(const QJsonObject *object);
         ~JsonDbSyncCall();
 
     public slots:
-        void createSyncRequest();
+        void createSyncReadRequest();
+        void createSyncUpdateRequest();
         void handleResponse(int id);
+        void handleFinished();
         void handleError(QtJsonDb::QJsonDbRequest::ErrorCode id, QString code);
 
     private:
         const QString &mQuery;
+        const QJsonObject *mObject;
         QList<QJsonObject> *mResult;
         QtJsonDb::QJsonDbConnection *mConnection;
-        QtJsonDb::QJsonDbReadRequest *mRequest;
+        QtJsonDb::QJsonDbReadRequest *mReadRequest;
+        QtJsonDb::QJsonDbUpdateRequest *mUpdateRequest;
 
         void timerEvent(QTimerEvent *event);
 };

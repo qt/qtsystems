@@ -44,7 +44,6 @@
 #include "jsondblayer_p.h"
 
 #include <QStringList>
-#include <QJsonDbUpdateRequest>
 #include <QThread>
 #include <QVariantMap>
 #include <QSet>
@@ -138,7 +137,23 @@ QStringList JsonDbPath::getIdentifier(const QString &path)
 
 
 JsonDbSyncCall::JsonDbSyncCall(const QString &query, QList<QJsonObject> *result):
-    mQuery(query), mResult(result), mConnection(NULL), mRequest(NULL)
+    mQuery(query),
+    mObject(NULL),
+    mResult(result),
+    mConnection(NULL),
+    mReadRequest(NULL),
+    mUpdateRequest(NULL)
+{
+    startTimer(WAIT_FOR_THREAD_TIMEOUT);
+}
+
+JsonDbSyncCall::JsonDbSyncCall(const QJsonObject *object):
+    mQuery(QStringLiteral("")),
+    mObject(object),
+    mResult(NULL),
+    mConnection(NULL),
+    mReadRequest(NULL),
+    mUpdateRequest(NULL)
 {
     startTimer(WAIT_FOR_THREAD_TIMEOUT);
 }
@@ -147,8 +162,11 @@ JsonDbSyncCall::~JsonDbSyncCall()
 {
     DEBUG_SIGNATURE
 
-    if (mRequest)
-        delete mRequest;
+    if (mReadRequest)
+        delete mReadRequest;
+
+    if (mUpdateRequest)
+        delete mUpdateRequest;
 
     if (mConnection)
         delete mConnection;
@@ -161,35 +179,57 @@ void JsonDbSyncCall::timerEvent(QTimerEvent*)
     QThread::currentThread()->quit();
 }
 
-void JsonDbSyncCall::createSyncRequest()
+void JsonDbSyncCall::createSyncReadRequest()
 {
     DEBUG_SIGNATURE
 
     mConnection = new QtJsonDb::QJsonDbConnection;
     mConnection->connectToServer();
 
-    mRequest = new QtJsonDb::QJsonDbReadRequest;
+    mReadRequest = new QtJsonDb::QJsonDbReadRequest;
 
-    mRequest->setQuery(mQuery);
+    mReadRequest->setQuery(mQuery);
 
-    connect(mRequest,
+    connect(mReadRequest,
             SIGNAL(resultsAvailable(int)),
             this,
             SLOT(handleResponse(int)));
 
-    connect(mRequest,
+    connect(mReadRequest,
             SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this,
             SLOT(handleError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
 
-    mConnection->send(mRequest);
+    mConnection->send(mReadRequest);
+}
+
+void JsonDbSyncCall::createSyncUpdateRequest()
+{
+    DEBUG_SIGNATURE
+
+    mConnection = new QtJsonDb::QJsonDbConnection;
+    mConnection->connectToServer();
+
+    mUpdateRequest = new QtJsonDb::QJsonDbUpdateRequest(*mObject);
+
+    connect(mUpdateRequest,
+            SIGNAL(finished()),
+            this,
+            SLOT(handleFinished()));
+
+    connect(mUpdateRequest,
+            SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
+            this,
+            SLOT(handleError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+
+    mConnection->send(mUpdateRequest);
 }
 
 void JsonDbSyncCall::handleResponse(int)
 {
     DEBUG_SIGNATURE
 
-    *mResult = mRequest->takeResults();
+    *mResult = mReadRequest->takeResults();
 
     QThread::currentThread()->quit();
 }
@@ -201,6 +241,12 @@ void JsonDbSyncCall::handleError(QtJsonDb::QJsonDbRequest::ErrorCode, QString)
     QThread::currentThread()->quit();
 }
 
+void JsonDbSyncCall::handleFinished()
+{
+    DEBUG_SIGNATURE
+
+    QThread::currentThread()->quit();
+}
 
 
 JsonDbHandle::JsonDbHandle( JsonDbHandle *parent,
@@ -281,24 +327,23 @@ bool JsonDbHandle::setValue(const QString &path, const QVariant &data)
 
 void JsonDbHandle::doUpdateRequest(const QJsonObject &updateObject)
 {
-    if (!client) {
-        client = new QtJsonDb::QJsonDbConnection();
-        client->connectToServer();
-    }
+    QThread syncThread;
+    JsonDbSyncCall *call = new JsonDbSyncCall(&updateObject);
 
-    QtJsonDb::QJsonDbUpdateRequest* mRequest = new QtJsonDb::QJsonDbUpdateRequest(updateObject);
+    connect(&syncThread,
+            SIGNAL(started()),
+            call,
+            SLOT(createSyncUpdateRequest()));
 
-    connect(mRequest,
+    connect(&syncThread,
             SIGNAL(finished()),
-            mRequest,
+            call,
             SLOT(deleteLater()));
 
-    connect(mRequest,
-            SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            mRequest,
-            SLOT(deleteLater()));
+    call->moveToThread(&syncThread);
 
-    client->send(mRequest);
+    syncThread.start();
+    syncThread.wait();
 }
 
 QJsonObject JsonDbHandle::getObject(const QString &identifier, const QString &property)
@@ -328,7 +373,7 @@ QList<QJsonObject> JsonDbHandle::getResponse(const QString& query)
     connect(&syncThread,
             SIGNAL(started()),
             call,
-            SLOT(createSyncRequest()));
+            SLOT(createSyncReadRequest()));
 
     connect(&syncThread,
             SIGNAL(finished()),
