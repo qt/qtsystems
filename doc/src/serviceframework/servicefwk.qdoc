@@ -56,7 +56,7 @@ The Qt Service Framework defines a unified way of finding, implementing and
 accessing services across multiple platforms.
 
 Due to the service frameworks knowledge of service interfaces, their
-versions and QObject-based introspection it may even be used to unify and
+versions, and QObject-based introspection, it may even be used to unify and
 access multiple platform specific service implementations via the same
 Qt-based client application.
 
@@ -79,7 +79,7 @@ QMetaObject system can be used to dynamically discover and invoke the
 service's capabilities.
 To achieve the best level of access via the Qt meta object system services
 should be implemented in such a way that their entire functionality is
-accessible via the signals, slots, properties or invokable functions
+accessible via signals, slots, properties or invokable functions
 (see Q_INVOKABLE macro for more details).
 
 Each service plug-in implements one service only but can provide multiple

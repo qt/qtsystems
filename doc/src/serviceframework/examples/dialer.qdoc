@@ -46,7 +46,7 @@ service framework command line tool to add the corresponding service XML file:
     \li servicefw dbusservice removedialerservice.xml dialer_service
 \endlist
 
-These deployment commands will register the remote IPC-based service, and the Landline dialer plugign. The last
+These deployment commands will register the remote IPC-based service, and the Landline dialer plugin. The last
 line features the ability to create an autostarting file for D-Bus if the platform supports the QtDBus module.
 
 To run the example
@@ -54,8 +54,8 @@ To run the example
     \li dialer
 \endlist
 
-The XML files for all example services can be found in the QtMobility build directory
-under install/bin/xmldata.
+The XML files for all example services can be found in the Qt build directory
+under examples/qtsystems/serviceframework/xmldata.
 
 For Maemo and Linux platforms using D-Bus as the underlying IPC mechanism, the
 autostart feature can be initialised by running the service framework tool:
