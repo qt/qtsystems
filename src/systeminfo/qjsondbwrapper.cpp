@@ -45,7 +45,6 @@
 #include <QtCore/qtimer.h>
 #include <QtJsonDb/qjsondbreadrequest.h>
 #include <QtJsonDb/qjsondbwatcher.h>
-
 QT_USE_NAMESPACE_JSONDB
 
 QT_BEGIN_NAMESPACE
@@ -55,10 +54,12 @@ const int JSON_EXPIRATION_TIMER(2000);
 QJsonDbWrapper::QJsonDbWrapper(QObject *parent)
     : QObject(parent)
     , jsonDbWatcher(0)
+    , backlightWatcher(0)
     , waitLoop(0)
     , timer(0)
     , watchActivatedLocks(false)
     , watchEnabledLocks(false)
+    , watchBacklightState(false)
 {
     connect(&jsonDbConnection, SIGNAL(error(QtJsonDb::QJsonDbConnection::ErrorCode,QString)),
             this, SLOT(onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode,QString)));
@@ -199,7 +200,7 @@ bool QJsonDbWrapper::hasSystemObject(const QString &objectType)
 
 void QJsonDbWrapper::connectNotify(const char *signal)
 {
-    if (watchActivatedLocks && watchEnabledLocks)
+    if (watchActivatedLocks && watchEnabledLocks && watchBacklightState)
         return;
 
     bool needWatchActivatedLocks = (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0);
@@ -231,6 +232,18 @@ void QJsonDbWrapper::connectNotify(const char *signal)
         if (needWatchEnabledLocks)
             watchEnabledLocks = true;
     }
+
+    if (strcmp(signal, SIGNAL(backlightStateChanged(int,QDisplayInfo::BacklightState))) == 0) {
+        if (!backlightWatcher) {
+            backlightWatcher = new QtJsonDb::QJsonDbWatcher(this);
+            backlightWatcher->setPartition("Ephemeral");
+            backlightWatcher->setWatchedActions(QJsonDbWatcher::Updated);
+            backlightWatcher->setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.system.DisplayState\"]")));
+            connect(backlightWatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onJsonDbWatcherNotificationsBacklightStateAvailable()));
+        }
+        jsonDbConnection.addWatcher(backlightWatcher);
+        watchBacklightState = true;
+    }
 }
 
 void QJsonDbWrapper::disconnectNotify(const char *signal)
@@ -242,9 +255,14 @@ void QJsonDbWrapper::disconnectNotify(const char *signal)
         watchActivatedLocks = false;
     else if (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
         watchEnabledLocks = false;
+    else if (strcmp(signal, SIGNAL(backlightStateChanged(int, QDisplayInfo::BacklightState))) == 0)
+        watchBacklightState = false;
 
     if (!watchActivatedLocks && !watchEnabledLocks)
         jsonDbConnection.removeWatcher(jsonDbWatcher);
+
+    if (!watchBacklightState)
+        jsonDbConnection.removeWatcher(backlightWatcher);
 }
 
 void QJsonDbWrapper::onJsonDbWatcherNotificationsAvailable()
@@ -310,6 +328,21 @@ void QJsonDbWrapper::onJsonDbWatcherNotificationsAvailable()
                 emit enabledLocksChanged(enabledLocks);
             }
         }
+    }
+}
+
+void QJsonDbWrapper::onJsonDbWatcherNotificationsBacklightStateAvailable()
+{
+    QList<QJsonDbNotification> notifications = backlightWatcher->takeNotifications();
+    if (notifications.size() > 0) {
+        const QJsonDbNotification notification = notifications.at(0);
+        const int screen = notification.object().value(QStringLiteral("displayIndex")).toString().toInt();
+        QDisplayInfo::BacklightState state;
+        if (notification.object().value(QStringLiteral("active")).toBool())
+           state = QDisplayInfo::BacklightOn;
+        else
+           state = QDisplayInfo::BacklightOff;
+        emit backlightStateChanged(screen, state);
     }
 }
 

@@ -81,6 +81,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QDisplayInfo::backlightStateChanged(int screen, QDisplayInfo::BacklightState state)
+
+    This signal is emitted when the backlight state for \a screen has changed to \a state.
+*/
+
+/*!
     Constructs a QDisplayInfo object with the given \a parent.
 */
 QDisplayInfo::QDisplayInfo(QObject *parent)
@@ -204,4 +210,31 @@ int QDisplayInfo::physicalWidth(int screen) const
     return -1;
 }
 
+/*!
+    \internal
+*/
+void QDisplayInfo::connectNotify(const char *signal)
+{
+#if (defined(Q_OS_LINUX) || defined(QT_SIMULATOR)) && !defined(QT_NO_JSONDB)
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+#else
+    Q_UNUSED(signal)
+#endif
+}
+
+/*!
+    \internal
+*/
+void QDisplayInfo::disconnectNotify(const char *signal)
+{
+#if (defined(Q_OS_LINUX) || defined(QT_SIMULATOR)) && !defined(QT_NO_JSONDB)
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(signal) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
+#else
+    Q_UNUSED(signal)
+#endif
+}
 QT_END_NAMESPACE

@@ -54,6 +54,7 @@
 #define QJSONDBWRAPPER_P_H
 
 #include <qdeviceinfo.h>
+#include <qdisplayinfo.h>
 #include <QtJsonDb/qjsondbconnection.h>
 #include <QtJsonDb/qjsondbrequest.h>
 
@@ -84,6 +85,7 @@ public:
 Q_SIGNALS:
     void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
     void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
+    void backlightStateChanged(int screen, QDisplayInfo::BacklightState state);
 
 protected:
     void connectNotify(const char *signal);
@@ -94,6 +96,7 @@ private Q_SLOTS:
     void onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
     void onJsonDbRequestFinished();
     void onJsonDbWatcherNotificationsAvailable();
+    void onJsonDbWatcherNotificationsBacklightStateAvailable();
 
 private:
     QJsonValue getSystemPropertyValue(const QString &objectType, const QString &property, const QString &partition = QStringLiteral(""));
@@ -103,12 +106,14 @@ private:
 
     QtJsonDb::QJsonDbConnection jsonDbConnection;
     QtJsonDb::QJsonDbWatcher *jsonDbWatcher;
+    QtJsonDb::QJsonDbWatcher *backlightWatcher;
 
     QEventLoop *waitLoop;
     QTimer *timer;
 
     bool watchActivatedLocks;
     bool watchEnabledLocks;
+    bool watchBacklightState;
     QDeviceInfo::LockTypeFlags activatedLocks;
     QDeviceInfo::LockTypeFlags enabledLocks;
 };

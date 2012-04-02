@@ -56,6 +56,8 @@ QT_BEGIN_NAMESPACE
 QDeclarativeDisplayInfo::QDeclarativeDisplayInfo(QObject *parent)
     : QObject(parent), displayInfo(new QDisplayInfo(this))
 {
+    connect(displayInfo, SIGNAL(backlightStateChanged(int,QDisplayInfo::BacklightState)),
+            this, SLOT(_q_backlightStateChanged(int,QDisplayInfo::BacklightState)));
 }
 
 /*!
@@ -156,6 +158,16 @@ int QDeclarativeDisplayInfo::physicalWidth(int screen) const
 int QDeclarativeDisplayInfo::backlightState(int screen) const
 {
     return displayInfo->backlightState(screen);
+}
+
+/*!
+    \qmlsignal DisplayInfo::onBacklightStateChanged(int screen, BacklightState state)
+
+    This handler is called whenever the state of \a screen has been changed to \a state.
+ */
+void QDeclarativeDisplayInfo::_q_backlightStateChanged(int screen, QDisplayInfo::BacklightState state)
+{
+    emit backlightStateChanged(screen, static_cast<BacklightState>(state));
 }
 
 QT_END_NAMESPACE

@@ -77,6 +77,13 @@ public:
     int physicalHeight(int screen) const;
     int physicalWidth(int screen) const;
 
+Q_SIGNALS:
+    void backlightStateChanged(int screen, QDisplayInfo::BacklightState state);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     Q_DISABLE_COPY(QDisplayInfo)
     QDisplayInfoPrivate * const d_ptr;

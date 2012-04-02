@@ -85,6 +85,12 @@ public:
     Q_INVOKABLE int physicalHeight(int screen) const;
     Q_INVOKABLE int physicalWidth(int screen) const;
 
+Q_SIGNALS:
+    void backlightStateChanged(int screen, int state);
+
+private Q_SLOTS:
+    void _q_backlightStateChanged(int screen, QDisplayInfo::BacklightState state);
+
 private:
     QDisplayInfo *displayInfo;
 };
