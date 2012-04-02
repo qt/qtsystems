@@ -142,9 +142,11 @@ int QJsonDbWrapper::getRingtoneVolume()
     return -1;
 }
 
-QJsonValue QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, const QString &property)
+QJsonValue QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, const QString &property, const QString &partition)
 {
     QJsonDbReadRequest request;
+    if (!partition.isEmpty())
+       request.setPartition(partition);
     request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.system.%1\"]")).arg(objectType));
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
@@ -160,9 +162,11 @@ QJsonValue QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, con
     return QJsonValue();
 }
 
-QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const QString &setting)
+QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition)
 {
     QJsonDbReadRequest request;
+    if (!partition.isEmpty())
+       request.setPartition(partition);
     request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.%1\"][={settings:settings}]"))
                      .arg(settingId));
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),

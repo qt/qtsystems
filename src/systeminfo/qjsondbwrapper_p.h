@@ -96,8 +96,8 @@ private Q_SLOTS:
     void onJsonDbWatcherNotificationsAvailable();
 
 private:
-    QJsonValue getSystemPropertyValue(const QString &objectType, const QString &property);
-    QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting);
+    QJsonValue getSystemPropertyValue(const QString &objectType, const QString &property, const QString &partition = QStringLiteral(""));
+    QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition = QStringLiteral(""));
     bool hasSystemObject(const QString &objectType);
     bool waitForResponse();
 
