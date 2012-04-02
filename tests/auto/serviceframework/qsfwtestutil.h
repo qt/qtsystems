@@ -62,7 +62,9 @@ public:
     static QString systemDirectory();
 
 #if defined(QT_ADDON_JSONDB_LIB)
+    static void saveDatabases_jsondb();
     static void clearDatabases_jsondb();
+    static void restoreDatabases_jsondb();
 #endif
 
 };

@@ -130,9 +130,64 @@ void QSfwTestUtil::removeDirectory(const QString &path)
 
 #if defined(QT_ADDON_JSONDB_LIB)
 
-void QSfwTestUtil::clearDatabases_jsondb()
+Q_GLOBAL_STATIC(QList<QJsonObject>, _q_storedData);
+
+void QSfwTestUtil::saveDatabases_jsondb()
 {
 
+    qRegisterMetaType<QtJsonDb::QJsonDbRequest::ErrorCode>("QtJsonDb::QJsonDbRequest::ErrorCode");
+
+    QJsonDbConnection *db = QJsonDbConnection::defaultConnection();
+    db->connectToServer();
+
+    bool waiting = true;
+
+    QList<QJsonObject> args;
+
+    QJsonDbReadRequest request;
+    request.setQuery(QStringLiteral("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
+
+    QSignalSpy response(&request, SIGNAL(finished()));
+    QSignalSpy error(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    QSignalSpy discon(db, SIGNAL(disconnected()));
+
+    db->send(&request);
+    do {
+        QCoreApplication::processEvents();
+        if (response.count()){
+            args = request.takeResults();
+            waiting = false;
+        }
+        if (error.count() || discon.count()) {
+            waiting = false;
+        }
+    } while (waiting);
+
+    if (args.isEmpty()) {
+        return;
+    }
+
+    QList<QJsonObject> *storage = _q_storedData();
+    storage->clear();
+    storage->append(args);
+
+    QJsonDbRemoveRequest rm(args);
+
+    QSignalSpy response2(&rm, SIGNAL(finished()));
+    QSignalSpy error2(&rm, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+
+    db->send(&rm);
+    waiting = true;
+    do {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+        if (response2.count() || error2.count() || discon.count()) {
+            waiting = false;
+        }
+    } while (waiting);
+}
+
+void QSfwTestUtil::clearDatabases_jsondb()
+{
     qRegisterMetaType<QtJsonDb::QJsonDbRequest::ErrorCode>("QtJsonDb::QJsonDbRequest::ErrorCode");
 
     QJsonDbConnection *db = QJsonDbConnection::defaultConnection();
@@ -179,6 +234,78 @@ void QSfwTestUtil::clearDatabases_jsondb()
         }
     } while (waiting);
 }
+
+
+
+void QSfwTestUtil::restoreDatabases_jsondb()
+{
+
+    qRegisterMetaType<QtJsonDb::QJsonDbRequest::ErrorCode>("QtJsonDb::QJsonDbRequest::ErrorCode");
+
+    QJsonDbConnection *db = QJsonDbConnection::defaultConnection();
+    db->connectToServer();
+
+    bool waiting = true;
+
+    QList<QJsonObject> args;
+
+    QJsonDbReadRequest request;
+    request.setQuery(QStringLiteral("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
+
+    QSignalSpy response(&request, SIGNAL(finished()));
+    QSignalSpy error(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    QSignalSpy discon(db, SIGNAL(disconnected()));
+
+    db->send(&request);
+    do {
+        QCoreApplication::processEvents();
+        if (response.count()){
+            args = request.takeResults();
+            waiting = false;
+        }
+        if (error.count() || discon.count()) {
+            waiting = false;
+        }
+    } while (waiting);
+
+    if (!args.isEmpty()) {
+
+        QJsonDbRemoveRequest rm(args);
+
+        QSignalSpy response2(&rm, SIGNAL(finished()));
+        QSignalSpy error2(&rm, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+
+        db->send(&rm);
+        waiting = true;
+        do {
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+            if (response2.count() || error2.count() || discon.count()) {
+                waiting = false;
+            }
+        } while (waiting);
+    }
+
+    QList<QJsonObject> *storage = _q_storedData();
+
+    if (!storage->isEmpty()) {
+        QJsonDbWriteRequest add;
+        add.setObjects(*storage);
+
+        QSignalSpy response_w(&add, SIGNAL(finished()));
+        QSignalSpy error_w(&add, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+
+        db->send(&add);
+        waiting = true;
+        do {
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+            if (response_w.count() || error_w.count() || discon.count()) {
+                waiting = false;
+            }
+        } while (waiting);
+    }
+
+}
+
 
 #endif
 

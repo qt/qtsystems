@@ -442,7 +442,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
             return;
         }
         QString testingdata = QLatin1Literal("/tmp/sfwtestdata/") +  p.d->entry.interfaceName();
-        qDebug() << "Looing for" << testingdata;
+        qDebug() << "SFW Looking for false credentials in" << testingdata;
         if (QFile::exists(testingdata)) {
             QFile data(testingdata);
             data.open(QIODevice::ReadOnly);

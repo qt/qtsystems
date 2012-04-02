@@ -99,7 +99,6 @@ int QServiceIpcEndPoint::waitForData()
 
 void QServiceIpcEndPoint::waitingDone()
 {
-//    qDebug() << Q_FUNC_INFO;
     emit packageReceived();
 }
 

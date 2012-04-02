@@ -55,11 +55,14 @@
 
 #include <QObject>
 #include <QEventLoop>
+#include <QTimer>
 
 #include "qserviceinterfacedescriptor_p.h"
 #include "servicemetadata_p.h"
 #include "qservicefilter.h"
 #include "dberror_p.h"
+
+#include <QJsonObject>
 
 #include <QtJsonDb/qjsondbglobal.h>
 
@@ -106,19 +109,19 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
         void serviceAdded(const QString &serviceName, DatabaseManager::DbScope scope);
         void serviceRemoved(const QString &serviceName, DatabaseManager::DbScope scope);
 
-    private slots:
-        void onNotificationsAvailable();
-
     private:
-        QT_PREPEND_NAMESPACE_JSONDB(QJsonDbConnection) *db;
-        QT_PREPEND_NAMESPACE_JSONDB(QJsonDbWatcher) *dbwatcher;
+
+        const QList<QJsonObject> getCache();
+
         DBError m_lastError;
         QEventLoop m_eventLoop;
         bool m_notenabled;
-        QHash<QString, int> m_services;
 
     private:
-        bool sendRequest(QT_PREPEND_NAMESPACE_JSONDB(QJsonDbRequest) *r);
+        void cacheRequest(bool flush = false);
+        void waitForCache();
+        bool cacheFetching;
+        bool cacheValid;
 };
 
 QT_END_NAMESPACE

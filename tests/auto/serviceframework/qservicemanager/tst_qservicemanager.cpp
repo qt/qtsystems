@@ -277,6 +277,10 @@ void tst_QServiceManager::initTestCase()
 {
     qRegisterMetaType<QService::Scope>("QService::Scope");
 
+#if defined(QT_ADDON_JSONDB_LIB)
+    QSfwTestUtil::saveDatabases_jsondb();
+#endif // QT_ADDON_JSONDB_LIB
+
     QSfwTestUtil::setupTempUserDb();
     QSfwTestUtil::setupTempSystemDb();
 
@@ -319,6 +323,9 @@ void tst_QServiceManager::cleanupTestCase()
 {
     QSfwTestUtil::removeTempUserDb();
     QSfwTestUtil::removeTempSystemDb();
+#if defined(QT_ADDON_JSONDB_LIB)
+    QSfwTestUtil::restoreDatabases_jsondb();
+#endif // QT_ADDON_JSONDB_LIB
     //process deferred delete events
     //QServiceManager::loadInterface makes use of deleteLater() when
     //cleaning up service objects and their respective QPluginLoader
@@ -479,6 +486,10 @@ void tst_QServiceManager::findInterfaces_filter()
     QVERIFY2(mgr.addService(&buffer), PRINT_ERR(mgr));
 
     QList<QServiceInterfaceDescriptor> result = mgr.findInterfaces(filter);
+
+    qDebug() << "Wanted" << expectedInterfaces;
+
+    qDebug() << "Got" << result;
 
     QCOMPARE(result.toSet(), expectedInterfaces.toSet());
 }
