@@ -74,7 +74,6 @@ public:
     QDeviceInfo::LockTypeFlags getActivatedLocks();
     QDeviceInfo::LockTypeFlags getEnabledLocks();
     bool hasFeaturePositioning();
-    bool hasFeatureVibration();
     QString getUniqueDeviceID();
     QString getModel();
 

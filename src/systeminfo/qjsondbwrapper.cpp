@@ -109,12 +109,6 @@ bool QJsonDbWrapper::hasFeaturePositioning()
                                  QString(QStringLiteral("locationServicesFeatureEnabled"))).toBool();
 }
 
-bool QJsonDbWrapper::hasFeatureVibration()
-{
-    return !getSystemSettingValue(QString(QStringLiteral("sounds")),
-                                  QString(QStringLiteral("vibrationOn"))).isUndefined();
-}
-
 QString QJsonDbWrapper::getUniqueDeviceID()
 {
     return getSystemPropertyValue(QString(QStringLiteral("DeviceInfo")),

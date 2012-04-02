@@ -151,11 +151,6 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 
     case QDeviceInfo::VibrationFeature:
         // TODO: find the kernel interface for this
-#if !defined(QT_NO_JSONDB)
-        if (!jsondbWrapper)
-            jsondbWrapper = new QJsonDbWrapper(this);
-        return jsondbWrapper->hasFeatureVibration();
-#endif
         return false;
 
     case QDeviceInfo::WlanFeature:
