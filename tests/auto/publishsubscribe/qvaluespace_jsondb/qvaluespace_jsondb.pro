@@ -8,6 +8,7 @@ QT       += testlib
 QT       += jsondb
 QT       += publishsubscribe
 QT       += core-private
+QT       += concurrent
 
 TARGET = tst_testpublishsubscribe
 target.path = /usr/bin

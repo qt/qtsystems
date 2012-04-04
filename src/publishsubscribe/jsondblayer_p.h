@@ -109,9 +109,13 @@ class JsonDbSyncCall: public QObject
         JsonDbSyncCall(const QJsonObject *object);
         ~JsonDbSyncCall();
 
+        bool wasSuccessful() const;
+
     public slots:
         void createSyncReadRequest();
         void createSyncUpdateRequest();
+
+    private slots:
         void handleResponse(int id);
         void handleFinished();
         void handleError(QtJsonDb::QJsonDbRequest::ErrorCode id, QString code);
@@ -120,6 +124,7 @@ class JsonDbSyncCall: public QObject
         const QString &mQuery;
         const QJsonObject *mObject;
         QList<QJsonObject> *mResult;
+        bool mSuccess;
         QtJsonDb::QJsonDbConnection *mConnection;
         QtJsonDb::QJsonDbReadRequest *mReadRequest;
         QtJsonDb::QJsonDbUpdateRequest *mUpdateRequest;
@@ -211,7 +216,7 @@ class JsonDbHandle : public QObject
 
         void getNotificationQueryAndActions(QString path, QString &query, QtJsonDb::QJsonDbWatcher::Actions &actions);
 
-        void doUpdateRequest(const QJsonObject&);
+        bool doUpdateRequest(const QJsonObject&);
 };
 
 

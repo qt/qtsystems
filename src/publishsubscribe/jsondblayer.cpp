@@ -140,6 +140,7 @@ JsonDbSyncCall::JsonDbSyncCall(const QString &query, QList<QJsonObject> *result)
     mQuery(query),
     mObject(NULL),
     mResult(result),
+    mSuccess(false),
     mConnection(NULL),
     mReadRequest(NULL),
     mUpdateRequest(NULL)
@@ -151,6 +152,7 @@ JsonDbSyncCall::JsonDbSyncCall(const QJsonObject *object):
     mQuery(QStringLiteral("")),
     mObject(object),
     mResult(NULL),
+    mSuccess(false),
     mConnection(NULL),
     mReadRequest(NULL),
     mUpdateRequest(NULL)
@@ -238,6 +240,8 @@ void JsonDbSyncCall::handleError(QtJsonDb::QJsonDbRequest::ErrorCode, QString)
 {
     DEBUG_SIGNATURE
 
+    mSuccess = false;
+
     QThread::currentThread()->quit();
 }
 
@@ -245,7 +249,14 @@ void JsonDbSyncCall::handleFinished()
 {
     DEBUG_SIGNATURE
 
+    mSuccess = true;
+
     QThread::currentThread()->quit();
+}
+
+bool JsonDbSyncCall::wasSuccessful() const
+{
+    return mSuccess;
 }
 
 
@@ -320,12 +331,10 @@ bool JsonDbHandle::setValue(const QString &path, const QVariant &data)
     settings[parts[1]] = QJsonValue::fromVariant(data);
     updateObject[QStringLiteral("settings")] = settings;
 
-    doUpdateRequest(updateObject);
-
-    return true;
+    return doUpdateRequest(updateObject);
 }
 
-void JsonDbHandle::doUpdateRequest(const QJsonObject &updateObject)
+bool JsonDbHandle::doUpdateRequest(const QJsonObject &updateObject)
 {
     QThread syncThread;
     JsonDbSyncCall *call = new JsonDbSyncCall(&updateObject);
@@ -335,15 +344,16 @@ void JsonDbHandle::doUpdateRequest(const QJsonObject &updateObject)
             call,
             SLOT(createSyncUpdateRequest()));
 
-    connect(&syncThread,
-            SIGNAL(finished()),
-            call,
-            SLOT(deleteLater()));
-
     call->moveToThread(&syncThread);
 
     syncThread.start();
     syncThread.wait();
+
+    bool success = call->wasSuccessful();
+
+    call->deleteLater();
+
+    return success;
 }
 
 QJsonObject JsonDbHandle::getObject(const QString &identifier, const QString &property)
@@ -422,7 +432,7 @@ void JsonDbHandle::subscribe()
     QtJsonDb::QJsonDbWatcher::Actions actions;
 
     getNotificationQueryAndActions(getWholePath(QStringLiteral("")), query, actions);
-    DEBUG_MSG(query)
+
     if (!client) {
         client = new QtJsonDb::QJsonDbConnection();
         client->connectToServer();

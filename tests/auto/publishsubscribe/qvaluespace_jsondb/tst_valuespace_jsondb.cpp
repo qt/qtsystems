@@ -43,6 +43,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
 #include <QJsonDocument>
+#include <QtConcurrent/QFuture>
+#include <QtConcurrent/QtConcurrentRun>
 #include "qvaluespacepublisher.h"
 #include "qvaluespacesubscriber.h"
 
@@ -56,7 +58,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#define WAIT_FOR 60
+Q_DECLARE_METATYPE(QtJsonDb::QJsonDbRequest::ErrorCode)
+
+const int WAIT_FOR = 60;
 
 class JsonDbHandler: QObject
 {
@@ -68,8 +72,6 @@ class JsonDbHandler: QObject
 
         void cleanupJsonDb();
         void createJsonObjects(const QStringList &objects);
-        QVariantMap getObject(const QString &identifier);
-        bool exists(QString query);
 
     private slots:
         void successSlot(int id);
@@ -78,17 +80,16 @@ class JsonDbHandler: QObject
     private:
         QtJsonDb::QJsonDbConnection *mConnection;
         QList<QJsonObject> result;
-        bool finished;
 
-        void wait();
+        void wait(QtJsonDb::QJsonDbRequest &);
 };
 
 JsonDbHandler::JsonDbHandler()
 {
+    qRegisterMetaType<QtJsonDb::QJsonDbRequest::ErrorCode>();
+
     mConnection = new QtJsonDb::QJsonDbConnection;
     mConnection->connectToServer();
-
-    finished = false;
 }
 
 JsonDbHandler::~JsonDbHandler()
@@ -99,29 +100,17 @@ JsonDbHandler::~JsonDbHandler()
 void JsonDbHandler::successSlot(int)
 {
     result = ((QtJsonDb::QJsonDbReadRequest*)sender())->takeResults();
-
-    finished = true;
 }
 
-void JsonDbHandler::errorSlot(QtJsonDb::QJsonDbRequest::ErrorCode, QString)
+void JsonDbHandler::errorSlot(QtJsonDb::QJsonDbRequest::ErrorCode, QString errorMessage)
 {
+    qDebug()<<"ERROR:"<<errorMessage;
+
     result = QList<QJsonObject>();
-
-    finished = true;
 }
 
-void JsonDbHandler::wait()
+void JsonDbHandler::wait(QtJsonDb::QJsonDbRequest &request)
 {
-    while (!finished)
-        QTest::qWait(1);
-
-    finished = false;
-}
-
-void JsonDbHandler::cleanupJsonDb()
-{
-    QtJsonDb::QJsonDbReadRequest request;
-    request.setQuery("[?identifier~=\"/com.pstest/\"]");
 
     connect(&request,
             SIGNAL(resultsAvailable(int)),
@@ -133,15 +122,32 @@ void JsonDbHandler::cleanupJsonDb()
             this,
             SLOT(errorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
 
+    QSignalSpy successSpy(&request, SIGNAL(resultsAvailable(int)));
+    QSignalSpy errorSpy(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+
+    QVERIFY(successSpy.isValid());
+    QVERIFY(errorSpy.isValid());
+
     mConnection->send(&request);
 
-    wait();
+    for (int i = 0; i < 500; i++) {
+        if (successSpy.count() > 0 || errorSpy.count() > 0)
+            return;
+
+        QTest::qWait(1);
+    }
+}
+
+void JsonDbHandler::cleanupJsonDb()
+{
+    QtJsonDb::QJsonDbReadRequest request;
+    request.setQuery("[?identifier~=\"/com.pstest/\"]");
+
+    wait(request);
 
     QtJsonDb::QJsonDbRemoveRequest rmRequest(result);
 
-    mConnection->send(&rmRequest);
-
-    QTest::qWait(WAIT_FOR);
+    wait(rmRequest);
 }
 
 void JsonDbHandler::createJsonObjects(const QStringList &objectsStr)
@@ -154,62 +160,7 @@ void JsonDbHandler::createJsonObjects(const QStringList &objectsStr)
 
     QtJsonDb::QJsonDbCreateRequest request(objects);
 
-    connect(&request, SIGNAL(resultsAvailable(int)), this, SLOT(successSlot(int)));
-
-    connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            this, SLOT(errorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-
-    mConnection->send(&request);
-
-    QTest::qWait(WAIT_FOR);
-}
-
-bool JsonDbHandler::exists(QString query)
-{
-    QtJsonDb::QJsonDbReadRequest* mRequest = new QtJsonDb::QJsonDbReadRequest;
-    mRequest->setQuery(query);
-
-    connect(mRequest, SIGNAL(resultsAvailable(int)), this, SLOT(successSlot(int)));
-
-    connect(mRequest, SIGNAL(finished()), mRequest, SLOT(deleteLater()));
-
-    connect(mRequest, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            this, SLOT(errorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-
-    connect(mRequest, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            mRequest, SLOT(deleteLater()));
-
-    mConnection->send(mRequest);
-
-    wait();
-
-    return result.count() > 0;
-}
-
-QVariantMap JsonDbHandler::getObject(const QString &identifier)
-{
-    QtJsonDb::QJsonDbReadRequest* mRequest = new QtJsonDb::QJsonDbReadRequest;
-    mRequest->setQuery(QString("[?identifier=\"%1\"]").arg(identifier));
-
-    connect(mRequest, SIGNAL(resultsAvailable(int)), this, SLOT(successSlot(int)));
-
-    connect(mRequest, SIGNAL(finished()), mRequest, SLOT(deleteLater()));
-
-    connect(mRequest, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            this, SLOT(errorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-
-    connect(mRequest, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            mRequest, SLOT(deleteLater()));
-
-    mConnection->send(mRequest);
-
-    wait();
-
-    if (result.count() == 0) {
-        return QVariantMap();
-    }
-
-    return result.at(0).toVariantMap();
+    wait(request);
 }
 
 
@@ -255,6 +206,7 @@ private Q_SLOTS:
     void testHandle_JsonDbHandle();
     void testHandle_Value();
     void testHandle_SetValue();
+    void testHandle_SetValueConcurrent();
     void testHandle_UnsetValue();
     void testHandle_Subscribe();
     void testHandle_Unsubscribe();
@@ -281,6 +233,8 @@ private:
     bool value;
 
     JsonDbHandler jsonDbHandler;
+
+    int concurrentSetValue(const QString &path, const QString &name, int loops);
 };
 
 TestQValueSpaceJsonDb::TestQValueSpaceJsonDb()
@@ -373,14 +327,12 @@ void TestQValueSpaceJsonDb::testLayer_NotifyInterest()
 
     jsonDbHandler.createJsonObjects(objects);
 
-    QTest::qWait(WAIT_FOR);
     QCOMPARE(spy.count(), 1);
 
     layer->notifyInterest(quintptr(&handle), false);
 
     jsonDbHandler.createJsonObjects(objects);
 
-    QTest::qWait(WAIT_FOR);
     QCOMPARE(spy.count(), 1);
 }
 
@@ -449,14 +401,12 @@ void TestQValueSpaceJsonDb::testLayer_SetProperty()
 
     jsonDbHandler.createJsonObjects(objects);
 
-    QTest::qWait(WAIT_FOR);
     QCOMPARE(spy.count(), 1);
 
     layer->setProperty(quintptr(&handle), (QAbstractValueSpaceLayer::Properties)0);
 
     jsonDbHandler.createJsonObjects(objects);
 
-    QTest::qWait(WAIT_FOR);
     QCOMPARE(spy.count(), 1);
 }
 
@@ -787,6 +737,56 @@ void TestQValueSpaceJsonDb::testHandle_SetValue()
     QVERIFY2(!handle4.setValue("", 42), "setValue() failed!");
 }
 
+void TestQValueSpaceJsonDb::testHandle_SetValueConcurrent()
+{
+    QStringList objects;
+    objects<<"{\"_type\":\"com.nokia.mt.settings.ApplicationSettings\", \"identifier\":\"com.pstest.testSetValueConcurrent\", \"settings\": {\"setting1\":0, \"setting2\":0}}";
+    jsonDbHandler.createJsonObjects(objects);
+
+    int loops = 500;
+    QString path = "/com/pstest/testSetValueConcurrent";
+
+    QFuture<int> f1 = QtConcurrent::run(this,
+                                        &TestQValueSpaceJsonDb::concurrentSetValue,
+                                        path,
+                                        QString("setting1"),
+                                        loops);
+
+    QFuture<int> f2 = QtConcurrent::run(this,
+                                        &TestQValueSpaceJsonDb::concurrentSetValue,
+                                        path,
+                                        QString("setting2"),
+                                        loops);
+
+    f1.waitForFinished();
+    f2.waitForFinished();
+
+    // TODO
+    QSKIP("Test disabled until JSON DB activates stale updates by default!");
+    QVERIFY2(f1.result() == loops, QString::number(f1.result()).toStdString().c_str());
+    QVERIFY2(f2.result() == loops, QString::number(f2.result()).toStdString().c_str());
+}
+
+int TestQValueSpaceJsonDb::concurrentSetValue(const QString &path, const QString &name, int loops)
+{
+    JsonDbHandle handle(NULL, path, QValueSpace::PermanentLayer | QValueSpace::WritableLayer);
+
+    for (int i = 0; i < loops; i++) {
+        while (!handle.setValue(name, i + 1)) {
+            qDebug()<<"handle.setValue() failed";
+        }
+    }
+
+    QTest::qWait(WAIT_FOR);
+
+    QVariant var;
+    if (!handle.value(name, &var)) {
+        return -1;
+    }
+
+    return var.toInt();
+}
+
 void TestQValueSpaceJsonDb::testHandle_UnsetValue()
 {
     QStringList objects;
@@ -826,7 +826,6 @@ void TestQValueSpaceJsonDb::testHandle_Subscribe()
 
     jsonDbHandler.createJsonObjects(objects);
 
-    QTest::qWait(WAIT_FOR);
     QCOMPARE(spy.count(), 1);
 }
 
@@ -848,8 +847,6 @@ void TestQValueSpaceJsonDb::testHandle_Unsubscribe()
     handle.unsubscribe();
 
     jsonDbHandler.createJsonObjects(objects);
-
-    QTest::qWait(WAIT_FOR);
 
     QCOMPARE(spy.count(), 0);
 }
@@ -1129,7 +1126,10 @@ void TestQValueSpaceJsonDb::testAPI_MultipleWritesWithNotifications()
 
         nextValue = !nextValue;
 
-        while (!changed) {
+        for (int i = 0; i < 1000; i++) {
+            if (changed)
+                return;
+
             QTest::qWait(1);
         }
 
