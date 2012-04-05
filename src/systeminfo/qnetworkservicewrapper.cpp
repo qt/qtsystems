@@ -104,117 +104,174 @@ int QNetworkServiceWrapper::getNetworkInterfaceCount()
 int QNetworkServiceWrapper::getSignalStrength(int interfaceIndex)
 {
     if (!watchSignalStrengths) {
-        uint signalStrength = 0;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            uint signalStrength = 0;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "signalBars", Q_RETURN_ARG(uint, signalStrength));
-        return int(signalStrength * 5);
-    } else
-        return signalStrengths[interfaceIndex] * 5;
+            return int(signalStrength * 20);
+        }
+    } else {
+        if (signalStrengths.contains(interfaceIndex))
+            return signalStrengths[interfaceIndex] * 20;
+    }
+
+    return -1;
 }
 
 QNetworkInfo::CellDataTechnology QNetworkServiceWrapper::getCurrentCellDataTechnology(int interfaceIndex)
 {
     if (!watchTechnologies) {
-        QString technology;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QString technology;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "technology", Q_RETURN_ARG(QString, technology));
-        return technologyStringToEnum(technology);
-    } else
-        return currentCellDataTechnologies[interfaceIndex];
+            return technologyStringToEnum(technology);
+        }
+    } else {
+        if (currentCellDataTechnologies.contains(interfaceIndex))
+            return currentCellDataTechnologies[interfaceIndex];
+    }
+
+    return QNetworkInfo::UnknownDataTechnology;
 }
 
 QNetworkInfo::NetworkStatus QNetworkServiceWrapper::getNetworkStatus(int interfaceIndex)
 {
     if (!watchStatuses) {
-        QString networkstatus;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QString networkstatus;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "registrationStatus", Q_RETURN_ARG(QString, networkstatus));
-        return statusStringToEnum(networkstatus);
-    } else
-        return networkStatuses[interfaceIndex];
+            return statusStringToEnum(networkstatus);
+        }
+    } else {
+        if (networkStatuses.contains(interfaceIndex))
+            return networkStatuses[interfaceIndex];
+    }
+
+    return QNetworkInfo::UnknownStatus;
 }
 
 QString QNetworkServiceWrapper::getCellId(int interfaceIndex)
 {
     if (!watchCellIds) {
-        uint cellId = 0;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            uint cellId = 0;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "cellId", Q_RETURN_ARG(uint, cellId));
-        return QString::number(cellId);
-    } else
-        return cellIds[interfaceIndex];
+            return QString::number(cellId);
+        }
+    } else {
+        if (cellIds.contains(interfaceIndex))
+            return cellIds[interfaceIndex];
+    }
+
+    return QString();
 }
 
 QString QNetworkServiceWrapper::getCurrentMcc(int interfaceIndex)
 {
     if (!watchCurrentMccs) {
-        QString currentMcc;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QString currentMcc;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "mobileCountryCode", Q_RETURN_ARG(QString, currentMcc));
-        return currentMcc;
-    } else
-        return currentMccs[interfaceIndex];
+            return currentMcc;
+        }
+    } else {
+        if (currentMccs.contains(interfaceIndex))
+            return currentMccs[interfaceIndex];
+    }
+
+    return QString();
 }
 
 QString QNetworkServiceWrapper::getCurrentMnc(int interfaceIndex)
 {
     if (!watchCurrentMncs) {
-        QString currentMnc;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QString currentMnc;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "mobileNetworkCode", Q_RETURN_ARG(QString, currentMnc));
-        return currentMnc;
-    } else
-        return currentMncs[interfaceIndex];
+            return currentMnc;
+        }
+    } else {
+        if (currentMncs.contains(interfaceIndex))
+            return currentMncs[interfaceIndex];
+    }
+
+    return QString();
 }
 
 QString QNetworkServiceWrapper::getLac(int interfaceIndex)
 {
     if (!watchLacs) {
-        uint lac = 0;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            uint lac = 0;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "locationAreaCode", Q_RETURN_ARG(uint, lac));
-        return QString::number(lac);
-    } else
-        return lacs[interfaceIndex];
+            return QString::number(lac);
+        }
+    } else {
+        if (lacs.contains(interfaceIndex))
+            return lacs[interfaceIndex];
+    }
+
+    return QString();
 }
 
 QString QNetworkServiceWrapper::getOperatorName(int interfaceIndex)
 {
     if (!watchOperatorNames) {
-        QString name;
-        if (loadNetworkManagerInterface(interfaceIndex))
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QString name;
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "providerName", Q_RETURN_ARG(QString, name));
-        return name;
-    } else
-        return operatorNames[interfaceIndex];
+            return name;
+        }
+    } else {
+        if (operatorNames.contains(interfaceIndex))
+            return operatorNames[interfaceIndex];
+    }
+
+    return QString();
 }
 
 QString QNetworkServiceWrapper::getHomeMcc(int interfaceIndex)
 {
-    QString homeMcc;
-    if (loadNetworkManagerInterface(interfaceIndex))
-        QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "homeMobileCountryCode", Q_RETURN_ARG(QString, homeMcc));
-
-    return homeMcc;
+    if (!homeMccs.contains(interfaceIndex)) {
+        QString homeMcc;
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "homeMobileCountryCode", Q_RETURN_ARG(QString, homeMcc));
+            connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(homeMobileCountryCodeChanged(const QString&)),
+                    this, SLOT(onHomeMccChanged(const QString&)));
+            homeMccs.insert(interfaceIndex, homeMcc);
+        }
+        return homeMcc;
+    }
+    return homeMccs[interfaceIndex];
 }
 
 QString QNetworkServiceWrapper::getHomeMnc(int interfaceIndex)
 {
-    QString homeMnc;
-    if (loadNetworkManagerInterface(interfaceIndex))
-        QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "homeMobileNetworkCode", Q_RETURN_ARG(QString, homeMnc));
-
-    return homeMnc;
+    if (!homeMncs.contains(interfaceIndex)) {
+        QString homeMnc;
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "homeMobileNetworkCode", Q_RETURN_ARG(QString, homeMnc));
+            connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(homeMobileNetworkCodeChanged(const QString&)),
+                    this, SLOT(onHomeMncChanged(const QString&)));
+            homeMncs.insert(interfaceIndex, homeMnc);
+        }
+        return homeMnc;
+    }
+    return homeMncs[interfaceIndex];
 }
 
 QString QNetworkServiceWrapper::getImsi(int interfaceIndex)
 {
-    QString imsi;
-
-    if (loadNetworkManagerInterface(interfaceIndex))
-        QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "identity", Q_RETURN_ARG(QString, imsi));
-
-    return imsi;
+    if (!imsis.contains(interfaceIndex)) {
+        QString imsi;
+        if (loadNetworkManagerInterface(interfaceIndex)) {
+            QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "identity", Q_RETURN_ARG(QString, imsi));
+            connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(identityChanged(const QString&)),
+                    this, SLOT(onImsiChanged(const QString&)));
+            imsis.insert(interfaceIndex, imsi);
+        }
+        return imsi;
+    }
+    return imsis[interfaceIndex];
 }
 
 QNetworkInfo::NetworkMode QNetworkServiceWrapper::getNetworkMode(int interfaceIndex)
@@ -224,8 +281,8 @@ QNetworkInfo::NetworkMode QNetworkServiceWrapper::getNetworkMode(int interfaceIn
         if (loadNetworkManagerInterface(interfaceIndex))
             QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "technology", Q_RETURN_ARG(QString, technology));
         return technologyToMode(technology);
-    } else
-        return networkModes[interfaceIndex];
+    }
+    return networkModes[interfaceIndex];
 }
 
 QNetworkInfo::NetworkMode QNetworkServiceWrapper::getCurrentNetworkMode(QNetworkInfo::NetworkStatus status)
@@ -423,10 +480,11 @@ void QNetworkServiceWrapper::onServiceAdded(const QString &serviceName, QService
     QList<QServiceInterfaceDescriptor> serviceInterfaces = serviceManager->findInterfaces(filter);
     if (!serviceInterfaces.isEmpty()) {
         QList<int> interfaceIndexes = allNetworkManagerInterfaces.keys();
-        if (!interfaceIndexes.isEmpty()) {
+        if (!interfaceIndexes.isEmpty())
             interfaceIndex = interfaceIndexes.last() + 1;
-            allNetworkManagerInterfaces.insert(interfaceIndex, serviceInterfaces[0]);
-        }
+        else
+            interfaceIndex = 0;
+        allNetworkManagerInterfaces.insert(interfaceIndex, serviceInterfaces[0]);
     }
 
     if (interfaceIndex > -1) {
@@ -466,15 +524,15 @@ void QNetworkServiceWrapper::onServiceAdded(const QString &serviceName, QService
             operatorNames[interfaceIndex] = getOperatorName(interfaceIndex);
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(providerNameChanged(const QString&)), this, SLOT(onOperatorNameChanged(const QString&)));
         }
-    }
 
-    if (watchInterfaceCount) {
-        int interfaceCount = allNetworkManagerInterfaces.size();
-        emit networkInterfaceCountChanged(QNetworkInfo::GsmMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::TdscdmaMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::CdmaMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::LteMode, interfaceCount);
+        if (watchInterfaceCount) {
+            int interfaceCount = allNetworkManagerInterfaces.size();
+            emit networkInterfaceCountChanged(QNetworkInfo::GsmMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::TdscdmaMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::CdmaMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::LteMode, interfaceCount);
+        }
     }
 }
 
@@ -494,15 +552,27 @@ void QNetworkServiceWrapper::onServiceRemoved(const QString &serviceName, QServi
     if (interfaceIndex > -1) {
         loadedNetworkManagerInterfaces.remove(interfaceIndex);
         allNetworkManagerInterfaces.remove(interfaceIndex);
-    }
+        signalStrengths.remove(interfaceIndex);
+        currentCellDataTechnologies.remove(interfaceIndex);
+        networkStatuses.remove(interfaceIndex);
+        cellIds.remove(interfaceIndex);
+        currentMccs.remove(interfaceIndex);
+        currentMncs.remove(interfaceIndex);
+        lacs.remove(interfaceIndex);
+        operatorNames.remove(interfaceIndex);
+        networkModes.remove(interfaceIndex);
+        homeMccs.remove(interfaceIndex);
+        homeMncs.remove(interfaceIndex);
+        imsis.remove(interfaceIndex);
 
-    if (watchInterfaceCount) {
-        int interfaceCount =  allNetworkManagerInterfaces.count();
-        emit networkInterfaceCountChanged(QNetworkInfo::GsmMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::TdscdmaMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::CdmaMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, interfaceCount);
-        emit networkInterfaceCountChanged(QNetworkInfo::LteMode, interfaceCount);
+        if (watchInterfaceCount) {
+            int interfaceCount =  allNetworkManagerInterfaces.count();
+            emit networkInterfaceCountChanged(QNetworkInfo::GsmMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::TdscdmaMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::CdmaMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::WcdmaMode, interfaceCount);
+            emit networkInterfaceCountChanged(QNetworkInfo::LteMode, interfaceCount);
+        }
     }
 }
 
@@ -512,8 +582,12 @@ void QNetworkServiceWrapper::onSignalStrengthChanged(const int strength)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (networkSignalStrengthChanged(networkModes[interfaceIndex], interfaceIndex, strength * 5));
+    if (interfaceIndex > -1) {
+        if (signalStrengths[interfaceIndex] != strength) {
+            signalStrengths[interfaceIndex] = strength;
+            emit (networkSignalStrengthChanged(networkModes[interfaceIndex], interfaceIndex, strength * 20));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onTechnologyChanged(const QString &technology)
@@ -522,8 +596,13 @@ void QNetworkServiceWrapper::onTechnologyChanged(const QString &technology)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (currentCellDataTechnologyChanged(interfaceIndex, technologyStringToEnum(technology)));
+    if (interfaceIndex > -1) {
+        QNetworkInfo::CellDataTechnology technologyEnum = technologyStringToEnum(technology);
+        if (currentCellDataTechnologies[interfaceIndex] != technologyEnum) {
+            currentCellDataTechnologies[interfaceIndex] = technologyEnum;
+            emit (currentCellDataTechnologyChanged(interfaceIndex, technologyEnum));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onNetworkStatusChanged(const QString &status)
@@ -532,8 +611,13 @@ void QNetworkServiceWrapper::onNetworkStatusChanged(const QString &status)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (networkStatusChanged(networkModes[interfaceIndex], interfaceIndex, statusStringToEnum(status)));
+    if (interfaceIndex > -1) {
+        QNetworkInfo::NetworkStatus statusEnum = statusStringToEnum(status);
+        if (networkStatuses[interfaceIndex] != statusEnum) {
+            networkStatuses[interfaceIndex] = statusEnum;
+            emit (networkStatusChanged(networkModes[interfaceIndex], interfaceIndex, statusEnum));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onCellIdChanged(const uint cellid)
@@ -542,8 +626,12 @@ void QNetworkServiceWrapper::onCellIdChanged(const uint cellid)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (cellIdChanged(interfaceIndex, QString::number(cellid)));
+    if (interfaceIndex > -1) {
+        if (cellIds[interfaceIndex].toUInt() != cellid) {
+            cellIds[interfaceIndex] = QString::number(cellid);
+            emit (cellIdChanged(interfaceIndex, cellIds[interfaceIndex]));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onCurrentMccChanged(const QString &currentMcc)
@@ -552,8 +640,12 @@ void QNetworkServiceWrapper::onCurrentMccChanged(const QString &currentMcc)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (currentMobileCountryCodeChanged(interfaceIndex, currentMcc));
+    if (interfaceIndex > -1) {
+        if (currentMccs[interfaceIndex] != currentMcc) {
+            currentMccs[interfaceIndex] = currentMcc;
+            emit (currentMobileCountryCodeChanged(interfaceIndex, currentMcc));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onCurrentMncChanged(const QString &currentMnc)
@@ -562,8 +654,12 @@ void QNetworkServiceWrapper::onCurrentMncChanged(const QString &currentMnc)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (currentMobileNetworkCodeChanged(interfaceIndex, currentMnc));
+    if (interfaceIndex > -1) {
+        if (currentMncs[interfaceIndex] != currentMnc) {
+            currentMncs[interfaceIndex] = currentMnc;
+            emit (currentMobileNetworkCodeChanged(interfaceIndex, currentMnc));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onLocationAreaCodeChanged(const uint lac)
@@ -572,8 +668,12 @@ void QNetworkServiceWrapper::onLocationAreaCodeChanged(const uint lac)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (locationAreaCodeChanged(interfaceIndex, QString::number(lac)));
+    if (interfaceIndex > -1) {
+        if (lacs[interfaceIndex].toUInt() != lac) {
+            lacs[interfaceIndex] = QString::number(lac);
+            emit (locationAreaCodeChanged(interfaceIndex, lacs[interfaceIndex]));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onOperatorNameChanged(const QString &name)
@@ -582,8 +682,12 @@ void QNetworkServiceWrapper::onOperatorNameChanged(const QString &name)
     QObject *signalSender = sender();
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
-    if (interfaceIndex > -1)
-        emit (networkNameChanged(networkModes[interfaceIndex], interfaceIndex, name));
+    if (interfaceIndex > -1) {
+        if (operatorNames[interfaceIndex] != name) {
+            operatorNames[interfaceIndex] = name;
+            emit (networkNameChanged(networkModes[interfaceIndex], interfaceIndex, name));
+        }
+    }
 }
 
 void QNetworkServiceWrapper::onNetworkModeChanged(const QString &technology)
@@ -594,6 +698,36 @@ void QNetworkServiceWrapper::onNetworkModeChanged(const QString &technology)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
     if (interfaceIndex > -1)
         networkModes[interfaceIndex] = technologyToMode(technology);
+}
+
+void QNetworkServiceWrapper::onHomeMccChanged(const QString &homeMcc)
+{
+    int interfaceIndex = -1;
+    QObject *signalSender = sender();
+    if (signalSender)
+        interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
+    if (interfaceIndex > -1)
+        homeMccs[interfaceIndex] = homeMcc;
+}
+
+void QNetworkServiceWrapper::onHomeMncChanged(const QString &homeMnc)
+{
+    int interfaceIndex = -1;
+    QObject *signalSender = sender();
+    if (signalSender)
+        interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
+    if (interfaceIndex > -1)
+        homeMncs[interfaceIndex] = homeMnc;
+}
+
+void QNetworkServiceWrapper::onImsiChanged(const QString &imsi)
+{
+    int interfaceIndex = -1;
+    QObject *signalSender = sender();
+    if (signalSender)
+        interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
+    if (interfaceIndex > -1)
+        imsis[interfaceIndex] = imsi;
 }
 
 QNetworkInfo::CellDataTechnology QNetworkServiceWrapper::technologyStringToEnum(const QString &technology)

@@ -116,6 +116,9 @@ private Q_SLOTS:
     void onLocationAreaCodeChanged(const uint lac);
     void onOperatorNameChanged(const QString& name);
     void onNetworkModeChanged(const QString &technology);
+    void onHomeMccChanged(const QString &homeMcc);
+    void onHomeMncChanged(const QString &homeMnc);
+    void onImsiChanged(const QString &imsi);
 
 private:
     QServiceManager *serviceManager;
@@ -141,6 +144,9 @@ private:
     QMap<int, QString> lacs;
     QMap<int, QString> operatorNames;
     QMap<int, QNetworkInfo::NetworkMode> networkModes;
+    QMap<int, QString> homeMccs;
+    QMap<int, QString> homeMncs;
+    QMap<int, QString> imsis;
 
     void initServiceInterfaces();
     bool loadNetworkManagerInterface(int interfaceIndex);
