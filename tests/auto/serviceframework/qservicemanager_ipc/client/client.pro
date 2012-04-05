@@ -11,7 +11,7 @@ win32-msvc*:QMAKE_LFLAGS += /STACK:4194304
 CONFIG -= app_bundle
 
 jsondb|contains(QT_CONFIG, jsondb): {
-    mtlib|contains(config_test_mtlib, yes): {
+    mtlib|config_mtlib {
         DEFINES += QT_JSONDB
     }
 }

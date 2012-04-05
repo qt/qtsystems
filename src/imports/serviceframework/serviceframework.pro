@@ -21,7 +21,7 @@ SOURCES += qdeclarativeservice.cpp \
            serviceframework.cpp 
 
 jsondb|contains(QT_CONFIG, jsondb): {
-    mtlib|contains(config_test_mtlib, yes): {
+    mtlib|config_mtlib {
         DEFINES += QT_NO_DBUS QT_MTCLIENT_PRESENT
     }
 }

@@ -1,3 +1,10 @@
+load(configure)
+qtCompileTest(gconf)
+qtCompileTest(bluez)
+qtCompileTest(udev)
+qtCompileTest(x11)
+qtCompileTest(libsysinfo)
+
 TEMPLATE = subdirs
 CONFIG += ordered
 

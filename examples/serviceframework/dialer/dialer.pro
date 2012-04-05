@@ -35,7 +35,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS $$QML_MISC_FILES dialer.
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
 qmlsources.files = $$QML_CONTENT_FILES
 qmlsources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer/content
-mtlib|contains(config_test_mtlib, yes) {
+mtlib|config_mtlib {
     info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/dialer
     info.files = info.json
 }

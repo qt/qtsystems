@@ -27,7 +27,7 @@ SOURCES = qvaluespace.cpp \
 
 unix {
     linux-* {
-        contains(config_test_gconf, yes) {
+        config_gconf {
             PRIVATE_HEADERS += gconfitem_p.h \
                                gconflayer_p.h
 

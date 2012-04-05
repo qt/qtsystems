@@ -8,7 +8,7 @@ mac {
 DESTDIR = ../client  #service must be in same dir as client binary
 
 jsondb|contains(QT_CONFIG, jsondb) {
-    mtlib|contains(config_test_mtlib, yes) {
+    mtlib|config_mtlib {
         DEFINES += QT_JSONDB
     }
 }

@@ -14,7 +14,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS remotedialerservice.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerservice
 xml.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/xmldata
 xml.files = remotedialerservice.xml
-mtlib|contains(config_test_mtlib, yes) {
+mtlib|config_mtlib {
     info.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/serviceframework/remotedialerservice
     info.files = info.json interfaces.json
 }

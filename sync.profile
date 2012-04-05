@@ -27,12 +27,3 @@
     "qtdeclarative" => "refs/heads/master",
     "qtjsbackend" => "refs/heads/master",
 );
-
-# Compile tests
-%configtests = (
-    "gconf" => {},
-    "bluez" => {},
-    "udev" => {},
-    "x11" => {},
-    "libsysinfo" => {}
-);

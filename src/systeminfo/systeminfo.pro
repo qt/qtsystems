@@ -71,7 +71,7 @@ linux-*: !simulator: {
                qscreensaver_linux.cpp \
                qdeviceprofile_linux.cpp
 
-    x11|contains(config_test_x11, yes): {
+    x11|config_x11 {
         CONFIG += link_pkgconfig
         PKGCONFIG += x11
     } else: {
@@ -86,14 +86,14 @@ linux-*: !simulator: {
         DEFINES += QT_NO_JSONDB QT_NO_MTLIB
     }
 
-    mtlib|contains(config_test_mtlib, yes): {
+    mtlib|config_mtlib {
         CONFIG += link_pkgconfig
         PKGCONFIG += mt-client
     } else: {
         DEFINES += QT_NO_MTLIB
     }
 
-    contains(config_test_bluez, yes): {
+    config_bluez {
         CONFIG += link_pkgconfig
         PKGCONFIG += bluez
     } else: {
@@ -109,7 +109,7 @@ linux-*: !simulator: {
     }
 
     contains(QT_CONFIG, dbus): {
-        contains(config_test_ofono, yes) : !contains(QT_CONFIG, sfw_netreg) {
+        config_ofono:!contains(QT_CONFIG, sfw_netreg) {
             QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h
             SOURCES += qofonowrapper.cpp
@@ -117,7 +117,7 @@ linux-*: !simulator: {
             DEFINES += QT_NO_OFONO
         }
 
-        contains(config_test_udisks, yes): {
+        config_udisks {
             QT += dbus
         } else: {
             DEFINES += QT_NO_UDISKS
@@ -126,7 +126,7 @@ linux-*: !simulator: {
         DEFINES += QT_NO_OFONO QT_NO_UDISKS
     }
 
-    contains(config_test_udev, yes) {
+    config_udev {
         CONFIG += link_pkgconfig
         PKGCONFIG += udev
         LIBS += -ludev
@@ -136,7 +136,7 @@ linux-*: !simulator: {
         DEFINES += QT_NO_UDEV
     }
 
-    contains(config_test_libsysinfo, yes): {
+    config_libsysinfo {
         CONFIG += link_pkgconfig
         PKGCONFIG += sysinfo
         LIBS += -lsysinfo
@@ -171,7 +171,7 @@ simulator {
                    qdeviceprofile_linux.cpp \
                    qstorageinfo_linux.cpp
 
-        x11|contains(config_test_x11, yes): {
+        x11|config_x11 {
             CONFIG += link_pkgconfig
             PKGCONFIG += x11
         } else: {
@@ -189,14 +189,14 @@ simulator {
             DEFINES += QT_NO_JSONDB QT_NO_MTLIB
         }
 
-        mtlib|contains(config_test_mtlib, yes): {
+        mtlib|config_mtlib {
             CONFIG += link_pkgconfig
             PKGCONFIG += mt-client
         } else: {
             DEFINES += QT_NO_MTLIB
         }
 
-        contains(config_test_bluez, yes): {
+        config_bluez {
             CONFIG += link_pkgconfig
             PKGCONFIG += bluez
         } else: {
@@ -215,7 +215,7 @@ simulator {
         }
 
         contains(QT_CONFIG, dbus): {
-            contains(config_test_ofono, yes) : !contains(QT_CONFIG, sfw_netreg) {
+            config_ofono:!contains(QT_CONFIG, sfw_netreg) {
             QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h \
                                qnetworkinfo_linux_p.h
@@ -234,7 +234,7 @@ simulator {
             DEFINES += QT_NO_OFONO QT_NO_UDISKS
         }
 
-        contains(config_test_udev, yes) {
+        config_udev {
             CONFIG += link_pkgconfig
             PKGCONFIG += udev
             LIBS += -ludev
@@ -244,7 +244,7 @@ simulator {
             DEFINES += QT_NO_UDEV
         }
 
-        contains(config_test_libsysinfo, yes): {
+        config_libsysinfo {
             CONFIG += link_pkgconfig
             PKGCONFIG += sysinfo
             LIBS += -lsysinfo

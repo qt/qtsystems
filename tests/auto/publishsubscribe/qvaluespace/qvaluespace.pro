@@ -2,7 +2,7 @@ include(../../auto.pri)
 
 QT += publishsubscribe
 
-!contains(config_test_gconf, yes) {
+!config_gconf {
     DEFINES += QT_NO_GCONFLAYER
 }
 
