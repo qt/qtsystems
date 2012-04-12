@@ -4,9 +4,8 @@ TARGET = QtPublishSubscribe
 QPRO_PWD = $PWD
 
 CONFIG += module
-MODULE_PRI = ../../modules/qt_publishsubscribe.pri
 
-QT = core core-private
+QT = core-private
 
 DEFINES += QT_BUILD_PUBLISHSUBSCRIBE_LIB QT_MAKEDLL
 

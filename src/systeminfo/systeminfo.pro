@@ -4,7 +4,6 @@ TARGET = QtSystemInfo
 QPRO_PWD = $PWD
 
 CONFIG += module
-MODULE_PRI = ../../modules/qt_systeminfo.pri
 
 QT = core gui network
 

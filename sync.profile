@@ -15,11 +15,6 @@
     "publishsubscribe" => "#include <QtPublishSubscribe/QtPublishSubscribe>\n",
     "serviceframework" => "#include <QtServiceFramework/QtServiceFramework>\n",
 );
-%modulepris = (
-    "QtSystemInfo" => "$basedir/modules/qt_systeminfo.pri",
-    "QtPublishSubscribe" => "$basedir/modules/qt_publishsubscribe.pri",
-    "QtServiceFramework" => "$basedir/modules/qt_serviceframework.pri",
-);
 # Module dependencies.
 # Every module that is required to build this module should have one entry.
 # Each of the module version specifiers can take one of the following values:
