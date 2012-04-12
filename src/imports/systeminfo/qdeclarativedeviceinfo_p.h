@@ -97,7 +97,8 @@ public:
     enum LockType {
         NoLock = QDeviceInfo::NoLock,
         PinLock = QDeviceInfo::PinLock,
-        TouchOrKeyboardLock = QDeviceInfo::TouchOrKeyboardLock
+        TouchOrKeyboardLock = QDeviceInfo::TouchOrKeyboardLock,
+        UnknownLock = QDeviceInfo::UnknownLock
     };
     Q_DECLARE_FLAGS(LockTypeFlags, LockType)
 

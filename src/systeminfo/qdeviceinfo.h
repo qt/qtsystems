@@ -91,7 +91,8 @@ public:
     enum LockType {
         NoLock = 0,
         PinLock = 0x0000001,
-        TouchOrKeyboardLock = 0x0000002
+        TouchOrKeyboardLock = 0x0000002,
+        UnknownLock = 0x0000004
     };
     Q_DECLARE_FLAGS(LockTypeFlags, LockType)
 

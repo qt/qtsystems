@@ -103,9 +103,10 @@ QT_BEGIN_NAMESPACE
     \enum QDeviceInfo::LockType
     This enum describes lock type on the device.
 
-    \value NoLock               No lock, or unknown lock type.
+    \value NoLock               No lock.
     \value PinLock              Device can be locked by PIN code or password.
     \value TouchOrKeyboardLock  Device can be locked by touch or keyboard.
+    \value UnknownLock          lock types requested but no result received yet.
 */
 
 /*!

@@ -71,8 +71,8 @@ public:
     virtual ~QJsonDbWrapper();
 
     // DeviceInfo Interface
-    QDeviceInfo::LockTypeFlags getActivatedLocks();
-    QDeviceInfo::LockTypeFlags getEnabledLocks();
+    QDeviceInfo::LockTypeFlags activatedLockTypes();
+    QDeviceInfo::LockTypeFlags enabledLockTypes();
     bool hasFeaturePositioning();
     QString getUniqueDeviceID();
     QString getModel();
@@ -92,19 +92,22 @@ protected:
 
 private Q_SLOTS:
     void onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode error, const QString &message);
-    void onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
+    void onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
     void onJsonDbRequestFinished();
     void onJsonDbWatcherNotificationsAvailable();
     void onJsonDbWatcherNotificationsBacklightStateAvailable();
+    void onJsonDbSynchronousRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
+    void onJsonDbLockObjectsReadRequestFinished();
 
 private:
     QJsonValue getSystemPropertyValue(const QString &objectType, const QString &property, const QString &partition = QStringLiteral(""));
     QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition = QStringLiteral(""));
-    bool hasSystemObject(const QString &objectType);
+    bool hasSystemObject(const QString &objectType, const QString &partition = QStringLiteral(""));
+    void sendJsonDbLockObjectsReadRequest(const QString &partition = QStringLiteral(""));
     bool waitForResponse();
 
     QtJsonDb::QJsonDbConnection jsonDbConnection;
-    QtJsonDb::QJsonDbWatcher *jsonDbWatcher;
+    QtJsonDb::QJsonDbWatcher *locksWatcher;
     QtJsonDb::QJsonDbWatcher *backlightWatcher;
 
     QEventLoop *waitLoop;
@@ -115,6 +118,7 @@ private:
     bool watchBacklightState;
     QDeviceInfo::LockTypeFlags activatedLocks;
     QDeviceInfo::LockTypeFlags enabledLocks;
+    bool isLockTypeRequested;
 };
 
 QT_END_NAMESPACE

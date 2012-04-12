@@ -61,7 +61,6 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 QT_BEGIN_NAMESPACE
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
@@ -218,7 +217,7 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
 #if !defined(QT_NO_JSONDB)
         if (!jsondbWrapper)
             jsondbWrapper = new QJsonDbWrapper(this);
-        return jsondbWrapper->getActivatedLocks();
+        return jsondbWrapper->activatedLockTypes();
 #endif
     return QDeviceInfo::NoLock;
 }
@@ -228,7 +227,7 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::enabledLocks()
 #if !defined(QT_NO_JSONDB)
         if (!jsondbWrapper)
             jsondbWrapper = new QJsonDbWrapper(this);
-        return jsondbWrapper->getEnabledLocks();
+        return jsondbWrapper->enabledLockTypes();
 #endif
 
     QDeviceInfo::LockTypeFlags enabledLocks = QDeviceInfo::NoLock;

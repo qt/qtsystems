@@ -72,17 +72,20 @@ QDeclarativeDeviceInfo::~QDeclarativeDeviceInfo()
 
     This property holds the activated locks. Available locks include:
     \list
-    \li NoLock               No lock, or unknown lock type.
+    \li NoLock               No lock.
     \li PinLock              Device can be locked by PIN code or password.
     \li TouchOrKeyboardLock  Device can be locked by touch or keyboard.
+    \li UnknownLock          lock types requested but no result received yet.
     \endlist
 */
 QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::activatedLocks() const
 {
     connect(deviceInfo, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags)),
-            this, SIGNAL(activatedLocksChanged()));
+            this, SIGNAL(activatedLocksChanged()), Qt::UniqueConnection);
 
     QDeviceInfo::LockTypeFlags locks(deviceInfo->activatedLocks());
+    if (locks.testFlag(QDeviceInfo::UnknownLock))
+       return QDeclarativeDeviceInfo::UnknownLock;
     LockTypeFlags declarativeLocks(NoLock);
     if (locks.testFlag(QDeviceInfo::PinLock))
         declarativeLocks |= PinLock;
@@ -96,17 +99,20 @@ QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::activatedLocks() c
 
     This property holds the enabled locks. Available locks include:
     \list
-    \li NoLock               No lock, or unknown lock type.
+    \li NoLock               No lock.
     \li PinLock              Device can be locked by PIN code or password.
     \li TouchOrKeyboardLock  Device can be locked by touch or keyboard.
+    \li UnknownLock          lock types requested but no result received yet.
     \endlist
 */
 QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::enabledLocks() const
 {
     connect(deviceInfo, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags)),
-            this, SIGNAL(enabledLocksChanged()));
+            this, SIGNAL(enabledLocksChanged()), Qt::UniqueConnection);
 
     QDeviceInfo::LockTypeFlags locks(deviceInfo->enabledLocks());
+    if (locks.testFlag(QDeviceInfo::UnknownLock))
+       return QDeclarativeDeviceInfo::UnknownLock;
     LockTypeFlags declarativeLocks(NoLock);
     if (locks.testFlag(QDeviceInfo::PinLock))
         declarativeLocks |= PinLock;
