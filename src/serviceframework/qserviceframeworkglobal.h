@@ -51,7 +51,7 @@
 #    if defined(QT_DLL)
 #      undef QT_DLL
 #    endif
-#    if defined(QT_BUILD_SFW_LIB)
+#    if defined(QT_BUILD_SERVICEFRAMEWORK_LIB)
 #      define Q_SERVICEFW_EXPORT Q_DECL_EXPORT
 #    else
 #      define Q_SERVICEFW_EXPORT Q_DECL_IMPORT
