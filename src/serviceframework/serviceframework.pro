@@ -1,13 +1,7 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET = QtServiceFramework
-QPRO_PWD = $PWD
-
-CONFIG += module
-
 QT = core
-
-DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
 load(qt_module_config)
 

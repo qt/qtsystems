@@ -1,13 +1,7 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET = QtSystemInfo
-QPRO_PWD = $PWD
-
-CONFIG += module
-
 QT = core gui network
-
-DEFINES += QT_BUILD_SYSTEMINFO_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
@@ -254,4 +248,4 @@ simulator {
     }
 }
 
-HEADERS = qtsysteminfoversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS

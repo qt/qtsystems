@@ -1,13 +1,7 @@
-load(qt_module)
+load(qt_build_config)
 
 TARGET = QtPublishSubscribe
-QPRO_PWD = $PWD
-
-CONFIG += module
-
 QT = core-private
-
-DEFINES += QT_BUILD_PUBLISHSUBSCRIBE_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
@@ -62,4 +56,4 @@ win32: {
     LIBS += -ladvapi32
 }
 
-HEADERS = qtpublishsubscribeversion.h $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
