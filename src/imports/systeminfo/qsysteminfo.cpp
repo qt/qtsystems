@@ -44,7 +44,7 @@
 
 #include "qdeclarativebatteryinfo_p.h"
 #include "qdeclarativedeviceinfo_p.h"
-#include <qdeviceprofile.h>
+#include "qdeclarativedeviceprofile_p.h"
 #include "qdeclarativedisplayinfo_p.h"
 #include "qdeclarativenetworkinfo_p.h"
 #include <qscreensaver.h>
@@ -66,7 +66,7 @@ public:
         int minor = 0;
         qmlRegisterType<QDeclarativeBatteryInfo>(uri, major, minor, "BatteryInfo");
         qmlRegisterType<QDeclarativeDeviceInfo>(uri, major, minor, "DeviceInfo");
-        qmlRegisterType<QDeviceProfile>(uri, major, minor, "DeviceProfile");
+        qmlRegisterType<QDeclarativeDeviceProfile>(uri, major, minor, "DeviceProfile");
         qmlRegisterType<QDeclarativeDisplayInfo>(uri, major, minor, "DisplayInfo");
         qmlRegisterType<QDeclarativeNetworkInfo>(uri, major, minor, "NetworkInfo");
         qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");
@@ -92,45 +92,4 @@ QT_END_NAMESPACE
 
     On certain platforms, if screen saver is disabled, deep system sleep won't be automatically triggered,
     and the display won't be automatically turned off, etc.
- */
-
-
-/*!
-    \qmlclass DeviceProfile QDeviceProfile
-    \inqmlmodule QtSystemInfo
-    \ingroup qml-systeminfo
-    \brief The DeviceProfile element provides information about the profile of the device.
 */
-
-/*!
-    \qmlmethod bool DeviceProfile::isVibrationActivated()
-
-    Returns true if the vibration is currently activated, or false otherwise.
- */
-
-/*!
-    \qmlmethod int DeviceProfile::messageRingtoneVolume()
-
-    Returns the current message ringtone volume, from 0 to 100. If this information is unknown, or
-    error occurs, -1 is returned.
- */
-
-/*!
-    \qmlmethod int DeviceProfile::voiceRingtoneVolume()
-
-    Returns the current voice ringtone volume, from 0 to 100. If this information is unknown, or error
-    occurs, -1 is returned.
- */
-
-/*!
-    \qmlproperty enum DeviceProfile::currentProfileType
-
-    Returns the type of the current profile, possible types are:
-    \list
-    \li UnknownProfile    Profile unknown or on error.
-    \li SilentProfile     Neither sound nor vibration is on.
-    \li NormalProfile     Normal sound is on.
-    \li VibrationProfile  Only vibration is on, and sound is off.
-    \li BeepProfile       Only beep is on.
-    \endlist
- */

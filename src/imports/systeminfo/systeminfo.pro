@@ -16,7 +16,8 @@ HEADERS += \
     qdeclarativedeviceinfo_p.h \
     qdeclarativedisplayinfo_p.h \
     qdeclarativenetworkinfo_p.h \
-    qdeclarativestorageinfo_p.h
+    qdeclarativestorageinfo_p.h \
+    qdeclarativedeviceprofile_p.h
 
 SOURCES += \
     qdeclarativebatteryinfo.cpp \
@@ -24,4 +25,5 @@ SOURCES += \
     qdeclarativedisplayinfo.cpp \
     qdeclarativenetworkinfo.cpp \
     qdeclarativestorageinfo.cpp \
+    qdeclarativedeviceprofile.cpp \
     qsysteminfo.cpp

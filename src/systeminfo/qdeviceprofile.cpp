@@ -71,12 +71,30 @@ QT_BEGIN_NAMESPACE
     \enum QDeviceProfile::ProfileType
     This enum describes the type of the current profile.
 
-    \value UnknownProfile    Profile unknown or on error.
+    \value UnknownProfile    Profile unknown, profile type requested but no result received yet or an error occured.
     \value SilentProfile     Neither sound nor vibration is on.
     \value NormalProfile     Normal sound is on.
     \value VibrationProfile  Only vibration is on, and sound is off.
     \value BeepProfile       Only beep is on.
 */
+
+/*!
+    \fn void QDeviceProfile::vibrationActivatedChanged(bool activated)
+
+    This signal is emitted whenever vibration has been changed to \a activated.
+ */
+
+/*!
+    \fn void QDeviceProfile::messageRingtoneVolumeChanged(int volume)
+
+    This signal is emitted whenever the message ringtone volume has been changed to \a volume.
+ */
+
+/*!
+    \fn void QDeviceProfile::voiceRingtoneVolumeChanged(int volume)
+
+    This signal is emitted whenever the voice ringtone volume has been changed to \a volume.
+ */
 
 /*!
     \fn void QDeviceProfile::currentProfileTypeChanged(ProfileType profile)
@@ -102,7 +120,10 @@ QDeviceProfile::~QDeviceProfile()
 }
 
 /*!
-    Returns the whether the vibration is active for this profile.
+    \property QDeviceProfile::isVibrationActivated
+    \brief Vibration activated or deactivated.
+
+    Returns whether the vibration is active for this profile.
 */
 bool QDeviceProfile::isVibrationActivated() const
 {
@@ -110,8 +131,11 @@ bool QDeviceProfile::isVibrationActivated() const
 }
 
 /*!
+    \property QDeviceProfile::messageRingtoneVolume
+    \brief The message ringtone volume.
+
     Returns the message ringtone volume for this profile, from 0 to 100. If this information is unknown,
-    or error occurs, -1 is returned.
+    message volume requested but no result received yet or error occurs the  -1 is returned.
 */
 int QDeviceProfile::messageRingtoneVolume() const
 {
@@ -119,8 +143,11 @@ int QDeviceProfile::messageRingtoneVolume() const
 }
 
 /*!
+    \property QDeviceProfile::voiceRingtoneVolume
+    \brief The voice ringtone volume.
+
     Returns the voice ringtone volume for this profile, from 0 to 100. If this information is unknown,
-    or error occurs, -1 is returned.
+    voice volume requested but no result received yet or error occurs the  -1 is returned.
 */
 int QDeviceProfile::voiceRingtoneVolume() const
 {
@@ -136,6 +163,34 @@ int QDeviceProfile::voiceRingtoneVolume() const
 QDeviceProfile::ProfileType QDeviceProfile::currentProfileType() const
 {
     return d_ptr->currentProfileType();
+}
+
+/*!
+    \internal
+*/
+void QDeviceProfile::connectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
+    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+#else
+    Q_UNUSED(signal)
+#endif
+}
+
+/*!
+    \internal
+*/
+void QDeviceProfile::disconnectNotify(const char *signal)
+{
+#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
+    // We can only disconnect with the private implementation, when there is no receivers for the signal.
+    if (receivers(signal) > 0)
+        return;
+
+    disconnect(d_ptr, signal, this, signal);
+#else
+    Q_UNUSED(signal)
+#endif
 }
 
 QT_END_NAMESPACE

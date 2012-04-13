@@ -39,18 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QDEVICEPROFILE_H
-#define QDEVICEPROFILE_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <qsysteminfoglobal.h>
-#include <QtCore/qobject.h>
+#ifndef QDECLARATIVEDEVICEPROFILE_P_H
+#define QDECLARATIVEDEVICEPROFILE_P_H
+
+#include <qdeviceprofile.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QDeviceProfilePrivate;
-
-class Q_SYSTEMINFO_EXPORT QDeviceProfile : public QObject
+class QDeclarativeDeviceProfile : public QObject
 {
     Q_OBJECT
 
@@ -62,15 +70,15 @@ class Q_SYSTEMINFO_EXPORT QDeviceProfile : public QObject
 
 public:
     enum ProfileType {
-        UnknownProfile = 0,
-        SilentProfile,
-        NormalProfile,
-        VibrationProfile,
-        BeepProfile
+        UnknownProfile = QDeviceProfile::UnknownProfile,
+        SilentProfile = QDeviceProfile::SilentProfile,
+        NormalProfile = QDeviceProfile::NormalProfile,
+        VibrationProfile = QDeviceProfile::VibrationProfile,
+        BeepProfile = QDeviceProfile::BeepProfile
     };
 
-    QDeviceProfile(QObject *parent = 0);
-    virtual ~QDeviceProfile();
+    QDeclarativeDeviceProfile(QObject *parent = 0);
+    virtual ~QDeclarativeDeviceProfile();
 
     bool isVibrationActivated() const;
     int messageRingtoneVolume() const;
@@ -78,22 +86,16 @@ public:
     ProfileType currentProfileType() const;
 
 Q_SIGNALS:
-    void vibrationActivatedChanged(bool activated);
-    void messageRingtoneVolumeChanged(int volume);
-    void voiceRingtoneVolumeChanged(int volume);
-    void currentProfileTypeChanged(QDeviceProfile::ProfileType profile);
-
-protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void vibrationActivatedChanged();
+    void messageRingtoneVolumeChanged();
+    void voiceRingtoneVolumeChanged();
+    void currentProfileTypeChanged();
 
 private:
-    Q_DISABLE_COPY(QDeviceProfile)
-    QDeviceProfilePrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QDeviceProfile)
+    QDeviceProfile *deviceProfile;
 };
 
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // QDEVICEPROFILE_H
+#endif // QDECLARATIVEDEVICEPROFILE_P_H

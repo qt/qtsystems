@@ -45,6 +45,7 @@
 #include <QtCore/qtimer.h>
 #include <QtJsonDb/qjsondbreadrequest.h>
 #include <QtJsonDb/qjsondbwatcher.h>
+
 QT_USE_NAMESPACE_JSONDB
 
 QT_BEGIN_NAMESPACE
@@ -54,15 +55,21 @@ const int JSON_EXPIRATION_TIMER(2000);
 QJsonDbWrapper::QJsonDbWrapper(QObject *parent)
     : QObject(parent)
     , locksWatcher(0)
+    , soundSettingsWatcher(0)
     , backlightWatcher(0)
     , waitLoop(0)
     , timer(0)
     , watchActivatedLocks(false)
     , watchEnabledLocks(false)
+    , watchProfile(false)
     , watchBacklightState(false)
     , activatedLocks(QDeviceInfo::UnknownLock)
     , enabledLocks(QDeviceInfo::UnknownLock)
     , isLockTypeRequested(false)
+    , isSoundSettingsRequested(false)
+    , vibrationActivated(false)
+    , ringerVolume(-1)
+    , profileType(QDeviceProfile::UnknownProfile)
 {
     connect(&jsonDbConnection, SIGNAL(error(QtJsonDb::QJsonDbConnection::ErrorCode,QString)),
             this, SLOT(onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode,QString)));
@@ -78,8 +85,9 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::activatedLockTypes()
 {
     if (!isLockTypeRequested && activatedLocks == QDeviceInfo::UnknownLock) {
        isLockTypeRequested = true;
-       sendJsonDbLockObjectsReadRequest(QStringLiteral("Ephemeral"));
+       sendJsonDbLockObjectsReadRequest();
     }
+
     return activatedLocks;
 }
 
@@ -87,7 +95,7 @@ QDeviceInfo::LockTypeFlags QJsonDbWrapper::enabledLockTypes()
 {
     if (!isLockTypeRequested && enabledLocks == QDeviceInfo::UnknownLock) {
        isLockTypeRequested = true;
-       sendJsonDbLockObjectsReadRequest(QStringLiteral("Ephemeral"));
+       sendJsonDbLockObjectsReadRequest();
     }
 
     return enabledLocks;
@@ -107,18 +115,53 @@ QString QJsonDbWrapper::model()
 
 bool QJsonDbWrapper::isVibrationActivated()
 {
-    return getSystemSettingValue(QString(QStringLiteral("sounds")),
-                                 QString(QStringLiteral("vibrationOn"))).toBool();
+    if (!isSoundSettingsRequested && ringerVolume < 0) {
+        isSoundSettingsRequested = true;
+        sendJsonDbSoundSettingsReadRequest();
+    }
+
+    return vibrationActivated;
 }
 
-int QJsonDbWrapper::getRingtoneVolume()
+int QJsonDbWrapper::ringtoneVolume()
 {
-    int volume = getSystemSettingValue(QString(QStringLiteral("sounds")),
-                                       QString(QStringLiteral("ringerVolume"))).toDouble();
-    if (volume >= 0 && volume <= 100)
-        return volume;
+    if (!isSoundSettingsRequested && ringerVolume < 0) {
+        isSoundSettingsRequested = true;
+        sendJsonDbSoundSettingsReadRequest();
+    }
 
-    return -1;
+    return ringerVolume;
+}
+
+QDeviceProfile::ProfileType QJsonDbWrapper::currentProfileType()
+{
+    if (!isSoundSettingsRequested && ringerVolume < 0) {
+        isSoundSettingsRequested = true;
+        sendJsonDbSoundSettingsReadRequest();
+    }
+
+    return profileType;
+}
+
+void QJsonDbWrapper::sendJsonDbLockObjectsReadRequest()
+{
+    QJsonDbReadRequest *request = new QtJsonDb::QJsonDbReadRequest();
+    request->setQuery(QString(QStringLiteral("[?_type in [\"com.nokia.mt.system.SecurityLock\",\"com.nokia.mt.system.Lockscreen\"]]")));
+    request->setPartition(QString(QStringLiteral("Ephemeral")));
+    connect(request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
+            this, SLOT(onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    connect(request, SIGNAL(finished()), this, SLOT(onJsonDbLockObjectsReadRequestFinished()));
+    jsonDbConnection.send(request);
+}
+
+void QJsonDbWrapper::sendJsonDbSoundSettingsReadRequest()
+{
+    QJsonDbReadRequest *request = new QJsonDbReadRequest();
+    request->setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.sounds\"][={settings:settings}]")));
+    connect(request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
+            this, SLOT(onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    connect(request, SIGNAL(finished()), this, SLOT(onJsonDbSoundSettingsReadRequestFinished()));
+    jsonDbConnection.send(request);
 }
 
 QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition)
@@ -129,8 +172,8 @@ QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const
     request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.%1\"][={settings:settings}]"))
                      .arg(settingId));
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-    connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
+            this, SLOT(onJsonDbSynchronousRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+    connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbSynchronousRequestFinished()));
     if (jsonDbConnection.send(&request)) {
         waitForResponse();
         if (request.status() == QJsonDbRequest::Finished) {
@@ -142,39 +185,9 @@ QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const
     return QJsonValue();
 }
 
-bool QJsonDbWrapper::hasSystemObject(const QString &objectType, const QString &partition)
-{
-    QJsonDbReadRequest request;
-    if (!partition.isEmpty())
-        request.setPartition(partition);
-    request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.system.%1\"]")).arg(objectType));
-    connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-    connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
-    if (jsonDbConnection.send(&request)) {
-        waitForResponse();
-        return (request.status() == QJsonDbRequest::Finished && request.takeResults().size() > 0);
-    }
-    return false;
-}
-
-void QJsonDbWrapper::sendJsonDbLockObjectsReadRequest(const QString &partition)
-{
-    QJsonDbReadRequest *request = new QtJsonDb::QJsonDbReadRequest();
-    if (!partition.isEmpty())
-       request->setPartition(partition);
-
-    request->setQuery(QString(QStringLiteral("[?_type in [\"com.nokia.mt.system.SecurityLock\",\"com.nokia.mt.system.Lockscreen\"]]")));
-
-    connect(request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            this, SLOT(onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-    connect(request, SIGNAL(finished()), this, SLOT(onJsonDbLockObjectsReadRequestFinished()));
-    jsonDbConnection.send(request);
-}
-
 void QJsonDbWrapper::connectNotify(const char *signal)
 {
-    if (watchActivatedLocks && watchEnabledLocks && watchBacklightState)
+    if (watchActivatedLocks && watchEnabledLocks && watchProfile && watchBacklightState)
         return;
 
     bool needWatchActivatedLocks = (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0);
@@ -197,13 +210,23 @@ void QJsonDbWrapper::connectNotify(const char *signal)
     if (needWatchEnabledLocks)
         watchEnabledLocks = true;
 
+    bool needWatchProfiles = (strcmp(signal, SIGNAL(vibrationActivatedChanged(bool))) == 0
+                              || strcmp(signal, SIGNAL(ringtoneVolumeChanged(int))) == 0
+                              || strcmp(signal, SIGNAL(currentProfileTypeChanged(QDeviceProfile::ProfileType))) == 0);
+    if (needWatchProfiles) {
+        if (watchProfile)
+            return;
+        currentProfileType();
+        watchProfile = true;
+    }
+
     if (strcmp(signal, SIGNAL(backlightStateChanged(int,QDisplayInfo::BacklightState))) == 0) {
         if (!backlightWatcher) {
             backlightWatcher = new QtJsonDb::QJsonDbWatcher(this);
-            backlightWatcher->setPartition(QStringLiteral("Ephemeral"));
+            backlightWatcher->setPartition(QString(QStringLiteral("Ephemeral")));
             backlightWatcher->setWatchedActions(QJsonDbWatcher::Updated);
             backlightWatcher->setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.system.DisplayState\"]")));
-            connect(backlightWatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onJsonDbWatcherNotificationsBacklightStateAvailable()));
+            connect(backlightWatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onJsonDbWatcherBacklightStateNotificationsAvailable()));
         }
         jsonDbConnection.addWatcher(backlightWatcher);
         watchBacklightState = true;
@@ -212,7 +235,7 @@ void QJsonDbWrapper::connectNotify(const char *signal)
 
 void QJsonDbWrapper::disconnectNotify(const char *signal)
 {
-    if (!watchActivatedLocks && !watchEnabledLocks)
+    if (!watchActivatedLocks && !watchEnabledLocks && !watchBacklightState)
         return;
 
     if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
@@ -224,130 +247,6 @@ void QJsonDbWrapper::disconnectNotify(const char *signal)
 
     if (!watchBacklightState)
         jsonDbConnection.removeWatcher(backlightWatcher);
-}
-
-void QJsonDbWrapper::onJsonDbWatcherNotificationsAvailable()
-{
-    if (!watchActivatedLocks && !watchEnabledLocks)
-        return;
-
-    QList<QJsonDbNotification> notifications = locksWatcher->takeNotifications();
-    if (notifications.size() > 0) {
-        const QJsonDbNotification notification = notifications.at(0);
-        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toAscii();
-        if (watchActivatedLocks) {
-            if (notification.action() == QJsonDbWatcher::Removed) {
-                if (activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)
-                        && strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
-                    activatedLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
-                    emit activatedLocksChanged(activatedLocks);
-                } else if (activatedLocks.testFlag(QDeviceInfo::PinLock)
-                           && strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0) {
-                    activatedLocks &= ~QDeviceInfo::PinLock;
-                    emit activatedLocksChanged(activatedLocks);
-                }
-            } else {
-                if (objectType.size() == strlen("com.nokia.mt.system.Lockscreen") &&
-                    strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
-                    if (notification.object().value(QString(QStringLiteral("isLocked"))).toBool()) {
-                        if (!activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
-                            activatedLocks |= QDeviceInfo::TouchOrKeyboardLock;
-                            emit activatedLocksChanged(activatedLocks);
-                        }
-                    } else {
-                        if (activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
-                            activatedLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
-                            emit activatedLocksChanged(activatedLocks);
-                        }
-                    }
-                } else if (objectType.size() == strlen("com.nokia.mt.system.SecurityLock") &&
-                           strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0) {
-                    if (notification.object().value(QString(QStringLiteral("active"))).toBool()) {
-                        if (!activatedLocks.testFlag(QDeviceInfo::PinLock)) {
-                            activatedLocks |= QDeviceInfo::PinLock;
-                            emit activatedLocksChanged(activatedLocks);
-                        }
-                    } else {
-                        if (activatedLocks.testFlag(QDeviceInfo::PinLock)) {
-                            activatedLocks &= ~QDeviceInfo::PinLock;
-                            emit activatedLocksChanged(activatedLocks);
-                        }
-                    }
-                }
-            }
-        }
-        if (watchEnabledLocks) {
-            if (notification.action() == QJsonDbWatcher::Created) {
-                if (objectType.size() == strlen("com.nokia.mt.system.Lockscreen") &&
-                    strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0)
-                    enabledLocks |= QDeviceInfo::TouchOrKeyboardLock;
-                else if (objectType.size() == strlen("com.nokia.mt.system.SecurityLock") &&
-                         strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0)
-                    enabledLocks |= QDeviceInfo::PinLock;
-                emit enabledLocksChanged(enabledLocks);
-            } else if (notification.action() == QJsonDbWatcher::Removed) {
-                if (objectType.size() == strlen("com.nokia.mt.system.Lockscreen") &&
-                    strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0)
-                    enabledLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
-                else if (objectType.size() == strlen("com.nokia.mt.system.SecurityLock") &&
-                         strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0)
-                    enabledLocks &= ~QDeviceInfo::PinLock;
-                emit enabledLocksChanged(enabledLocks);
-            }
-        }
-    }
-}
-
-void QJsonDbWrapper::onJsonDbWatcherNotificationsBacklightStateAvailable()
-{
-    QList<QJsonDbNotification> notifications = backlightWatcher->takeNotifications();
-    if (notifications.size() > 0) {
-        const QJsonDbNotification notification = notifications.at(0);
-        const int screen = notification.object().value(QStringLiteral("displayIndex")).toString().toInt();
-        QDisplayInfo::BacklightState state;
-        if (notification.object().value(QStringLiteral("active")).toBool())
-           state = QDisplayInfo::BacklightOn;
-        else
-           state = QDisplayInfo::BacklightOff;
-        emit backlightStateChanged(screen, state);
-    }
-}
-
-void QJsonDbWrapper::onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode error, const QString &message)
-{
-    Q_UNUSED(error)
-    Q_UNUSED(message)
-
-    timer->stop();
-    waitLoop->exit(0);
-}
-
-void QJsonDbWrapper::onJsonDbSynchronousRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message)
-{
-    Q_UNUSED(error)
-    Q_UNUSED(message)
-
-    timer->stop();
-    waitLoop->exit(0);
-}
-
-void QJsonDbWrapper::onJsonDbRequestFinished()
-{
-    timer->stop();
-    waitLoop->exit(0);
-}
-
-void QJsonDbWrapper::onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message)
-{
-    Q_UNUSED(error)
-    Q_UNUSED(message)
-
-    QtJsonDb::QJsonDbRequest *request = qobject_cast<QtJsonDb::QJsonDbRequest *>(sender());
-    if (request)
-       request->deleteLater();
-
-    if (isLockTypeRequested && activatedLocks == QDeviceInfo::UnknownLock)
-       isLockTypeRequested = false;
 }
 
 void QJsonDbWrapper::onJsonDbLockObjectsReadRequestFinished()
@@ -424,11 +323,249 @@ void QJsonDbWrapper::onJsonDbLockObjectsReadRequestFinished()
         locksWatcher->setPartition(QStringLiteral("Ephemeral"));
         locksWatcher->setWatchedActions(QJsonDbWatcher::All);
         locksWatcher->setQuery(QString(QStringLiteral("[?_type in [\"com.nokia.mt.system.SecurityLock\",\"com.nokia.mt.system.Lockscreen\"]]")));
-        connect(locksWatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onJsonDbWatcherNotificationsAvailable()));
+        connect(locksWatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onJsonDbWatcherLocksNotificationsAvailable()));
         jsonDbConnection.addWatcher(locksWatcher);
-        watchActivatedLocks = true;
-        watchEnabledLocks = true;
     }
+}
+
+void QJsonDbWrapper::onJsonDbSoundSettingsReadRequestFinished()
+{
+    QtJsonDb::QJsonDbRequest *request = qobject_cast<QtJsonDb::QJsonDbRequest *>(sender());
+    if (!request)
+       return;
+
+    if (request && request->status() == QJsonDbRequest::Finished) {
+        QList<QJsonObject> results = request->takeResults();
+        request->deleteLater();
+        if (results.size() > 0) {
+            QJsonObject soundSettings = results.at(0).value(QString(QStringLiteral("settings"))).toObject();
+            bool vibration = false;
+            if (!soundSettings.value(QString(QStringLiteral("vibrationOn"))).isUndefined())
+                vibration = soundSettings.value(QString(QStringLiteral("vibrationOn"))).toBool();
+            int volume = -1;
+            if (!soundSettings.value(QString(QStringLiteral("ringerVolume"))).isUndefined())
+                volume = int(soundSettings.value(QString(QStringLiteral("ringerVolume"))).toDouble());
+
+            if (volume > -1) {
+                QDeviceProfile::ProfileType profile = QDeviceProfile::UnknownProfile;
+                if (volume > 0) {
+                    profile = QDeviceProfile::NormalProfile;
+                } else {
+                    if (vibration)
+                        profile = QDeviceProfile::VibrationProfile;
+                    else
+                        profile = QDeviceProfile::SilentProfile;
+                }
+                if (ringerVolume != volume) {
+                    ringerVolume = volume;
+                    if (watchProfile)
+                        emit ringtoneVolumeChanged(ringerVolume);
+                }
+                if (vibrationActivated != vibration) {
+                    vibrationActivated = vibration;
+                    if (watchProfile)
+                        emit vibrationActivatedChanged(vibrationActivated);
+                }
+                if (profileType != profile) {
+                    profileType = profile;
+                    if (watchProfile)
+                        emit currentProfileTypeChanged(profileType);
+                }
+            }
+        }
+    }
+
+    if (!soundSettingsWatcher) {
+        soundSettingsWatcher = new QJsonDbWatcher(this);
+        soundSettingsWatcher->setWatchedActions(QJsonDbWatcher::Updated);
+        soundSettingsWatcher->setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.sounds\"][={settings:settings}]")));
+        connect(soundSettingsWatcher, SIGNAL(notificationsAvailable(int)),
+                this, SLOT(onJsonDbWatcherSoundSettingsNotificationsAvailable()));
+        jsonDbConnection.addWatcher(soundSettingsWatcher);
+    }
+}
+
+void QJsonDbWrapper::onJsonDbWatcherLocksNotificationsAvailable()
+{
+    QList<QJsonDbNotification> notifications = locksWatcher->takeNotifications();
+    if (notifications.size() > 0) {
+        const QJsonDbNotification notification = notifications.at(0);
+        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toAscii();
+        if (notification.action() == QJsonDbWatcher::Removed) {
+            if (objectType.size() == strlen("com.nokia.mt.system.Lockscreen")
+                    && strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
+                if (activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
+                    activatedLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
+                    if (watchActivatedLocks)
+                        emit activatedLocksChanged(activatedLocks);
+                }
+                if (enabledLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
+                    enabledLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
+                    if (watchEnabledLocks)
+                        emit enabledLocksChanged(enabledLocks);
+                }
+            } else if (objectType.size() == strlen("com.nokia.mt.system.SecurityLock")
+                       && strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0) {
+                if (activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                    activatedLocks &= ~QDeviceInfo::PinLock;
+                    if (watchActivatedLocks)
+                        emit activatedLocksChanged(activatedLocks);
+                }
+                if (enabledLocks.testFlag(QDeviceInfo::PinLock)) {
+                    enabledLocks &= ~QDeviceInfo::PinLock;
+                    if (watchEnabledLocks)
+                        emit enabledLocksChanged(enabledLocks);
+                }
+            }
+        } else {
+            if (objectType.size() == strlen("com.nokia.mt.system.Lockscreen")
+                    && strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
+                if (notification.object().value(QString(QStringLiteral("isLocked"))).toBool()) {
+                    if (!activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
+                        activatedLocks |= QDeviceInfo::TouchOrKeyboardLock;
+                        if (watchActivatedLocks)
+                            emit activatedLocksChanged(activatedLocks);
+                    }
+                } else {
+                    if (activatedLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
+                        activatedLocks &= ~QDeviceInfo::TouchOrKeyboardLock;
+                        if (watchActivatedLocks)
+                            emit activatedLocksChanged(activatedLocks);
+                    }
+                }
+                if (notification.action() == QJsonDbWatcher::Created) {
+                    if (!enabledLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock)) {
+                        enabledLocks |= QDeviceInfo::TouchOrKeyboardLock;
+                        if (watchEnabledLocks)
+                            emit enabledLocksChanged(enabledLocks);
+                    }
+                }
+            } else if (objectType.size() == strlen("com.nokia.mt.system.SecurityLock")
+                       && strcmp(objectType.constData(), "com.nokia.mt.system.SecurityLock") == 0) {
+                if (notification.object().value(QString(QStringLiteral("active"))).toBool()) {
+                    if (!activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                        activatedLocks |= QDeviceInfo::PinLock;
+                        if (watchActivatedLocks)
+                            emit activatedLocksChanged(activatedLocks);
+                    }
+                } else {
+                    if (activatedLocks.testFlag(QDeviceInfo::PinLock)) {
+                        activatedLocks &= ~QDeviceInfo::PinLock;
+                        if (watchActivatedLocks)
+                            emit activatedLocksChanged(activatedLocks);
+                    }
+                }
+                if (notification.action() == QJsonDbWatcher::Created) {
+                    if (!enabledLocks.testFlag(QDeviceInfo::PinLock)) {
+                        enabledLocks |= QDeviceInfo::PinLock;
+                        if (watchEnabledLocks)
+                            emit enabledLocksChanged(enabledLocks);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void QJsonDbWrapper::onJsonDbWatcherSoundSettingsNotificationsAvailable()
+{
+    QList<QJsonDbNotification> notifications = soundSettingsWatcher->takeNotifications();
+    if (notifications.size() > 0) {
+        const QJsonDbNotification notification = notifications.at(0);
+        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toAscii();
+        if (objectType.size() == strlen("com.nokia.mt.settings.SystemSettings")
+                && strcmp(objectType.constData(), "com.nokia.mt.settings.SystemSettings") == 0) {
+            const QByteArray identifier = notification.object().value(QStringLiteral("identifier")).toString().toAscii();
+            if (identifier.size() == strlen("com.nokia.mt.settings.sounds")
+                    && strcmp(identifier.constData(), "com.nokia.mt.settings.sounds") == 0) {
+                bool vibration = notification.object().value(QString(QStringLiteral("settings"))).toObject().value(QString(QStringLiteral("vibrationOn"))).toBool();
+                int volume = int(notification.object().value(QString(QStringLiteral("settings"))).toObject().value(QString(QStringLiteral("ringerVolume"))).toDouble());
+                if (volume != ringerVolume || vibration != vibrationActivated) {
+                    QDeviceProfile::ProfileType profile = QDeviceProfile::UnknownProfile;
+                    if (volume > 0) {
+                        profile = QDeviceProfile::NormalProfile;
+                    } else {
+                        if (vibration)
+                            profile = QDeviceProfile::VibrationProfile;
+                        else
+                            profile = QDeviceProfile::SilentProfile;
+                    }
+                    if (ringerVolume != volume) {
+                        ringerVolume = volume;
+                        if (watchProfile)
+                            emit ringtoneVolumeChanged(ringerVolume);
+                    }
+                    if (vibrationActivated != vibration) {
+                        vibrationActivated = vibration;
+                        if (watchProfile)
+                            emit vibrationActivatedChanged(vibrationActivated);
+                    }
+                    if (profileType != profile) {
+                        profileType = profile;
+                        if (watchProfile)
+                            emit currentProfileTypeChanged(profileType);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void QJsonDbWrapper::onJsonDbWatcherBacklightStateNotificationsAvailable()
+{
+    QList<QJsonDbNotification> notifications = backlightWatcher->takeNotifications();
+    if (notifications.size() > 0) {
+        const QJsonDbNotification notification = notifications.at(0);
+        const int screen = notification.object().value(QStringLiteral("displayIndex")).toString().toInt();
+        QDisplayInfo::BacklightState state;
+        if (notification.object().value(QStringLiteral("active")).toBool())
+           state = QDisplayInfo::BacklightOn;
+        else
+           state = QDisplayInfo::BacklightOff;
+        emit backlightStateChanged(screen, state);
+    }
+}
+
+void QJsonDbWrapper::onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode error, const QString &message)
+{
+    Q_UNUSED(error)
+    Q_UNUSED(message)
+
+    if (timer)
+        timer->stop();
+    if (waitLoop)
+        waitLoop->exit(0);
+}
+
+void QJsonDbWrapper::onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message)
+{
+    Q_UNUSED(error)
+    Q_UNUSED(message)
+
+    QtJsonDb::QJsonDbRequest *request = qobject_cast<QtJsonDb::QJsonDbRequest *>(sender());
+    if (request)
+       request->deleteLater();
+
+    if (isLockTypeRequested && activatedLocks == QDeviceInfo::UnknownLock)
+       isLockTypeRequested = false;
+
+    if (isSoundSettingsRequested && ringerVolume == -1)
+        isSoundSettingsRequested = false;
+}
+
+void QJsonDbWrapper::onJsonDbSynchronousRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message)
+{
+    Q_UNUSED(error)
+    Q_UNUSED(message)
+
+    timer->stop();
+    waitLoop->exit(0);
+}
+
+void QJsonDbWrapper::onJsonDbSynchronousRequestFinished()
+{
+    timer->stop();
+    waitLoop->exit(0);
 }
 
 bool QJsonDbWrapper::waitForResponse()

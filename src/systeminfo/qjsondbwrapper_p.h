@@ -54,6 +54,7 @@
 #define QJSONDBWRAPPER_P_H
 
 #include <qdeviceinfo.h>
+#include <qdeviceprofile.h>
 #include <qdisplayinfo.h>
 #include <QtJsonDb/qjsondbconnection.h>
 #include <QtJsonDb/qjsondbrequest.h>
@@ -78,11 +79,15 @@ public:
 
     // DeviceProfile Interface
     bool isVibrationActivated();
-    int getRingtoneVolume();
+    int ringtoneVolume();
+    QDeviceProfile::ProfileType currentProfileType();
 
 Q_SIGNALS:
     void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
     void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
+    void vibrationActivatedChanged(bool activated);
+    void ringtoneVolumeChanged(int volume);
+    void currentProfileTypeChanged(QDeviceProfile::ProfileType profile);
     void backlightStateChanged(int screen, QDisplayInfo::BacklightState state);
 
 protected:
@@ -92,20 +97,25 @@ protected:
 private Q_SLOTS:
     void onJsonDbConnectionError(QtJsonDb::QJsonDbConnection::ErrorCode error, const QString &message);
     void onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
-    void onJsonDbRequestFinished();
-    void onJsonDbWatcherNotificationsAvailable();
-    void onJsonDbWatcherNotificationsBacklightStateAvailable();
-    void onJsonDbSynchronousRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
     void onJsonDbLockObjectsReadRequestFinished();
+    void onJsonDbSoundSettingsReadRequestFinished();
+    void onJsonDbWatcherLocksNotificationsAvailable();
+    void onJsonDbWatcherSoundSettingsNotificationsAvailable();
+    void onJsonDbWatcherBacklightStateNotificationsAvailable();
+
+    void onJsonDbSynchronousRequestError(QtJsonDb::QJsonDbRequest::ErrorCode error, const QString &message);
+    void onJsonDbSynchronousRequestFinished();
 
 private:
+    void sendJsonDbLockObjectsReadRequest();
+    void sendJsonDbSoundSettingsReadRequest();
+
     QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition = QStringLiteral(""));
-    bool hasSystemObject(const QString &objectType, const QString &partition = QStringLiteral(""));
-    void sendJsonDbLockObjectsReadRequest(const QString &partition = QStringLiteral(""));
     bool waitForResponse();
 
     QtJsonDb::QJsonDbConnection jsonDbConnection;
     QtJsonDb::QJsonDbWatcher *locksWatcher;
+    QtJsonDb::QJsonDbWatcher *soundSettingsWatcher;
     QtJsonDb::QJsonDbWatcher *backlightWatcher;
 
     QEventLoop *waitLoop;
@@ -113,10 +123,15 @@ private:
 
     bool watchActivatedLocks;
     bool watchEnabledLocks;
+    bool watchProfile;
     bool watchBacklightState;
     QDeviceInfo::LockTypeFlags activatedLocks;
     QDeviceInfo::LockTypeFlags enabledLocks;
     bool isLockTypeRequested;
+    bool isSoundSettingsRequested;
+    bool vibrationActivated;
+    int ringerVolume;
+    QDeviceProfile::ProfileType profileType;
 };
 
 QT_END_NAMESPACE

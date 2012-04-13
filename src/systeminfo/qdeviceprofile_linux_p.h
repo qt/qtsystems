@@ -55,14 +55,16 @@
 
 #include <qdeviceprofile.h>
 
-QT_BEGIN_NAMESPACE
-
 #if !defined(QT_NO_JSONDB)
-class QJsonDbWrapper;
+#include <qjsondbwrapper_p.h>
 #endif //QT_NO_JSONDB
 
-class QDeviceProfilePrivate
+QT_BEGIN_NAMESPACE
+
+class QDeviceProfilePrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     QDeviceProfilePrivate(QDeviceProfile *parent);
     ~QDeviceProfilePrivate();
@@ -72,12 +74,22 @@ public:
     int voiceRingtoneVolume();
     QDeviceProfile::ProfileType currentProfileType();
 
+Q_SIGNALS:
+    void vibrationActivatedChanged(bool activated);
+    void messageRingtoneVolumeChanged(int volume);
+    void voiceRingtoneVolumeChanged(int volume);
+    void currentProfileTypeChanged(QDeviceProfile::ProfileType profile);
+
+protected:
+    void connectNotify(const char *signal);
+    void disconnectNotify(const char *signal);
+
 private:
     QDeviceProfile * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceProfile)
 
 #if !defined(QT_NO_JSONDB)
-    QJsonDbWrapper *jsondbWrapper;
+    QJsonDbWrapper jsondbWrapper;
 #endif //QT_NO_JSONDB
 };
 
