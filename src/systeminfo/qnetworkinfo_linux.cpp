@@ -896,8 +896,11 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
             QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/carrier")));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
-                if (carrier.read(&state, 1) == 1 && state == '1')
+                if ((carrier.read(&state, 1) == 1) &&
+                        (state == '1') &&
+                        (networkSignalStrength(QNetworkInfo::WlanMode, interface) > -1)) {
                     return QNetworkInfo::HomeNetwork;
+                }
             }
         }
         return QNetworkInfo::NoNetworkAvailable;
@@ -909,7 +912,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
             QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/carrier")));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
-                if (carrier.read(&state, 1) == 1 && state == '1')
+                if ((carrier.read(&state, 1) == 1) && (state == '1'))
                     return QNetworkInfo::HomeNetwork;
             }
         }
