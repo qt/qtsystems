@@ -16,4 +16,5 @@ HEADERS += ../../serviceframework/servicemetadata_p.h
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
 
+CONFIG += console
 load(qt_targets)
