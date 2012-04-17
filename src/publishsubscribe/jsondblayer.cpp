@@ -69,7 +69,7 @@ JsonDbPath::JsonDbPath() : path(QStringLiteral(""))
 {
 }
 
-JsonDbPath::JsonDbPath(QString path)
+JsonDbPath::JsonDbPath(const QString &path)
 {
     this->path = JsonDbPath::normalizePath(path);
 }

@@ -138,7 +138,7 @@ class JsonDbPath
 {
     public:
         JsonDbPath();
-        explicit JsonDbPath(QString path);
+        explicit JsonDbPath(const QString &path);
         JsonDbPath(const JsonDbPath &other);
 
         inline QString getPath() const { return path; }
