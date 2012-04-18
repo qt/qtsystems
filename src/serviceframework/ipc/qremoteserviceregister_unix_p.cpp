@@ -57,6 +57,7 @@
 #include <QEvent>
 #include <QThreadStorage>
 #include <QStandardPaths>
+#include <QString>
 
 #include <time.h>
 #include <sys/types.h>
@@ -446,17 +447,17 @@ void UnixEndPoint::flushPackage(const QServicePackage& package)
     QString op = QString::fromLatin1("--> %1 SFW write to %2 size %3 name %4 ").arg(package.d->messageId.toString()).
             arg(client_fd).arg(size).arg(objectName());
     if (package.d->packageType == QServicePackage::ObjectCreation)
-        op += QLatin1Literal("ObjectCreation ");
+        op += QStringLiteral("ObjectCreation ");
     else if (package.d->packageType == QServicePackage::MethodCall)
-        op += QLatin1Literal("MethodCall ");
+        op += QStringLiteral("MethodCall ");
     else if (package.d->packageType == QServicePackage::PropertyCall)
-        op += QLatin1Literal("PropertyCall ");
+        op += QStringLiteral("PropertyCall ");
     if (package.d->responseType == QServicePackage::NotAResponse)
-        op += QLatin1Literal("NotAResponse");
-    if (package.d->responseType == QServicePackage::Success)
-        op += QLatin1Literal("Success");
-    if (package.d->responseType == QServicePackage::Failed)
-        op += QLatin1Literal("Failed");
+        op += QStringLiteral("NotAResponse");
+    else if (package.d->responseType == QServicePackage::Success)
+        op += QStringLiteral("Success");
+    else if (package.d->responseType == QServicePackage::Failed)
+        op += QStringLiteral("Failed");
     QServiceDebugLog::instance()->appendToLog(op);
 #endif
 
@@ -533,17 +534,17 @@ void UnixEndPoint::readIncoming()
             QString op = QString::fromLatin1("<-- %1 SFW read fro %2 size %3 name %4 ").arg(package.d->messageId.toString()).
                     arg(client_fd).arg(size).arg(objectName());
             if (package.d->packageType == QServicePackage::ObjectCreation)
-                op += QLatin1Literal("ObjectCreation ");
+                op += QStringLiteral("ObjectCreation ");
             else if (package.d->packageType == QServicePackage::MethodCall)
-                op += QLatin1Literal("MethodCall ");
+                op += QStringLiteral("MethodCall ");
             else if (package.d->packageType == QServicePackage::PropertyCall)
-                op += QLatin1Literal("PropertyCall ");
+                op += QStringLiteral("PropertyCall ");
             if (package.d->responseType == QServicePackage::NotAResponse)
-                op += QLatin1Literal("NotAResponse");
-            if (package.d->responseType == QServicePackage::Success)
-                op += QLatin1Literal("Success");
-            if (package.d->responseType == QServicePackage::Failed)
-                op += QLatin1Literal("Failed");
+                op += QStringLiteral("NotAResponse");
+            else if (package.d->responseType == QServicePackage::Success)
+                op += QStringLiteral("Success");
+            else if (package.d->responseType == QServicePackage::Failed)
+                op += QStringLiteral("Failed");
             QServiceDebugLog::instance()->appendToLog(op);
 #endif
 
@@ -640,12 +641,12 @@ protected slots:
     }
 
     void ipcFault(QService::UnrecoverableIPCError) {
-        errorEvent(QString(), QLatin1Literal("Unrecoverable IPC fault, unable to request service start"));
+        errorEvent(QString(), QStringLiteral("Unrecoverable IPC fault, unable to request service start"));
     }
 
     void timeout() {
         qWarning() << "SFW Timeout talking to the process manager?? exect failure";
-        errorEvent(QString(), QLatin1Literal("Timeout waiting for reply"));
+        errorEvent(QString(), QStringLiteral("Timeout waiting for reply"));
     }
 
     void launched() {
@@ -812,7 +813,7 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 
 int doStart(const QString &location) {
 
-    QLatin1Literal fmt("hh:mm:ss.zzz");
+    QLatin1String fmt("hh:mm:ss.zzz");
     QTime total_time;
     total_time.start();
 
@@ -821,7 +822,7 @@ int doStart(const QString &location) {
     int wd = ::inotify_add_watch(fd, "/tmp/", IN_MOVED_TO|IN_CREATE);
 
     Waiter *w_inotify = new Waiter(Waiter::Reader, fd);
-    w_inotify->name = QLatin1Literal("inotifier waiter for") + location;
+    w_inotify->name = QStringLiteral("inotifier waiter for") + location;
 #else
     Waiter *w_inotify = new Waiter(Waiter::Timer, -1);
     w_inotify->timeout = 100;
@@ -842,7 +843,7 @@ int doStart(const QString &location) {
              fullPath.toLatin1().size() + 1);
 
     Waiter *w = new Waiter(Waiter::Reader, socketfd);
-    w->name = QLatin1Literal("connect waiter for") + location;
+    w->name = QStringLiteral("connect waiter for") + location;
 
     int ret = ::connect(socketfd, (struct sockaddr *) &name, sizeof(struct sockaddr_un));
 
@@ -876,8 +877,8 @@ int doStart(const QString &location) {
     qWarning() << QTime::currentTime().toString(fmt)
                << "SFW unable to connect to service, trying to start it." << ret << qt_error_string(errno);
 
-    if (location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest") ||
-        location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket")) {
+    if (location == QStringLiteral("com.nokia.mt.processmanager.ServiceRequest") ||
+        location == QStringLiteral("com.nokia.mt.processmanager.ServiceRequestSocket")) {
 #ifndef Q_OS_MAC
         ::inotify_rm_watch(fd, wd);
         ::close(fd);
@@ -889,12 +890,12 @@ int doStart(const QString &location) {
     }
 
     QVariantMap map;
-    map.insert(QLatin1Literal("interfaceName"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest"));
-    map.insert(QLatin1Literal("serviceName"), QLatin1Literal("com.nokia.mt.processmanager"));
-    map.insert(QLatin1Literal("major"), 1);
-    map.insert(QLatin1Literal("minor"), 0);
-    map.insert(QLatin1Literal("Location"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket"));
-    map.insert(QLatin1Literal("ServiceType"), QService::InterProcess);
+    map.insert(QStringLiteral("interfaceName"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequest"));
+    map.insert(QStringLiteral("serviceName"), QStringLiteral("com.nokia.mt.processmanager"));
+    map.insert(QStringLiteral("major"), 1);
+    map.insert(QStringLiteral("minor"), 0);
+    map.insert(QStringLiteral("Location"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequestSocket"));
+    map.insert(QStringLiteral("ServiceType"), QService::InterProcess);
 
     QServiceInterfaceDescriptor desc(map);
     QServiceManager manager;
@@ -919,7 +920,7 @@ int doStart(const QString &location) {
 
     QMetaObject::invokeMethod(serviceRequest, "startService", Qt::DirectConnection, Q_ARG(QString, location));
 
-    QFileInfo file(QLatin1Literal("/tmp/") + location);
+    QFileInfo file(QStringLiteral("/tmp/") + location);
     qWarning() << QTime::currentTime().toString(fmt)
                << "SFW checking in" << file.path() << "for the socket to come into existance" << file.filePath();
 
@@ -1052,8 +1053,8 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
         UnixEndPoint* ipcEndPoint = new UnixEndPoint(socketfd);
         ObjectEndPoint* endPoint = new ObjectEndPoint(ObjectEndPoint::Client, ipcEndPoint);
 
-        ipcEndPoint->setObjectName(entry.interfaceName() + QString(QLatin1Literal(" client end %1")).arg(socketfd));
-        endPoint->setObjectName(entry.interfaceName() + QString(QLatin1Literal(" client end %1")).arg(socketfd));
+        ipcEndPoint->setObjectName(entry.interfaceName() + QString(QStringLiteral(" client end %1")).arg(socketfd));
+        endPoint->setObjectName(entry.interfaceName() + QString(QStringLiteral(" client end %1")).arg(socketfd));
 
         QObject *proxy = endPoint->constructProxy(entry);
         if (proxy){

@@ -60,20 +60,6 @@
 #include <time.h>
 #include <sys/types.h>
 
-#ifdef QT_MTCLIENT_PRESENT
-#include "qservicemanager.h"
-#include <QCoreApplication>
-#include <QTime>
-#include <QTextStream>
-#include <QFileSystemWatcher>
-#include <QSocketNotifier>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <sys/inotify.h>
-#include <unistd.h>
-#include <fcntl.h>
-#endif
-
 #ifndef Q_OS_WIN
 #include <sys/un.h>
 #include <sys/socket.h>
@@ -252,52 +238,6 @@ private:
     quint32 pending_bytes;
 };
 
-#ifdef QT_MTCLIENT_PRESENT
-class ServiceRequestWaiter : public QObject
-{
-    Q_OBJECT
-public:
-    ServiceRequestWaiter(QObject *request, QObject *parent = 0)
-        : QObject(parent), receivedLaunched(false)
-    {
-        connect(request, SIGNAL(launched(QString)), this, SLOT(launched()));
-        connect(request, SIGNAL(failed(QString, QString)), this, SLOT(errorEvent(QString, QString)));
-        connect(request, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
-                this, SLOT(ipcFault(QService::UnrecoverableIPCError)));
-    }
-    ~ServiceRequestWaiter() { }
-
-    QString errorString;
-    bool receivedLaunched;
-
-signals:
-    void ok();
-    void error();
-
-protected slots:
-    void errorEvent(const QString &, const QString& errorString) {
-        this->errorString = errorString;
-        emit error();
-    }
-
-    void ipcFault(QService::UnrecoverableIPCError) {
-        errorEvent(QString(), QLatin1Literal("Unrecoverable IPC fault, unable to request service start"));
-    }
-
-    void timeout() {
-        qWarning() << "SFW Timeout talking to the process manager?? exect failure";
-        errorEvent(QString(), QLatin1Literal("Timeout waiting for reply"));
-    }
-
-    void launched() {
-        qWarning() << "SFW got laucnhed from PM";
-        receivedLaunched = true;
-        emit ok();
-    }
-};
-
-#endif
-
 QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPrivate(QObject* parent)
     : QRemoteServiceRegisterPrivate(parent)
 {    
@@ -306,13 +246,6 @@ QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPriva
 void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& ident)
 {
     createServiceEndPoint(ident);
-
-#ifdef QT_MTCLIENT_PRESENT
-    // Must write the outputMatch to stdout to tell it we're ready
-    // We must complete this without 10 seconds
-    QTextStream out(stdout); out<<"Ready";out.flush();
-#endif
-
 }
 
 void QRemoteServiceRegisterLocalSocketPrivate::processIncoming()
@@ -348,64 +281,6 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
     localServer = new QLocalServer(this);
     connect(localServer, SIGNAL(newConnection()), this, SLOT(processIncoming()));
 
-#ifdef QT_MTCLIENT_PRESENT
-/*
-    QRemoteServiceRegister::SecurityAccessOptions opts = getSecurityOptions();
-
-    if (opts == QRemoteServiceRegister::NoOptions) {
-        localServer->setSocketOptions(QLocalServer::UserAccessOption);
-    } else {
-        QLocalServer::SocketOptions flags = QLocalServer::NoOptions;
-
-        if (opts == QRemoteServiceRegister::UserAccessOption) {
-            flags |= QLocalServer::UserAccessOption;
-        }
-        if (opts == QRemoteServiceRegister::GroupAccessOption) {
-            flags |= QLocalServer::GroupAccessOption;
-        }
-        if (opts == QRemoteServiceRegister::OtherAccessOption) {
-            flags |= QLocalServer::GroupAccessOption;
-        }
-        if (opts == QRemoteServiceRegister::WorldAccessOption) {
-            flags |= QLocalServer::WorldAccessOption;
-        }
-        localServer->setSocketOptions(flags);
-    }
-*/
-    QString location = ident;
-    location = QDir::cleanPath(QDir::tempPath());
-    location += QLatin1Char('/') + ident;
-
-    // Note safe, but a temporary code
-    QString tempLocation = location + QLatin1Literal(".temp");
-
-    QLocalServer::removeServer(location);
-    QLocalServer::removeServer(tempLocation);
-
-    if ( !localServer->listen(tempLocation) ) {
-        qWarning() << "SFW Cannot create local socket endpoint";
-        return false;
-    }
-
-    ::chmod(tempLocation.toLatin1(), S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IWOTH|S_IROTH);
-    int uid = getuid();
-    int gid = getgid();
-    bool doChown = false;
-    if (isBaseUserIdentifierSet()) {
-        uid = getBaseUserIdentifier();
-        doChown = true;
-    }
-    if (isBaseGroupIdentifierSet()) {
-        gid = getBaseGroupIdentifier();
-        doChown = true;
-    }
-    if (doChown && (-1 == ::chown(tempLocation.toLatin1(), uid, gid))) {
-        qWarning() << "Failed to chown socket to request uid/gid" << uid << gid << qt_error_string(errno);
-        return false;
-    }
-    ::rename(tempLocation.toLatin1(), location.toLatin1());
-
-#else
     //other IPC mechanisms such as dbus may have to publish the
     //meta object definition for all registered service types
     QLocalServer::removeServer(ident);
@@ -414,8 +289,6 @@ bool QRemoteServiceRegisterLocalSocketPrivate::createServiceEndPoint(const QStri
         qWarning() << "Cannot create local socket endpoint";
         return false;
     }
-#endif
-
 
     if (localServer->hasPendingConnections())
         QMetaObject::invokeMethod(this, "processIncoming", Qt::QueuedConnection);
@@ -428,153 +301,6 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
   return new QRemoteServiceRegisterLocalSocketPrivate(parent);
 }
 
-#ifdef QT_MTCLIENT_PRESENT
-
-#define SFW_PROCESS_TIMEOUT 5000
-
-void doStart(const QString &location, QLocalSocket *socket) {
-
-    QLatin1Literal fmt("hh:mm:ss.zzz");
-
-    int fd = ::inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
-    int wd = ::inotify_add_watch(fd, QDir::tempPath().toLatin1(), IN_MOVED_TO|IN_CREATE);
-
-    QSocketNotifier notifier(fd, QSocketNotifier::Read);
-    notifier.setEnabled(true);
-
-    socket->connectToServer(location);
-    if (socket->waitForConnected(SFW_PROCESS_TIMEOUT)) {
-        ::inotify_rm_watch(fd, wd);
-        ::close(fd);
-        return;
-    }
-
-    qWarning() << QTime::currentTime().toString(fmt)
-               << "SFW unable to connect to service, trying to start it. " << socket->errorString();
-
-    if (location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest") ||
-        location == QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket")) {
-        ::inotify_rm_watch(fd, wd);
-        ::close(fd);
-        return;
-    }
-
-    QVariantMap map;
-    map.insert(QLatin1Literal("interfaceName"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest"));
-    map.insert(QLatin1Literal("serviceName"), QLatin1Literal("com.nokia.mt.processmanager"));
-    map.insert(QLatin1Literal("major"), 1);
-    map.insert(QLatin1Literal("minor"), 0);
-    map.insert(QLatin1Literal("Location"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket"));
-    map.insert(QLatin1Literal("ServiceType"), QService::InterProcess);
-
-    QServiceInterfaceDescriptor desc(map);
-    QServiceManager manager;
-    QObject *serviceRequest = manager.loadInterface(desc);
-
-    qWarning() << QTime::currentTime().toString(fmt)
-               << "Called loadinterface" << serviceRequest;
-
-    if (!serviceRequest) {
-        qWarning() << "Failed to initiate communications with Process manager, can't start service" << location;
-        ::inotify_rm_watch(fd, wd);
-        ::close(fd);
-        return;
-    }
-
-    ServiceRequestWaiter waiter(serviceRequest);
-
-    QMetaObject::invokeMethod(serviceRequest, "startService", Q_ARG(QString, location));
-
-    QFileInfo file(QDir::tempPath() + QLatin1Char('/') + location);
-    qWarning() << QTime::currentTime().toString(fmt)
-               << "SFW checking in" << file.path() << "for the socket to come into existance" << file.filePath();
-
-    int socketfd = ::socket(PF_UNIX, SOCK_STREAM, 0);
-
-    // set non blocking so we can try to connect and it wont wait
-    int flags = ::fcntl(socketfd, F_GETFL, 0);
-    fcntl(socketfd, F_SETFL, flags | O_NONBLOCK);
-
-    struct sockaddr_un name;
-    name.sun_family = PF_UNIX;
-
-    QString fullPath(QDir::tempPath());
-    fullPath += QLatin1Char('/') + location;
-
-    ::memcpy(name.sun_path, fullPath.toLatin1().data(),
-             fullPath.toLatin1().size() + 1);
-
-    QSocketNotifier connectNotifier(socketfd, QSocketNotifier::Write);
-    connectNotifier.setEnabled(false);
-
-    QTimer timeout;
-    timeout.start(SFW_PROCESS_TIMEOUT);
-    timeout.setSingleShot(true);
-
-    QEventLoop loop;
-    QObject::connect(&timeout, SIGNAL(timeout()), &loop, SLOT(quit()));
-    QObject::connect(socket, SIGNAL(connected()), &loop, SLOT(quit()));
-    QObject::connect(&notifier, SIGNAL(activated(int)), &loop, SLOT(quit()));
-    QObject::connect(&connectNotifier, SIGNAL(activated(int)), &loop, SLOT(quit()));
-    QObject::connect(&waiter, SIGNAL(error()), &loop, SLOT(quit()));
-
-    int ret = ::connect(socketfd, (struct sockaddr *)&name, sizeof(name));
-    if (ret == -1) {
-        qWarning() << QTime::currentTime().toString(fmt)
-                   << "Failed to connect" << qt_error_string(errno);
-    } else {
-        connectNotifier.setEnabled(true);
-    }
-
-    while (timeout.isActive()) {
-        loop.exec();
-        notifier.setEnabled(false);
-#define INOTIFY_SIZE (sizeof(struct inotify_event)+1024)
-        char buffer[INOTIFY_SIZE];
-        int n;
-        while ((n = ::read(fd, buffer, INOTIFY_SIZE)) == INOTIFY_SIZE) {
-        }
-        if (n == -1 && errno != EAGAIN) {
-            qWarning() << QTime::currentTime().toString(fmt)
-                       << "Failed to read inotity, fall back to timeout" << qt_error_string(errno);
-        } else {
-            notifier.setEnabled(true);
-        }
-        ret = ::connect(socketfd, (struct sockaddr *)&name, sizeof(name));
-        if (ret == -1) {
-            if (errno == EISCONN) {
-                qWarning() << QTime::currentTime().toString(fmt)
-                           <<  "SFW Connected to service";
-                if (!waiter.receivedLaunched) {
-                    qWarning() << "SFW asked the PM for a start, PM never replied, application started...something appears broken";
-                }
-                socket->setSocketDescriptor(socketfd, QLocalSocket::ConnectedState);
-                connectNotifier.setEnabled(false);
-                break;
-            } else {
-                connectNotifier.setEnabled(false);
-            }
-        } else {
-            connectNotifier.setEnabled(true);
-        }
-        if (!waiter.errorString.isEmpty()) {
-            qWarning() << "SFW Error talking to PM" << waiter.errorString;
-            break;
-        }
-    }
-    qWarning() << QTime::currentTime().toString(fmt) <<
-                 "SFW done waiting. Socket exists:" << file.exists() <<
-                 "timeout is active" << timeout.isActive() <<
-                 "isSocketValid" << socket->isValid() <<
-                 "pm reply" << waiter.receivedLaunched;
-
-    delete serviceRequest;
-    ::inotify_rm_watch(fd, wd);
-    ::close(fd);
-
-}
-#endif
-
 /*
     Creates endpoint on client side.
 */
@@ -583,10 +309,6 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
     qWarning() << "(all ok) starting SFW proxyForService" << location;
 
     QLocalSocket* socket = new QLocalSocket();
-
-#ifdef QT_MTCLIENT_PRESENT
-    doStart(location, socket);
-#else
 
     socket->connectToServer(location);
 
@@ -629,7 +351,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             }
         }
     }
-#endif
+
     if (socket->isValid()){
         LocalSocketEndPoint* ipcEndPoint = new LocalSocketEndPoint(socket);
         ObjectEndPoint* endPoint = new ObjectEndPoint(ObjectEndPoint::Client, ipcEndPoint);
