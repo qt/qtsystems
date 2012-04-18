@@ -448,6 +448,71 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
 }
 
 /*!
+    If \a interfaceName is an out of process service this verifies the
+    interface is running.  If the service is in process this function
+    always returns false.
+
+    Use this function to verify the interface requested is running. This
+    is useful is you only want to call loadInterface when the service
+    is already running.  This call does not guarantee that the service
+    will remain running, as such a race condition exists if the service
+    quits between this call being made and loadInterface being called.
+
+    If the service can not be fount this returns false.
+
+    \sa setInterfaceDefault(), interfaceDefault(), loadInterface()
+*/
+bool QServiceManager::isInterfaceRunning(const QString& interfaceName)
+{
+    return isInterfaceRunning(interfaceDefault(interfaceName));
+}
+
+/*!
+    If \a descriptor is an out of process service this verifies the
+    service is running.  If the service is in process this function
+    always returns false.
+
+    Use this function to verify the interface requested is running. This
+    is useful is you only want to call loadInterface when the service
+    is already running.  This call does not guarantee that the service
+    will remain running, as such a race condition exists if the service
+    quits between this call being made and loadInterface being called.
+
+    If the service can not be found this returns false.  Error is set
+    if an error occurs.
+
+*/
+bool QServiceManager::isInterfaceRunning(const QServiceInterfaceDescriptor& descriptor)
+{
+    d->setError(NoError);
+    if (!descriptor.isValid()) {
+        d->setError(InvalidServiceInterfaceDescriptor);
+        return false;
+    }
+
+    const QString location = descriptor.attribute(QServiceInterfaceDescriptor::Location).toString();
+    const bool isInterProcess = (descriptor.attribute(QServiceInterfaceDescriptor::ServiceType).toInt()
+                                == QService::InterProcess);
+    if (isInterProcess) {
+        //ipc service
+        const int majorversion = descriptor.majorVersion();
+        const int minorversion = descriptor.minorVersion();
+        QString version = QString::number(majorversion) + QLatin1String(".") + QString::number(minorversion);
+
+        QRemoteServiceRegister::Entry serviceEntry;
+        serviceEntry.d->iface = descriptor.interfaceName();
+        serviceEntry.d->service = descriptor.serviceName();
+        serviceEntry.d->ifaceVersion = version;
+
+        return QRemoteServiceRegisterPrivate::isServiceRunning(serviceEntry, location);
+    }
+
+    return false;
+}
+
+
+
+/*!
     \fn T* QServiceManager::loadLocalTypedInterface(const QString& interfaceName)
 
     Loads the service object implementing \a interfaceName,

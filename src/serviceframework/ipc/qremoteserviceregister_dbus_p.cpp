@@ -389,6 +389,24 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
     return 0;
 }
 
+/*!
+    Returns true is the service is running
+*/
+
+bool QRemoteServiceRegisterPrivate::isServiceRunning(const QRemoteServiceRegister::Entry &entry, const QString &location)
+{
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    if (!connection.isConnected()) {
+        qWarning() << "Cannot connect to DBus";
+        return false;
+    }
+
+    // Not exacly right, just because it's registered doesn't mean it's running
+    QString serviceName = QStringLiteral("com.nokia.qtmobility.sfw.") + entry.serviceName();
+    QDBusReply<bool> reply = connection.interface()->isServiceRegistered(serviceName);
+    return reply.value();
+}
+
 #include "moc_qremoteserviceregister_dbus_p.cpp"
 #include "qremoteserviceregister_dbus_p.moc"
 QT_END_NAMESPACE

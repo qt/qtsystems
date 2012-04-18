@@ -719,10 +719,12 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
 
 
     // Note safe, but temporary code
-    QString tempLocation = location + QLatin1Literal(".temp");
+    QString tempLocation = location + QStringLiteral(".temp");
+    QString pidLocation = location + QStringLiteral(".pid");
 
     ::unlink(location.toLatin1());
     ::unlink(tempLocation.toLatin1());
+    ::unlink(pidLocation.toLatin1());
 
     struct sockaddr_un name;
     name.sun_family = PF_UNIX;
@@ -768,6 +770,13 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
             arg(server_fd).arg(0).arg(objectName());
     QServiceDebugLog::instance()->appendToLog(op);
 
+    FILE *f = ::fopen(pidLocation.toLatin1(), "w");
+    if (f) {
+        ::fprintf(f, "%d\n", ::getpid());
+        ::fclose(f);
+    } else {
+        qWarning() << "Failed to create pid file for location" << pidLocation;
+    }
 
     return true;
 }
@@ -1057,6 +1066,25 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
         return proxy;
     }
     return 0;
+}
+
+bool QRemoteServiceRegisterPrivate::isServiceRunning(const QRemoteServiceRegister::Entry &, const QString &location)
+{
+    QString path = QDir::cleanPath(QDir::tempPath());
+    path += QLatin1Char('/') + location + QStringLiteral(".pid");
+
+    FILE *f = fopen(path.toLatin1(), "r");
+    if (f) {
+        int pid;
+        if (fscanf(f, "%d", &pid) == 1 && pid > 0) {
+            int ret = ::kill(pid, 0);
+            if (ret == 0) {
+                return true; // signal was sent
+            }
+        }
+    }
+
+    return false;
 }
 
 #include "moc_qremoteserviceregister_unix_p.cpp"

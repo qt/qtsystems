@@ -191,6 +191,8 @@ private slots:
     void init();
     void cleanup();
 
+    void verifyIsServiceRunning();
+
     void verifySharedServiceObject(); //rough count
     void verifySharedMethods();
     void verifySharedMethods_data();
@@ -444,6 +446,25 @@ void tst_QServiceManager_IPC::init()
 
 void tst_QServiceManager_IPC::cleanup()
 {
+}
+
+void tst_QServiceManager_IPC::verifyIsServiceRunning()
+{
+#if defined(Q_OS_UNIX) && !defined(SFW_USE_DBUS_BACKEND)
+
+   QServiceManager m;
+
+   QCOMPARE(m.isInterfaceRunning("com.nokia.qt.ipcunittest"), true);
+   QCOMPARE(m.isInterfaceRunning("com.nokis.qt.ipcunittest.that.does.not.exsist.and.should.not.be.created"), false);
+
+   QList<QServiceInterfaceDescriptor> list = m.findInterfaces("IPCExampleService");
+   QServiceInterfaceDescriptor d;
+   foreach (d, list) {
+       QCOMPARE(m.isInterfaceRunning(d), true);
+   }
+#else
+    QSKIP("isInterfaceRunning needs more testing on supported platforms");
+#endif
 }
 
 void tst_QServiceManager_IPC::sharedTestService()

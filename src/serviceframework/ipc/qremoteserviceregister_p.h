@@ -95,6 +95,7 @@ private:
 public:
     static QObject* proxyForService(const QRemoteServiceRegister::Entry& entry, const QString& location);
     static QRemoteServiceRegisterPrivate* constructPrivateObject(QObject *parent);
+    static bool isServiceRunning(const QRemoteServiceRegister::Entry&, const QString& location);
 };
 
 QT_END_NAMESPACE

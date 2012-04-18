@@ -93,6 +93,9 @@ public:
     QObject* loadInterface(const QString& interfaceName);
     QObject* loadInterface(const QServiceInterfaceDescriptor& descriptor);
 
+    bool isInterfaceRunning(const QString& interfaceName);
+    bool isInterfaceRunning(const QServiceInterfaceDescriptor& descriptor);
+
     template <class T>
     T* loadLocalTypedInterface(const QString& interfaceName)
     {

@@ -370,6 +370,19 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
     return 0;
 }
 
+/*!
+    Returns true is the service is running
+*/
+
+bool QRemoteServiceRegisterPrivate::isServiceRunning(const QRemoteServiceRegister::Entry &entry, const QString &location)
+{
+    QLocalSocket* socket = new QLocalSocket();
+    socket->connectToServer(location);
+
+    // give a short timeout to block, no running services should fail almost instantly
+    return socket->waitForConnected(1000);
+}
+
 #include "moc_qremoteserviceregister_ls_p.cpp"
 #include "qremoteserviceregister_ls_p.moc"
 QT_END_NAMESPACE
