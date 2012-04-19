@@ -45,9 +45,8 @@
 #include "proxyobject_p.h"
 #include "qsignalintercepter_p.h"
 #include "qserviceclientcredentials.h"
-#include "../qserviceclientcredentials_p.h"
+#include "qserviceclientcredentials_p.h"
 #include <QTimer>
-#include <QEventLoop>
 #include <QEvent>
 #include <QVarLengthArray>
 #include <QTime>
@@ -55,20 +54,25 @@
 #include <QFile>
 #include <QStringList>
 
+#include "qservicedebuglog_p.h"
+
+#ifdef Q_OS_LINUX
+#include <execinfo.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class Response
 {
 public:
-    Response() : isFinished(false), result(0), loop(new QEventLoop)
+    Response() : isFinished(false), result(0)
     { }
 
     ~Response()
-    { delete loop; }
+    { }
 
     bool isFinished;
     void* result;
-    QEventLoop *loop;
     QString error;
 };
 
@@ -80,7 +84,7 @@ public:
             ObjectEndPoint* parent)
         : QSignalIntercepter(sender, signal, parent), endPoint(parent)
     {
-
+    this->signal = signal;
     }
 
     void setMetaIndex(int index)
@@ -91,12 +95,19 @@ public:
 protected:
     void activated( const QList<QVariant>& args )
     {
-        //qDebug() << signal() << "emitted." << args;
+        QServiceDebugLog::instance()->appendToLog(
+                    QString::fromLatin1("--> SIGNAL for %1 index %2/%3 args count %4")
+                    .arg(endPoint->objectName())
+                    .arg(metaIndex)
+                    .arg(QString::fromLatin1(signal))
+                    .arg(args.count()));
+
         endPoint->invokeRemote(metaIndex, args, QMetaType::Void);
     }
 private:
     ObjectEndPoint* endPoint;
     int metaIndex;
+    QByteArray signal;
 
 };
 
@@ -184,8 +195,13 @@ ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* pa
     d->endPointType = type;
 
     dispatch->setParent(this);
+#ifdef QT_MTCLIENT_PRESENT
+    connect(dispatch, SIGNAL(readyRead()), this, SLOT(newPackageReady()), Qt::DirectConnection);
+    connect(dispatch, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
+#else
     connect(dispatch, SIGNAL(readyRead()), this, SLOT(newPackageReady()), Qt::QueuedConnection);
     connect(dispatch, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::QueuedConnection);
+#endif
     if (type == Client) {
         return; //we are waiting for conctructProxy() call
     } else {
@@ -206,7 +222,8 @@ void ObjectEndPoint::disconnected()
     }
     foreach (Response *r, openRequests) {
         r->error = QLatin1Literal("end point disconnected");
-        r->loop->exit(-1);
+        r->isFinished = true;
+        dispatch->waitingDone();
     }
 }
 
@@ -339,14 +356,15 @@ void ObjectEndPoint::propertyCall(const QServicePackage& p)
             if (p.d->responseType == QServicePackage::Failed) {
                 response->result = 0;
                 response->error = QLatin1Literal("QServicePackaged::Failed");
-                response->loop->exit(-1);
+                response->isFinished = true;
+                dispatch->waitingDone();
                 qWarning() << "Service method call failed";
                 return;
             }
             QVariant* variant = new QVariant(p.d->payload);
             response->result = reinterpret_cast<void *>(variant);
 
-            response->loop->exit();
+            dispatch->waitingDone();
         }
         else {
             qWarning() << "**** FAILED TO FIND MESSAGE ID!!! ****";
@@ -369,7 +387,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
             response->result = 0;
             response->error = QLatin1Literal("objectRequest QServicePackage::Failed");
             response->isFinished = true;
-            response->loop->exit(-1);
+            dispatch->waitingDone();
             qWarning() << "Service instantiation failed";
             return;
         }
@@ -380,7 +398,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         response->isFinished = true;
 
         //wake up waiting code
-        response->loop->exit();
+        dispatch->waitingDone();
 
     } else {
         //service side
@@ -396,6 +414,9 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
             dispatch->writePackage(response);
             return;
         }
+
+        setObjectName(p.d->entry.interfaceName() + QLatin1Char(' ') + dispatch->objectName());
+        dispatch->setObjectName(objectName());
 
         //serialize meta object
         QByteArray data;
@@ -453,6 +474,7 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
                           "requesting" << p.d->entry.interfaceName() << p.d->entry.serviceName();
             m->removeObjectInstance(p.d->entry, d->serviceInstanceId);
             disconnected();
+            dispatch->terminateConnection();
             return;
         }
 
@@ -516,7 +538,25 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
             return;
         }
         //service side
-        Q_ASSERT(d->endPointType == ObjectEndPoint::Service);
+        if (d->endPointType != ObjectEndPoint::Service) {
+
+            qWarning() << "SFW FATAL ERROR. Client got a method call that wasn't a signal" << objectName();
+
+            QServiceDebugLog::instance()->dumpLog();
+
+#ifdef Q_OS_LINUX
+            void *symbols[128];
+            char **it;
+            size_t symbol_count;
+            size_t i;
+            symbol_count = backtrace(symbols, 128);
+            it = backtrace_symbols(symbols, symbol_count);
+            for (i = 0; i < symbol_count; ++i)
+              printf("TRACE:\t%s\n", it[i]);
+            printf("\n");
+#endif
+            return;
+        }
 
         const char* typenames[] = {0,0,0,0,0,0,0,0,0,0};
         const void* param[] = {0,0,0,0,0,0,0,0,0,0};
@@ -593,13 +633,14 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
             if (p.d->responseType == QServicePackage::Failed) {
                 response->result = 0;
                 response->error = QLatin1Literal("methodCall QServicePakcage::Failed");
-                response->loop->exit(-1);
+                response->isFinished = true;
+                dispatch->waitingDone();
                 return;
             }
             QVariant* variant = new QVariant(p.d->payload);
             response->result = reinterpret_cast<void *>(variant);
 
-            response->loop->exit();
+            dispatch->waitingDone();
         }
     }
 }
@@ -717,13 +758,25 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
     Q_ASSERT(d->endPointType == ObjectEndPoint::Client);
     if (openRequests.contains(requestId) ) {
         Response *r = openRequests.value(requestId);
-        QTimer timer;
-        timer.setSingleShot(true);
-        connect(&timer, SIGNAL(timeout()), r->loop, SLOT(quit()));
-        timer.start(30000);
-        r->loop->exec();
-        if (timer.isActive())
-            timer.stop();
+        QTime elapsed;
+        elapsed.start();
+        while (r->isFinished == false && (elapsed.elapsed() < 15000)) {
+            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("~~~ Waiting for %1ms blocking call in %2 for uuid %3")
+                                                      .arg(elapsed.elapsed())
+                                                      .arg(objectName())
+                                                      .arg(requestId.toString()));
+            int ret = dispatch->waitForData();
+            if (ret != 0) {
+                qWarning() << this << "SFW ipc error" << r->error;
+                break;
+            }
+        }
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("=== BLOCKED for %1ms in %2")
+                                                  .arg(elapsed.elapsed())
+                                                  .arg(objectName()));
+        if (r->isFinished == false) {
+            qWarning() << "SFW IPC failure, remote end failed to respond to blocking IPC call in" << elapsed.elapsed()/1000 << "seconds." << objectName();
+        }
         if (d->functionReturned) {
             d->functionReturned = false;
             QMetaObject::invokeMethod(this, "newPackageReady", Qt::QueuedConnection);

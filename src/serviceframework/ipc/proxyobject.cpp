@@ -42,11 +42,13 @@
 #include "proxyobject_p.h"
 #include <private/qmetaobjectbuilder_p.h>
 #include "qremoteserviceregisterentry_p.h"
+#include "qservicedebuglog_p.h"
 
 #include <qtimer.h>
 #include <qcoreevent.h>
 
 #include <QDebug>
+#include <QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,8 +82,6 @@ QServiceProxy::QServiceProxy(const QByteArray& metadata, ObjectEndPoint* endPoin
     if (stream.status() != QDataStream::Ok) {
         qWarning() << "Invalid metaObject for service received";
     } else {
-        QMetaObjectBuilder sup;
-
         QMetaObject *remote = builder.toMetaObject();
 
         builder.setSuperClass(QServiceProxyBase::metaObject());
@@ -98,6 +98,16 @@ QServiceProxy::QServiceProxy(const QByteArray& metadata, ObjectEndPoint* endPoin
             if (r > 0)
                 d->remoteToLocal[r] = i;
         }
+
+#if defined(QT_SFW_IPC_DEBUG) && defined(QT_SFW_IPC_DEBUG_VERBOSE)
+        QString mapping = QString::fromLatin1("%%% QWE Doing lookup table for ") + endPoint->objectName();
+        for (int i = 0; i < local->methodCount(); i++){
+            const QMetaMethod m = local->method(i);
+            int r = d->localToRemote[i];
+            mapping.append(QString::fromLatin1("\n%%%Mapping %1 from %2 to %3").arg(QString::fromLatin1(m.signature())).arg(i).arg(r));
+        }
+        QServiceDebugLog::instance()->appendToLog(mapping);
+#endif
 
         d->meta = local;
 
@@ -160,9 +170,21 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
         }
 
         if (returnType == QMetaType::Void) {
+
+            QServiceDebugLog::instance()->appendToLog(
+                        QString::fromLatin1("--> non-blocking method %1 for %2")
+                        .arg(QString::fromLatin1(method.methodSignature()))
+                        .arg(d->endPoint->objectName()));
+
             d->endPoint->invokeRemote(d->localToRemote[metaIndex], args, returnType);
         } else {
             //TODO: invokeRemote() parameter list needs review
+
+            QServiceDebugLog::instance()->appendToLog(
+                        QString::fromLatin1("--> non-BLOCKING method %1 for %2")
+                        .arg(QString::fromLatin1(method.methodSignature()))
+                        .arg(d->endPoint->objectName()));
+
             QVariant result = d->endPoint->invokeRemote(d->localToRemote[metaIndex], args, returnType);
             if (result.type() != QVariant::Invalid){
                 if (returnType != QMetaType::QVariant) {
@@ -188,6 +210,13 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 
             QVariant arg;
             if ( c == QMetaObject::WriteProperty ) {
+
+                QServiceDebugLog::instance()->appendToLog(
+                            QString::fromLatin1("--> proerty WRITE operation %1 for %2")
+                            .arg(QString::fromLatin1(property.name()))
+                            .arg(d->endPoint->objectName()));
+
+
                 if (pType == QMetaType::QVariant)
                     arg =  *reinterpret_cast<const QVariant(*)>(a[0]);
                 else if (pType == 0) {
@@ -199,6 +228,12 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
             }
             QVariant result;
             if (c == QMetaObject::ReadProperty) {
+
+                QServiceDebugLog::instance()->appendToLog(
+                            QString::fromLatin1("--> proerty READ operation %1 for %2")
+                            .arg(QString::fromLatin1(property.name()))
+                            .arg(d->endPoint->objectName()));
+
                 result = d->endPoint->invokeRemoteProperty(metaIndex, arg, pType, c);
                 //wrap result for client
                 if (pType != 0) {
@@ -283,7 +318,7 @@ void QServiceProxyBase::connectNotify(const char *signal)
 void QServiceProxyBase::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == d->timerId) {
-        qWarning() << this << "Someone is using SFW incorrectly. No one connected to errorUnrecoverableIPCFault for class" << this->metaObject()->className();
+        qWarning() << this << "Someone is using SFW incorrectly. No one connected to errorUnrecoverableIPCFault for class" << this->metaObject()->className() << "in" << qApp->applicationFilePath();
         killTimer(d->timerId);
         d->timerId = -1;
     } else {

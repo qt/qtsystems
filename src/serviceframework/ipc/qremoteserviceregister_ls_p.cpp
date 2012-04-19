@@ -43,8 +43,8 @@
 #include "qremoteserviceregister_ls_p.h"
 #include "ipcendpoint_p.h"
 #include "objectendpoint_p.h"
-#include "../qserviceclientcredentials_p.h"
-#include "../qserviceclientcredentials.h"
+#include "qserviceclientcredentials_p.h"
+#include "qserviceclientcredentials.h"
 
 #include <QLocalServer>
 #include <QEventLoop>
@@ -58,7 +58,7 @@
 #include <QDir>
 
 #include <time.h>
-#include <sys/types.h>          /* See NOTES */
+#include <sys/types.h>
 
 #ifdef QT_MTCLIENT_PRESENT
 #include "qservicemanager.h"
@@ -153,6 +153,11 @@ public:
         Q_UNUSED(creds);
         Q_UNUSED(fd);
 #endif
+    }
+
+    void terminateConnection()
+    {
+        socket->close();
     }
 
 
@@ -432,7 +437,7 @@ void doStart(const QString &location, QLocalSocket *socket) {
     QLatin1Literal fmt("hh:mm:ss.zzz");
 
     int fd = ::inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
-    int wd = ::inotify_add_watch(fd, "/tmp/", IN_MOVED_TO|IN_CREATE);
+    int wd = ::inotify_add_watch(fd, QDir::tempPath().toLatin1(), IN_MOVED_TO|IN_CREATE);
 
     QSocketNotifier notifier(fd, QSocketNotifier::Read);
     notifier.setEnabled(true);
@@ -480,7 +485,7 @@ void doStart(const QString &location, QLocalSocket *socket) {
 
     QMetaObject::invokeMethod(serviceRequest, "startService", Q_ARG(QString, location));
 
-    QFileInfo file(QLatin1Literal("/tmp/") + location);
+    QFileInfo file(QDir::tempPath() + QLatin1Char('/') + location);
     qWarning() << QTime::currentTime().toString(fmt)
                << "SFW checking in" << file.path() << "for the socket to come into existance" << file.filePath();
 
@@ -493,8 +498,8 @@ void doStart(const QString &location, QLocalSocket *socket) {
     struct sockaddr_un name;
     name.sun_family = PF_UNIX;
 
-    QString fullPath(QLatin1Literal("/tmp/"));
-    fullPath += location;
+    QString fullPath(QDir::tempPath());
+    fullPath += QLatin1Char('/') + location;
 
     ::memcpy(name.sun_path, fullPath.toLatin1().data(),
              fullPath.toLatin1().size() + 1);

@@ -10,23 +10,16 @@ QT = core
 
 DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
-
 load(qt_module_config)
+
+sfwdebug: {
+    DEFINES += QT_SFW_IPC_DEBUG
+}
 
 jsondb|contains(QT_CONFIG, jsondb): {
     mtlib|contains(config_test_mtlib, yes): {
         DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB QT_MTCLIENT_PRESENT
         QT += jsondb
-    }
-    !no_wayland: {
-        DEFINES += QT_WAYLAND_PRESENT
-    }
-    else: {
-        error(Config option no_wayland is no longer valid in this configuration)
-    }
-    no_security: {
-        warning(SERVICE FRAMEWORK SECURITY IS DISABLED)
-        DEFINES += QT_DISABLE_SECURITY
     }
 }
 
@@ -42,7 +35,9 @@ PUBLIC_HEADERS += qservice.h \
 PRIVATE_HEADERS += servicemetadata_p.h \
     qserviceinterfacedescriptor_p.h \
     dberror_p.h \
-    qserviceclientcredentials_p.h
+    qserviceclientcredentials_p.h \
+    qservicedebuglog_p.h
+
 SOURCES += servicemetadata.cpp \
     qservicemanager.cpp \
     qserviceplugininterface.cpp \
@@ -50,7 +45,8 @@ SOURCES += servicemetadata.cpp \
     qservicefilter.cpp \
     dberror.cpp \
     qremoteserviceregister.cpp \
-    qserviceclientcredentials.cpp
+    qserviceclientcredentials.cpp \
+    qservicedebuglog.cpp
 
 contains(DEFINES, QT_ADDON_JSONDB_LIB): {
     SOURCES += databasemanager_jsondb.cpp

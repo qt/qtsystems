@@ -47,8 +47,8 @@
 #include <QQueue>
 
 #include "qservicepackage_p.h"
-#include "../qserviceclientcredentials_p.h"
-#include "../qserviceclientcredentials.h"
+#include "qserviceclientcredentials_p.h"
+#include "qserviceclientcredentials.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -64,11 +64,18 @@ public:
 
     void writePackage(QServicePackage newPackage);
 
+    virtual int waitForData();
+    virtual void waitingDone();
+
     virtual void getSecurityCredentials(QServiceClientCredentials& creds);
+
+    virtual void terminateConnection();
 
 Q_SIGNALS:
     void readyRead();
     void disconnected();
+
+    void packageReceived();
 
 protected:
     virtual void flushPackage(const QServicePackage& out) = 0;

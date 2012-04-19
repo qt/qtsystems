@@ -153,7 +153,7 @@ bool ServiceDatabase::open()
         file.close();
     }
 
-    m_connectionName = dbFileInfo.completeBaseName();
+    m_connectionName = dbFileInfo.completeBaseName() + QString("--%1").arg(reinterpret_cast<unsigned long>(QThread::currentThreadId()));
     QSqlDatabase  database;
     if (QSqlDatabase::contains(m_connectionName)) {
         database = QSqlDatabase::database(m_connectionName);

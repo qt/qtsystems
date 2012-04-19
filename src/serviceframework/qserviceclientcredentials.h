@@ -72,6 +72,7 @@ private:
 
     friend class QServiceIpcEndPoint;
     friend class LocalSocketEndPoint;
+    friend class UnixEndPoint;
     friend class DBusEndPoint;
     friend class QRemoteServiceRegisterDBusPrivate;
     friend class ObjectEndPoint;

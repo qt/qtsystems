@@ -39,69 +39,51 @@
 **
 ****************************************************************************/
 
+#ifndef QREMOTESERVICEREGISTER_UNIX_P_H
+#define QREMOTESERVICEREGISTER_UNIX_P_H
+
+#include "qremoteserviceregister.h"
+#include "instancemanager_p.h"
+#include "qserviceinterfacedescriptor.h"
+#include "qremoteserviceregister_p.h"
+#include <QHash>
+#include <QSocketNotifier>
+
 #include "ipcendpoint_p.h"
 
-#include <QEventLoop>
-#include <QTimer>
-
 QT_BEGIN_NAMESPACE
-/*!
-    QServiceIpcEndPoint
-*/
-QServiceIpcEndPoint::QServiceIpcEndPoint(QObject* parent)
-    : QObject( parent )
+
+class ObjectEndPoint;
+
+class QRemoteServiceRegisterUnixPrivate: public QRemoteServiceRegisterPrivate
 {
-}
+    Q_OBJECT
+public:
+    QRemoteServiceRegisterUnixPrivate(QObject* parent);
+    ~QRemoteServiceRegisterUnixPrivate();
+    void publishServices(const QString& ident );
 
-QServiceIpcEndPoint::~QServiceIpcEndPoint()
-{
-    incoming.clear();
-}
+    void getSecurityCredentials(QServiceClientCredentials &creds);
 
-bool QServiceIpcEndPoint::packageAvailable() const
-{
-    return !incoming.isEmpty();
-}
+    bool event(QEvent *e);
 
-QServicePackage QServiceIpcEndPoint::nextPackage()
-{
-    if (!incoming.isEmpty())
-        return incoming.dequeue();
-    return QServicePackage();
-}
+public slots:
+    void processIncoming();
 
-void QServiceIpcEndPoint::writePackage(QServicePackage newPackage)
-{
-    flushPackage(newPackage);
-}
+protected slots:
+    void registerWithThreadData();
 
-void QServiceIpcEndPoint::getSecurityCredentials(QServiceClientCredentials &)
-{
-}
+private:
+    bool createServiceEndPoint(const QString& ident);
 
-void QServiceIpcEndPoint::terminateConnection()
-{
-    qWarning() << "SFW Terminate connection called on base class, should be reimplemented to do something";
-}
+    int server_fd;
+    QSocketNotifier *server_notifier;
+    QList<ObjectEndPoint*> pendingConnections;
 
-int QServiceIpcEndPoint::waitForData()
-{
-    QEventLoop loop;
-    QTimer timer;
-    timer.setSingleShot(true);
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    connect(this, SIGNAL(packageReceived()), &loop, SLOT(quit()));
+    friend class UnixEndPoint;
+};
 
-    timer.start(30000);
-    loop.exec();
-    return 0;
-}
 
-void QServiceIpcEndPoint::waitingDone()
-{
-//    qDebug() << Q_FUNC_INFO;
-    emit packageReceived();
-}
-
-#include "moc_ipcendpoint_p.cpp"
 QT_END_NAMESPACE
+
+#endif

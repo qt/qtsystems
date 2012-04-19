@@ -40,6 +40,7 @@
 ****************************************************************************/
 #include "qslotinvoker_p.h"
 #include "qsignalintercepter_p.h"
+#include "qservicedebuglog_p.h"
 #include <qmetaobject.h>
 #include <qmetatype.h>
 #include <qvarlengtharray.h>
@@ -243,6 +244,12 @@ QVariant QSlotInvoker::invoke( const QList<QVariant>& args )
             a[arg + 1] = (void *)( args[arg].data() );
         }
     }
+
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("<-- slot invoked %1 %2 num of args %2")
+                .arg(d->receiver->objectName())
+                .arg(QString::fromLatin1(d->member))
+                .arg(numArgs));
 
     // Invoke the specified slot.
     d->receiver->qt_metacall( QMetaObject::InvokeMetaMethod,

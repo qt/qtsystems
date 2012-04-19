@@ -39,69 +39,50 @@
 **
 ****************************************************************************/
 
-#include "ipcendpoint_p.h"
-
-#include <QEventLoop>
-#include <QTimer>
+#include "qservicedebuglog_p.h"
+#include <QDebug>
+#include <QTime>
 
 QT_BEGIN_NAMESPACE
-/*!
-    QServiceIpcEndPoint
-*/
-QServiceIpcEndPoint::QServiceIpcEndPoint(QObject* parent)
-    : QObject( parent )
+
+Q_GLOBAL_STATIC(QServiceDebugLog, _q_servicedebuglog)
+
+QServiceDebugLog::QServiceDebugLog()
+    : logCount(0), length(500), autoDump(false)
 {
+
 }
 
-QServiceIpcEndPoint::~QServiceIpcEndPoint()
+QServiceDebugLog *QServiceDebugLog::instance()
 {
-    incoming.clear();
+    return _q_servicedebuglog();
 }
 
-bool QServiceIpcEndPoint::packageAvailable() const
+void QServiceDebugLog::appendToLog(const QString &message)
 {
-    return !incoming.isEmpty();
+#ifdef QT_SFW_IPC_DEBUG
+    logCount++;
+    log.append(QTime::currentTime().toString("hh:mm:ss.zzz") +
+               QString::fromLatin1(" %1 ").arg(logCount) +
+               message);
+    if (autoDump && ((logCount%length) == 0))
+        dumpLog();
+    while (log.length() > length)
+        log.removeFirst();
+#else
+    Q_UNUSED(message);
+#endif
 }
 
-QServicePackage QServiceIpcEndPoint::nextPackage()
+const QStringList QServiceDebugLog::fetchLog()
 {
-    if (!incoming.isEmpty())
-        return incoming.dequeue();
-    return QServicePackage();
+    return log;
 }
 
-void QServiceIpcEndPoint::writePackage(QServicePackage newPackage)
+void QServiceDebugLog::dumpLog()
 {
-    flushPackage(newPackage);
+    foreach (QString line, log)
+        qDebug() << line;
 }
 
-void QServiceIpcEndPoint::getSecurityCredentials(QServiceClientCredentials &)
-{
-}
-
-void QServiceIpcEndPoint::terminateConnection()
-{
-    qWarning() << "SFW Terminate connection called on base class, should be reimplemented to do something";
-}
-
-int QServiceIpcEndPoint::waitForData()
-{
-    QEventLoop loop;
-    QTimer timer;
-    timer.setSingleShot(true);
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    connect(this, SIGNAL(packageReceived()), &loop, SLOT(quit()));
-
-    timer.start(30000);
-    loop.exec();
-    return 0;
-}
-
-void QServiceIpcEndPoint::waitingDone()
-{
-//    qDebug() << Q_FUNC_INFO;
-    emit packageReceived();
-}
-
-#include "moc_ipcendpoint_p.cpp"
 QT_END_NAMESPACE

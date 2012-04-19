@@ -75,6 +75,7 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
 
 #ifdef Q_OS_MAC
 #include <stdlib.h>
+#include <sys/resource.h>
 #endif
 
 QT_USE_NAMESPACE
@@ -82,6 +83,97 @@ Q_DECLARE_METATYPE(QServiceFilter);
 Q_DECLARE_METATYPE(QVariant);
 Q_DECLARE_METATYPE(QList<QString>);
 Q_DECLARE_METATYPE(QVariantHash);
+
+char serviceReuqestXml[] =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        "<SFW version=\"1.1\">"
+        "<service>"
+            "<name>com.nokia.mt.processmanager</name>"
+            "<ipcaddress>com.nokia.mt.processmanager.ServiceRequestSocket</ipcaddress>"
+            "<interface>"
+                "<name>com.nokia.mt.processmanager.ProcessManagerController</name>"
+                "<version>1.0</version>"
+            "</interface>"
+        "</service>"
+        "</SFW>";
+
+char serviceReuqestXmlFake[] =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        "<SFW version=\"1.1\">"
+        "<service>"
+            "<name>com.nokia.qt.does.not.exist</name>"
+            "<ipcaddress>com.nokia.qt.does.not.exist</ipcaddress>"
+            "<interface>"
+                "<name>com.nokia.qt.interface.does.not.exist</name>"
+                "<version>1.0</version>"
+            "</interface>"
+        "</service>"
+        "</SFW>";
+
+char serviceReuqestXmlStarted[] =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        "<SFW version=\"1.1\">"
+        "<service>"
+            "<name>com.nokia.qt.tests.autostart</name>"
+            "<ipcaddress>com.nokia.qt.tests.autostart</ipcaddress>"
+            "<interface>"
+                "<name>com.nokkia.qt.tests.autostarted</name>"
+                "<version>1.0</version>"
+            "</interface>"
+        "</service>"
+        "</SFW>";
+
+
+class ServiceRequest : public QObject
+{
+    Q_OBJECT
+public:
+    ServiceRequest(QObject *o = 0) : QObject(o)
+    {
+    }
+
+    Q_INVOKABLE void startService(const QString location)
+    {
+        qDebug() << "Got startService";
+        if (location == "com.nokia.qt.tests.autostart") {
+            QMetaObject::invokeMethod(this, "sendOk", Qt::DirectConnection, Q_ARG(QString, location));
+        } else {
+            QMetaObject::invokeMethod(this, "sendError", Qt::DirectConnection, Q_ARG(QString, location));
+        }
+    }
+
+protected slots:
+    void sendError(const QString &location)
+    {
+        qDebug() << "Send fail";
+        emit failed(QLatin1Literal("Test code failing creation"), location);
+    }
+
+    void sendOk(const QString &location)
+    {
+        emit launched(location);
+        QMetaObject::invokeMethod(this, "startNewService", Qt::DirectConnection);
+    }
+
+    void startNewService()
+    {
+        QRemoteServiceRegister *r = new QRemoteServiceRegister(this);
+
+        QRemoteServiceRegister::Entry pmEntry =
+                r->createEntry<ServiceRequest>(
+                    QLatin1Literal("com.nokia.qt.tests.autostart"),
+                    QLatin1Literal("com.nokkia.qt.tests.autostarted"),
+                    QLatin1Literal("1.0"));
+
+        r->publishEntries(QLatin1Literal("com.nokia.qt.tests.autostart"));
+    }
+
+signals:
+
+    void launched(QString process);
+    void failed(QString error, QString process);
+
+};
 
 class tst_QServiceManager_IPC: public QObject
 {
@@ -140,6 +232,8 @@ private slots:
 
     void testServiceSecurity();
 
+    void testProcessLaunch();
+
     void testIpcFailure();
 
 signals:
@@ -179,6 +273,20 @@ void tst_QServiceManager_IPC::initTestCase()
     qRegisterMetaType<QVariantHash>("QVariantHash");
 #ifdef SFW_USE_DBUS_BACKEND
     qDBusRegisterMetaType<QVariantHash>();
+#endif
+
+#ifdef Q_OS_MAC
+    struct rlimit rlp;
+    int ret = getrlimit(RLIMIT_NOFILE, &rlp);
+    if (ret == -1) {
+        qWarning() << "Failed to get fd limit on mac, expect the threading test to fail";
+    } else {
+        rlp.rlim_cur = 512;
+        ret = setrlimit(RLIMIT_NOFILE, &rlp);
+        if (ret == -1) {
+            qWarning() << "Failed to raise the number of open files to 512, expect the threading test to fail";
+        }
+    }
 #endif
 
     QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath());
@@ -258,6 +366,32 @@ void tst_QServiceManager_IPC::initTestCase()
 
     // all objects come from the same service, just need to connect to 1 signal
     connect(serviceSharedOther, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)), this, SLOT(ipcError(QService::UnrecoverableIPCError)));
+
+    QRemoteServiceRegister *reg = new QRemoteServiceRegister();
+
+    QRemoteServiceRegister::Entry pmEntry =
+            reg->createEntry<ServiceRequest>(
+                QLatin1Literal("com.nokia.mt.processmanager"),
+                QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest"),
+                QLatin1Literal("1.0"));
+
+    reg->publishEntries("com.nokia.mt.processmanager.ServiceRequestSocket");
+
+    QByteArray ba(serviceReuqestXml);
+    QBuffer b(&ba);
+    manager->removeService(QLatin1Literal("com.nokia.mt.processmanager"));
+    manager->addService(&b);
+
+    QByteArray baFake(serviceReuqestXmlFake);
+    QBuffer bFake(&baFake);
+    manager->removeService(QLatin1Literal("com.nokia.qt.does.not.exists"));
+    manager->addService(&bFake);
+
+    QByteArray baAutoStart(serviceReuqestXmlStarted);
+    QBuffer bAutoStart(&baAutoStart);
+    manager->removeService(QLatin1Literal("com.nokia.qt.tests.autostart"));
+    manager->addService(&bAutoStart);
+
 }
 
 void tst_QServiceManager_IPC::ipcError(QService::UnrecoverableIPCError err)
@@ -299,6 +433,9 @@ void tst_QServiceManager_IPC::cleanupTestCase()
     // clean up the unit, don't leave it registered
     QServiceManager m;
     m.removeService("IPCExampleService");
+    m.removeService(QLatin1Literal("com.nokia.mt.processmanager"));
+    m.removeService(QLatin1Literal("com.nokia.qt.does.not.exists"));
+    m.removeService(QLatin1Literal("com.nokia.qt.tests.autostart"));
 }
 
 void tst_QServiceManager_IPC::init()
@@ -1259,12 +1396,6 @@ void FetchLotsOfProperties::ipcError()
 
 void tst_QServiceManager_IPC::verifyThreadSafety()
 {
-
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "Test case known to segfault on MAC, skipping, QTBUG-23182", Abort);
-    QVERIFY(false);
-#else
-
     QFETCH(int, shared);
     QFETCH(int, runs);
     QFETCH(int, threads);
@@ -1321,7 +1452,6 @@ void tst_QServiceManager_IPC::verifyThreadSafety()
 
     QCOMPARE(finished.count(), threads);
     QVERIFY2(!errors.count(), "Threads reported errors");
-#endif
 }
 
 void tst_QServiceManager_IPC::verifyThreadSafety_data()
@@ -1417,6 +1547,51 @@ void tst_QServiceManager_IPC::testServiceSecurity()
 
     delete second;
 
+}
+
+void tst_QServiceManager_IPC::testProcessLaunch()
+{
+#ifdef QT_JSONDB
+    QServiceManager m;
+
+    QVariantMap map;
+    map.insert(QLatin1Literal("interfaceName"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest"));
+    map.insert(QLatin1Literal("serviceName"), QLatin1Literal("com.nokia.mt.processmanager"));
+    map.insert(QLatin1Literal("major"), 1);
+    map.insert(QLatin1Literal("minor"), 0);
+    map.insert(QLatin1Literal("Location"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket"));
+    map.insert(QLatin1Literal("ServiceType"), QService::InterProcess);
+    QServiceInterfaceDescriptor desc(map);
+
+    QObject *s = m.loadInterface(desc);
+
+    QVERIFY(s != 0);
+
+    QString name = QLatin1Literal("anything");
+    QSignalSpy serviceSpy(s, SIGNAL(failed(QString, QString)));
+
+    QMetaObject::invokeMethod(s, "startService", Q_ARG(QString, name));
+
+    QTRY_COMPARE(serviceSpy.count(), 1);
+
+
+    qDebug() << "******* doing auto start, and fail";
+
+    QObject *o = m.loadInterface(QLatin1Literal("com.nokia.qt.interface.does.not.exist"));
+
+    // should fail, but verify nothing blocks and we get here
+    QVERIFY2(o == 0, "We got a valid object from a service that doesn't exist");
+
+
+    qDebug() << "******* doing auto start, and WORK";
+
+    o = m.loadInterface(QLatin1Literal("com.nokkia.qt.tests.autostarted"));
+
+    QVERIFY2(o != 0,"We must get a valid interface back");
+
+    delete o;
+    delete s;
+#endif
 }
 
 

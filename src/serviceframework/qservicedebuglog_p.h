@@ -39,69 +39,39 @@
 **
 ****************************************************************************/
 
-#include "ipcendpoint_p.h"
 
-#include <QEventLoop>
-#include <QTimer>
+
+#ifndef QSERVICEDEBUGLOG_P_H
+#define QSERVICEDEBUGLOG_P_H
+
+#include <QString>
+#include <QStringList>
 
 QT_BEGIN_NAMESPACE
-/*!
-    QServiceIpcEndPoint
-*/
-QServiceIpcEndPoint::QServiceIpcEndPoint(QObject* parent)
-    : QObject( parent )
+
+class  QServiceDebugLog
 {
-}
+public:
+    QServiceDebugLog();
 
-QServiceIpcEndPoint::~QServiceIpcEndPoint()
-{
-    incoming.clear();
-}
+    static QServiceDebugLog* instance();
 
-bool QServiceIpcEndPoint::packageAvailable() const
-{
-    return !incoming.isEmpty();
-}
+    void appendToLog(const QString &message);
 
-QServicePackage QServiceIpcEndPoint::nextPackage()
-{
-    if (!incoming.isEmpty())
-        return incoming.dequeue();
-    return QServicePackage();
-}
+    void setLength(int length);
+    void setEnableAutoOutput(bool enabled);
 
-void QServiceIpcEndPoint::writePackage(QServicePackage newPackage)
-{
-    flushPackage(newPackage);
-}
+    void dumpLog();
+    const QStringList fetchLog();
 
-void QServiceIpcEndPoint::getSecurityCredentials(QServiceClientCredentials &)
-{
-}
+private:
+    QStringList log;
+    int logCount;
+    int length;
+    bool autoDump;
 
-void QServiceIpcEndPoint::terminateConnection()
-{
-    qWarning() << "SFW Terminate connection called on base class, should be reimplemented to do something";
-}
+};
 
-int QServiceIpcEndPoint::waitForData()
-{
-    QEventLoop loop;
-    QTimer timer;
-    timer.setSingleShot(true);
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    connect(this, SIGNAL(packageReceived()), &loop, SLOT(quit()));
-
-    timer.start(30000);
-    loop.exec();
-    return 0;
-}
-
-void QServiceIpcEndPoint::waitingDone()
-{
-//    qDebug() << Q_FUNC_INFO;
-    emit packageReceived();
-}
-
-#include "moc_ipcendpoint_p.cpp"
 QT_END_NAMESPACE
+
+#endif // QSERVICEDEBUGLOG_P_H
