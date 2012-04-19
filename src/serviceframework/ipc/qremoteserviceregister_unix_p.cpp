@@ -498,8 +498,10 @@ void UnixEndPoint::flushPackage(const QServicePackage& package)
 
 void UnixEndPoint::readIncoming()
 {
-    if (!connection_open)
+    if (!connection_open) {
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("zzz SFW reading incoming on closed socket? %1").arg(this->objectName()));
         return;
+    }
 
     QByteArray raw_data;
     raw_data.resize(4096);

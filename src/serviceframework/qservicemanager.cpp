@@ -44,6 +44,9 @@
 #include "qserviceinterfacedescriptor_p.h"
 #include "qremoteserviceregister_p.h"
 #include "qremoteserviceregisterentry_p.h"
+#include "qserviceoperations_p.h"
+#include "qservicereply.h"
+#include "qservicerequest_p.h"
 
 #ifdef QT_ADDON_JSONDB_LIB
     #include "databasemanager_jsondb_p.h"
@@ -58,10 +61,11 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QSystemSemaphore>
+#include <QScopedPointer>
 
 QT_BEGIN_NAMESPACE
 
-static QString qservicemanager_resolveLibraryPath(const QString &libNameOrPath)
+QString QServiceManager::resolveLibraryPath(const QString &libNameOrPath)
 {
     if (QFile::exists(libNameOrPath))
         return libNameOrPath;
@@ -110,13 +114,15 @@ class QServiceManagerPrivate : public QObject
 public:
     QServiceManager *manager;
     DatabaseManager *dbManager;
+    QServiceOperations *ops;
     QService::Scope scope;
     QServiceManager::Error error;
 
     QServiceManagerPrivate(QServiceManager *parent = 0)
         : QObject(parent),
           manager(parent),
-          dbManager(new DatabaseManager)
+          dbManager(new DatabaseManager),
+          ops(0)
     {
         connect(dbManager, SIGNAL(serviceAdded(QString, DatabaseManager::DbScope)),
                 SLOT(serviceAdded(QString, DatabaseManager::DbScope)));
@@ -131,11 +137,16 @@ public:
 
     void setError(QServiceManager::Error err)
     {
-        error = err;
+        if (error != err)
+        {
+            error = err;
+            manager->errorChanged();
+        }
     }
 
     void setError()
     {
+        QServiceManager::Error prev = error;
         switch (dbManager->lastError().code()) {
             case DBError::NoError:
                 error = QServiceManager::NoError;
@@ -167,6 +178,8 @@ public:
                 error = QServiceManager::UnknownError;
                 break;
         }
+        if (prev != error)
+            manager->errorChanged();
     }
 
 private slots:
@@ -256,6 +269,14 @@ private slots:
     Creates a service manager with the given \a parent.
 
     The scope will default to QService::UserScope.
+
+    The service manager will also ensure that a background thread is started to handle
+    service manager requests.  If you need to supress this behavior so that all requests
+    are handled in the foreground (in the main GUI thread) export the following environment
+    variable:
+    \code
+    env QT_NO_SFW_BACKGROUND_OPERATION /path/to/my_sfw_app
+    \endcode
 */
 QServiceManager::QServiceManager(QObject *parent)
     : QObject(parent),
@@ -280,6 +301,8 @@ QServiceManager::QServiceManager(QService::Scope scope, QObject *parent)
 */
 QServiceManager::~QServiceManager()
 {
+    if (d->ops)
+        d->ops->disengage();
     delete d;
 }
 
@@ -298,7 +321,7 @@ QService::Scope QServiceManager::scope() const
 */
 QStringList QServiceManager::findServices(const QString& interfaceName) const
 {
-    d->setError(NoError);
+    d->setError(QServiceManager::NoError);
     QStringList services;
     services = d->dbManager->getServiceNames(interfaceName,
             d->scope == QService::SystemScope ? DatabaseManager::SystemScope : DatabaseManager::UserScope);
@@ -311,7 +334,7 @@ QStringList QServiceManager::findServices(const QString& interfaceName) const
 */
 QList<QServiceInterfaceDescriptor> QServiceManager::findInterfaces(const QServiceFilter& filter) const
 {
-    d->setError(NoError);
+    d->setError(QServiceManager::NoError);
     QList<QServiceInterfaceDescriptor> descriptors = d->dbManager->getInterfaces(filter,
             d->scope == QService::SystemScope ? DatabaseManager::SystemScope : DatabaseManager::UserScope);
     if (descriptors.isEmpty() && d->dbManager->lastError().code() != DBError::NoError) {
@@ -349,56 +372,45 @@ QObject* QServiceManager::loadInterface(const QString& interfaceName)
 }
 
 /*!
-    Loads and returns the interface specified by \a descriptor.
-
-    The caller takes ownership of the returned pointer.
-
-    This function returns a null pointer if the requested service cannot be found.
-
+    \internal
+    Private helper function to get the QObject for an InterProcess service.
 */
-QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descriptor)
+QObject *QServiceManager::loadInterProcessService(const QServiceInterfaceDescriptor &descriptor,
+                                                  const QString &serviceLocation) const
 {
-    d->setError(NoError);
-    if (!descriptor.isValid()) {
-        d->setError(InvalidServiceInterfaceDescriptor);
-        return 0;
-    }
+    //ipc service
+    const int majorversion = descriptor.majorVersion();
+    const int minorversion = descriptor.minorVersion();
+    QString version = QString::number(majorversion) + QLatin1String(".") + QString::number(minorversion);
 
-    const QString location = descriptor.attribute(QServiceInterfaceDescriptor::Location).toString();
-    const bool isInterProcess = (descriptor.attribute(QServiceInterfaceDescriptor::ServiceType).toInt()
-                                == QService::InterProcess);
-    if (isInterProcess) {
-        //ipc service
-        const int majorversion = descriptor.majorVersion();
-        const int minorversion = descriptor.minorVersion();
-        QString version = QString::number(majorversion) + QLatin1String(".") + QString::number(minorversion);
+    QRemoteServiceRegister::Entry serviceEntry;
+    serviceEntry.d->iface = descriptor.interfaceName();
+    serviceEntry.d->service = descriptor.serviceName();
+    serviceEntry.d->ifaceVersion = version;
 
-        QRemoteServiceRegister::Entry serviceEntry;
-        serviceEntry.d->iface = descriptor.interfaceName();
-        serviceEntry.d->service = descriptor.serviceName();
-        serviceEntry.d->ifaceVersion = version;
+    QObject* service = QRemoteServiceRegisterPrivate::proxyForService(serviceEntry, serviceLocation);
+    if (!service)
+        d->setError(QServiceManager::InvalidServiceLocation);
 
-        QObject* service = QRemoteServiceRegisterPrivate::proxyForService(serviceEntry, location);
-        if (!service)
-            d->setError(InvalidServiceLocation);
+    //client owns proxy object
+    return service;
+}
 
-        //client owns proxy object
-        return service;
-    }
+/*!
+    \internal
+    Private helper function to get the QObject for an InProcess (plugin-based) service.
+*/
+QObject *QServiceManager::loadInProcessService(const QServiceInterfaceDescriptor& descriptor,
+                                               const QString &serviceFilePath) const
+{
+    QScopedPointer<QPluginLoader> loader(new QPluginLoader(serviceFilePath));
+    QObject *obj = 0;
 
-    const QString serviceFilePath = qservicemanager_resolveLibraryPath(location);
-    if (serviceFilePath.isEmpty()) {
-        d->setError(InvalidServiceLocation);
-        return 0;
-    }
-
-    QPluginLoader *loader = new QPluginLoader(serviceFilePath);
-    //pluginIFace is same for all service instances of the same plugin
-    //calling loader->unload deletes pluginIFace automatically if now other
-    //service instance is around
+    // pluginIFace is same for all service instances of the same plugin
+    // calling loader->unload deletes pluginIFace automatically if no other
+    // service instance is around
     QServicePluginInterface *pluginIFace = qobject_cast<QServicePluginInterface *>(loader->instance());
     if (pluginIFace) {
-
         //check initialization first as the service may be a pre-registered one
         bool doLoading = true;
         QString serviceInitialized = descriptor.customAttribute(QLatin1String(SERVICE_INITIALIZED_ATTR));
@@ -409,13 +421,11 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
                 //try to create it
                 semaphore.setKey(descriptor.serviceName(), 1, QSystemSemaphore::Create);
             }
-
             if (semaphore.error() == QSystemSemaphore::NoError && semaphore.acquire()) {
                 pluginIFace->installService();
                 DatabaseManager::DbScope scope = d->scope == QService::UserScope ?
                         DatabaseManager::UserOnlyScope : DatabaseManager::SystemScope;
                 d->dbManager->serviceInitialized(descriptor.serviceName(), scope);
-                // release semaphore
                 semaphore.release();
             } else {
                 qWarning() << semaphore.errorString();
@@ -423,30 +433,156 @@ QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descr
 
             }
         }
-
         if (doLoading) {
-            QObject *obj = pluginIFace->createInstance(descriptor);
+            obj = pluginIFace->createInstance(descriptor);
             if (obj) {
-                QServicePluginCleanup *cleanup = new QServicePluginCleanup(loader);
+                QServicePluginCleanup *cleanup = new QServicePluginCleanup(loader.take());
                 QObject::connect(obj, SIGNAL(destroyed()), cleanup, SLOT(deleteLater()));
-                return obj;
             } else {
                 qWarning() << "Cannot create object instance for "
                      << descriptor.interfaceName() << ":"
                      << serviceFilePath;
             }
-
         }
     } else {
         qWarning() << "QServiceManager::loadInterface():" << serviceFilePath << loader->errorString();
     }
-
-    //loader->unload();
-    delete loader;
-    d->setError(PluginLoadingFailed);
-
-    return 0;
+    return obj;
 }
+
+/*!
+    Loads and returns the interface specified by \a descriptor.
+
+    The caller takes ownership of the returned pointer.
+
+    This function returns a null pointer if the requested service cannot be found.
+
+    \sa loadInterfaceRequest()
+*/
+QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descriptor)
+{
+    d->setError(QServiceManager::NoError);
+    if (!descriptor.isValid()) {
+        d->setError(QServiceManager::InvalidServiceInterfaceDescriptor);
+        return 0;
+    }
+
+    QObject *obj = 0;
+    int serviceType = descriptor.attribute(QServiceInterfaceDescriptor::ServiceType).toInt();
+    QString location = descriptor.attribute(QServiceInterfaceDescriptor::Location).toString();
+
+    if (serviceType == QService::InterProcess)
+    {
+        return loadInterProcessService(descriptor, location);
+    }
+    else
+    {
+        QString serviceFilePath = resolveLibraryPath(location);
+        if (serviceFilePath.isEmpty())
+        {
+            d->setError(QServiceManager::InvalidServiceLocation);
+            return 0;
+        }
+
+        obj = loadInProcessService(descriptor, serviceFilePath);
+        if (!obj)
+            d->setError(QServiceManager::PluginLoadingFailed);
+    }
+    return obj;
+}
+
+/*!
+    \fn QServiceReply *loadInterfaceRequest(const QString &interfaceName)
+    Initiate a background request to load the interface specified by \a interfaceName, and
+    return a QServiceReply object to track the results of the request.
+*/
+
+/*!
+    \fn QServiceReply *loadInterfaceRequest(const QServiceInterfaceDescriptor& descriptor)
+    Initiate a background request to load the interface specified by \a descriptor, and
+    return a QServiceReply object to track the results of the request.
+*/
+
+
+/*!
+    \fn QServiceReplyTyped<T> *loadLocalTypedInterfaceRequest(const QString& interfaceName)
+    Initiate a background request to load the interface specified by \a interfaceName, and
+    return a QServiceReplyTyped object to track the results of the request.
+    \code
+    // a member variable to track the reply
+    QServiceReply<SomeKnownService> *m_reply;
+
+    // make the request
+    m_reply = *mgr->loadLocalTypedInterfaceRequest<SomeKnownService>(sksIfaceName);
+    connect(m_reply, SIGNAL(finished()), this, SLOT(handleServiceInfo));
+
+    // ...later, in the handler
+    SomeKnownService *svc = m_reply->proxyObject();
+    \endcode
+*/
+
+/*!
+    \fn QServiceReplyTyped<T> *loadLocalTypedInterfaceRequest(const QServiceInterfaceDescriptor& descriptor)
+    Initiate a background request to load the interface specified by \a interfaceName, and
+    return a QServiceReplyTyped object to track the results of the request.
+*/
+
+/*!
+    \internal
+    Initiate a background request to load and return the interface specified by \a interfaceName,
+    and using the given \a reply object, which (if non-null) will be a typed sub-class object.
+    If it is null a default QServiceReply is constructed.
+*/
+QServiceReply *QServiceManager::loadInterfaceRequest(const QString &interfaceName)
+{
+    QServiceReply *reply = new QServiceReply;
+
+    if (!qgetenv("QT_NO_SFW_BACKGROUND_OPERATION").isEmpty())
+    {
+        qWarning("Turning off sfw background operations as requested.");
+        return 0;
+    }
+
+    if (!d->ops) {
+        d->ops = QServiceOperations::instance();
+        d->ops->engage();
+    }
+
+    reply->setRequest(interfaceName);
+
+    QServiceRequest req(interfaceName);
+    req.setReply(reply);
+    req.setScope(scope());
+    d->ops->initiateRequest(req);
+
+    return reply;
+}
+
+/*!
+    \internal
+    Initiate a background request to load and return the interface specified by \a descriptor,
+    and using the given \a reply object, which (if non-null) will be a typed sub-class object.
+    If it is null a default QServiceReply is constructed.
+*/
+QServiceReply *QServiceManager::loadInterfaceRequest(const QServiceInterfaceDescriptor &descriptor)
+{
+    QServiceReply *reply = new QServiceReply();
+
+    if (!d->ops) {
+        d->ops = QServiceOperations::instance();
+        d->ops->engage();
+    }
+
+    reply->setRequest(descriptor.interfaceName());
+
+    QServiceRequest req(descriptor);
+    req.setReply(reply);
+    req.setScope(scope());
+    d->ops->initiateRequest(req);
+
+    return reply;
+}
+
 
 /*!
     If \a interfaceName is an out of process service this verifies the
@@ -597,10 +733,10 @@ bool QServiceManager::addService(const QString& xmlFilePath)
 */
 bool QServiceManager::addService(QIODevice *device)
 {
-    d->setError(NoError);
+    d->setError(QServiceManager::NoError);
     ServiceMetaData parser(device);
     if (!parser.extractMetadata()) {
-        d->setError(InvalidServiceXml);
+        d->setError(QServiceManager::InvalidServiceXml);
         return false;
     }
     const ServiceMetaDataResults data = parser.parseResults();
@@ -616,15 +752,15 @@ bool QServiceManager::addService(QIODevice *device)
 
     //test the new plug-in
     if (result) {
-        QPluginLoader *loader = new QPluginLoader(qservicemanager_resolveLibraryPath(data.location));
+        QPluginLoader *loader = new QPluginLoader(resolveLibraryPath(data.location));
         QServicePluginInterface *pluginIFace = qobject_cast<QServicePluginInterface *>(loader->instance());
         if (pluginIFace) {
             pluginIFace->installService();
         } else {
-            d->setError(PluginLoadingFailed);
+            d->setError(QServiceManager::PluginLoadingFailed);
             result = false;
             qWarning() << "QServiceManager::addService()"  << data.location << "->"
-                << qservicemanager_resolveLibraryPath(data.location) << ":"
+                << resolveLibraryPath(data.location) << ":"
                 << loader->errorString() << " - Aborting registration";
             d->dbManager->unregisterService(data.name, scope);
         }
@@ -657,9 +793,9 @@ bool QServiceManager::addService(QIODevice *device)
 */
 bool QServiceManager::removeService(const QString& serviceName)
 {
-    d->setError(NoError);
+    d->setError(QServiceManager::NoError);
     if (serviceName.isEmpty()) {
-        d->setError(ComponentNotFound);
+        d->setError(QServiceManager::ComponentNotFound);
         return false;
     }
 
@@ -678,7 +814,7 @@ bool QServiceManager::removeService(const QString& serviceName)
 
     QList<QString> pluginPaths = pluginPathsSet.toList();
     for (int i=0; i<pluginPaths.count(); i++) {
-        QPluginLoader *loader = new QPluginLoader(qservicemanager_resolveLibraryPath(pluginPaths[i]));
+        QPluginLoader *loader = new QPluginLoader(resolveLibraryPath(pluginPaths[i]));
         QServicePluginInterface *pluginIFace = qobject_cast<QServicePluginInterface *>(loader->instance());
         if (pluginIFace)
             pluginIFace->uninstallService();
@@ -711,9 +847,9 @@ bool QServiceManager::removeService(const QString& serviceName)
 */
 bool QServiceManager::setInterfaceDefault(const QString &service, const QString &interfaceName)
 {
-    d->setError(NoError);
+    d->setError(QServiceManager::NoError);
     if (service.isEmpty() || interfaceName.isEmpty()) {
-        d->setError(ComponentNotFound);
+        d->setError(QServiceManager::ComponentNotFound);
         return false;
     }
     DatabaseManager::DbScope scope = d->scope == QService::SystemScope ?
@@ -740,7 +876,7 @@ bool QServiceManager::setInterfaceDefault(const QString &service, const QString 
 */
 bool QServiceManager::setInterfaceDefault(const QServiceInterfaceDescriptor& descriptor)
 {
-    d->setError(NoError);
+    d->setError(QServiceManager::NoError);
     DatabaseManager::DbScope scope = d->scope == QService::SystemScope ?
             DatabaseManager::SystemScope : DatabaseManager::UserScope;
     if (!d->dbManager->setInterfaceDefault(descriptor, scope)) {
@@ -755,12 +891,14 @@ bool QServiceManager::setInterfaceDefault(const QServiceInterfaceDescriptor& des
 */
 QServiceInterfaceDescriptor QServiceManager::interfaceDefault(const QString& interfaceName) const
 {
-    d->setError(NoError);
+    qDebug() << "QServiceManager::interfaceDefault" << interfaceName;
+    d->setError(QServiceManager::NoError);
     DatabaseManager::DbScope scope = d->scope == QService::SystemScope ?
             DatabaseManager::SystemScope : DatabaseManager::UserScope;
     QServiceInterfaceDescriptor info = d->dbManager->interfaceDefault(interfaceName, scope);
     if (d->dbManager->lastError().code() != DBError::NoError) {
         d->setError();
+        qDebug() << "error" << d->dbManager->lastError().text();
         return QServiceInterfaceDescriptor();
     }
     return info;

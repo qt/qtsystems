@@ -448,7 +448,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
                         << "for interface" << interface.interfaceName()
                         << "is already registered for service "
                         << interface.serviceName()
-                        << qPrintable(QString("\n") + m_lastError.text());
+                        << "\n" << m_lastError.text();
 #endif
             return false;
         }
@@ -468,9 +468,9 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
                 rollbackTransaction(&query);
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
                 qWarning() << "ServiceDatabase::registerService():-"
-                    << "Unable to retrieve interfaceID for "
-                        "interface" << interface.interfaceName()
-                        <<  qPrintable(QString("\n") + m_lastError.text());
+                           << "Unable to retrieve interfaceID for "
+                              "interface" << interface.interfaceName()
+                           << "\n" << m_lastError.text();
 #endif
                 return false;
             }

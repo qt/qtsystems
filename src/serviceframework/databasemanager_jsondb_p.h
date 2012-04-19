@@ -114,7 +114,6 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
         const QList<QJsonObject> getCache();
 
         DBError m_lastError;
-        QEventLoop m_eventLoop;
         bool m_notenabled;
 
     private:

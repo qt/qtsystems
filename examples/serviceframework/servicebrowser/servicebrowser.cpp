@@ -42,6 +42,7 @@
 #include <QtWidgets>
 
 #include <qservicemanager.h>
+#include <qservicereply.h>
 #include <qserviceinterfacedescriptor.h>
 
 #include "servicebrowser.h"
@@ -173,15 +174,23 @@ void ServiceBrowser::reloadAttributesList()
     QServiceInterfaceDescriptor selectedImpl =
             item->data(Qt::UserRole).value<QServiceInterfaceDescriptor>();
 
-    QObject *implementationRef;
+    QServiceReply *reply = 0;
     if (selectedImplRadioButton->isChecked())
-        implementationRef = serviceManager->loadInterface(selectedImpl);
+        reply = serviceManager->loadInterfaceRequest(selectedImpl);
     else
-        implementationRef = serviceManager->loadInterface(selectedImpl.interfaceName());
+        reply = serviceManager->loadInterfaceRequest(selectedImpl.interfaceName());
 
+    connect(reply, SIGNAL(finished()), this, SLOT(handleImplementationReply()));
+}
+
+void ServiceBrowser::handleImplementationReply()
+{
+    QServiceReply *reply = static_cast< QServiceReply * >(sender());
+    QObject *implementationRef = reply->proxyObject();
     attributesListWidget->clear();
     if (!implementationRef) {
         attributesListWidget->addItem(tr("(Error loading service plugin)"));
+        qWarning() << "Error code for service load failure was" << reply->error();
         return;
     }
 

@@ -69,6 +69,7 @@ private slots:
     void reloadInterfaceImplementationsList();
     void reloadAttributesList();
     void setDefaultInterfaceImplementation();
+    void handleImplementationReply();
 
 private:
     void registerExampleServices();

@@ -46,7 +46,10 @@ SOURCES += servicemetadata.cpp \
     dberror.cpp \
     qremoteserviceregister.cpp \
     qserviceclientcredentials.cpp \
-    qservicedebuglog.cpp
+    qservicedebuglog.cpp \
+    qserviceoperations.cpp \
+    qservicereply.cpp \
+    qservicerequest.cpp
 
 contains(DEFINES, QT_ADDON_JSONDB_LIB): {
     SOURCES += databasemanager_jsondb.cpp
@@ -59,4 +62,8 @@ contains(DEFINES, QT_ADDON_JSONDB_LIB): {
         databasemanager_p.h \
 }
 
-HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS \
+    qserviceoperations_p.h \
+    qservicereply.h \
+    qservicereply_p.h \
+    qservicerequest_p.h

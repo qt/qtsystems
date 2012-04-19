@@ -53,7 +53,6 @@
 #include <QStringList>
 #include <QDebug>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -61,9 +60,11 @@ QT_BEGIN_NAMESPACE
 class QServiceContext;
 class QServiceFilter;
 class QServiceManagerPrivate;
+class QServiceReply;
 class Q_SERVICEFW_EXPORT QServiceManager : public QObject
 {
     Q_OBJECT
+
 public:
 
    enum Error {
@@ -97,36 +98,13 @@ public:
     bool isInterfaceRunning(const QServiceInterfaceDescriptor& descriptor);
 
     template <class T>
-    T* loadLocalTypedInterface(const QString& interfaceName)
-    {
-        return loadLocalTypedInterface<T>(interfaceDefault(interfaceName));
-    }
+    T* loadLocalTypedInterface(const QString& interfaceName);
 
     template <class T>
-    T* loadLocalTypedInterface(const QServiceInterfaceDescriptor& descriptor)
-    {
-        T* instance = 0;
-        if (descriptor.isValid()) {
-            QObject* obj = loadInterface(descriptor);
-            if (!obj) return 0;
+    T* loadLocalTypedInterface(const QServiceInterfaceDescriptor& descriptor);
 
-            //TODO this should really be
-            //instance = qobject_cast<T *>(loadInterface(descriptor, context, session));
-            //check why qobject_cast fails
-            const char* templateClassName = reinterpret_cast<T *>(0)->staticMetaObject.className();
-            const QMetaObject* source = obj->metaObject();
-            do {
-                if (strcmp(templateClassName,source->className())==0) {
-                    instance = static_cast<T *>(obj);
-                    break;
-                }
-                source = source->superClass();
-            } while (source != 0);
-            if (!instance)
-                delete obj;
-        }
-        return instance;
-    }
+    QServiceReply *loadInterfaceRequest(const QString& interfaceName);
+    QServiceReply *loadInterfaceRequest(const QServiceInterfaceDescriptor& descriptor);
 
     bool addService(const QString& xmlFilePath);
     bool addService(QIODevice* xmlDevice);
@@ -137,7 +115,7 @@ public:
 
     QServiceInterfaceDescriptor interfaceDefault(const QString& interfaceName) const;
 
-    Error error() const;
+    QServiceManager::Error error() const;
 
     bool event(QEvent *);
 
@@ -148,12 +126,52 @@ protected:
 Q_SIGNALS:
     void serviceAdded(const QString& serviceName, QService::Scope scope);
     void serviceRemoved(const QString& serviceName, QService::Scope scope);
+    void errorChanged();
 
 private:
+    QObject *loadInterProcessService(const QServiceInterfaceDescriptor &descriptor,
+                                          const QString &location) const;
+    QObject *loadInProcessService(const QServiceInterfaceDescriptor &descriptor,
+                                  const QString &serviceFilePath) const;
+
+    static QString resolveLibraryPath(const QString &libNameOrPath);
+
     friend class QServiceManagerPrivate;
+    friend class QServiceOperationProcessor;
     QServiceManagerPrivate* d;
 };
 
+template <class T>
+Q_INLINE_TEMPLATE T* QServiceManager::loadLocalTypedInterface(const QString& interfaceName)
+{
+    return loadLocalTypedInterface<T>(interfaceDefault(interfaceName));
+}
+
+template <class T>
+Q_OUTOFLINE_TEMPLATE T* QServiceManager::loadLocalTypedInterface(const QServiceInterfaceDescriptor& descriptor)
+{
+    T* instance = 0;
+    if (descriptor.isValid()) {
+        QObject* obj = loadInterface(descriptor);
+        if (!obj) return 0;
+
+        //TODO this should really be
+        //instance = qobject_cast<T *>(loadInterface(descriptor, context, session));
+        //check why qobject_cast fails
+        const char* templateClassName = reinterpret_cast<T *>(0)->staticMetaObject.className();
+        const QMetaObject* source = obj->metaObject();
+        do {
+            if (strcmp(templateClassName,source->className())==0) {
+                instance = static_cast<T *>(obj);
+                break;
+            }
+            source = source->superClass();
+        } while (source != 0);
+        if (!instance)
+            delete obj;
+    }
+    return instance;
+}
 
 QT_END_NAMESPACE
 

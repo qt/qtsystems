@@ -52,6 +52,9 @@
 #include <QtTest/QtTest>
 #include <qservice.h>
 #include <qremoteserviceregister.h>
+#include <qservicereply.h>
+
+#include <signal.h>
 
 #ifdef SFW_USE_DBUS_BACKEND
 #include <QtDBus/QtDBus>
@@ -231,6 +234,9 @@ private slots:
 
     void verifyServiceClass();
     void verifyFailures();
+
+    void verifyAsyncLoading();
+    void verifyAsyncLoading_data();
 
     void testServiceSecurity();
 
@@ -1615,10 +1621,90 @@ void tst_QServiceManager_IPC::testProcessLaunch()
 #endif
 }
 
+void tst_QServiceManager_IPC::verifyAsyncLoading()
+{
+
+    QFETCH(QString, interface);
+    QFETCH(int, descriptor);
+    QFETCH(bool, errors);
+    QFETCH(int, simultaneous);
+
+    QServiceManager mgr;
+
+    QServiceReply *reply = 0;
+    QServiceReply *replies[16]; // must be constant for windows, set to max size below
+
+    if (simultaneous > 0) {
+        for (int i = 0; i < simultaneous; i++) {
+            replies[i] = mgr.loadInterfaceRequest(interface);
+        }
+        reply = replies[0];
+    } else if (descriptor > 0) {
+        QList<QServiceInterfaceDescriptor> list = mgr.findInterfaces("IPCExampleService");
+        QServiceInterfaceDescriptor d;
+        foreach (d, list) {
+            if (d.majorVersion() == 3 && d.minorVersion() == descriptor) {
+                break;
+            }
+        }
+        reply = mgr.loadInterfaceRequest(d);
+    } else if (!interface.isEmpty()) {
+        reply = mgr.loadInterfaceRequest(interface);
+    } else {
+        QFAIL("No descriptor nor interface speficied");
+    }
+
+
+    QSignalSpy startedSpy(reply, SIGNAL(started()));
+    QSignalSpy errorSpy(reply, SIGNAL(errorChanged()));
+    QSignalSpy finishedSpy(reply, SIGNAL(finished()));
+
+    QCOMPARE(startedSpy.count(), 0);
+
+    QTRY_COMPARE(startedSpy.count(), 1);
+    if (!errors)
+        QCOMPARE(errorSpy.count(), 0);
+
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    QCOMPARE(reply->isFinished(), true);
+    if (!errors) {
+        QCOMPARE(errorSpy.count(), 0);
+        QCOMPARE(reply->error(), QServiceManager::NoError);
+    } else {
+        QCOMPARE(errorSpy.count(), 1);
+        QVERIFY(reply->error() != QServiceManager::NoError);
+    }
+
+
+
+    if (simultaneous) {
+        for (int i = 0; i < simultaneous; i++) {
+            QTRY_COMPARE(replies[i]->isFinished(), true);
+            QCOMPARE(replies[i]->error(), QServiceManager::NoError);
+        }
+    }
+
+    delete reply;
+}
+
+void tst_QServiceManager_IPC::verifyAsyncLoading_data()
+{
+    QTest::addColumn<QString>("interface");
+    QTest::addColumn<int>("descriptor");
+    QTest::addColumn<bool>("errors");
+    QTest::addColumn<int>("simultaneous");
+
+
+    QTest::newRow("Load minor version 5") << QString() << 5 << false << 0;
+    QTest::newRow("Load default interface") << QString("com.nokia.qt.ipcunittest") << 0 << false << 0;
+    QTest::newRow("Load invalid interface") << QString("com.nokia.qt.ipcunittest.does.not.exist") << 0 << true << 0;
+    QTest::newRow("Load 4 interfaces") << QString("com.nokia.qt.ipcunittest") << 1 << false << 4;
+    QTest::newRow("Load 16 interfaces") << QString("com.nokia.qt.ipcunittest") << 1 << false << 16;
+
+}
 
 void tst_QServiceManager_IPC::testIpcFailure()
-    {
-
+{
     // test deleting an object doesn't trigger an IPC fault
     ipcfailure = false;
     delete serviceShared;
