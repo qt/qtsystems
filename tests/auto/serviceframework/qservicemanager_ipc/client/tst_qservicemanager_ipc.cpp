@@ -90,6 +90,7 @@ public:
 
 protected slots:
     void ipcError(QService::UnrecoverableIPCError error);
+    void ipcErrorNonTest(QService::UnrecoverableIPCError error);
     void unblockRemote();
 
 private slots:
@@ -225,13 +226,25 @@ void tst_QServiceManager_IPC::initTestCase()
         if (d.majorVersion() == 3 && d.minorVersion() == 5) {
             serviceUnique = manager->loadInterface(d);
             serviceUniqueOther = manager->loadInterface(d);
+            connect(serviceUnique, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                    this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
+            connect(serviceUniqueOther, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                    this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
+
         }
         if (d.majorVersion() == 3 && d.minorVersion() == 4) {
             serviceShared = manager->loadInterface(d);
             serviceSharedOther = manager->loadInterface(d);
+            connect(serviceShared, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                    this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
+            connect(serviceSharedOther, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                    this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
+
         }
         if (d.majorVersion() == 3 && d.minorVersion() == 8) {
             miscTest = manager->loadInterface(d);
+            connect(miscTest, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                    this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
         }
 
     }
@@ -251,6 +264,12 @@ void tst_QServiceManager_IPC::ipcError(QService::UnrecoverableIPCError err)
 {
     Q_UNUSED(err);
     ipcfailure = true;
+}
+
+// unexpected ipc failures
+void tst_QServiceManager_IPC::ipcErrorNonTest(QService::UnrecoverableIPCError err)
+{
+    Q_UNUSED(err);
 }
 
 void tst_QServiceManager_IPC::cleanupTestCase()
@@ -1047,13 +1066,16 @@ void tst_QServiceManager_IPC::testSlotInvokation()
     hashv["test3"] = QVariant::fromValue(true);
     QHashIterator<QString, QVariant> i(hashv);
     output.clear();
+    QStringList lines;
     while (i.hasNext()) {
         i.next();
-        output += i.key();
-        output += "=";
-        output += i.value().toString();
-        output += ", ";
+        QString line = i.key();
+        line += "=";
+        line += i.value().toString();
+        lines << line;
     }
+    lines.sort();
+    output = lines.join(QStringLiteral(","));
     expectedHash = qHash(output);
 
     QMetaObject::invokeMethod(serviceUnique, "testSlotWithComplexArg",
@@ -1122,6 +1144,7 @@ public slots:
 private slots:
     void setup();
     void fetchProperty();
+    void ipcError();
 
 signals:
     void ready();
@@ -1170,6 +1193,8 @@ void FetchLotsOfProperties::setup()
         if (d.majorVersion() == 3 && d.minorVersion() == 4 && shared) {
             service = mgr->loadInterface(d);
         }
+        if (service)
+            connect(service, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)), this, SLOT(ipcError()));
     }
 
     if (!service) {
@@ -1225,6 +1250,11 @@ void FetchLotsOfProperties::fetchProperty()
     else {
         quit();
     }
+}
+
+void FetchLotsOfProperties::ipcError()
+{
+
 }
 
 void tst_QServiceManager_IPC::verifyThreadSafety()

@@ -415,16 +415,16 @@ public slots:
     void testSlotWithComplexArg(QVariantHash arg)
     {
         QHashIterator<QString, QVariant> i(arg);
-        QString output;
+        QStringList lines;
         while (i.hasNext()) {
             i.next();
-//            qDebug() << i.key() << ": " << i.value();
-            output += i.key();
-            output += "=";
-            output += i.value().toString();
-            output += ", ";
+            QString line = i.key();
+            line += "=";
+            line += i.value().toString();
+            lines << line;
         }
-        qDebug() << output;
+        lines.sort();
+        QString output = lines.join(QStringLiteral(","));
         m_hash = qHash(output);
     }
 

@@ -274,8 +274,9 @@ QServiceProxyBase::~QServiceProxyBase()
 
 void QServiceProxyBase::connectNotify(const char *signal)
 {
-    if (strcmp("2errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)", signal) == 0) {
+    if (d->timerId > 0 && strcmp(SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)), signal) == 0) {
         killTimer(d->timerId);
+        d->timerId = -1;
     }
 }
 
@@ -284,6 +285,7 @@ void QServiceProxyBase::timerEvent(QTimerEvent *e)
     if (e->timerId() == d->timerId) {
         qWarning() << this << "Someone is using SFW incorrectly. No one connected to errorUnrecoverableIPCFault for class" << this->metaObject()->className();
         killTimer(d->timerId);
+        d->timerId = -1;
     } else {
         QObject::timerEvent(e);
     }
