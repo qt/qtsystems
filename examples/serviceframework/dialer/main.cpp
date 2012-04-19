@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQuickView viewer;
-    viewer.setSource(QUrl::fromLocalFile(QStringLiteral("dialer.qml")));
+    viewer.setSource(QUrl(QStringLiteral("qrc:///dialer.qml")));
     viewer.show();
     return app.exec();
 }
