@@ -99,13 +99,7 @@ bool QJsonDbWrapper::hasFeaturePositioning()
                                  QString(QStringLiteral("locationServicesFeatureEnabled"))).toBool();
 }
 
-QString QJsonDbWrapper::getUniqueDeviceID()
-{
-    return getSystemPropertyValue(QString(QStringLiteral("DeviceInfo")),
-                                  QString(QStringLiteral("uniqueDeviceId"))).toString();
-}
-
-QString QJsonDbWrapper::getModel()
+QString QJsonDbWrapper::model()
 {
     return getSystemSettingValue(QString(QStringLiteral("sw_variant_configuration")),
                                  QString(QStringLiteral("productName"))).toString();
@@ -125,26 +119,6 @@ int QJsonDbWrapper::getRingtoneVolume()
         return volume;
 
     return -1;
-}
-
-QJsonValue QJsonDbWrapper::getSystemPropertyValue(const QString &objectType, const QString &property, const QString &partition)
-{
-    QJsonDbReadRequest request;
-    if (!partition.isEmpty())
-       request.setPartition(partition);
-    request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.system.%1\"]")).arg(objectType));
-    connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
-            this, SLOT(onJsonDbRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-    connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbRequestFinished()));
-    if (jsonDbConnection.send(&request)) {
-        waitForResponse();
-        if (request.status() == QJsonDbRequest::Finished) {
-            QList<QJsonObject> results = request.takeResults();
-            if (results.size() > 0)
-                return results.at(0).value(property);
-        }
-    }
-    return QJsonValue();
 }
 
 QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition)

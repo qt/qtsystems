@@ -74,8 +74,7 @@ public:
     QDeviceInfo::LockTypeFlags activatedLockTypes();
     QDeviceInfo::LockTypeFlags enabledLockTypes();
     bool hasFeaturePositioning();
-    QString getUniqueDeviceID();
-    QString getModel();
+    QString model();
 
     // DeviceProfile Interface
     bool isVibrationActivated();
@@ -100,7 +99,6 @@ private Q_SLOTS:
     void onJsonDbLockObjectsReadRequestFinished();
 
 private:
-    QJsonValue getSystemPropertyValue(const QString &objectType, const QString &property, const QString &partition = QStringLiteral(""));
     QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition = QStringLiteral(""));
     bool hasSystemObject(const QString &objectType, const QString &partition = QStringLiteral(""));
     void sendJsonDbLockObjectsReadRequest(const QString &partition = QStringLiteral(""));

@@ -55,6 +55,7 @@
 #include <QtCore/qprocess.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qtimer.h>
+#include <QtCore/qstandardpaths.h>
 
 #include <fcntl.h>
 #include <linux/videodev2.h>
@@ -301,7 +302,7 @@ QString QDeviceInfoPrivate::model()
 #if !defined(QT_NO_JSONDB)
         if (!jsondbWrapper)
             jsondbWrapper = new QJsonDbWrapper(this);
-        modelBuffer = jsondbWrapper->getModel();
+        modelBuffer = jsondbWrapper->model();
 #else
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_name"));
         if (file.open(QIODevice::ReadOnly))
@@ -335,15 +336,20 @@ QString QDeviceInfoPrivate::productName()
 QString QDeviceInfoPrivate::uniqueDeviceID()
 {
     if (uniqueDeviceIDBuffer.isEmpty()) {
-#if !defined(QT_NO_JSONDB)
-        if (!jsondbWrapper)
-            jsondbWrapper = new QJsonDbWrapper(this);
-        uniqueDeviceIDBuffer = jsondbWrapper->getUniqueDeviceID();
-#else
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_uuid"));
-        if (file.open(QIODevice::ReadOnly))
-            uniqueDeviceIDBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
-#endif // QT_NO_JSONDB
+        if (file.open(QIODevice::ReadOnly)) {
+            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
+            if (id.length() == 36)
+                uniqueDeviceIDBuffer = id;
+        }
+    }
+    if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("unique-id")));
+        if (file.open(QIODevice::ReadOnly)) {
+            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
+            if (id.length() == 40)
+                uniqueDeviceIDBuffer = id;
+        }
     }
 
     return uniqueDeviceIDBuffer;
