@@ -51,7 +51,6 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qtimer.h>
-
 #if !defined(QT_NO_BLUEZ)
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
@@ -727,9 +726,11 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
 
         QTextStream in(&file);
         QString interfaceName = interfaceForMode(QNetworkInfo::WlanMode, interface).name();
-        QString line = in.readLine();
-        while (!line.isNull()) {
-            if (line.left(6).contains(interfaceName)) {
+
+        QStringList lines = in.readAll().split(QStringLiteral("\n"));
+        for (int i = 0; i < lines.size(); i++) {
+            QString line = lines.at(i);
+            if (!line.isNull() && line.left(6).contains(interfaceName)) {
                 // A typical wireless received signal power over a network falls into the range of (-120, -20),
                 // we shift the dbm value, which is read from the field "Quality - level" in "/proc/net/wireless",
                 // from (-120, -20) to (0, 100) by adding 120. In case of outliers, we restrict them to the
@@ -749,7 +750,6 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
                     return -1;
                 }
             }
-            line = in.readLine();
         }
 
         break;

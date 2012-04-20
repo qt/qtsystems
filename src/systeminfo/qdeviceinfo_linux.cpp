@@ -287,7 +287,7 @@ QString QDeviceInfoPrivate::manufacturer()
 #if !defined(QT_NO_LIBSYSINFO)
         manufacturerBuffer = getSysInfoValue("/component/manufacturer");
 #else
-        QFile file("/sys/devices/virtual/dmi/id/sys_vendor");
+        QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/sys_vendor"));
         if (file.open(QIODevice::ReadOnly))
             manufacturerBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
 #endif
