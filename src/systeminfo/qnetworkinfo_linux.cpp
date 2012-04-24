@@ -465,7 +465,10 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
     }
 #endif
 
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+//    we always monitor "networkInterfaceCount" , as long as users connect any signals,
+//    with update to date network interface counts, we can compute network mode, strength,
+//    status, name properties in an efficient way
+    if (!watchNetworkInterfaceCount) {
         QList<QNetworkInfo::NetworkMode> modes;
         modes << QNetworkInfo::WlanMode << QNetworkInfo::EthernetMode << QNetworkInfo::BluetoothMode;
         networkInterfaceCounts.clear();
@@ -482,13 +485,30 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
         }
         udevNotifier->setEnabled(true);
 
-        watchNetworkInterfaceCount = true;
-
-        return;
-#else
-        watchNetworkInterfaceCount = true;
 #endif // QT_NO_UDEV
-    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int))) == 0) {
+        watchNetworkInterfaceCount = true;
+    }
+
+    if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode))) == 0) {
+//        we monitor "networkStatus" by default, as long as currentNetworkModeChanged signal
+//        is connected, with always up to date network status, current network mode can
+//        be fast computed.
+        if (!watchNetworkStatus) {
+            QList<QNetworkInfo::NetworkMode> modes;
+            modes << QNetworkInfo::WlanMode << QNetworkInfo::EthernetMode << QNetworkInfo::BluetoothMode;
+            networkStatuses.clear();
+            foreach (QNetworkInfo::NetworkMode mode, modes) {
+                int count = networkInterfaceCount(mode);
+                for (int i = 0; i < count; ++i)
+                    networkStatuses[QPair<QNetworkInfo::NetworkMode, int>(mode, i)] = getNetworkStatus(mode, i);
+            }
+            watchNetworkStatus = true;
+        }
+        currentMode = getCurrentNetworkMode();
+        watchCurrentNetworkMode = true;
+    }
+
+    if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int))) == 0) {
         QList<QNetworkInfo::NetworkMode> modes;
         modes << QNetworkInfo::WlanMode << QNetworkInfo::EthernetMode << QNetworkInfo::BluetoothMode;
         networkSignalStrengths.clear();
@@ -550,7 +570,8 @@ void QNetworkInfoPrivate::disconnectNotify(const char *signal)
     disconnect(ofonoWrapper, signal, this, signal);
 #endif
 
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0
+        && !watchNetworkStatus && !watchNetworkName && !watchNetworkSignalStrength ) {
 #if !defined(QT_NO_UDEV)
         udevNotifier->setEnabled(false);
         watchNetworkInterfaceCount = false;
@@ -559,7 +580,7 @@ void QNetworkInfoPrivate::disconnectNotify(const char *signal)
         watchNetworkInterfaceCount = false;
     } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int))) == 0) {
         watchNetworkSignalStrength = false;
-    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus))) == 0) {
+    } else if (!watchCurrentNetworkMode && strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus))) == 0) {
         watchNetworkStatus = false;
     } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString))) == 0) {
         watchNetworkName = false;
@@ -622,15 +643,7 @@ void QNetworkInfoPrivate::onTimeout()
     }
 #endif // QT_NO_UDEV
 
-    if (watchCurrentNetworkMode) {
-        QNetworkInfo::NetworkMode value = getCurrentNetworkMode();
-        if (currentMode != value) {
-            currentMode = value;
-            emit currentNetworkModeChanged(value);
-        }
-    }
-
-    if (!watchNetworkSignalStrength && !watchNetworkStatus && !watchNetworkName)
+    if (!watchNetworkSignalStrength && !watchNetworkStatus && !watchNetworkName && !watchCurrentNetworkMode)
         return;
 
     QList<QNetworkInfo::NetworkMode> modes;
@@ -666,6 +679,15 @@ void QNetworkInfoPrivate::onTimeout()
             }
         }
     }
+
+    if (watchCurrentNetworkMode) {
+        QNetworkInfo::NetworkMode value = getCurrentNetworkMode();
+        if (currentMode != value) {
+            currentMode = value;
+            emit currentNetworkModeChanged(value);
+        }
+    }
+
 }
 
 int QNetworkInfoPrivate::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode)
@@ -891,9 +913,11 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
-        if (interface < dirs.size()) {
-            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/carrier")));
+       if (interface < networkInterfaceCount(QNetworkInfo::WlanMode)) {
+            QString fileName = (*WLAN_MASK()).at(0);
+            fileName.chop(1);
+            fileName.append(QString::number(interface));
+            QFile carrier(*NETWORK_SYSFS_PATH() + fileName + QStringLiteral("/carrier"));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
                 if ((carrier.read(&state, 1) == 1) &&
@@ -907,13 +931,17 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
     }
 
     case QNetworkInfo::EthernetMode: {
-        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK());
-        if (interface < dirs.size()) {
-            QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/carrier")));
-            if (carrier.open(QIODevice::ReadOnly)) {
-                char state;
-                if ((carrier.read(&state, 1) == 1) && (state == '1'))
-                    return QNetworkInfo::HomeNetwork;
+        if (interface < networkInterfaceCount(QNetworkInfo::EthernetMode)) {
+            for (int i = 0; i < (*ETHERNET_MASK()).length(); i++) {
+                QString fileName = (*ETHERNET_MASK()).at(i);
+                fileName.chop(1);
+                fileName.append(QString::number(interface));
+                QFile carrier(*NETWORK_SYSFS_PATH() + fileName + QStringLiteral("/carrier"));
+                if (carrier.open(QIODevice::ReadOnly)) {
+                    char state;
+                    if ((carrier.read(&state, 1) == 1) && (state == '1'))
+                        return QNetworkInfo::HomeNetwork;
+                }
             }
         }
         return QNetworkInfo::NoNetworkAvailable;
@@ -985,8 +1013,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-        QStringList dirs = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK());
-        if (interface < dirs.size()) {
+        if (interface < networkInterfaceCount(QNetworkInfo::WlanMode)) {
             int sock = socket(PF_INET, SOCK_DGRAM, 0);
             if (sock > 0) {
                 char buffer[IW_ESSID_MAX_SIZE + 1];
@@ -995,9 +1022,10 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
                 iwInfo.u.essid.pointer = (caddr_t)&buffer;
                 iwInfo.u.essid.length = IW_ESSID_MAX_SIZE + 1;
                 iwInfo.u.essid.flags = 0;
-
-                strncpy(iwInfo.ifr_name, dirs.at(interface).toLocal8Bit().data(), IFNAMSIZ);
-
+                QString fileName = (*WLAN_MASK()).at(0);
+                fileName.chop(1);
+                fileName.append(QString::number(interface));
+                strncpy(iwInfo.ifr_name, fileName.toLocal8Bit().constData(), IFNAMSIZ);
                 if (ioctl(sock, SIOCGIWESSID, &iwInfo) == 0) {
                     close(sock);
                     return QString::fromAscii((const char *)iwInfo.u.essid.pointer);
