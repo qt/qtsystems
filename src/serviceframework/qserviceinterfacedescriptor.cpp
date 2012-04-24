@@ -143,12 +143,12 @@ QServiceInterfaceDescriptor::QServiceInterfaceDescriptor(const QServiceInterface
 QServiceInterfaceDescriptor::QServiceInterfaceDescriptor(const QVariantMap &map)
 {
     d = new QServiceInterfaceDescriptorPrivate;
-    d->interfaceName = map.value(QLatin1Literal("interfaceName")).toString();
-    d->serviceName = map.value(QLatin1Literal("serviceName")).toString();
-    d->major = map.value(QLatin1Literal("major")).toInt();
-    d->minor = map.value(QLatin1Literal("minor")).toInt();
-    d->attributes[QServiceInterfaceDescriptor::Location] = map.value(QLatin1Literal("Location")).toString();
-    d->attributes[QServiceInterfaceDescriptor::ServiceType] = map.value(QLatin1Literal("ServiceType")).toString();
+    d->interfaceName = map.value(QStringLiteral("interfaceName")).toString();
+    d->serviceName = map.value(QStringLiteral("serviceName")).toString();
+    d->major = map.value(QStringLiteral("major")).toInt();
+    d->minor = map.value(QStringLiteral("minor")).toInt();
+    d->attributes[QServiceInterfaceDescriptor::Location] = map.value(QStringLiteral("Location")).toString();
+    d->attributes[QServiceInterfaceDescriptor::ServiceType] = map.value(QStringLiteral("ServiceType")).toString();
 }
 
 /*!

@@ -149,7 +149,7 @@ protected slots:
     void sendError(const QString &location)
     {
         qDebug() << "Send fail";
-        emit failed(QLatin1Literal("Test code failing creation"), location);
+        emit failed(QStringLiteral("Test code failing creation"), location);
     }
 
     void sendOk(const QString &location)
@@ -164,11 +164,11 @@ protected slots:
 
         QRemoteServiceRegister::Entry pmEntry =
                 r->createEntry<ServiceRequest>(
-                    QLatin1Literal("com.nokia.qt.tests.autostart"),
-                    QLatin1Literal("com.nokkia.qt.tests.autostarted"),
-                    QLatin1Literal("1.0"));
+                    QStringLiteral("com.nokia.qt.tests.autostart"),
+                    QStringLiteral("com.nokkia.qt.tests.autostarted"),
+                    QStringLiteral("1.0"));
 
-        r->publishEntries(QLatin1Literal("com.nokia.qt.tests.autostart"));
+        r->publishEntries(QStringLiteral("com.nokia.qt.tests.autostart"));
     }
 
 signals:
@@ -379,25 +379,25 @@ void tst_QServiceManager_IPC::initTestCase()
 
     QRemoteServiceRegister::Entry pmEntry =
             reg->createEntry<ServiceRequest>(
-                QLatin1Literal("com.nokia.mt.processmanager"),
-                QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest"),
-                QLatin1Literal("1.0"));
+                QStringLiteral("com.nokia.mt.processmanager"),
+                QStringLiteral("com.nokia.mt.processmanager.ServiceRequest"),
+                QStringLiteral("1.0"));
 
     reg->publishEntries("com.nokia.mt.processmanager.ServiceRequestSocket");
 
     QByteArray ba(serviceReuqestXml);
     QBuffer b(&ba);
-    manager->removeService(QLatin1Literal("com.nokia.mt.processmanager"));
+    manager->removeService(QStringLiteral("com.nokia.mt.processmanager"));
     manager->addService(&b);
 
     QByteArray baFake(serviceReuqestXmlFake);
     QBuffer bFake(&baFake);
-    manager->removeService(QLatin1Literal("com.nokia.qt.does.not.exists"));
+    manager->removeService(QStringLiteral("com.nokia.qt.does.not.exists"));
     manager->addService(&bFake);
 
     QByteArray baAutoStart(serviceReuqestXmlStarted);
     QBuffer bAutoStart(&baAutoStart);
-    manager->removeService(QLatin1Literal("com.nokia.qt.tests.autostart"));
+    manager->removeService(QStringLiteral("com.nokia.qt.tests.autostart"));
     manager->addService(&bAutoStart);
 
 }
@@ -441,9 +441,9 @@ void tst_QServiceManager_IPC::cleanupTestCase()
     // clean up the unit, don't leave it registered
     QServiceManager m;
     m.removeService("IPCExampleService");
-    m.removeService(QLatin1Literal("com.nokia.mt.processmanager"));
-    m.removeService(QLatin1Literal("com.nokia.qt.does.not.exists"));
-    m.removeService(QLatin1Literal("com.nokia.qt.tests.autostart"));
+    m.removeService(QStringLiteral("com.nokia.mt.processmanager"));
+    m.removeService(QStringLiteral("com.nokia.qt.does.not.exists"));
+    m.removeService(QStringLiteral("com.nokia.qt.tests.autostart"));
 }
 
 void tst_QServiceManager_IPC::init()
@@ -1504,7 +1504,7 @@ void tst_QServiceManager_IPC::verifyThreadSafety_data()
 void tst_QServiceManager_IPC::unblockRemote()
 {
     QString ret = serviceUnique->property("releaseBlockingRead").toString();
-    QCOMPARE(ret, QLatin1Literal("releaseBlockingReadReturned"));
+    QCOMPARE(ret, QStringLiteral("releaseBlockingReadReturned"));
 }
 
 void tst_QServiceManager_IPC::verifyRemoteBlockingFunctions()
@@ -1516,7 +1516,7 @@ void tst_QServiceManager_IPC::verifyRemoteBlockingFunctions()
     connect(serviceUnique, SIGNAL(blockingValueRead()), this, SLOT(unblockRemote()));
 
     QString ret = serviceUnique->property("blockingValue").toString();
-    QCOMPARE(ret, QLatin1Literal("blockingValueReturned"));
+    QCOMPARE(ret, QStringLiteral("blockingValueReturned"));
 #endif
 }
 
@@ -1582,19 +1582,19 @@ void tst_QServiceManager_IPC::testProcessLaunch()
     QServiceManager m;
 
     QVariantMap map;
-    map.insert(QLatin1Literal("interfaceName"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequest"));
-    map.insert(QLatin1Literal("serviceName"), QLatin1Literal("com.nokia.mt.processmanager"));
-    map.insert(QLatin1Literal("major"), 1);
-    map.insert(QLatin1Literal("minor"), 0);
-    map.insert(QLatin1Literal("Location"), QLatin1Literal("com.nokia.mt.processmanager.ServiceRequestSocket"));
-    map.insert(QLatin1Literal("ServiceType"), QService::InterProcess);
+    map.insert(QStringLiteral("interfaceName"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequest"));
+    map.insert(QStringLiteral("serviceName"), QStringLiteral("com.nokia.mt.processmanager"));
+    map.insert(QStringLiteral("major"), 1);
+    map.insert(QStringLiteral("minor"), 0);
+    map.insert(QStringLiteral("Location"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequestSocket"));
+    map.insert(QStringLiteral("ServiceType"), QService::InterProcess);
     QServiceInterfaceDescriptor desc(map);
 
     QObject *s = m.loadInterface(desc);
 
     QVERIFY(s != 0);
 
-    QString name = QLatin1Literal("anything");
+    QString name = QStringLiteral("anything");
     QSignalSpy serviceSpy(s, SIGNAL(failed(QString, QString)));
 
     QMetaObject::invokeMethod(s, "startService", Q_ARG(QString, name));
@@ -1604,7 +1604,7 @@ void tst_QServiceManager_IPC::testProcessLaunch()
 
     qDebug() << "******* doing auto start, and fail";
 
-    QObject *o = m.loadInterface(QLatin1Literal("com.nokia.qt.interface.does.not.exist"));
+    QObject *o = m.loadInterface(QStringLiteral("com.nokia.qt.interface.does.not.exist"));
 
     // should fail, but verify nothing blocks and we get here
     QVERIFY2(o == 0, "We got a valid object from a service that doesn't exist");
@@ -1612,7 +1612,7 @@ void tst_QServiceManager_IPC::testProcessLaunch()
 
     qDebug() << "******* doing auto start, and WORK";
 
-    o = m.loadInterface(QLatin1Literal("com.nokkia.qt.tests.autostarted"));
+    o = m.loadInterface(QStringLiteral("com.nokkia.qt.tests.autostarted"));
 
     QVERIFY2(o != 0,"We must get a valid interface back");
 

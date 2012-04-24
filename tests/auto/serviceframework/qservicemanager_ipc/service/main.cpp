@@ -301,13 +301,13 @@ public:
     {
         emit blockingValueRead();
         m_loop.exec();
-        return QLatin1Literal("blockingValueReturned");
+        return QStringLiteral("blockingValueReturned");
     }
 
     QString releaseBlockingRead()
     {
         m_loop.quit();
-        return QLatin1Literal("releaseBlockingReadReturned");
+        return QStringLiteral("releaseBlockingReadReturned");
     }
 
     Q_INVOKABLE QString testFunctionWithReturnValue(int input)
