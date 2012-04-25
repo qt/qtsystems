@@ -84,8 +84,8 @@ private Q_SLOTS:
     void onBacklightStateChanged(int screen, QDisplayInfo::BacklightState state);
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
 #endif
 
 private:

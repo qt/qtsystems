@@ -52,6 +52,7 @@
 #endif
 
 #include <QObject>
+#include <QMetaMethod>
 #include <QPluginLoader>
 #include <QFile>
 #include <QCoreApplication>
@@ -776,10 +777,12 @@ QServiceManager::Error QServiceManager::error() const
 /*!
     \internal
 */
-void QServiceManager::connectNotify(const char *signal)
+void QServiceManager::connectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == QLatin1String(SIGNAL(serviceAdded(QString,QService::Scope)))
-            || QLatin1String(signal) == QLatin1String(SIGNAL(serviceRemoved(QString,QService::Scope)))) {
+    static const QMetaMethod serviceAddedSignal = QMetaMethod::fromSignal(&QServiceManager::serviceAdded);
+    static const QMetaMethod serviceRemovedSignal = QMetaMethod::fromSignal(&QServiceManager::serviceRemoved);
+    if (signal == serviceAddedSignal
+            || signal == serviceRemovedSignal) {
         if (d->scope != QService::SystemScope)
             d->dbManager->setChangeNotificationsEnabled(DatabaseManager::UserScope, true);
         d->dbManager->setChangeNotificationsEnabled(DatabaseManager::SystemScope, true);
@@ -789,12 +792,14 @@ void QServiceManager::connectNotify(const char *signal)
 /*!
     \internal
 */
-void QServiceManager::disconnectNotify(const char *signal)
+void QServiceManager::disconnectNotify(const QMetaMethod &signal)
 {
-    if (QLatin1String(signal) == QLatin1String(SIGNAL(serviceAdded(QString,QService::Scope)))
-            || QLatin1String(signal) == QLatin1String(SIGNAL(serviceRemoved(QString,QService::Scope)))) {
-        if (receivers(SIGNAL(serviceAdded(QString,QService::Scope))) == 0
-                && receivers(SIGNAL(serviceRemoved(QString,QService::Scope))) == 0) {
+    static const QMetaMethod serviceAddedSignal = QMetaMethod::fromSignal(&QServiceManager::serviceAdded);
+    static const QMetaMethod serviceRemovedSignal = QMetaMethod::fromSignal(&QServiceManager::serviceRemoved);
+    if (signal == serviceAddedSignal
+            || signal == serviceRemovedSignal) {
+        if (!isSignalConnected(serviceAddedSignal)
+                && !isSignalConnected(serviceRemovedSignal)) {
             if (d->scope != QService::SystemScope)
                 d->dbManager->setChangeNotificationsEnabled(DatabaseManager::UserScope, false);
             d->dbManager->setChangeNotificationsEnabled(DatabaseManager::SystemScope, false);

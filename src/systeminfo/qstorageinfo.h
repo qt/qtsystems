@@ -83,8 +83,8 @@ Q_SIGNALS:
     void logicalDriveChanged(const QString &drive, bool added);
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
 
 private:
     Q_DISABLE_COPY(QStorageInfo)

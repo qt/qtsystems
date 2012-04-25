@@ -44,6 +44,8 @@
 #include <QServiceManager>
 #include <QServiceFilter>
 
+#include <QMetaMethod>
+
 #if !defined(QT_NO_SFW_NETREG)
 
 QT_BEGIN_NAMESPACE
@@ -318,15 +320,26 @@ QNetworkInfo::NetworkMode QNetworkServiceWrapper::getCurrentNetworkMode(QNetwork
     return mode;
 }
 
-void QNetworkServiceWrapper::connectNotify(const char *signal)
+void QNetworkServiceWrapper::connectNotify(const QMetaMethod &signal)
 {
     QList<int> interfaceIndexes;
     interfaceIndexes = allNetworkManagerInterfaces.keys();
 
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0
+    static const QMetaMethod cellIdChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::cellIdChanged);
+    static const QMetaMethod currentCellDataTechnologyChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentCellDataTechnologyChanged);
+    static const QMetaMethod currentMobileCountryCodeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentMobileCountryCodeChanged);
+    static const QMetaMethod currentMobileNetworkCodeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentMobileNetworkCodeChanged);
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentNetworkModeChanged);
+    static const QMetaMethod locationAreaCodeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::locationAreaCodeChanged);
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkInterfaceCountChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkStatusChanged);
+
+    if (signal == networkInterfaceCountChangedSignal
             && !watchInterfaceCount) {
         watchInterfaceCount = true;
-    } else if (strcmp(signal, SIGNAL(currentCellDataTechnologyChanged(int,QNetworkInfo::CellDataTechnology))) == 0
+    } else if (signal == currentCellDataTechnologyChangedSignal
                && !watchTechnologies) {
         currentCellDataTechnologies.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -334,7 +347,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onTechnologyChanged(const QString&)));
         }
         watchTechnologies = true;
-    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int))) == 0
+    } else if (signal == networkSignalStrengthChangedSignal
                && !watchSignalStrengths) {
         signalStrengths.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -348,7 +361,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
         }
         watchNetworkModes = true;
         watchSignalStrengths = true;
-    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus))) == 0
+    } else if (signal == networkStatusChangedSignal
                && !watchStatuses) {
         networkStatuses.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -362,7 +375,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
         }
         watchNetworkModes = true;
         watchStatuses = true;
-    } else if (strcmp(signal, SIGNAL(currentMobileCountryCodeChanged(int,QString))) == 0
+    } else if (signal == currentMobileCountryCodeChangedSignal
                && !watchCurrentMccs) {
         currentMccs.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -370,7 +383,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(mobileCountryCodeChanged(const QString&)), this, SLOT(onCurrentMccChanged(const QString&)));
         }
         watchCurrentMccs = true;
-    } else if (strcmp(signal, SIGNAL(currentMobileNetworkCodeChanged(int,QString))) == 0
+    } else if (signal == currentMobileNetworkCodeChangedSignal
                && !watchCurrentMncs) {
         currentMncs.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -378,7 +391,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(mobileNetworkCodeChanged(const QString&)), this, SLOT(onCurrentMncChanged(const QString&)));
         }
         watchCurrentMncs = true;
-    } else if (strcmp(signal, SIGNAL(cellIdChanged(int,QString))) == 0
+    } else if (signal == cellIdChangedSignal
                && !watchCellIds) {
         cellIds.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -386,7 +399,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(cellIdChanged(uint)), this, SLOT(onCellIdChanged(uint)));
         }
         watchCellIds = true;
-    } else if (strcmp(signal, SIGNAL(locationAreaCodeChanged(int,QString))) == 0
+    } else if (signal == locationAreaCodeChangedSignal
                && !watchLacs) {
         lacs.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -394,7 +407,7 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
             connect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(locationAreaCodeChanged(uint)), this, SLOT(onLocationAreaCodeChanged(uint)));
         }
         watchLacs = true;
-    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString))) == 0
+    } else if (signal == networkNameChangedSignal
                && !watchOperatorNames) {
         operatorNames.clear();
         foreach (const int interfaceIndex, interfaceIndexes) {
@@ -412,50 +425,61 @@ void QNetworkServiceWrapper::connectNotify(const char *signal)
 }
 
 
-void QNetworkServiceWrapper::disconnectNotify(const char *signal)
+void QNetworkServiceWrapper::disconnectNotify(const QMetaMethod &signal)
 {
     QList<int> interfaceIndexes;
     interfaceIndexes = allNetworkManagerInterfaces.keys();
 
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0
+    static const QMetaMethod cellIdChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::cellIdChanged);
+    static const QMetaMethod currentCellDataTechnologyChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentCellDataTechnologyChanged);
+    static const QMetaMethod currentMobileCountryCodeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentMobileCountryCodeChanged);
+    static const QMetaMethod currentMobileNetworkCodeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentMobileNetworkCodeChanged);
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::currentNetworkModeChanged);
+    static const QMetaMethod locationAreaCodeChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::locationAreaCodeChanged);
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkInterfaceCountChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkServiceWrapper::networkStatusChanged);
+
+    if (signal == networkInterfaceCountChangedSignal
             && watchInterfaceCount) {
         watchInterfaceCount = false;
-    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int))) == 0
+    } else if (signal == networkSignalStrengthChangedSignal
                && watchSignalStrengths) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(signalBarsChanged(int)), this, SLOT(onSignalStrengthChanged(int)));
         watchSignalStrengths = false;
-    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus))) == 0
+    } else if (signal == networkStatusChangedSignal
                && watchStatuses) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(registrationStatusChanged(const QString&)), this, SLOT(onNetworkStatusChanged(const QString&)));
         watchStatuses = false;
-    } else if (strcmp(signal, SIGNAL(currentMobileCountryCodeChanged(int,QString))) == 0
+    } else if (signal == currentMobileCountryCodeChangedSignal
                && watchCurrentMccs) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(mobileCountryCodeChanged(const QString&)), this, SLOT(onCurrentMccChanged(const QString&)));
         watchCurrentMccs = false;
-    } else if (strcmp(signal, SIGNAL(currentMobileNetworkCodeChanged(int,QString))) == 0
+    } else if (signal == currentMobileNetworkCodeChangedSignal
                && watchCurrentMncs) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(mobileNetworkCodeChanged(const QString&)), this, SLOT(onCurrentMncChanged(const QString&)));
         watchCurrentMncs = false;
-    } else if (strcmp(signal, SIGNAL(cellIdChanged(int,QString))) == 0
+    } else if (signal == cellIdChangedSignal
                && watchCellIds) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(cellIdChanged(uint)), this, SLOT(onCellIdChanged(uint)));
         watchCellIds = false;
-    } else if (strcmp(signal, SIGNAL(locationAreaCodeChanged(int,QString))) == 0
+    } else if (signal == locationAreaCodeChangedSignal
                && watchLacs) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(locationAreaCodeChanged(uint)), this, SLOT(onLocationAreaCodeChanged(uint)));
         watchLacs = false;
-    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString))) == 0
+    } else if (signal == networkNameChangedSignal
                && watchOperatorNames) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(providerNameChanged(const QString&)), this, SLOT(onOperatorNameChanged(const QString&)));
         watchOperatorNames = false;
-    } else if (strcmp(signal, SIGNAL(currentCellDataTechnologyChanged(int,QNetworkInfo::CellDataTechnology))) == 0
+    } else if (signal == currentCellDataTechnologyChangedSignal
                && watchTechnologies) {
         foreach (const int interfaceIndex, interfaceIndexes)
             disconnect(loadedNetworkManagerInterfaces.value(interfaceIndex), SIGNAL(technologyChanged(const QString&)), this, SLOT(onTechnologyChanged(const QString&)));

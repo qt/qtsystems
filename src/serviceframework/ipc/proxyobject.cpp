@@ -44,6 +44,7 @@
 #include "qremoteserviceregisterentry_p.h"
 #include "qservicedebuglog_p.h"
 
+#include <qmetaobject.h>
 #include <qtimer.h>
 #include <qcoreevent.h>
 
@@ -281,6 +282,7 @@ public:
     QMetaObject* meta;
     ObjectEndPoint* endPoint;
     int ipcfailure;
+    QMetaMethod ipcFailureSignal;
     int timerId;
 };
 
@@ -299,7 +301,8 @@ QServiceProxyBase::QServiceProxyBase(ObjectEndPoint *endpoint, QObject *parent)
     QMetaMethodBuilder b = sup.addSignal("errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)");
     d->ipcfailure = b.index();
     d->meta = sup.toMetaObject();
-
+    d->ipcFailureSignal = d->meta->method(d->meta->methodOffset());
+    Q_ASSERT(d->ipcFailureSignal.methodSignature() == "errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)");
 }
 
 QServiceProxyBase::~QServiceProxyBase()
@@ -309,9 +312,9 @@ QServiceProxyBase::~QServiceProxyBase()
     delete d;
 }
 
-void QServiceProxyBase::connectNotify(const char *signal)
+void QServiceProxyBase::connectNotify(const QMetaMethod &signal)
 {
-    if (d->timerId > 0 && strcmp(SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)), signal) == 0) {
+    if (d->timerId > 0 && signal == d->ipcFailureSignal) {
         killTimer(d->timerId);
         d->timerId = -1;
     }

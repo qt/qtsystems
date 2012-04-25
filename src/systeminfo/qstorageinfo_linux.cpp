@@ -43,6 +43,7 @@
 
 #include <QtCore/qfile.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qsocketnotifier.h>
 
 #include <errno.h>
@@ -277,15 +278,17 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
     return type;
 }
 
-void QStorageInfoPrivate::connectNotify(const char *signal)
+void QStorageInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0)
+    static const QMetaMethod logicalDriveChangedSignal = QMetaMethod::fromSignal(&QStorageInfoPrivate::logicalDriveChanged);
+    if (signal == logicalDriveChangedSignal)
         setupWatcher();
 }
 
-void QStorageInfoPrivate::disconnectNotify(const char *signal)
+void QStorageInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0)
+    static const QMetaMethod logicalDriveChangedSignal = QMetaMethod::fromSignal(&QStorageInfoPrivate::logicalDriveChanged);
+    if (signal == logicalDriveChangedSignal)
         cleanupWatcher();
 }
 

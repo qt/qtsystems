@@ -52,6 +52,7 @@
 #include "qscreensaver_linux_p.h"
 
 #include <QtCore/qdir.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qprocess.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qtimer.h>
@@ -396,14 +397,19 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
     return QString();
 }
 
-void QDeviceInfoPrivate::connectNotify(const char *signal)
+extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
+
+void QDeviceInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
 #if !defined(QT_NO_JSONDB)
-    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
-            || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
+    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::activatedLocksChanged);
+    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::enabledLocksChanged);
+    if (signal == activatedLocksChangedSignal
+            || signal == enabledLocksChangedSignal) {
         if (!jsondbWrapper)
             jsondbWrapper = new QJsonDbWrapper(this);
-        connect(jsondbWrapper, signal, this, signal, Qt::UniqueConnection);
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, jsondbWrapper);
+        connect(jsondbWrapper, sourceSignal, this, signal, Qt::UniqueConnection);
         return;
     }
 #endif // // QT_NO_JSONDB
@@ -417,24 +423,29 @@ void QDeviceInfoPrivate::connectNotify(const char *signal)
     if (!timer->isActive())
         timer->start();
 
-    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
+    static const QMetaMethod thermalStateChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::thermalStateChanged);
+    if (signal == thermalStateChangedSignal) {
         watchThermalState = true;
         currentThermalState = getThermalState();
     }
 }
 
-void QDeviceInfoPrivate::disconnectNotify(const char *signal)
+void QDeviceInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
 #if !defined(QT_NO_JSONDB)
-    if ((strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
-         || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
+    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::activatedLocksChanged);
+    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::enabledLocksChanged);
+    if ((signal == activatedLocksChangedSignal
+         || signal == enabledLocksChangedSignal)
             && jsondbWrapper) {
-        disconnect(jsondbWrapper, signal, this, signal);
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, jsondbWrapper);
+        disconnect(jsondbWrapper, sourceSignal, this, signal);
         return;
     }
 #endif // QT_NO_JSONDB
 
-    if (strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState))) == 0) {
+    static const QMetaMethod thermalStateChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::thermalStateChanged);
+    if (signal == thermalStateChangedSignal) {
         watchThermalState = false;
         currentThermalState = QDeviceInfo::UnknownThermal;
     }

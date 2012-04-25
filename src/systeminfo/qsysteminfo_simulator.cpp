@@ -51,6 +51,8 @@
 #  include "qnetworkinfo_linux_p.h"
 #endif
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 // QBatteryInfoSimulator
@@ -147,31 +149,53 @@ QBatteryInfo::BatteryStatus QBatteryInfoSimulator::batteryStatus(int battery)
     return QBatteryInfo::BatteryStatusUnknown;
 }
 
-void QBatteryInfoSimulator::connectNotify(const char *signal)
+extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
+
+void QBatteryInfoSimulator::connectNotify(const QMetaMethod &signal)
 {
-    if (batteryInfoSimulatorBackend && (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0
-                                        || strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0
-                                        || strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0
-                                        || strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0)) {
-        connect(batteryInfoSimulatorBackend, signal, this, signal);
+    static const QMetaMethod batteryCountChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::batteryCountChanged);
+    static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::chargerTypeChanged);
+    static const QMetaMethod chargingStateChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::chargingStateChanged);
+    static const QMetaMethod currentFlowChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::currentFlowChanged);
+    static const QMetaMethod remainingCapacityChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::remainingCapacityChanged);
+    static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::remainingChargingTimeChanged);
+    static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::voltageChanged);
+    static const QMetaMethod batteryStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::batteryStatusChanged);
+
+    if (batteryInfoSimulatorBackend && (signal == batteryCountChangedSignal
+                                        || signal == currentFlowChangedSignal
+                                        || signal == voltageChangedSignal
+                                        || signal == remainingCapacityChangedSignal
+                                        || signal == remainingChargingTimeChangedSignal
+                                        || signal == chargerTypeChangedSignal
+                                        || signal == chargingStateChangedSignal
+                                        || signal == batteryStatusChangedSignal)) {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, batteryInfoSimulatorBackend);
+        connect(batteryInfoSimulatorBackend, sourceSignal, this, signal);
     }
 }
 
-void QBatteryInfoSimulator::disconnectNotify(const char *signal)
+void QBatteryInfoSimulator::disconnectNotify(const QMetaMethod &signal)
 {
-    if (batteryInfoSimulatorBackend && (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0
-                                        || strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0
-                                        || strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0
-                                        || strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0
-                                        || strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0)) {
-        disconnect(batteryInfoSimulatorBackend, signal, this, signal);
+    static const QMetaMethod batteryCountChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::batteryCountChanged);
+    static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::chargerTypeChanged);
+    static const QMetaMethod chargingStateChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::chargingStateChanged);
+    static const QMetaMethod currentFlowChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::currentFlowChanged);
+    static const QMetaMethod remainingCapacityChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::remainingCapacityChanged);
+    static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::remainingChargingTimeChanged);
+    static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::voltageChanged);
+    static const QMetaMethod batteryStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::batteryStatusChanged);
+
+    if (batteryInfoSimulatorBackend && (signal == batteryCountChangedSignal
+                                        || signal == currentFlowChangedSignal
+                                        || signal == voltageChangedSignal
+                                        || signal == remainingCapacityChangedSignal
+                                        || signal == remainingChargingTimeChangedSignal
+                                        || signal == chargerTypeChangedSignal
+                                        || signal == chargingStateChangedSignal
+                                        || signal == batteryStatusChangedSignal)) {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, batteryInfoSimulatorBackend);
+        disconnect(batteryInfoSimulatorBackend, sourceSignal, this, signal);
     }
 }
 
@@ -302,42 +326,62 @@ QString QDeviceInfoSimulator::version(QDeviceInfo::Version type)
     return QString();
 }
 
-void QDeviceInfoSimulator::connectNotify(const char *signal)
+void QDeviceInfoSimulator::connectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
-            || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
+    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::activatedLocksChanged);
+    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::enabledLocksChanged);
+    static const QMetaMethod thermalStateChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::thermalStateChanged);
+
+    if (signal == activatedLocksChangedSignal
+            || signal == enabledLocksChangedSignal) {
 #if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-        if (d_ptr)
-            connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+        if (d_ptr) {
+            QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+            connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
+        }
         return;
 #else
-        if (deviceInfoSimulatorBackend)
-            connect(deviceInfoSimulatorBackend, signal, this, signal);
+        if (deviceInfoSimulatorBackend) {
+            QMetaMethod sourceSignal = proxyToSourceSignal(signal, deviceInfoSimulatorBackend);
+            connect(deviceInfoSimulatorBackend, sourceSignal, this, signal);
+        }
         return;
 #endif
     }
 
-    if (deviceInfoSimulatorBackend && strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState state))) == 0)
-        connect(deviceInfoSimulatorBackend, signal, this, signal);
+    if (deviceInfoSimulatorBackend && signal == thermalStateChangedSignal) {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, deviceInfoSimulatorBackend);
+        connect(deviceInfoSimulatorBackend, sourceSignal, this, signal);
+    }
 }
 
-void QDeviceInfoSimulator::disconnectNotify(const char *signal)
+void QDeviceInfoSimulator::disconnectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0
-            || strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0) {
+    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::activatedLocksChanged);
+    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::enabledLocksChanged);
+    static const QMetaMethod thermalStateChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::thermalStateChanged);
+
+    if (signal == activatedLocksChangedSignal
+            || signal == enabledLocksChangedSignal) {
 #if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-        if (d_ptr)
-            disconnect(d_ptr, signal, this, signal);
+        if (d_ptr) {
+            QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+            disconnect(d_ptr, sourceSignal, this, signal);
+        }
         return;
 #else
-        if (deviceInfoSimulatorBackend)
-            disconnect(deviceInfoSimulatorBackend, signal, this, signal);
+        if (deviceInfoSimulatorBackend) {
+            QMetaMethod sourceSignal = proxyToSourceSignal(signal, deviceInfoSimulatorBackend);
+            disconnect(deviceInfoSimulatorBackend, sourceSignal, this, signal);
+        }
         return;
 #endif
     }
 
-    if (deviceInfoSimulatorBackend && strcmp(signal, SIGNAL(thermalStateChanged(QDeviceInfo::ThermalState state))) == 0)
-        disconnect(deviceInfoSimulatorBackend, signal, this, signal);
+    if (deviceInfoSimulatorBackend && signal == thermalStateChangedSignal) {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, deviceInfoSimulatorBackend);
+        disconnect(deviceInfoSimulatorBackend, sourceSignal, this, signal);
+    }
 }
 
 // QNetworkInfoSimulator
@@ -579,82 +623,98 @@ QString QNetworkInfoSimulator::networkName(QNetworkInfo::NetworkMode mode, int i
     return QString();
 }
 
-void QNetworkInfoSimulator::connectNotify(const char *signal)
+void QNetworkInfoSimulator::connectNotify(const QMetaMethod &signal)
 {
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkInterfaceCountChanged);
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::currentNetworkModeChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkStatusChanged);
+
 #if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+    if (signal == networkInterfaceCountChangedSignal) {
         if (networkInfoSimulatorBackend)
-            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), Qt::UniqueConnection);
+            connect(networkInfoSimulatorBackend, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), Qt::UniqueConnection);
         if (d_ptr)
-            connect(d_ptr, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), Qt::UniqueConnection);
+            connect(d_ptr, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), Qt::UniqueConnection);
         return;
-    } else if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)))  == 0) {
+    } else if (signal == currentNetworkModeChangedSignal) {
         if (networkInfoSimulatorBackend)
-            connect(networkInfoSimulatorBackend, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)), Qt::UniqueConnection);
+            connect(networkInfoSimulatorBackend, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)), this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)), Qt::UniqueConnection);
         if (d_ptr)
-            connect(d_ptr, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)), Qt::UniqueConnection);
+            connect(d_ptr, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)), this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)), Qt::UniqueConnection);
         return;
-    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)))  == 0) {
+    } else if (signal == networkNameChangedSignal) {
         if (networkInfoSimulatorBackend)
-            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)), Qt::UniqueConnection);
+            connect(networkInfoSimulatorBackend, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)), this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)), Qt::UniqueConnection);
         if (d_ptr)
-            connect(d_ptr, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)), Qt::UniqueConnection);
+            connect(d_ptr, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)), this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)), Qt::UniqueConnection);
         return;
-    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)))  == 0) {
+    } else if (signal == networkSignalStrengthChangedSignal) {
         if (networkInfoSimulatorBackend)
-            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), Qt::UniqueConnection);
+            connect(networkInfoSimulatorBackend, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), Qt::UniqueConnection);
         if (d_ptr)
-            connect(d_ptr, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), Qt::UniqueConnection);
+            connect(d_ptr, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), Qt::UniqueConnection);
         return;
-    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)))  == 0) {
+    } else if (signal == networkStatusChangedSignal) {
         if (networkInfoSimulatorBackend)
-            connect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), Qt::UniqueConnection);
+            connect(networkInfoSimulatorBackend, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), Qt::UniqueConnection);
         if (d_ptr)
-            connect(d_ptr, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), Qt::UniqueConnection);
+            connect(d_ptr, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), Qt::UniqueConnection);
         return;
     }
 #endif
-    if (networkInfoSimulatorBackend)
-        connect(networkInfoSimulatorBackend, signal, this, signal, Qt::UniqueConnection);
+    if (networkInfoSimulatorBackend) {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, networkInfoSimulatorBackend);
+        connect(networkInfoSimulatorBackend, sourceSignal, this, signal, Qt::UniqueConnection);
+    }
 }
 
-void QNetworkInfoSimulator::disconnectNotify(const char *signal)
+void QNetworkInfoSimulator::disconnectNotify(const QMetaMethod &signal)
 {
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkInterfaceCountChanged);
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::currentNetworkModeChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkStatusChanged);
+
 #if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+    if (signal == networkInterfaceCountChangedSignal) {
         if (networkInfoSimulatorBackend)
-            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
+            disconnect(networkInfoSimulatorBackend, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
         if (d_ptr)
-            disconnect(d_ptr, signal, this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
+            disconnect(d_ptr, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
         return;
-    } else if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)))  == 0) {
+    } else if (signal == currentNetworkModeChangedSignal) {
         if (networkInfoSimulatorBackend)
-            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)));
+            disconnect(networkInfoSimulatorBackend, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)), this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)));
         if (d_ptr)
-            disconnect(d_ptr, signal, this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)));
+            disconnect(d_ptr, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)), this, SLOT(onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode)));
         return;
-    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)))  == 0) {
+    } else if (signal == networkNameChangedSignal) {
         if (networkInfoSimulatorBackend)
-            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
+            disconnect(networkInfoSimulatorBackend, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)), this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
         if (d_ptr)
-            disconnect(d_ptr, signal, this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
+            disconnect(d_ptr, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString)), this, SLOT(onNetworkNameChanged(QNetworkInfo::NetworkMode,int,QString)));
         return;
-    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)))  == 0) {
+    } else if (signal == networkSignalStrengthChangedSignal) {
         if (networkInfoSimulatorBackend)
-            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)));
+            disconnect(networkInfoSimulatorBackend, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)));
         if (d_ptr)
-            disconnect(d_ptr, signal, this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)));
+            disconnect(d_ptr, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)), this, SLOT(onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int)));
         return;
-    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)))  == 0) {
+    } else if (signal == networkStatusChangedSignal) {
         if (networkInfoSimulatorBackend)
-            disconnect(networkInfoSimulatorBackend, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)));
+            disconnect(networkInfoSimulatorBackend, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)));
         if (d_ptr)
-            disconnect(d_ptr, signal, this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)));
+            disconnect(d_ptr, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)), this, SLOT(onNetworkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus)));
         return;
     }
 #endif
-    if (networkInfoSimulatorBackend)
-        disconnect(networkInfoSimulatorBackend, signal, this, signal);
+    if (networkInfoSimulatorBackend) {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, networkInfoSimulatorBackend);
+        disconnect(networkInfoSimulatorBackend, sourceSignal, this, signal);
+    }
 }
 
 #if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)

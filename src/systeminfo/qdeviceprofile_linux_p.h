@@ -81,8 +81,8 @@ Q_SIGNALS:
     void currentProfileTypeChanged(QDeviceProfile::ProfileType profile);
 
 protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
 
 private:
     QDeviceProfile * const q_ptr;

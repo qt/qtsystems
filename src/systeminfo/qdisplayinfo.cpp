@@ -41,6 +41,7 @@
 
 #include <qdisplayinfo.h>
 
+#include <QtCore/qmetaobject.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qplatformscreen_qpa.h>
@@ -210,13 +211,16 @@ int QDisplayInfo::physicalWidth(int screen) const
     return -1;
 }
 
+extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
+
 /*!
     \internal
 */
-void QDisplayInfo::connectNotify(const char *signal)
+void QDisplayInfo::connectNotify(const QMetaMethod &signal)
 {
 #if (defined(Q_OS_LINUX) || defined(QT_SIMULATOR)) && !defined(QT_NO_JSONDB)
-    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
 #endif
@@ -225,14 +229,15 @@ void QDisplayInfo::connectNotify(const char *signal)
 /*!
     \internal
 */
-void QDisplayInfo::disconnectNotify(const char *signal)
+void QDisplayInfo::disconnectNotify(const QMetaMethod &signal)
 {
 #if (defined(Q_OS_LINUX) || defined(QT_SIMULATOR)) && !defined(QT_NO_JSONDB)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (receivers(signal) > 0)
+    if (isSignalConnected(signal))
         return;
 
-    disconnect(d_ptr, signal, this, signal);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    disconnect(d_ptr, sourceSignal, this, signal);
 #else
     Q_UNUSED(signal)
 #endif

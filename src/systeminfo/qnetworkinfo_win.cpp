@@ -41,6 +41,8 @@
 
 #include "qnetworkinfo_win_p.h"
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
@@ -268,12 +270,12 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
     return QString();
 }
 
-void QNetworkInfoPrivate::connectNotify(const char *signal)
+void QNetworkInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
     Q_UNUSED(signal)
 }
 
-void QNetworkInfoPrivate::disconnectNotify(const char *signal)
+void QNetworkInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
     Q_UNUSED(signal)
 }

@@ -79,8 +79,8 @@ Q_SIGNALS:
     void contentsChanged();
 
 protected:
-    virtual void connectNotify(const char *signal);
-    virtual void disconnectNotify(const char *signal);
+    virtual void connectNotify(const QMetaMethod &signal);
+    virtual void disconnectNotify(const QMetaMethod &signal);
 
 private:
     QVariant valuex(const QVariant &def = QVariant()) const;

@@ -75,6 +75,8 @@ public:
 QT_END_NAMESPACE
 #endif
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -351,13 +353,16 @@ QString QNetworkInfo::networkName(QNetworkInfo::NetworkMode mode, int interface)
     return d_ptr->networkName(mode, interface);
 }
 
+extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
+
 /*!
     \internal
 */
-void QNetworkInfo::connectNotify(const char *signal)
+void QNetworkInfo::connectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
-    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
 #endif
@@ -366,14 +371,15 @@ void QNetworkInfo::connectNotify(const char *signal)
 /*!
     \internal
 */
-void QNetworkInfo::disconnectNotify(const char *signal)
+void QNetworkInfo::disconnectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (receivers(signal) > 0)
+    if (isSignalConnected(signal))
         return;
 
-    disconnect(d_ptr, signal, this, signal);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    disconnect(d_ptr, sourceSignal, this, signal);
 #else
     Q_UNUSED(signal)
 #endif

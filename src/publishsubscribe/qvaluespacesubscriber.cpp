@@ -44,6 +44,7 @@
 #include "qvaluespacemanager_p.h"
 #include "qvaluespacesubscriber_p.h"
 
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qset.h>
 #include <QtCore/qstringlist.h>
 
@@ -461,18 +462,20 @@ QVariant QValueSpaceSubscriber::valuex(const QVariant &def) const
 /*!
     \reimp
 */
-void QValueSpaceSubscriber::connectNotify(const char *signal)
+void QValueSpaceSubscriber::connectNotify(const QMetaMethod &signal)
 {
-    if (isConnected() && qstrcmp(signal, SIGNAL(contentsChanged())) == 0)
+    static const QMetaMethod contentsChangedSignal = QMetaMethod::fromSignal(&QValueSpaceSubscriber::contentsChanged);
+    if (isConnected() && signal == contentsChangedSignal)
         d->connect(this);
 }
 
 /*!
     \reimp
 */
-void QValueSpaceSubscriber::disconnectNotify(const char *signal)
+void QValueSpaceSubscriber::disconnectNotify(const QMetaMethod &signal)
 {
-    if (isConnected() && qstrcmp(signal, SIGNAL(contentsChanged())) == 0)
+    static const QMetaMethod contentsChangedSignal = QMetaMethod::fromSignal(&QValueSpaceSubscriber::contentsChanged);
+    if (isConnected() && signal == contentsChangedSignal)
         d->disconnect(this);
 }
 

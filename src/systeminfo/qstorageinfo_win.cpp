@@ -42,6 +42,7 @@
 #include "qstorageinfo_win_p.h"
 
 #include <QtCore/qdir.h>
+#include <QtCore/qmetaobject.h>
 
 #include <windows.h>
 
@@ -111,15 +112,17 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
     };
 }
 
-void QStorageInfoPrivate::connectNotify(const char *signal)
+void QStorageInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0) {
+    static const QMetaMethod logicalDriveChangedSignal = QMetaMethod::fromSignal(&QStorageInfoPrivate::logicalDriveChanged);
+    if (signal == logicalDriveChangedSignal) {
     }
 }
 
-void QStorageInfoPrivate::disconnectNotify(const char *signal)
+void QStorageInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(logicalDriveChanged(QString,bool))) == 0) {
+    static const QMetaMethod logicalDriveChangedSignal = QMetaMethod::fromSignal(&QStorageInfoPrivate::logicalDriveChanged);
+    if (signal == logicalDriveChangedSignal) {
     }
 }
 

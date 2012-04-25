@@ -74,7 +74,7 @@ public Q_SLOTS:
     void setValue(const QString &name, const QVariant &data);
 
 protected:
-    virtual void connectNotify(const char *);
+    virtual void connectNotify(const QMetaMethod &);
 
 private:
     Q_DISABLE_COPY(QValueSpacePublisher)

@@ -49,6 +49,7 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qtimer.h>
 #if !defined(QT_NO_BLUEZ)
@@ -451,23 +452,35 @@ QString QNetworkInfoPrivate::networkName(QNetworkInfo::NetworkMode mode, int int
         return getNetworkName(mode, interface);
 }
 
-void QNetworkInfoPrivate::connectNotify(const char *signal)
+extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
+
+void QNetworkInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
 #if !defined(QT_NO_SFW_NETREG)
     if (!networkServiceWrapper)
         networkServiceWrapper = new QNetworkServiceWrapper(this);
-    connect(networkServiceWrapper, signal, this, signal, Qt::UniqueConnection);
+    {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, networkServiceWrapper);
+        connect(networkServiceWrapper, sourceSignal, this, signal, Qt::UniqueConnection);
+    }
 #elif !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
-        connect(ofonoWrapper, signal, this, signal, Qt::UniqueConnection);
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, ofonoWrapper);
+        connect(ofonoWrapper, sourceSignal, this, signal, Qt::UniqueConnection);
     }
 #endif
 
-//    we always monitor "networkInterfaceCount" , as long as users connect any signals,
-//    with update to date network interface counts, we can compute network mode, strength,
-//    status, name properties in an efficient way
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::currentNetworkModeChanged);
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkInterfaceCountChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkStatusChanged);
+
+    //    we always monitor "networkInterfaceCount" , as long as users connect any signals,
+    //    with update to date network interface counts, we can compute network mode, strength,
+    //    status, name properties in an efficient way
     if (!watchNetworkInterfaceCount) {
         QList<QNetworkInfo::NetworkMode> modes;
         modes << QNetworkInfo::WlanMode << QNetworkInfo::EthernetMode << QNetworkInfo::BluetoothMode;
@@ -489,7 +502,7 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
         watchNetworkInterfaceCount = true;
     }
 
-    if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode))) == 0) {
+    if (signal == currentNetworkModeChangedSignal) {
 //        we monitor "networkStatus" by default, as long as currentNetworkModeChanged signal
 //        is connected, with always up to date network status, current network mode can
 //        be fast computed.
@@ -506,9 +519,7 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
         }
         currentMode = getCurrentNetworkMode();
         watchCurrentNetworkMode = true;
-    }
-
-    if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int))) == 0) {
+    } else if (signal == networkSignalStrengthChangedSignal) {
         QList<QNetworkInfo::NetworkMode> modes;
         modes << QNetworkInfo::WlanMode << QNetworkInfo::EthernetMode << QNetworkInfo::BluetoothMode;
         networkSignalStrengths.clear();
@@ -519,7 +530,7 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
         }
 
         watchNetworkSignalStrength = true;
-    } else if (strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus))) == 0) {
+    } else if (signal == networkStatusChangedSignal) {
         QList<QNetworkInfo::NetworkMode> modes;
         modes << QNetworkInfo::WlanMode << QNetworkInfo::EthernetMode << QNetworkInfo::BluetoothMode;
         networkStatuses.clear();
@@ -530,7 +541,7 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
         }
 
         watchNetworkStatus = true;
-    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString))) == 0) {
+    } else if (signal == networkNameChangedSignal) {
         QList<QNetworkInfo::NetworkMode> modes;
         modes << QNetworkInfo::WlanMode << QNetworkInfo::EthernetMode << QNetworkInfo::BluetoothMode;
         networkNames.clear();
@@ -541,7 +552,7 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
         }
 
         watchNetworkName = true;
-    } else if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode))) == 0) {
+    } else if (signal == currentNetworkModeChangedSignal) {
         currentMode = getCurrentNetworkMode();
         watchCurrentNetworkMode = true;
     } else {
@@ -558,33 +569,44 @@ void QNetworkInfoPrivate::connectNotify(const char *signal)
         timer->start();
 }
 
-void QNetworkInfoPrivate::disconnectNotify(const char *signal)
+void QNetworkInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
 #if !defined(QT_NO_SFW_NETREG)
-    if (networkServiceWrapper)
-        disconnect(networkServiceWrapper, signal, this, signal);
+    if (networkServiceWrapper) {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, networkServiceWrapper);
+        disconnect(networkServiceWrapper, sourceSignal, this, signal);
+    }
 #elif !defined(QT_NO_OFONO)
     if (!QOfonoWrapper::isOfonoAvailable() || !ofonoWrapper)
         return;
 
-    disconnect(ofonoWrapper, signal, this, signal);
+    {
+        QMetaMethod sourceSignal = proxyToSourceSignal(signal, ofonoWrapper);
+        disconnect(ofonoWrapper, sourceSignal, this, signal);
+    }
 #endif
 
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0
-        && !watchNetworkStatus && !watchNetworkName && !watchNetworkSignalStrength ) {
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::currentNetworkModeChanged);
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkInterfaceCountChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkStatusChanged);
+
+    if (signal == networkInterfaceCountChangedSignal
+            && !watchNetworkStatus && !watchNetworkName && !watchNetworkSignalStrength ) {
 #if !defined(QT_NO_UDEV)
         udevNotifier->setEnabled(false);
         watchNetworkInterfaceCount = false;
         return;
 #endif // QT_NO_UDEV
         watchNetworkInterfaceCount = false;
-    } else if (strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int,int))) == 0) {
+    } else if (signal == networkSignalStrengthChangedSignal) {
         watchNetworkSignalStrength = false;
-    } else if (!watchCurrentNetworkMode && strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,int,QNetworkInfo::NetworkStatus))) == 0) {
+    } else if ((!watchCurrentNetworkMode) && (signal == networkStatusChangedSignal)) {
         watchNetworkStatus = false;
-    } else if (strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,int,QString))) == 0) {
+    } else if (signal == networkNameChangedSignal) {
         watchNetworkName = false;
-    } else if (strcmp(signal, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode))) == 0) {
+    } else if (signal == currentNetworkModeChangedSignal) {
         watchCurrentNetworkMode = false;
     } else {
         return;

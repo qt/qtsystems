@@ -47,6 +47,7 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -151,18 +152,20 @@ void QDisplayInfoPrivate::onBacklightStateChanged(int screen, QDisplayInfo::Back
     }
 }
 
-void QDisplayInfoPrivate::connectNotify(const char *signal)
+void QDisplayInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
-    if (!backlightStateWatcher && strcmp(signal, SIGNAL(backlightStateChanged(int,QDisplayInfo::BacklightState))) == 0) {
+    static const QMetaMethod backlightStateChangedSignal = QMetaMethod::fromSignal(&QDisplayInfoPrivate::backlightStateChanged);
+    if (!backlightStateWatcher && signal == backlightStateChangedSignal) {
        backlightStateWatcher = true;
        if (backlightStates.size() == 0)
           backlightState(0);
     }
 }
 
-void QDisplayInfoPrivate::disconnectNotify(const char *signal)
+void QDisplayInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(backlightStateChanged(int, QDisplayInfo::BacklightState))) == 0 && jsondbWrapper) {
+    static const QMetaMethod backlightStateChangedSignal = QMetaMethod::fromSignal(&QDisplayInfoPrivate::backlightStateChanged);
+    if (signal == backlightStateChangedSignal && jsondbWrapper) {
         backlightStateWatcher = false;
     }
 }

@@ -41,6 +41,7 @@
 
 #include "qofonowrapper_p.h"
 
+#include <QtCore/qmetaobject.h>
 #include <QtDBus/qdbusconnection.h>
 #include <QtDBus/qdbusconnectioninterface.h>
 #include <QtDBus/qdbusmetatype.h>
@@ -239,9 +240,20 @@ QString QOfonoWrapper::imei(const QString &modemPath)
     return reply.value().value(QString(QStringLiteral("Serial"))).toString();
 }
 
-void QOfonoWrapper::connectNotify(const char *signal)
+void QOfonoWrapper::connectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+    static const QMetaMethod cellIdChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::cellIdChanged);
+    static const QMetaMethod currentCellDataTechnologyChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentCellDataTechnologyChanged);
+    static const QMetaMethod currentMobileCountryCodeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentMobileCountryCodeChanged);
+    static const QMetaMethod currentMobileNetworkCodeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentMobileNetworkCodeChanged);
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentNetworkModeChanged);
+    static const QMetaMethod locationAreaCodeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::locationAreaCodeChanged);
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkInterfaceCountChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkStatusChanged);
+
+    if (signal == networkInterfaceCountChangedSignal) {
         allModemPaths = getAllModems();
         QDBusConnection::systemBus().connect(*OFONO_SERVICE(), *OFONO_MANAGER_PATH(), *OFONO_MANAGER_INTERFACE(),
                                              QString(QStringLiteral("ModemAdded")),
@@ -250,14 +262,14 @@ void QOfonoWrapper::connectNotify(const char *signal)
                                              QString(QStringLiteral("ModemRemoved")),
                                              this, SLOT(onOfonoModemRemoved(QDBusObjectPath)));
         watchAllModems = true;
-    } else if (strcmp(signal, SIGNAL(currentMobileCountryCodeChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(currentMobileNetworkCodeChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(cellIdChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(currentCellDataTechnologyChanged(int,QNetworkInfo::CellDataTechnology))) == 0
-               || strcmp(signal, SIGNAL(locationAreaCodeChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,QString))) == 0
-               || strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int))) == 0
-               || strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,QNetworkInfo::NetworkStatus))) == 0) {
+    } else if (signal == currentMobileCountryCodeChangedSignal
+               || signal == currentMobileNetworkCodeChangedSignal
+               || signal == cellIdChangedSignal
+               || signal == currentCellDataTechnologyChangedSignal
+               || signal == locationAreaCodeChangedSignal
+               || signal == networkNameChangedSignal
+               || signal == networkSignalStrengthChangedSignal
+               || signal == networkStatusChangedSignal) {
         signalStrengths.clear();
         currentCellDataTechnologies.clear();
         networkStatuses.clear();
@@ -286,9 +298,20 @@ void QOfonoWrapper::connectNotify(const char *signal)
     }
 }
 
-void QOfonoWrapper::disconnectNotify(const char *signal)
+void QOfonoWrapper::disconnectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int))) == 0) {
+    static const QMetaMethod cellIdChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::cellIdChanged);
+    static const QMetaMethod currentCellDataTechnologyChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentCellDataTechnologyChanged);
+    static const QMetaMethod currentMobileCountryCodeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentMobileCountryCodeChanged);
+    static const QMetaMethod currentMobileNetworkCodeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentMobileNetworkCodeChanged);
+    static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::currentNetworkModeChanged);
+    static const QMetaMethod locationAreaCodeChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::locationAreaCodeChanged);
+    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkInterfaceCountChanged);
+    static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkNameChanged);
+    static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkSignalStrengthChanged);
+    static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QOfonoWrapper::networkStatusChanged);
+
+    if (signal == networkInterfaceCountChangedSignal) {
         QDBusConnection::systemBus().disconnect(*OFONO_SERVICE(), *OFONO_MANAGER_PATH(), *OFONO_MANAGER_INTERFACE(),
                                                 QString(QStringLiteral("ModemAdded")),
                                                 this, SLOT(onOfonoModemAdded(QDBusObjectPath)));
@@ -296,14 +319,14 @@ void QOfonoWrapper::disconnectNotify(const char *signal)
                                                 QString(QStringLiteral("ModemRemoved")),
                                                 this, SLOT(onOfonoModemRemoved(QDBusObjectPath)));
         watchAllModems = false;
-    } else if (strcmp(signal, SIGNAL(currentMobileCountryCodeChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(currentMobileNetworkCodeChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(cellIdChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(currentCellDataTechnologyChanged(int,QNetworkInfo::CellDataTechnology))) == 0
-               || strcmp(signal, SIGNAL(locationAreaCodeChanged(int,QString))) == 0
-               || strcmp(signal, SIGNAL(networkNameChanged(QNetworkInfo::NetworkMode,QString))) == 0
-               || strcmp(signal, SIGNAL(networkSignalStrengthChanged(QNetworkInfo::NetworkMode,int))) == 0
-               || strcmp(signal, SIGNAL(networkStatusChanged(QNetworkInfo::NetworkMode,QNetworkInfo::NetworkStatus))) == 0) {
+    } else if (signal == currentMobileCountryCodeChanged
+               || signal == currentMobileNetworkCodeChangedSignal
+               || signal == cellIdChangedSignal
+               || signal == currentCellDataTechnologyChangedSignal
+               || signal == locationAreaCodeChangedSignal
+               || signal == networkNameChangedSignal
+               || signal == networkSignalStrengthChangedSignal
+               || signal == networkStatusChangedSignal) {
         QStringList modems = allModems();
         foreach (const QString &modem, modems) {
             QDBusConnection::systemBus().disconnect(*OFONO_SERVICE(),

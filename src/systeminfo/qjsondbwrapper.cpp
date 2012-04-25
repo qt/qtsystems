@@ -42,6 +42,7 @@
 #include "qjsondbwrapper_p.h"
 
 #include <QtCore/qeventloop.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qtimer.h>
 #include <QtJsonDb/qjsondbreadrequest.h>
 #include <QtJsonDb/qjsondbwatcher.h>
@@ -185,19 +186,26 @@ QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const
     return QJsonValue();
 }
 
-void QJsonDbWrapper::connectNotify(const char *signal)
+void QJsonDbWrapper::connectNotify(const QMetaMethod &signal)
 {
+    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::activatedLocksChanged);
+    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::enabledLocksChanged);
+    static const QMetaMethod vibrationActivatedChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::vibrationActivatedChanged);
+    static const QMetaMethod ringtoneVolumeChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::ringtoneVolumeChanged);
+    static const QMetaMethod currentProfileTypeChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::currentProfileTypeChanged);
+    static const QMetaMethod backlightStateChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::backlightStateChanged);
+
     if (watchActivatedLocks && watchEnabledLocks && watchProfile && watchBacklightState)
         return;
 
-    bool needWatchActivatedLocks = (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0);
+    bool needWatchActivatedLocks = (signal == activatedLocksChangedSignal);
     if (needWatchActivatedLocks) {
         if (watchActivatedLocks)
             return;
         activatedLocks = activatedLockTypes();
     }
 
-    bool needWatchEnabledLocks = (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0);
+    bool needWatchEnabledLocks = (signal == enabledLocksChangedSignal);
     if (needWatchEnabledLocks) {
         if (watchEnabledLocks)
             return;
@@ -210,9 +218,9 @@ void QJsonDbWrapper::connectNotify(const char *signal)
     if (needWatchEnabledLocks)
         watchEnabledLocks = true;
 
-    bool needWatchProfiles = (strcmp(signal, SIGNAL(vibrationActivatedChanged(bool))) == 0
-                              || strcmp(signal, SIGNAL(ringtoneVolumeChanged(int))) == 0
-                              || strcmp(signal, SIGNAL(currentProfileTypeChanged(QDeviceProfile::ProfileType))) == 0);
+    bool needWatchProfiles = (signal == vibrationActivatedChangedSignal
+                              || signal == ringtoneVolumeChangedSignal
+                              || signal == currentProfileTypeChangedSignal);
     if (needWatchProfiles) {
         if (watchProfile)
             return;
@@ -220,7 +228,7 @@ void QJsonDbWrapper::connectNotify(const char *signal)
         watchProfile = true;
     }
 
-    if (strcmp(signal, SIGNAL(backlightStateChanged(int,QDisplayInfo::BacklightState))) == 0) {
+    if (signal == backlightStateChangedSignal) {
         if (!backlightWatcher) {
             backlightWatcher = new QtJsonDb::QJsonDbWatcher(this);
             backlightWatcher->setPartition(QString(QStringLiteral("Ephemeral")));
@@ -233,16 +241,19 @@ void QJsonDbWrapper::connectNotify(const char *signal)
     }
 }
 
-void QJsonDbWrapper::disconnectNotify(const char *signal)
+void QJsonDbWrapper::disconnectNotify(const QMetaMethod &signal)
 {
     if (!watchActivatedLocks && !watchEnabledLocks && !watchBacklightState)
         return;
 
-    if (strcmp(signal, SIGNAL(activatedLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
+    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::activatedLocksChanged);
+    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::enabledLocksChanged);
+    static const QMetaMethod backlightStateChangedSignal = QMetaMethod::fromSignal(&QJsonDbWrapper::backlightStateChanged);
+    if (signal == activatedLocksChangedSignal)
         watchActivatedLocks = false;
-    else if (strcmp(signal, SIGNAL(enabledLocksChanged(QDeviceInfo::LockTypeFlags))) == 0)
+    else if (signal == enabledLocksChangedSignal)
         watchEnabledLocks = false;
-    else if (strcmp(signal, SIGNAL(backlightStateChanged(int, QDisplayInfo::BacklightState))) == 0)
+    else if (signal == backlightStateChangedSignal)
         watchBacklightState = false;
 
     if (!watchBacklightState)

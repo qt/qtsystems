@@ -63,6 +63,8 @@ public:
 QT_END_NAMESPACE
 #endif
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -153,13 +155,16 @@ QStorageInfo::DriveType QStorageInfo::driveType(const QString &drive) const
     return d_ptr->driveType(drive);
 }
 
+extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
+
 /*!
     \internal
 */
-void QStorageInfo::connectNotify(const char *signal)
+void QStorageInfo::connectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
-    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
 #endif
@@ -168,14 +173,15 @@ void QStorageInfo::connectNotify(const char *signal)
 /*!
     \internal
 */
-void QStorageInfo::disconnectNotify(const char *signal)
+void QStorageInfo::disconnectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (receivers(signal) > 0)
+    if (isSignalConnected(signal))
         return;
 
-    disconnect(d_ptr, signal, this, signal);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    disconnect(d_ptr, sourceSignal, this, signal);
 #else
     Q_UNUSED(signal)
 #endif

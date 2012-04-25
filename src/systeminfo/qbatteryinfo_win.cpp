@@ -44,6 +44,8 @@
 #include <windows.h>
 #include <PowrProf.h>
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
@@ -151,29 +153,45 @@ QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
     return QBatteryInfo::BatteryStatusUnknown;
 }
 
-void QBatteryInfoPrivate::connectNotify(const char *signal)
+void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
-    } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
-    } else if (strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0) {
+    static const QMetaMethod batteryCountChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryCountChanged);
+    static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargerTypeChanged);
+    static const QMetaMethod chargingStateChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargingStateChanged);
+    static const QMetaMethod currentFlowChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::currentFlowChanged);
+    static const QMetaMethod remainingCapacityChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingCapacityChanged);
+    static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingChargingTimeChanged);
+    static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::voltageChanged);
+    static const QMetaMethod batteryStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryStatusChanged);
+    if (signal == batteryCountChangedSignal) {
+    } else if (signal == currentFlowChangedSignal) {
+    } else if (signal == voltageChangedSignal) {
+    } else if (signal == remainingCapacityChangedSignal) {
+    } else if (signal == remainingChargingTimeChangedSignal) {
+    } else if (signal == chargerTypeChangedSignal) {
+    } else if (signal == chargingStateChangedSignal) {
+    } else if (signal == batteryStatusChangedSignal) {
     }
 }
 
-void QBatteryInfoPrivate::disconnectNotify(const char *signal)
+void QBatteryInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
-    if (strcmp(signal, SIGNAL(batteryCountChanged(int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(currentFlowChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(voltageChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(remainingCapacityChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(remainingChargingTimeChanged(int,int))) == 0) {
-    } else if (strcmp(signal, SIGNAL(chargerTypeChanged(QBatteryInfo::ChargerType))) == 0) {
-    } else if (strcmp(signal, SIGNAL(chargingStateChanged(int,QBatteryInfo::ChargingState))) == 0) {
-    } else if (strcmp(signal, SIGNAL(batteryStatusChanged(int,QBatteryInfo::BatteryStatus))) == 0) {
+    static const QMetaMethod batteryCountChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryCountChanged);
+    static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargerTypeChanged);
+    static const QMetaMethod chargingStateChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargingStateChanged);
+    static const QMetaMethod currentFlowChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::currentFlowChanged);
+    static const QMetaMethod remainingCapacityChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingCapacityChanged);
+    static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingChargingTimeChanged);
+    static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::voltageChanged);
+    static const QMetaMethod batteryStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryStatusChanged);
+    if (signal == batteryCountChangedSignal) {
+    } else if (signal == currentFlowChangedSignal) {
+    } else if (signal == voltageChangedSignal) {
+    } else if (signal == remainingCapacityChangedSignal) {
+    } else if (signal == remainingChargingTimeChangedSignal) {
+    } else if (signal == chargerTypeChangedSignal) {
+    } else if (signal == chargingStateChangedSignal) {
+    } else if (signal == batteryStatusChangedSignal) {
     }
 }
 

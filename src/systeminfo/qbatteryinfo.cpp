@@ -68,6 +68,8 @@ public:
 QT_END_NAMESPACE
 #endif
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -291,11 +293,30 @@ QBatteryInfo::BatteryStatus QBatteryInfo::batteryStatus(int battery) const
 
 /*!
     \internal
+
+    Returns the signal that corresponds to \a proxySignal in the
+    meta-object of the \a sourceObject.
 */
-void QBatteryInfo::connectNotify(const char *signal)
+QMetaMethod proxyToSourceSignal(const QMetaMethod &proxySignal, QObject *sourceObject)
+{
+    if (!proxySignal.isValid())
+        return proxySignal;
+    Q_ASSERT(proxySignal.methodType() == QMetaMethod::Signal);
+    Q_ASSERT(sourceObject != 0);
+    const QMetaObject *sourceMeta = sourceObject->metaObject();
+    int sourceIndex = sourceMeta->indexOfSignal(proxySignal.methodSignature());
+    Q_ASSERT(sourceIndex != -1);
+    return sourceMeta->method(sourceIndex);
+}
+
+/*!
+    \internal
+*/
+void QBatteryInfo::connectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
-    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
 #endif
@@ -304,14 +325,15 @@ void QBatteryInfo::connectNotify(const char *signal)
 /*!
     \internal
 */
-void QBatteryInfo::disconnectNotify(const char *signal)
+void QBatteryInfo::disconnectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (receivers(signal) > 0)
+    if (isSignalConnected(signal))
         return;
 
-    disconnect(d_ptr, signal, this, signal);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    disconnect(d_ptr, sourceSignal, this, signal);
 #else
     Q_UNUSED(signal)
 #endif

@@ -44,6 +44,8 @@
 #include "qvaluespace_p.h"
 #include "qvaluespacemanager_p.h"
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -328,9 +330,10 @@ void QValueSpacePublisher::resetValue(const QString &name)
 /*!
     \reimp
 */
-void QValueSpacePublisher::connectNotify(const char *signal)
+void QValueSpacePublisher::connectNotify(const QMetaMethod &signal)
 {
-    if (!d_ptr->hasWatch && isConnected() && qstrcmp(signal, SIGNAL(interestChanged(QString,bool))) == 0) {
+    static const QMetaMethod interestChangedSignal = QMetaMethod::fromSignal(&QValueSpacePublisher::interestChanged);
+    if (!d_ptr->hasWatch && isConnected() && signal == interestChangedSignal) {
         d_ptr->layer->addWatch(this, d_ptr->handle);
         d_ptr->hasWatch = true;
     }

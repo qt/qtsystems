@@ -69,6 +69,8 @@ public:
 QT_END_NAMESPACE
 #endif
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -279,13 +281,16 @@ QString QDeviceInfo::version(QDeviceInfo::Version type) const
     return d_ptr->version(type);
 }
 
+extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
+
 /*!
     \internal
 */
-void QDeviceInfo::connectNotify(const char *signal)
+void QDeviceInfo::connectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
-    connect(d_ptr, signal, this, signal, Qt::UniqueConnection);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
 #else
     Q_UNUSED(signal)
 #endif
@@ -294,14 +299,15 @@ void QDeviceInfo::connectNotify(const char *signal)
 /*!
     \internal
 */
-void QDeviceInfo::disconnectNotify(const char *signal)
+void QDeviceInfo::disconnectNotify(const QMetaMethod &signal)
 {
 #if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (receivers(signal) > 0)
+    if (isSignalConnected(signal))
         return;
 
-    disconnect(d_ptr, signal, this, signal);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
+    disconnect(d_ptr, sourceSignal, this, signal);
 #else
     Q_UNUSED(signal)
 #endif

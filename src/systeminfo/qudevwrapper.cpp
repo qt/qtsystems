@@ -41,6 +41,7 @@
 
 #include "qudevwrapper_p.h"
 
+#include <QMetaMethod>
 #include <QSocketNotifier>
 
 #include <poll.h>
@@ -103,20 +104,28 @@ bool QUDevWrapper::removeAllUDevWatcher()
     return false;
 }
 
-void QUDevWrapper::connectNotify(const char *signal)
+void QUDevWrapper::connectNotify(const QMetaMethod &signal)
 {
-    if (!watchDrives && strcmp(signal, SIGNAL(driveChanged())) == 0) {
+    static const QMetaMethod driveChangedSignal = QMetaMethod::fromSignal(&QUDevWrapper::driveChanged);
+    static const QMetaMethod batteryDataChangedSignal = QMetaMethod::fromSignal(&QUDevWrapper::batteryDataChanged);
+    static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QUDevWrapper::chargerTypeChanged);
+
+    if (!watchDrives && signal == driveChangedSignal) {
         if (addUDevWatcher("block"))
             watchDrives = true;
-    } else if (!watchPowerSupply && (strcmp(signal, SIGNAL(batteryDataChanged(int,QByteArray,QByteArray))) == 0
-                                     || strcmp(signal, SIGNAL(chargerTypeChanged(QByteArray,bool))) == 0)) {
+    } else if (!watchPowerSupply && (signal == batteryDataChangedSignal
+                                     || signal == chargerTypeChangedSignal)) {
         if (addUDevWatcher("power_supply"))
             watchPowerSupply = true;
     }
 }
-void QUDevWrapper::disconnectNotify(const char *signal)
+void QUDevWrapper::disconnectNotify(const QMetaMethod &signal)
 {
-    if (watchDrives && strcmp(signal, SIGNAL(driveChanged())) == 0) {
+    static const QMetaMethod driveChangedSignal = QMetaMethod::fromSignal(&QUDevWrapper::driveChanged);
+    static const QMetaMethod batteryDataChangedSignal = QMetaMethod::fromSignal(&QUDevWrapper::batteryDataChanged);
+    static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QUDevWrapper::chargerTypeChanged);
+
+    if (watchDrives && signal == driveChangedSignal) {
         if (removeAllUDevWatcher()) {
             watchDrives = false;
             if (watchPowerSupply) {
@@ -124,8 +133,8 @@ void QUDevWrapper::disconnectNotify(const char *signal)
                     watchPowerSupply = false;
             }
         }
-    } else if (watchPowerSupply && (strcmp(signal, SIGNAL(batteryDataChanged(int,QByteArray,QByteArray))) == 0
-                                    || strcmp(signal, SIGNAL(chargerTypeChanged(QByteArray,bool))) == 0)) {
+    } else if (watchPowerSupply && (signal == batteryDataChangedSignal
+                                    || signal == chargerTypeChangedSignal)) {
         if (removeAllUDevWatcher()) {
             watchPowerSupply = false;
             if (watchDrives) {

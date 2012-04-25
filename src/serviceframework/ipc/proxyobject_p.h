@@ -68,7 +68,7 @@ public:
     void *qt_metacast(const char* className);
 
 protected:
-    void connectNotify(const char *signal);
+    void connectNotify(const QMetaMethod &signal);
     void timerEvent(QTimerEvent *);
 
 private:
