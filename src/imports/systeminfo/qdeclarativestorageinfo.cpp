@@ -99,7 +99,8 @@ void QDeclarativeStorageInfo::setMonitorAllLogicalDrives(bool monitor)
 */
 QStringList QDeclarativeStorageInfo::allLogicalDrives() const
 {
-    connect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)), this, SIGNAL(logicalDriveChanged(QString,bool)));
+    connect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)),
+            this, SIGNAL(logicalDriveChanged(QString,bool)), Qt::UniqueConnection);
     return storageInfo->allLogicalDrives();
 }
 

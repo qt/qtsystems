@@ -132,7 +132,7 @@ void QDeclarativeNetworkInfo::setMonitorCurrentNetworkMode(bool monitor)
 QDeclarativeNetworkInfo::NetworkMode QDeclarativeNetworkInfo::currentNetworkMode() const
 {
     connect(networkInfo, SIGNAL(currentNetworkModeChanged(QNetworkInfo::NetworkMode)),
-            this, SIGNAL(currentNetworkModeChanged()));
+            this, SIGNAL(currentNetworkModeChanged()), Qt::UniqueConnection);
     return static_cast<QDeclarativeNetworkInfo::NetworkMode>(networkInfo->currentNetworkMode());
 }
 
