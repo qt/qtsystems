@@ -45,7 +45,6 @@
 
 #include <poll.h>
 #include <sys/select.h>
-
 #if !defined(QT_NO_UDEV)
 
 QT_BEGIN_NAMESPACE
@@ -166,6 +165,10 @@ void QUDevWrapper::onUDevChanges()
             action = udev_device_get_action(device);
             sysname = udev_device_get_sysname(device);
 
+#if defined(QT_SIMULATOR)
+            if (qstrcmp(subsystem, "block") == 0 && qstrcmp(action, "change") == 0)
+                emit driveChanged();
+#endif
             if (qstrcmp(subsystem, "block") == 0
                     && ((qstrcmp(action, "add") == 0) || qstrcmp(action, "remove") == 0)) {
                 emit driveChanged();

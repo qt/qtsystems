@@ -149,21 +149,6 @@ void SystemInfoConnection::setDeviceInfoData(const QDeviceInfoData &data)
         deviceInfoBackend->setFeature(featureKey, data.featureList.value(featureKey));
 }
 
-void SystemInfoConnection::setStorageInfoData(const QStorageInfoData &data)
-{
-    QStorageInfoSimulatorBackend *storageInfoBackend = QStorageInfoSimulatorBackend::getSimulatorBackend();
-
-    QStringList currentDrives = storageInfoBackend->getAllLogicalDrives();
-    foreach (const QString &name, currentDrives)
-        storageInfoBackend->removeDrive(name);
-    foreach (const QString &name, data.drives.keys()) {
-        storageInfoBackend->addDrive(name, data.drives[name].type,
-                                     data.drives[name].totalSpace,
-                                     data.drives[name].availableSpace,
-                                     data.drives[name].uri);
-    }
-}
-
 void SystemInfoConnection::setNetworkInfoData(const QNetworkInfoData &data)
 {
     QNetworkInfoSimulatorBackend *networkInfoBackend = QNetworkInfoSimulatorBackend::getSimulatorBackend();

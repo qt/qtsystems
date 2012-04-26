@@ -136,7 +136,7 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
                 QDBusMessage::createMethodCall(QString(QStringLiteral("org.freedesktop.UDisks")),
                                                QString(QStringLiteral("/org/freedesktop/UDisks")),
                                                QString(QStringLiteral("org.freedesktop.UDisks")),
-                                               QString(QStringLiteral("EnumerateDevices")));
+                                               QString(QStringLiteral("EnumerateDevices"))));
     if (reply.isValid()) {
         QList<QDBusObjectPath> paths = reply.value();
         foreach (const QDBusObjectPath &path, paths) {
@@ -226,6 +226,10 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
             stat(entry.mnt_fsname, &status);
             fsName = QString(QStringLiteral("/sys/block/dm-%1/removable")).arg(status.st_rdev & 0377);
         } else {
+ #if defined(QT_SIMULATOR)
+            if (fsName.startsWith(QStringLiteral("/dev/loop")))
+               return QStorageInfo::RemovableDrive;
+#endif
             fsName = fsName.section(QString(QStringLiteral("/")), 2, 3);
             if (!fsName.isEmpty()) {
                 if (fsName.length() > 3) {

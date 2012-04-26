@@ -56,14 +56,12 @@
 
 #include <qbatteryinfo.h>
 #include <qdeviceinfo.h>
-#include <qstorageinfo.h>
 #include <qnetworkinfo.h>
 
 QT_BEGIN_NAMESPACE
 
 class QBatteryInfoSimulatorBackend;
 class QDeviceInfoSimulatorBackend;
-class QStorageInfoSimulatorBackend;
 class QNetworkInfoSimulatorBackend;
 
 #if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
@@ -153,34 +151,6 @@ private:
     QDeviceInfoPrivate * const d_ptr;
     Q_DECLARE_PRIVATE(QDeviceInfo)
 #endif
-};
-
-class QStorageInfoSimulator : public QObject
-{
-    Q_OBJECT
-
-public:
-    QStorageInfoSimulator(QStorageInfo *parent);
-    ~QStorageInfoSimulator();
-
-    qlonglong availableDiskSpace(const QString &drive);
-    qlonglong totalDiskSpace(const QString &drive);
-    QString uriForDrive(const QString &drive);
-    QStringList allLogicalDrives();
-    QStorageInfo::DriveType driveType(const QString &drive);
-
-Q_SIGNALS:
-    void logicalDriveChanged(const QString &drive, bool added);
-
-protected:
-    void connectNotify(const char *signal);
-    void disconnectNotify(const char *signal);
-
-private:
-    QStorageInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QStorageInfo)
-
-    QStorageInfoSimulatorBackend *storageInfoSimulatorBackend;
 };
 
 class QNetworkInfoSimulator : public QObject
