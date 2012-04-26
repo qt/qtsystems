@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SFW version="1.1">
+<service>
+    <name>ServiceObjectTarget</name>
+    <ipcaddress>com.nokia.qt.tests.serviceobject</ipcaddress>
+    <description>Service Object Target</description>
+    <interface>
+        <name>com.nokia.qt.tests.serviceobject</name>
+        <version>1.0</version>
+        <description>Service Object Built in test object</description>
+    </interface>
+</service>
+</SFW>

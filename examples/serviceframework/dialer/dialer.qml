@@ -67,12 +67,11 @@ Rectangle {
     id: mainPage
     color: "white"
 
-    property variant dialerObject: 0
+    property QtObject dialerObject
 
     width: 320
     height: 460
-    anchors.top: parent.top
-    anchors.topMargin: 20
+    y: 20
 
 
     DialerList {
@@ -106,20 +105,10 @@ Rectangle {
     function serviceSelected()
     {
         dialerObject = dialerList.dialService.serviceObject
-
         serviceDetails.text = "Selected dial service:" + "\n   " +
-                               dialerList.dialService.serviceName +
-                               " (" + dialerList.dialService.majorVersion +
-                               "." + dialerList.dialService.minorVersion + ")";
-    }
-
-    function ipcFailure(errorString)
-    {
-        console.log("Got IPC error from SFW " + errorString);
-        dialScreen.activeCall = false;
-        status.text = "";
-        serviceDetails.text = errorString;
-        dialerList.allowselction = true;
+                               dialerList.dialService.serviceDescriptor.serviceName +
+                               " (" + dialerList.dialService.serviceDescriptor.majorVersion +
+                               "." + dialerList.dialService.serviceDescriptor.minorVersion + ")";
     }
 
     Text {
@@ -189,19 +178,25 @@ Rectangle {
     }
     //! [0]
 
-    Service {
+    ServiceLoader {
         id: defaultService
         interfaceName: "com.nokia.qt.examples.Dialer"
 
-        onError: ipcFailure(errorString);
-
-        Component.onCompleted: {
-            dialerObject = defaultService.serviceObject;
-
-            serviceDetails.text = "Default dial service:" + "\n   " +
-                                   defaultService.serviceName +
-                                   " (" + defaultService.majorVersion +
-                                   "." + defaultService.minorVersion + ")";
+        onStatusChanged: {
+            if (status == Service.Ready) {
+                //Note that an alias property would also work
+                dialerObject = defaultService.serviceObject;
+                serviceDetails.text = "Default dial service:" + "\n   " +
+                                       defaultService.serviceName +
+                                       " (" + defaultService.majorVersion +
+                                       "." + defaultService.minorVersion + ")";
+            } else if (status == Service.Error) {
+                console.log("Got IPC error from SFW " + errorString);
+                dialScreen.activeCall = false;
+                status.text = "";
+                serviceDetails.text = errorString;
+                dialerList.allowselction = true;
+            }
         }
     }
 

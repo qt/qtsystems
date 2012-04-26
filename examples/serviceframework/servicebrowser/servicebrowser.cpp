@@ -44,6 +44,7 @@
 #include <qservicemanager.h>
 #include <qservicereply.h>
 #include <qserviceinterfacedescriptor.h>
+#include <qservicereply.h>
 
 #include "servicebrowser.h"
 

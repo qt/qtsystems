@@ -44,592 +44,502 @@
 #include <QQmlEngine>
 #include <QQmlInfo>
 
+#include <qservicereply.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass Service QDeclarativeService
+    \qmlclass ServiceLoader QDeclarativeService
 
-    \brief The Service element holds an instance of a service object.
+    \brief The ServiceLoader element holds an instance of a service object.
     \inherits QObject
-
+    \inqmlmodule QtServiceFramework 5
     \ingroup qml-serviceframework
 
-    The Service element is part of the Qt ServiceFramework API and
-    provides a client instance of the service object. This element is a simplified
-    reflection of the QServiceInterfaceDescriptor class that allows the specification of
+    The ServiceLoader element is part of the Qt ServiceFramework API and
+    provides a client instance of the service object. This element allows the specification of
     the Service::interfaceName to locate the default service implemented at this interface.
+
+    To request a service more specifically, you can filter available ServiceDescriptors with
+    the ServiceFilter element, and then request service objects based off them.
+
+    Either way, the ServiceLoader element will provide you with the QtObject provided by that service
+    interface. You can then use its properties, signals, and slots as defined by its interface.
+
+    Example:
+    \code
+    import QtQuick 2.0
+    import QtServiceFramework 5.0
+
+    QtObject {
+        property alias serviceObject: service.serviceObject //In case you want to expose it upwards
+        ServiceLoader {
+            interfaceName: "com.qt.nokia.example.interface"
+            onStatusChanged: {
+                if (status == Service.Ready)
+                    foo(serviceObject); //In case you want to do something with it as soon as it loads
+                else if (status == Service.Error)
+                    errorHandling(errorString()); //In case you want to do error handling.
+            }
+        }
+    }
+    \endcode
 
     \sa ServiceList
 */
-QDeclarativeService::QDeclarativeService()
-    : m_serviceInstance(0), m_componentComplete(false)
+QDeclarativeServiceLoader::QDeclarativeServiceLoader()
+    : m_serviceDescriptor(0), m_status(Null), m_asynchronous(true),
+    m_serviceObject(0), m_componentComplete(false), m_serviceManager(0),
+    m_serviceReply(0)
 {
-    m_serviceManager = new QServiceManager();
 }
 
-QDeclarativeService::~QDeclarativeService()
+QDeclarativeServiceLoader::~QDeclarativeServiceLoader()
 {
-    delete m_serviceInstance;
+    //Manager has qobject ownership
+    delete m_serviceObject;//QOBJECT parented?
+    delete m_serviceReply;
 }
 
 /*!
-    \qmlproperty bool Service::valid read-only
+    \qmlmethod string ServiceLoader::errorString()
 
-    This property holds whether a default service was found at the
-    interface name and corresponds to QServiceInterfaceDescriptor::isValid().
+    This method returns a human readable description of the last error.
+
+    If the status is not ServiceLoader.Error, errorString() will return an empty string.
 */
-bool QDeclarativeService::isValid() const
-{
-    return m_descriptor.isValid();
-}
-
-void QDeclarativeService::setInterfaceDesc(const QServiceInterfaceDescriptor &desc)
-{
-    if (desc == m_descriptor)
-        return;
-
-    m_descriptor = desc;
-
-    if (m_serviceInstance)
-        delete m_serviceInstance;
-    setServiceObject(0);
-}
-
-QServiceInterfaceDescriptor QDeclarativeService::interfaceDesc() const
-{
-    return m_descriptor;
-}
-
 /*!
-    \qmlproperty QString Service::interfaceName
+    \qmlproperty Status ServiceLoader::status
 
-    This property holds the interface name of the service that
-    corresponds to QServiceInterfaceDescriptor::interfaceName().
+    This property contains the status of the service object. It will be one of the following:
+
+    \list
+    \li ServiceLoader.Null - the service is inactive or no service has been set
+    \li ServiceLoader.Ready - the service has been loaded
+    \li ServiceLoader.Loading - the service is currently being loaded
+    \li ServiceLoader.Error - an error occurred while loading the service
+    \endlist
+
+    If you want to do something immediately after the service loads, the recommended route is
+    to monitor this property. For example:
+    \code
+    ServiceLoader {
+        onStatusChanged: {
+            if (status == ServiceLoader.Ready)
+                doStuffWith(serviceObject)
+            else if (status == ServiceLoader.Error)
+                console.debug(errorString())
+        }
+    }
+    \endcode
+
 */
-void QDeclarativeService::setInterfaceName(const QString &interface)
-{
-   m_interface = interface;
-   updateDescriptor();
-}
-
-QString QDeclarativeService::interfaceName() const
-{
-    if (isValid())
-        return m_descriptor.interfaceName();
-    else
-        return "No Interface";
-}
-
 /*!
-    \qmlproperty QString Service::serviceName
+    \qmlproperty bool ServiceLoader::asynchronous
 
-    This property holds the service name of the service that
-    corresponds to QServiceInterfaceDescriptor::serviceName().
+    If asynchronous is false, then the element will block the main thread until a service object
+    is found or an error occurs. This will skip the Loading status. This is generally not
+    recommended, as blocking the main thread can lead to significant problems with user interface
+    responsiveness.
+
+    Default is true.
 */
-QString QDeclarativeService::serviceName() const
-{
-    if (isValid())
-        return m_descriptor.serviceName();
-    else
-        return "No Service";
-}
-
-void QDeclarativeService::setServiceName(const QString &service)
-{
-    m_service = service;
-}
-
 /*!
-    \qmlproperty int Service::majorVersion
+    \qmlproperty string ServiceLoader::interfaceName
 
-    This property holds the major version number of the service that
-    corresponds to QServiceInterfaceDescriptor::majorVersion().
+    Set this to select a service based off of the interface name. The service name,
+    and service version, will be selected for you if a match is found.
 */
-int QDeclarativeService::majorVersion() const
-{
-    if (isValid())
-        return m_descriptor.majorVersion();
-    else
-        return 0;
-}
-
-void QDeclarativeService::setMajorVersion(int version)
-{
-    m_major = version;
-    updateDescriptor();
-}
-
 /*!
-    \qmlproperty int Service::minorVersion
+    \qmlproperty ServiceDescriptor* ServiceLoader::serviceDescriptor
 
-    This property holds the minor version number of the service that
-    corresponds to QServiceInterfaceDescriptor::minorVersion().
+    Set this to select a specific service. ServiceDescriptors can be obtained
+    from the ServiceFilter element.
+
 */
-int QDeclarativeService::minorVersion() const
-{
-    if (isValid())
-        return m_descriptor.minorVersion();
-    else
-        return 0;
-}
 
-void QDeclarativeService::setMinorVersion(int version)
-{
-    m_minor = version;
-    updateDescriptor();
-}
 
 /*!
-    \qmlproperty QObject* Service::serviceObject
+    \qmlproperty QObject* ServiceLoader::serviceObject
 
     This property holds an instance of the service object which
-    can be used to make metaobject calls to the service.  This
-    corresponds to QServiceManager::loadInterface().
+    can be used to make metaobject calls to the service.
+
+    serviceObject is only valid when the status property is set to
+    ServiceLoader.Ready. Otherwise, it should be a null reference.
 */
-QObject* QDeclarativeService::serviceObject()
+void QDeclarativeServiceLoader::componentComplete()
 {
-    if (m_serviceInstance) {
-        return m_serviceInstance;
+    if (!m_interfaceName.isEmpty() || m_serviceDescriptor)
+        startLoading();
+    m_componentComplete = true;
+}
+
+void QDeclarativeServiceLoader::startLoading()
+{
+    if (m_serviceReply) // Cancel pending requests
+        delete m_serviceReply; //Auto-disconnects signals
+
+    if (m_serviceObject) {
+        m_serviceObject->deleteLater();
+        m_serviceObject = 0;
+        emit serviceObjectChanged(0);// In sync only, you might get an extra signal
     }
 
-    if (isValid()) {
-        QObject *object = m_serviceManager->loadInterface(m_descriptor);
-        setServiceObject(object);
-        if (!m_serviceInstance) {
-            emit error(QLatin1String("Failed to create object"));
-            return m_serviceInstance;
-        }
-        emit serviceObjectChanged();
-        connect(m_serviceInstance, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
-                this, SLOT(IPCFault(QService::UnrecoverableIPCError)));
-        m_error.clear();
-        return m_serviceInstance;
+    if (!m_serviceDescriptor && m_interfaceName.isEmpty()) { //Actually an 'unset' request
+        setStatus(Null);
+        return;
+    }
+
+    if (!m_serviceManager)
+        m_serviceManager = new QServiceManager(this);
+
+    if (m_asynchronous) {
+        if (m_serviceDescriptor)
+            m_serviceReply = m_serviceManager->loadInterfaceRequest(*m_serviceDescriptor);
+        else
+            m_serviceReply = m_serviceManager->loadInterfaceRequest(m_interfaceName);
+        connect(m_serviceReply, SIGNAL(finished()),
+                this, SLOT(finishLoading()));
+        setStatus(Loading);
     } else {
-        return 0;
+        finishLoading();
     }
 }
 
-/*!
-  \qmlproperty QString Service::error
-
-  This property holds the last error the was received, if any
-
-  */
-
-QString QDeclarativeService::lastError() const
+QString stringForError(QServiceManager::Error error)// ### Should we just expose the enum? Or merely pick better strings?
 {
-    return m_error;
+    switch (error) {
+    case QServiceManager::NoError: return QLatin1String("No error occurred.");
+    case QServiceManager::StorageAccessError: return QLatin1String("Storage access error.");
+    case QServiceManager::InvalidServiceLocation: return QLatin1String("Invalid service location.");
+    case QServiceManager::InvalidServiceXml: return QLatin1String("Invalid service XML.");
+    //case QService::InvalidInterfaceDescriptor: return QLatin1String("Invalid interface descriptor.");
+    case QServiceManager::PluginLoadingFailed: return QLatin1String("Error loading service plugin.");
+    case QServiceManager::ComponentNotFound: return QLatin1String("Service component not found.");
+    case QServiceManager::ServiceCapabilityDenied: return QLatin1String("You do not have permission to access this service capability.");
+    default: break;
+    }
+    return QLatin1String("Unknown error.");
 }
 
-void QDeclarativeService::IPCFault(QService::UnrecoverableIPCError errorValue)
+void QDeclarativeServiceLoader::finishLoading()
+{
+    Q_ASSERT(m_serviceManager);
+    QServiceManager::Error error;
+    QObject* prevObject = m_serviceObject;
+    if (m_serviceReply) {
+        if (!m_serviceReply->isFinished())
+            return; //TODO: Evaluate/handle this error condition
+        error = m_serviceReply->error();
+        m_serviceObject = m_serviceReply->proxyObject();
+        m_serviceReply->deleteLater();
+        m_serviceReply = 0;
+    } else {
+        if (m_asynchronous)
+            qDebug() << "Uh oh..."; //TODO: Evaluate/handle this 'error' condition
+        if (m_serviceDescriptor)
+            m_serviceObject = m_serviceManager->loadInterface(*m_serviceDescriptor);
+        else
+            m_serviceObject = m_serviceManager->loadInterface(m_interfaceName);
+        error = m_serviceManager->error();
+    }
+
+    if (error != QServiceManager::NoError) {
+        m_serviceObject = 0;
+        if (!m_asynchronous)
+            emit serviceObjectChanged(0);// In sync we didn't emit the intermediate state
+        m_errorString = stringForError(error);
+        setStatus(Error);
+    } else {
+        setStatus(Ready);
+        connect(m_serviceObject, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+                this, SLOT(IPCFault(QService::UnrecoverableIPCError)));
+    }
+
+    if (prevObject != m_serviceObject)
+        emit serviceObjectChanged(m_serviceObject);
+
+    delete m_serviceManager;
+    m_serviceManager = 0;
+}
+
+void QDeclarativeServiceLoader::IPCFault(QService::UnrecoverableIPCError errorValue)
 {
     switch (errorValue) {
     default:
     case QService::ErrorUnknown:
-        m_error = QLatin1String("IPC Error: Unkown Error");
+        m_errorString = QLatin1String("IPC Error: Unkown Error");
         break;
     case QService::ErrorServiceNoLongerAvailable:
-        m_error = QLatin1String("IPC Error: Service no longer available");
+        m_errorString = QLatin1String("IPC Error: Service no longer available");
         break;
     case QService::ErrorOutofMemory:
-        m_error = QLatin1String("IPC Error: Out of memory");
+        m_errorString = QLatin1String("IPC Error: Out of memory");
         break;
     case QService::ErrorPermissionDenied:
-        m_error = QLatin1String("IPC Error: Permission Denied");
+        m_errorString = QLatin1String("IPC Error: Permission Denied");
         break;
     case QService::ErrorInvalidArguments:
-        m_error = QLatin1String("IPC Error: Invalid Arguments");
+        m_errorString = QLatin1String("IPC Error: Invalid Arguments");
         break;
     }
-    emit error(m_error);
-    m_serviceInstance->deleteLater();
-    setServiceObject(0);
-}
-
-void QDeclarativeService::updateDescriptor()
-{
-    if (!m_componentComplete)
-        return;
-
-    if (m_interface.isEmpty())
-        return;
-
-    QServiceInterfaceDescriptor new_desc;
-
-    if (m_minor == 0 && m_major == 0 && m_service.isEmpty()){
-        new_desc = m_serviceManager->interfaceDefault(m_interface);
-    }
-    else {
-        QServiceFilter filter;
-        if (!m_service.isEmpty())
-            filter.setServiceName(m_service);
-
-
-        if (m_minor != 0 || m_major != 0) {
-            const QString version = QString::number(m_major) + "." + QString::number(m_minor);
-            filter.setInterface(m_interface, version);
-        }
-
-        QList<QServiceInterfaceDescriptor> list = m_serviceManager->findInterfaces(filter);
-        if (!list.isEmpty())
-            new_desc = list.takeFirst();
-    }
-
-    if (new_desc != m_descriptor) {
-        m_descriptor = new_desc;
-        if (m_serviceInstance)
-            emit serviceObjectChanged();
-    }
-
-    if (!isValid()) {
-        qWarning() << "WARNING: No service found for interface name: " << m_interface << m_service << m_major << m_minor;
-    }
-}
-
-void QDeclarativeService::setServiceObject(QObject *object)
-{
-    if (m_serviceInstance != object) {
-        m_serviceInstance = object;
-        emit serviceObjectChanged();
-    }
-}
-
-void QDeclarativeService::classBegin()
-{
-
-}
-
-void QDeclarativeService::componentComplete()
-{
-    m_componentComplete = true;
-    updateDescriptor();
-}
-
-bool QDeclarativeService::operator ==(const QServiceInterfaceDescriptor& other ) const
-{
-    if ( m_descriptor == other)
-        return true;
-
-    return false;
+    setStatus(Error);
+    m_serviceObject->deleteLater();
 }
 
 /*!
-    \qmlclass ServiceList QDeclarativeServiceList
+    \qmlclass ServiceDescriptor QDeclarativeServiceDescriptor
 
-    \brief The ServiceList element holds a list of \l Service elements.
+    \brief The ServiceDescriptor element holds a description of a service.
     \inherits QObject
 
     \ingroup qml-serviceframework
 
-    The ServiceList element is part of the Qt ServiceFramework API and
-    provides a list of \l Service elements at the interface ServiceList::interfaceName with
-    minimum version match ServiceList::minVersion properties. This list can be used to
+    The ServiceDescriptor element is a simplified reflection of the ServiceDescriptor class,
+    and is used merely to contain data that can uniquely identify a service.
+
+    It cannot be created manually, use a ServiceList to search for service descriptions.
+
+    \sa ServiceList
+*/
+/*!
+    \qmlproperty QString ServiceDescriptor::serviceName
+
+    This property holds the interface name of the service.
+*/
+/*!
+    \qmlproperty QString ServiceDescriptor::interfaceName
+
+    This property holds the interface name of the service.
+*/
+
+/*!
+    \qmlproperty int ServiceDescriptor::majorVersion
+
+    This property holds the major version number of the service.
+*/
+/*!
+    \qmlproperty int ServiceDescriptor::minorVersion
+
+    This property holds the minor version number of the service.
+*/
+//TODO: Fix doc or remove property
+/*!
+    \qmlproperty bool ServiceDescriptor::valid
+
+    I have no clue what this property does, but it's probably important.
+*/
+/*!
+    \qmlclass ServiceFilter QDeclarativeServiceFilter
+
+    \brief The ServiceFilter element holds a list of \l ServiceDescriptor objects.
+    \inherits QObject
+
+    \ingroup qml-serviceframework
+
+    The ServiceFilter element is part of the Qt ServiceFramework API and
+    provides a list of \l QServiceDesciptor objects at the interface ServiceFilter::interfaceName with
+    minimum version match ServiceFilter::minVersion properties. This list can be used to
     select the desired service and instantiate a service object for access via the QMetaObject.
 
     This element is a simplified reflection of the QServiceFilter class that provides a list
-    of simplified QServiceInterfaceDescriptors. Similarly, if the ServiceList::serviceName
-    and ServiceList::versionMatch are not provided they will respectively default to an empty
+    of ServiceDescriptors. Similarly, if the ServiceFilter::serviceName
+    and ServiceFilter::versionMatch are not provided they will respectively default to an empty
     string with a minimum verison match.
 
-    \sa Service
+    Example:
+    \code
+    Item {
+        ServiceFilter {
+            id: serviceFilter
+            interfaceName: "com.qt.nokia.example.interface"
+        }
+        ServiceLoader {
+            serviceDescriptor: serviceFilter.serviceDescriptions[0] //To get the first matching service
+        }
+        Repeater{ //To instantiate an object for all matching services.
+            model: serviceFilter.serviceDescriptions
+            Item {
+                ServiceLoader {
+                    serviceDescriptor: modelData
+                }
+            }
+        }
+    }
+    \endcode
+
+    \sa ServiceLoader ServiceDescriptor
 */
-QDeclarativeServiceList::QDeclarativeServiceList()
-    : m_service(QString()),
-      m_interface(),
-      m_major(1),
-      m_minor(1),
-      m_match(QDeclarativeServiceList::Minimum),
+QDeclarativeServiceFilter::QDeclarativeServiceFilter(QObject* parent)
+    : QObject(parent),
+      m_majorVersion(1), // ### Is '1' the correct unset number?
+      m_minorVersion(0),
+      m_exactVersionMatching(false),
+      m_monitorServiceRegistrations(false),
+      m_serviceManager(0),
       m_componentComplete(false)
 {
-    serviceManager = new QServiceManager(this);
 }
 
-QDeclarativeServiceList::~QDeclarativeServiceList()
+QDeclarativeServiceFilter::~QDeclarativeServiceFilter()
 {
-    while (m_services.count())
-        delete m_services.takeFirst();
 }
 /*!
-    \qmlproperty QString ServiceList::serviceName
+    \qmlproperty QString ServiceFilter::serviceName
 
     This property holds the interface name of the services that
     corresponds to setting QServiceFilter::setService().
 */
-void QDeclarativeServiceList::setServiceName(const QString &service)
-{
-    m_service = service;
-    updateFilterResults();
-    if (m_componentComplete)
-        emit serviceNameChanged();
-}
-
-QString QDeclarativeServiceList::serviceName() const
-{
-    return m_service;
-}
-
 /*!
-    \qmlproperty QString ServiceList::interfaceName
+    \qmlproperty QString ServiceFilter::interfaceName
 
     This property holds the interface name of the services that
     corresponds to setting QServiceFilter::setInterface().
 */
-void QDeclarativeServiceList::setInterfaceName(const QString &interface)
-{
-    m_interface = interface;
-    updateFilterResults();
-    if (m_componentComplete)
-        emit interfaceNameChanged();
-}
-
-QString QDeclarativeServiceList::interfaceName() const
-{
-    return m_interface;
-}
 
 /*!
-    \qmlproperty int ServiceList::majorVersion
+    \qmlproperty int ServiceFilter::majorVersion
 
     This property holds the major version number of the service filter that
     corresponds to QServiceFilter::majorVersion().
 */
-void QDeclarativeServiceList::setMajorVersion(int major)
-{
-    m_major = major;
-    updateFilterResults();
-    if (m_componentComplete)
-        emit majorVersionChanged();
-}
-
-int QDeclarativeServiceList::majorVersion() const
-{
-    return m_major;
-}
-
 /*!
-    \qmlproperty int ServiceList::minorVersion
+    \qmlproperty int ServiceFilter::minorVersion
 
     This property holds the minor version number of the service filter that
     corresponds to QServiceFilter::minorVersion().
 */
-void QDeclarativeServiceList::setMinorVersion(int minor)
-{
-    m_minor = minor;
-    updateFilterResults();
-    if (m_componentComplete)
-        emit minorVersionChanged();
-}
-
-int QDeclarativeServiceList::minorVersion() const
-{
-    return m_minor;
-}
 
 /*!
-    \qmlproperty int ServiceList::monitorServiceRegistrations
+    \qmlproperty int ServiceFilter::monitorServiceRegistrations
 
     This property controls the behaviour of the list when new services are
     registered or deregistered. Setting this property to true means the list
-    will be automatically updated when a service is added or removed. Caution,
-    your service object will be deleted if the service is unregistered, even if
-    the service is still running.
+    will be automatically updated when a service is added or removed.
+
+    Continuing to monitor the services can be expensive, so it is recommended
+    that you only enable this feature if you need it.
+
+    Caution, your service descriptor object will be deleted if the service
+    is unregistered, even if the service is still running. This is primarily
+    of note if you are using the serviceDescriptions list as a model with
+    Service element delegates.
 */
 
-void QDeclarativeServiceList::setMonitorServiceRegistrations(bool updates)
-{
-    if (updates == false) {
-        disconnect(this, SLOT(servicesAddedRemoved()));
-    }
-    else {
-        connect(serviceManager, SIGNAL(serviceAdded(QString,QService::Scope)),
-                this, SLOT(servicesAddedRemoved()));
-        connect(serviceManager, SIGNAL(serviceRemoved(QString,QService::Scope)),
-                this, SLOT(servicesAddedRemoved()));
-    }
-
-    if (m_dynamicUpdates != updates)
-        emit monitorServiceRegistrationsChanged();
-
-    m_dynamicUpdates = updates;
-}
-
-void QDeclarativeServiceList::servicesAddedRemoved()
-{
-    // invoke in another event loop run
-    QMetaObject::invokeMethod(this, "updateServiceList", Qt::QueuedConnection);
-}
-
-bool QDeclarativeServiceList::monitorServiceRegistrations() const
-{
-    return m_dynamicUpdates;
-}
-
 /*!
-    \qmlproperty enumeration ServiceList::versionMatch
+    \qmlproperty bool ServiceFilter::versionMatch
 
     This property holds the version match rule of the service filter that
     corresponds to QServiceFilter::versionMatchRule(). Within QML the values
-    ServiceList.Exact and ServiceList.Minimum correspond to
+    ServiceFilter.Exact and ServiceFilter.Minimum correspond to
     QServiceFilter::ExactVersionMatch and QServiceFilter::MinimumVersionMatch
     respectively.
 */
-void QDeclarativeServiceList::setVersionMatch(MatchRule match)
+
+void QDeclarativeServiceFilter::setMonitorServiceRegistrations(bool updates)
 {
-    m_match = match;
-    updateFilterResults();
-    if (m_componentComplete)
-        emit versionMatchChanged();
+    if (m_monitorServiceRegistrations == updates)
+        return;
+
+    if (updates == false) {
+        disconnect(this, SLOT(servicesAddedRemoved()));
+        if (m_serviceManager)
+            delete m_serviceManager;
+        m_serviceManager = 0;
+    } else {
+        if (!m_serviceManager)
+            m_serviceManager = new QServiceManager(this);
+        connect(m_serviceManager, SIGNAL(serviceAdded(QString,QService::Scope)),
+                this, SLOT(servicesAddedRemoved()));
+        connect(m_serviceManager, SIGNAL(serviceRemoved(QString,QService::Scope)),
+                this, SLOT(servicesAddedRemoved()));
+    }
+
+    emit monitorServiceRegistrationsChanged(updates);
+    m_monitorServiceRegistrations = updates;
 }
 
-QDeclarativeServiceList::MatchRule QDeclarativeServiceList::versionMatch() const
+void QDeclarativeServiceFilter::servicesAddedRemoved()
 {
-    return m_match;
+    // invoke in another event loop run ### Why?
+    QMetaObject::invokeMethod(this, "updateServiceList", Qt::QueuedConnection);
 }
 
+QList<QDeclarativeServiceDescriptor> makeDeclarative(QList<QServiceInterfaceDescriptor> in)
+{
+    QList<QDeclarativeServiceDescriptor> out;
+    foreach (const QServiceInterfaceDescriptor &d, in)
+        out << QDeclarativeServiceDescriptor(d);
+    return out;
+}
 
-void QDeclarativeServiceList::updateServiceList()
+void QDeclarativeServiceFilter::updateServiceList()
 {
     if (!m_componentComplete)
         return;
 
-    const QString version = QString::number(m_major) + "." + QString::number(m_minor);
+    if (!m_serviceManager)
+        m_serviceManager = new QServiceManager(this);
+    const QString version = QString::number(m_majorVersion) + "." + QString::number(m_minorVersion);
 
     QServiceFilter filter;
 
-    if (!m_service.isEmpty())
-        filter.setServiceName(m_service);
+    if (!m_serviceName.isEmpty())
+        filter.setServiceName(m_serviceName);
 
-    if (m_match == QDeclarativeServiceList::Exact)
-        filter.setInterface(m_interface, version, QServiceFilter::ExactVersionMatch);
-    else if (!m_interface.isEmpty())
-        filter.setInterface(m_interface, version);
+    if (!m_interfaceName.isEmpty())
+        filter.setInterface(m_interfaceName, version, m_exactVersionMatching ?
+                QServiceFilter::ExactVersionMatch : QServiceFilter::MinimumVersionMatch);
 
-    const QList<QServiceInterfaceDescriptor> newlist = serviceManager->findInterfaces(filter);
+    QList<QDeclarativeServiceDescriptor> list = makeDeclarative(m_serviceManager->findInterfaces(filter));
 
-    QSet<QServiceInterfaceDescriptor> currentServices = QSet<QServiceInterfaceDescriptor>::fromList(m_currentList);
-    QSet<QServiceInterfaceDescriptor> newServices = QSet<QServiceInterfaceDescriptor>::fromList(newlist);
-
-    if (currentServices == newServices) {
-        return;
+    if (list != m_services) {
+        m_services = list;
+        emit serviceDescriptionsChanged();
     }
 
-    const QSet<QServiceInterfaceDescriptor> addServices = newServices.subtract(currentServices);
-    const QSet<QServiceInterfaceDescriptor> delServices = currentServices.subtract(
-                QSet<QServiceInterfaceDescriptor>::fromList(newlist));
-
-    foreach (const QServiceInterfaceDescriptor &desc, delServices) {
-        foreach (QDeclarativeService *service, m_services) {
-            if (*service == desc) {
-                m_services.removeOne(service);
-                delete service;
-            }
-        }
-        m_currentList.removeOne(desc);
+    if (!m_monitorServiceRegistrations) {
+        delete m_serviceManager;
+        m_serviceManager = 0;
     }
 
-    foreach (const QServiceInterfaceDescriptor &desc, addServices) {
-        QDeclarativeService *service = new QDeclarativeService();
-        service->setInterfaceDesc(desc);
-        m_services.append(service);
-        m_currentList.append(desc);
-    }
-
-    emit resultsChanged();
-}
-
-void QDeclarativeServiceList::updateFilterResults()
-{
-    if (!m_componentComplete)
-        return;
-
-    const QString version = QString::number(m_major) + "." + QString::number(m_minor);
-
-    QServiceFilter filter;
-
-    if (!m_service.isEmpty())
-        filter.setServiceName(m_service);
-
-    if (m_match == QDeclarativeServiceList::Exact)
-        filter.setInterface(m_interface, version, QServiceFilter::ExactVersionMatch);
-    else if (!m_interface.isEmpty())
-        filter.setInterface(m_interface, version);
-
-    QList<QServiceInterfaceDescriptor> list = serviceManager->findInterfaces(filter);
-
-    if (list == m_currentList) {
-        return;
-    }
-
-    m_currentList = list;
-
-    while (m_services.count()) //for now we refresh the entire list
-        delete m_services.takeFirst();
-
-    for (int i = 0; i < list.size(); i++) {
-        QDeclarativeService *service = new QDeclarativeService();
-        service->setInterfaceDesc(list.at(i));
-        m_services.append(service);
-    }
-
-    emit resultsChanged();
 }
 
 /*!
-    \qmlproperty QQmlListProperty ServiceList::services
+    \qmlproperty QQmlListProperty ServiceFilter::serviceDescriptions
 
-    This property holds the list of \l Service elements that match
-    the Service::interfaceName and minimum Service::versionNumber properties.
+    This property holds the list of \l ServiceDescriptor objects that match
+    the ServiceFilter::interfaceName and minimum ServiceFilter::versionNumber properties.
 */
-QQmlListProperty<QDeclarativeService> QDeclarativeServiceList::services()
+
+void QDeclarativeServiceFilter::componentComplete()
 {
-    return QQmlListProperty<QDeclarativeService>(this,
-            0,
-            s_append,
-            s_count,
-            s_at,
-            s_clear);
+    m_componentComplete = true;
+    updateServiceList();
 }
 
-void QDeclarativeServiceList::classBegin()
+void QDeclarativeServiceFilter::s_append(QQmlListProperty<QDeclarativeServiceDescriptor> *prop, QDeclarativeServiceDescriptor *service)
 {
+    QDeclarativeServiceFilter* list = static_cast<QDeclarativeServiceFilter*>(prop->object);
+    list->m_services.append(*service);//### This does not maintain the reference
+    list->serviceDescriptionsChanged();
+}
+int QDeclarativeServiceFilter::s_count(QQmlListProperty<QDeclarativeServiceDescriptor> *prop)
+{
+    return static_cast<QDeclarativeServiceFilter*>(prop->object)->m_services.count();
 }
 
-void QDeclarativeServiceList::componentComplete()
+QDeclarativeServiceDescriptor* QDeclarativeServiceFilter::s_at(QQmlListProperty<QDeclarativeServiceDescriptor> *prop, int index)
 {
-    if (!m_componentComplete) {
-        m_componentComplete = true;
-        updateFilterResults();
-    }
+    return &(static_cast<QDeclarativeServiceFilter*>(prop->object)->m_services[index]);
 }
 
-void QDeclarativeServiceList::listUpdated()
+void QDeclarativeServiceFilter::s_clear(QQmlListProperty<QDeclarativeServiceDescriptor> *prop)
 {
-    if (m_componentComplete)
-        emit resultsChanged();
-}
-
-void QDeclarativeServiceList::s_append(QQmlListProperty<QDeclarativeService> *prop, QDeclarativeService *service)
-{
-    QDeclarativeServiceList* list = static_cast<QDeclarativeServiceList*>(prop->object);
-    list->m_services.append(service);
-    list->listUpdated();
-}
-int QDeclarativeServiceList::s_count(QQmlListProperty<QDeclarativeService> *prop)
-{
-    return static_cast<QDeclarativeServiceList*>(prop->object)->m_services.count();
-}
-
-QDeclarativeService* QDeclarativeServiceList::s_at(QQmlListProperty<QDeclarativeService> *prop, int index)
-{
-    return static_cast<QDeclarativeServiceList*>(prop->object)->m_services[index];
-}
-
-void QDeclarativeServiceList::s_clear(QQmlListProperty<QDeclarativeService> *prop)
-{
-    QDeclarativeServiceList* list = static_cast<QDeclarativeServiceList*>(prop->object);
-    qDeleteAll(list->m_services);
+    QDeclarativeServiceFilter* list = static_cast<QDeclarativeServiceFilter*>(prop->object);
     list->m_services.clear();
-    list->listUpdated();
+    list->serviceDescriptionsChanged();
 }
 #include "moc_qdeclarativeservice_p.cpp"
 

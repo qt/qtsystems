@@ -62,7 +62,7 @@ import QtServiceFramework 5.0
 
 Rectangle {
     id: serviceListControl
-    property variant dialService: 0
+    property QtObject dialService
     signal signalSelected
     property bool allowselction: true
     property bool nohighlightlistitem : true
@@ -79,7 +79,7 @@ Rectangle {
 
     //! [1]
     Component {
-        id: delegate
+        id: delegateComponent
         //! [1]
         //Rectangle item to draw a list view item
         //This includes 2 line of text:
@@ -94,6 +94,11 @@ Rectangle {
             border.color: "black"
             border.width: 1
             opacity: 0.6
+            ServiceLoader {
+                id: listService
+                serviceDescriptor: model.modelData
+                //TODO: Async loading handling in case they have *really* fast clicks
+            }
 
             //! [2]
             MouseArea {
@@ -106,7 +111,7 @@ Rectangle {
                                 serviceListControl.nohighlightlistitem = false;
                             }
                             serviceListView.currentIndex = index;
-                            dialService = model.modelData;
+                            dialService = listService;
                             signalSelected()
                    }
                 }
@@ -163,16 +168,16 @@ Rectangle {
         anchors.topMargin: 0
         anchors.leftMargin: 5
         anchors.rightMargin: 5
-        model: dialerServiceList.services
+        model: dialerServiceList.serviceDescriptions
         opacity: 1
-        delegate: delegate
+        delegate: delegateComponent
 //            currentIndex: -1
 //            clip: true
     }
     //! [0]
 
     //! [5]
-    ServiceList {
+    ServiceFilter {
         id: dialerServiceList
         interfaceName: "com.nokia.qt.examples.Dialer"
         majorVersion: 1

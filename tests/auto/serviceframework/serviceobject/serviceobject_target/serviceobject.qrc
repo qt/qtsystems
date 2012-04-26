@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/xml">
+        <file>serviceobject.xml</file>
+    </qresource>
+</RCC>

@@ -13,9 +13,11 @@ INSTALLS += qmldir target
 
 QT += qml serviceframework
 
-HEADERS += qdeclarativeservice_p.h
+HEADERS += qdeclarativeservice_p.h \
+           qdeclarativeserviceold_p.h
 
 SOURCES += qdeclarativeservice.cpp \
+           qdeclarativeserviceold.cpp \
            serviceframework.cpp 
 
 jsondb|contains(QT_CONFIG, jsondb): {

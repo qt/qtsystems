@@ -8,4 +8,5 @@ SUBDIRS = \
            qservicemanager_ipc \
            qservicemetadata \
            servicedeletion
+#           serviceobject
 #           servicedatabase    #(requires test symbols)
