@@ -122,7 +122,7 @@ public:
     ~Waiter()
     {
         QList<Waiter *> &conn = _q_connectionfds()->localData();
-        conn.removeAt(conn.indexOf(this));
+        conn.removeAll(this);
     }
 
     void setEnabled(bool enabled)
@@ -135,7 +135,7 @@ public:
             conn.append(this);
         } else {
             QList<Waiter *> &conn = _q_connectionfds()->localData();
-            conn.removeAt(conn.indexOf(this));
+            conn.removeAll(this);
         }
         this->enabled = enabled;
     }
@@ -269,9 +269,8 @@ void UnixEndPoint::getSecurityCredentials(QServiceClientCredentials &creds)
 bool UnixEndPoint::event(QEvent *e)
 {
     if (e->type() == QEvent::ThreadChange) {
-        QThreadStorage<QList<UnixEndPoint *> > *storage = _q_unixendpoints();
-        QList<UnixEndPoint *> &endp = storage->localData();
-        endp.removeAt(endp.indexOf(this));
+        QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
+        endp.removeAll(this);
         QMetaObject::invokeMethod(this, "registerWithThreadData", Qt::QueuedConnection);
     }
 
@@ -285,9 +284,7 @@ void UnixEndPoint::terminateConnection()
         QString op = QString::fromLatin1("<-> SFW close on %1 uep %2 interface %3").arg(client_fd)
                 .arg(endp.indexOf(this)).arg(objectName());
         QServiceDebugLog::instance()->appendToLog(op);
-        int idx = endp.indexOf(this);
-        if (idx >= 0)
-            endp.removeAt(idx);
+        endp.removeAll(this);
         readNotifier->setEnabled(false);
         ::close(client_fd);
         client_fd = -1;
@@ -373,9 +370,7 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
             foreach (QRemoteServiceRegisterUnixPrivate *e, endpu) {
                 if (fstat(e->server_fd, &buf) == -1) {
                     QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("### holding a bad service file descriptor %1").arg(e->server_fd));
-                    int i = endpu.indexOf(e);
-                    if (i >= 0)
-                        endpu.removeAt(i);
+                    endpu.removeAll(e);
                 }
             }
 
@@ -383,9 +378,7 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
                 if (w->type != Waiter::Timer) {
                     if (fstat(w->fd, &buf) == -1) {
                         QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("### holding a bad file descriptor %1").arg(w->fd));
-                        int i = conn.indexOf(w);
-                        if (i >= 0)
-                            conn.removeAt(i);
+                        conn.removeAll(w);
                     }
                 }
             }
@@ -487,13 +480,13 @@ void UnixEndPoint::readIncoming()
     raw_data.resize(4096);
     int bytes = ::read(client_fd, raw_data.data(), 4096);
     if (bytes <= 0) {
-        readNotifier->setEnabled(false);
+        /* Linux can give us a spurious EAGAIN... isn't it nice? */
+        /* No Comment */
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
+
         terminateConnection();
         socketError(qt_error_string(errno));
-
-        // socket error, remove the notification
-        QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
-        endp.removeAt(endp.indexOf(this));
         return;
     }
     raw_data.resize(bytes);
@@ -580,7 +573,7 @@ int UnixEndPoint::write(const char *data, int len)
         int ret = ::write(client_fd, data+(len-left), left);
         if (ret == len) {
             break;
-        } else if ((ret == -1 && errno == EAGAIN) ||
+        } else if ((ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) ||
                    (ret >= 0)) {
 
             left -= ret;
@@ -600,7 +593,7 @@ int UnixEndPoint::write(const char *data, int len)
             if (!FD_ISSET(client_fd, &write)) {
                 qWarning() << "Failed to write data to socket" << client_fd << errno << qt_error_string(errno);
                 QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
-                endp.removeAt(endp.indexOf(this));
+                endp.removeAll(this);
                 return -1;
             }
         } else {
@@ -666,9 +659,7 @@ QRemoteServiceRegisterUnixPrivate::QRemoteServiceRegisterUnixPrivate(QObject* pa
 QRemoteServiceRegisterUnixPrivate::~QRemoteServiceRegisterUnixPrivate()
 {
     QList<QRemoteServiceRegisterUnixPrivate *> &endp = _q_remoteservice()->localData();
-    int i = endp.indexOf(this);
-    if (i >= 0)
-        endp.removeAt(i);
+    endp.removeAll(this);
 }
 
 void QRemoteServiceRegisterUnixPrivate::publishServices( const QString& ident)
@@ -699,7 +690,7 @@ void QRemoteServiceRegisterUnixPrivate::processIncoming()
 
             getSecurityFilter()(&creds);
             if (!creds.isClientAccepted()) {
-                ::close(client_fd);
+                ipcEndPoint->terminateConnection();
                 return;
             }
         }
@@ -787,7 +778,7 @@ bool QRemoteServiceRegisterUnixPrivate::event(QEvent *e)
 {
     if (e->type() == QEvent::ThreadChange && server_fd != -1) {
         QList<QRemoteServiceRegisterUnixPrivate *> &endp = _q_remoteservice()->localData();
-        endp.removeAt(endp.indexOf(this));
+        endp.removeAll(this);
         QMetaObject::invokeMethod(this, "registerWithThreadData", Qt::QueuedConnection);
     }
 
