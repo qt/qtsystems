@@ -219,6 +219,7 @@ void ObjectEndPoint::disconnected()
 {
     if (d->endPointType == Service) {
         InstanceManager::instance()->removeObjectInstance(d->entry, d->serviceInstanceId);
+        deleteLater();
     }
     foreach (Response *r, openRequests) {
         r->error = QLatin1Literal("end point disconnected");
