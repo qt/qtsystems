@@ -592,8 +592,6 @@ int UnixEndPoint::write(const char *data, int len)
 
             if (!FD_ISSET(client_fd, &write)) {
                 qWarning() << "Failed to write data to socket" << client_fd << errno << qt_error_string(errno);
-                QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
-                endp.removeAll(this);
                 return -1;
             }
         } else {
