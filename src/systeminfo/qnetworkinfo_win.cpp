@@ -39,17 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qnetworkinfo_linux_p.h"
+#include "qnetworkinfo_win_p.h"
 
 QT_BEGIN_NAMESPACE
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
-{
-}
-
-QNetworkInfoPrivate::~QNetworkInfoPrivate()
 {
 }
 
