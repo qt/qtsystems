@@ -45,6 +45,8 @@
 #include <qmetatype.h>
 #include <qvarlengtharray.h>
 
+#include <stdlib.h>
+
 /*!
     \class QSlotInvoker
     \inpublicgroup QtBaseModule
@@ -82,7 +84,7 @@ public:
     ~QSlotInvokerPrivate()
     {
         if ( types )
-            qFree( types );
+            free(types);
     }
 };
 

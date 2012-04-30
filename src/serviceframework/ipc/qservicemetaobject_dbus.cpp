@@ -44,6 +44,8 @@
 #include "qsignalintercepter_p.h"
 #include <QDebug>
 
+#include <stdlib.h>
+
 QT_BEGIN_NAMESPACE
 
 class ServiceMetaSignalIntercepter : public QSignalIntercepter
@@ -100,7 +102,7 @@ QServiceMetaObjectDBus::QServiceMetaObjectDBus(QObject* service, bool signalsObj
 QServiceMetaObjectDBus::~QServiceMetaObjectDBus()
 {
     if (d->dbusMeta)
-        qFree(const_cast<QMetaObject*>(d->dbusMeta));
+        free(const_cast<QMetaObject*>(d->dbusMeta));
 
     delete d;
 }

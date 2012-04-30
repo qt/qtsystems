@@ -44,6 +44,8 @@
 #include <qobjectdefs.h>
 #include <qdebug.h>
 
+#include <stdlib.h>
+
 /*!
     \class QSignalIntercepter
     \inpublicgroup QtBaseModule
@@ -81,7 +83,7 @@ public:
     ~QSignalIntercepterPrivate()
     {
         if ( types )
-            qFree( types );
+            free(types);
     }
 };
 
@@ -268,7 +270,7 @@ int *QSignalIntercepter::connectionTypes( const QByteArray& member, int& nargs )
             ++nargs;
     }
 
-    types = (int *) qMalloc((nargs+1)*sizeof(int));
+    types = (int *) malloc((nargs + 1) * sizeof(int));
     types[nargs] = 0;
     for (int n = 0; n < nargs; ++n) {
         e = s;
@@ -280,7 +282,7 @@ int *QSignalIntercepter::connectionTypes( const QByteArray& member, int& nargs )
         types[n] = typeFromName(type);
         if (!types[n]) {
             qWarning("QSignalIntercepter::connectionTypes: Cannot marshal arguments of type '%s'", type.data());
-            qFree(types);
+            free(types);
             return 0;
         }
     }

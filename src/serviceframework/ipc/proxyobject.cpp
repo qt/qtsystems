@@ -50,6 +50,8 @@
 #include <QDebug>
 #include <QCoreApplication>
 
+#include <stdlib.h>
+
 QT_BEGIN_NAMESPACE
 
 class QServiceProxyPrivate
@@ -120,7 +122,7 @@ QServiceProxy::~QServiceProxy()
     delete[] d->remoteToLocal;
     delete[] d->localToRemote;
     if (d->meta)
-        qFree(d->meta);
+        free(d->meta);
     delete d;
 }
 
@@ -303,7 +305,7 @@ QServiceProxyBase::QServiceProxyBase(ObjectEndPoint *endpoint, QObject *parent)
 QServiceProxyBase::~QServiceProxyBase()
 {
     if (d->meta)
-        qFree(d->meta);
+        free(d->meta);
     delete d;
 }
 
