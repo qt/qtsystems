@@ -49,7 +49,7 @@ Q_GLOBAL_STATIC(GConfLayer, gConfLayer)
 
 GConfLayer::GConfLayer()
 {
-    GConfItem *gconfItem = new GConfItem(QString::fromAscii("/"), true, this);
+    GConfItem *gconfItem = new GConfItem(QString::fromLatin1("/"), true, this);
     connect(gconfItem, SIGNAL(subtreeChanged(QString,QVariant)), this, SLOT(notifyChanged(QString,QVariant)));
 }
 
@@ -148,7 +148,7 @@ bool GConfLayer::getValue(Handle handle, const QString &subPath, QVariant *data)
         break;
     case QVariant::String: {
         QString readString = readValue.toString();
-        QDataStream readStream(QByteArray::fromBase64(readString.toAscii()));
+        QDataStream readStream(QByteArray::fromBase64(readString.toLatin1()));
         QVariant serializedValue;
         readStream >> serializedValue;
         if (serializedValue.isValid())
@@ -321,7 +321,7 @@ bool GConfLayer::setValue(QValueSpacePublisher */*creator*/, Handle handle, cons
         QByteArray byteArray;
         QDataStream writeStream(&byteArray, QIODevice::WriteOnly);
         writeStream << data;
-        QString serializedValue(QString::fromAscii(byteArray.toBase64().data()));
+        QString serializedValue(QString::fromLatin1(byteArray.toBase64().data()));
         gconfItem.set(serializedValue);
     }
 

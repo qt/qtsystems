@@ -265,7 +265,7 @@ void QJsonDbWrapper::onJsonDbLockObjectsReadRequestFinished()
 
     if (results.size() > 0) {
         for (int i = 0; i < results.size(); i++) {
-            const QByteArray objectType = results.at(i).value(QStringLiteral("_type")).toString().toAscii();
+            const QByteArray objectType = results.at(i).value(QStringLiteral("_type")).toString().toLatin1();
             if (objectType.size() == strlen("com.nokia.mt.system.Lockscreen") &&
                 strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
                 if (!enabledLocks.testFlag(QDeviceInfo::TouchOrKeyboardLock))
@@ -390,7 +390,7 @@ void QJsonDbWrapper::onJsonDbWatcherLocksNotificationsAvailable()
     QList<QJsonDbNotification> notifications = locksWatcher->takeNotifications();
     if (notifications.size() > 0) {
         const QJsonDbNotification notification = notifications.at(0);
-        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toAscii();
+        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toLatin1();
         if (notification.action() == QJsonDbWatcher::Removed) {
             if (objectType.size() == strlen("com.nokia.mt.system.Lockscreen")
                     && strcmp(objectType.constData(), "com.nokia.mt.system.Lockscreen") == 0) {
@@ -472,10 +472,10 @@ void QJsonDbWrapper::onJsonDbWatcherSoundSettingsNotificationsAvailable()
     QList<QJsonDbNotification> notifications = soundSettingsWatcher->takeNotifications();
     if (notifications.size() > 0) {
         const QJsonDbNotification notification = notifications.at(0);
-        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toAscii();
+        const QByteArray objectType = notification.object().value(QStringLiteral("_type")).toString().toLatin1();
         if (objectType.size() == strlen("com.nokia.mt.settings.SystemSettings")
                 && strcmp(objectType.constData(), "com.nokia.mt.settings.SystemSettings") == 0) {
-            const QByteArray identifier = notification.object().value(QStringLiteral("identifier")).toString().toAscii();
+            const QByteArray identifier = notification.object().value(QStringLiteral("identifier")).toString().toLatin1();
             if (identifier.size() == strlen("com.nokia.mt.settings.sounds")
                     && strcmp(identifier.constData(), "com.nokia.mt.settings.sounds") == 0) {
                 bool vibration = notification.object().value(QString(QStringLiteral("settings"))).toObject().value(QString(QStringLiteral("vibrationOn"))).toBool();

@@ -118,9 +118,9 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
         char buffer[512];
         QString uri;
         while ((getmntent_r(fsDescription, &entry, buffer, sizeof(buffer))) != NULL) {
-            if (drive != QString::fromAscii(entry.mnt_dir))
+            if (drive != QString::fromLatin1(entry.mnt_dir))
                 continue;
-            int idx = fileinfolist.indexOf(QString::fromAscii(entry.mnt_fsname));
+            int idx = fileinfolist.indexOf(QString::fromLatin1(entry.mnt_fsname));
             if (idx != -1)
                 uri = fileinfolist[idx].fileName();
             break;
@@ -182,7 +182,7 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
     struct mntent entry;
     char buffer[512];
     while ((getmntent_r(fsDescription, &entry, buffer, sizeof(buffer))) != NULL) {
-        if (drive != QString::fromAscii(entry.mnt_dir))
+        if (drive != QString::fromLatin1(entry.mnt_dir))
             continue;
 
         if (strcmp(entry.mnt_type, "binfmt_misc") == 0
@@ -220,7 +220,7 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
         }
 
         // Now need to guess if it's InternalDrive or RemovableDrive
-        QString fsName(QString::fromAscii(entry.mnt_fsname));
+        QString fsName(QString::fromLatin1(entry.mnt_fsname));
         if (fsName.contains(QString(QStringLiteral("mapper")))) {
             struct stat status;
             stat(entry.mnt_fsname, &status);
@@ -358,7 +358,7 @@ void QStorageInfoPrivate::updateLogicalDrives()
 
     logicalDrives.clear();
     while (getmntent_r(fsDescription, &entry, buffer, sizeof(buffer)) != NULL)
-        logicalDrives << QString::fromAscii(entry.mnt_dir);
+        logicalDrives << QString::fromLatin1(entry.mnt_dir);
     endmntent(fsDescription);
 }
 

@@ -66,12 +66,12 @@ struct GConfItemPrivate
 
 static QByteArray convertKey(QString key)
 {
-    if (key.startsWith(QString::fromAscii("/"))) {
+    if (key.startsWith(QString::fromLatin1("/"))) {
         return key.toUtf8();
     } else {
         qWarning() << "Using dot-separated key names with GConfItem is deprecated.";
-        qWarning() << "Please use" << QString::fromAscii("/") + key.replace(QString::fromAscii("."), QString::fromAscii("/")) << "instead of" << key;
-        return QString(QString::fromAscii("/") + key.replace(QString::fromAscii("."), QString::fromAscii("/"))).toUtf8();
+        qWarning() << "Please use" << QString::fromLatin1("/") + key.replace(QString::fromLatin1("."), QString::fromLatin1("/")) << "instead of" << key;
+        return QString(QString::fromLatin1("/") + key.replace(QString::fromLatin1("."), QString::fromLatin1("/"))).toUtf8();
     }
 }
 

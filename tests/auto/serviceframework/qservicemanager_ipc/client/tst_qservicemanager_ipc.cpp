@@ -967,7 +967,7 @@ void tst_QServiceManager_IPC::verifyUniqueClassInfo()
     QFETCH(QString, classInfoValue);
 
     const QMetaObject* meta = serviceUnique->metaObject();
-    const int index = meta->indexOfClassInfo(classInfoKey.toAscii().constData());
+    const int index = meta->indexOfClassInfo(classInfoKey.toLatin1().constData());
 
     QMetaClassInfo info = meta->classInfo(index);
     QCOMPARE(classInfoKey, QString(info.name()));
@@ -1015,7 +1015,7 @@ void tst_QServiceManager_IPC::verifyUniqueEnumerator()
     QFETCH(QList<int>, enumKeyValues);
 
     const QMetaObject* meta = serviceUnique->metaObject();
-    const int index = meta->indexOfEnumerator(enumName.toAscii().constData());
+    const int index = meta->indexOfEnumerator(enumName.toLatin1().constData());
     QMetaEnum metaEnum = meta->enumerator(index);
 
     QVERIFY(metaEnum.isValid());
@@ -1026,7 +1026,7 @@ void tst_QServiceManager_IPC::verifyUniqueEnumerator()
 
     for (int i=0; i<enumKeyNames.count(); i++) {
         QCOMPARE(enumKeyNames.at(i), QString(metaEnum.valueToKey(enumKeyValues.at(i))));
-        QCOMPARE(enumKeyValues.at(i), metaEnum.keyToValue(enumKeyNames.at(i).toAscii().constData()));
+        QCOMPARE(enumKeyValues.at(i), metaEnum.keyToValue(enumKeyNames.at(i).toLatin1().constData()));
     }
 }
 

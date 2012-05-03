@@ -120,7 +120,7 @@ void CommandProcessor::execute(const QStringList &options, const QString &cmd, c
     if (!setOptions(options))
         return;
 
-    int methodIndex = metaObject()->indexOfMethod(cmd.toAscii() + "(QStringList)");
+    int methodIndex = metaObject()->indexOfMethod(cmd.toLatin1() + "(QStringList)");
     if (methodIndex < 0) {
         *stdoutStream << "Bad command: " << cmd << "\n\n";
         showUsage();

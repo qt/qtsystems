@@ -325,7 +325,7 @@ QString QDeviceInfoPrivate::productName()
                          QStringList() << QStringLiteral("-c"));
         if (lsbRelease.waitForFinished()) {
             QString buffer(QString::fromLocal8Bit(lsbRelease.readAllStandardOutput().constData()));
-            productNameBuffer = buffer.section(QChar::fromAscii('\t'), 1, 1).simplified();
+            productNameBuffer = buffer.section(QChar::fromLatin1('\t'), 1, 1).simplified();
         }
     }
 #endif
@@ -365,7 +365,7 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
                              QStringList() << QStringLiteral("-r"));
             if (lsbRelease.waitForFinished()) {
                 QString buffer(QString::fromLocal8Bit(lsbRelease.readAllStandardOutput().constData()));
-                versionBuffer[0] = buffer.section(QChar::fromAscii('\t'), 1, 1).simplified();
+                versionBuffer[0] = buffer.section(QChar::fromLatin1('\t'), 1, 1).simplified();
             }
         }
         if (versionBuffer[0].isEmpty()) {

@@ -444,7 +444,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
             qWarning() << "ServiceDatabase::registerService():-"
                         << "Unable to confirm if implementation version"
                         << (QString::number(interface.majorVersion()) + "."
-                           + QString::number(interface.minorVersion())).toAscii()
+                           + QString::number(interface.minorVersion())).toLatin1()
                         << "for interface" << interface.interfaceName()
                         << "is already registered for service "
                         << interface.serviceName()

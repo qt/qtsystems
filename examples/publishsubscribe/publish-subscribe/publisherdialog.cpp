@@ -107,7 +107,7 @@ void PublisherDialog::setStringValue()
 
 void PublisherDialog::setByteArrayValue()
 {
-    publisher->setValue(QStringLiteral("byteArrayValue"), ui->byteArrayValue->text().toAscii());
+    publisher->setValue(QStringLiteral("byteArrayValue"), ui->byteArrayValue->text().toLatin1());
 }
 //! [0]
 

@@ -378,7 +378,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
         if (interface < dirs.size()) {
             QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/address")));
             if (carrier.open(QIODevice::ReadOnly))
-                return QString::fromAscii(carrier.readAll().simplified().data());
+                return QString::fromLatin1(carrier.readAll().simplified().data());
         }
         break;
     }
@@ -388,7 +388,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
         if (interface < dirs.size()) {
             QFile carrier(*NETWORK_SYSFS_PATH() + dirs.at(interface) + QString(QStringLiteral("/address")));
             if (carrier.open(QIODevice::ReadOnly))
-                return QString::fromAscii(carrier.readAll().simplified().data());
+                return QString::fromLatin1(carrier.readAll().simplified().data());
         }
         break;
     }
@@ -416,7 +416,7 @@ QString QNetworkInfoPrivate::macAddress(QNetworkInfo::NetworkMode mode, int inte
                     }
                     char address[18];
                     ba2str(&deviceInfo.bdaddr, address);
-                    macAddress = QString::fromAscii(address);
+                    macAddress = QString::fromLatin1(address);
                 }
             }
         }
@@ -1028,7 +1028,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
                 strncpy(iwInfo.ifr_name, fileName.toLocal8Bit().constData(), IFNAMSIZ);
                 if (ioctl(sock, SIOCGIWESSID, &iwInfo) == 0) {
                     close(sock);
-                    return QString::fromAscii((const char *)iwInfo.u.essid.pointer);
+                    return QString::fromLatin1((const char *)iwInfo.u.essid.pointer);
                 }
 
                 close(sock);
@@ -1042,7 +1042,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
         char domainName[64];
         if (getdomainname(domainName, 64) == 0) {
             if (strcmp(domainName, "(none)") != 0)
-                return QString::fromAscii(domainName);
+                return QString::fromLatin1(domainName);
         }
         break;
     }
@@ -1062,7 +1062,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
                 if (fd > 0) {
                     char name[249];
                     if (hci_read_local_name(fd, sizeof(name), name, 0) == 0)
-                        networkName = QString::fromAscii(name);
+                        networkName = QString::fromLatin1(name);
                 }
             }
         }

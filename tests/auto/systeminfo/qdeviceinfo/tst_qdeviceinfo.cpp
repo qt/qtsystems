@@ -100,10 +100,10 @@ void tst_QDeviceInfo::tst_lockTypes()
 
 void tst_QDeviceInfo::tst_version()
 {
-    QRegExp osversion(QString::fromAscii("(\\d+(\\.\\d+)*)?"));
+    QRegExp osversion(QString::fromLatin1("(\\d+(\\.\\d+)*)?"));
     QVERIFY(osversion.exactMatch(deviceInfo->version(QDeviceInfo::Os)));
 
-    QRegExp firmwareversion(QString::fromAscii(".*"));
+    QRegExp firmwareversion(QString::fromLatin1(".*"));
     QVERIFY(firmwareversion.exactMatch(deviceInfo->version(QDeviceInfo::Firmware)));
 }
 
