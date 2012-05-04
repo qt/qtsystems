@@ -77,14 +77,13 @@ void tst_QBatteryInfo::tst_flow()
         switch (chargingState) {
         case QBatteryInfo::Charging:
             QVERIFY(batteryInfo.currentFlow(i) < 0);
-            QVERIFY(batteryInfo.remainingChargingTime(i) > 0);
+            QVERIFY(batteryInfo.remainingChargingTime(i) >= 0);
             break;
         case QBatteryInfo::Full:
-            QVERIFY(batteryInfo.currentFlow(i) <= 0);
             QVERIFY(batteryInfo.remainingChargingTime(i) == 0);
             break;
         case QBatteryInfo::NotCharging:
-            QVERIFY(batteryInfo.currentFlow(i) == 0);
+            QVERIFY(batteryInfo.currentFlow(i) >= 0);
             QVERIFY(batteryInfo.remainingChargingTime(i) == 0);
             break;
         case QBatteryInfo::Discharging:
@@ -92,6 +91,8 @@ void tst_QBatteryInfo::tst_flow()
             QVERIFY(batteryInfo.remainingChargingTime(i) == 0);
             break;
         case QBatteryInfo::UnknownChargingState:
+            QVERIFY(batteryInfo.currentFlow(i) == 0);
+            QVERIFY(batteryInfo.remainingChargingTime(i) == -1);
             break;
         }
     }
