@@ -142,14 +142,24 @@ public:
         db->connectToServer();
 
         qRegisterMetaType<QJsonDbRequest*>("QJsonDbRequest*");
+
+        cache_timeout.setSingleShot(true);
+        cache_timeout.setInterval(JSON_EXPIRATION_TIMER);
+        req_timeout.setSingleShot(true);
+        req_timeout.setInterval(JSON_EXPIRATION_TIMER);
+
+        connect(&cache_timeout, SIGNAL(timeout()), this, SLOT(cacheRequestTimeout()));
+        connect(&req_timeout, SIGNAL(timeout()), this, SLOT(requestTimeout()));
     }
 
+    // called from any thread
     void newCacheRequest(QJsonDbRequest *req)
     {
         worker->cache_mutex.lock();
         QMetaObject::invokeMethod(this, "doCacheRequest", Q_ARG(QJsonDbRequest *, req));
     }
 
+    // called from any thread
     void newRequest(QJsonDbRequest *req)
     {
         worker->request_mutex.lock();
@@ -163,6 +173,7 @@ private slots:
         db->send(req);
         connect(req, SIGNAL(finished()), this, SLOT(requestCacheFinishedSlot()));
         connect(req, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)), this, SLOT(requestCacheFinishedSlot()));
+        cache_timeout.start();
     }
 
     void doNewRequest(QJsonDbRequest *req)
@@ -171,14 +182,24 @@ private slots:
         connect(req, SIGNAL(finished()), this, SLOT(requestFinishedSlot()));
         connect(req, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
                 this, SLOT(requestErrorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
+        req_timeout.start();
     }
 
     void requestCacheFinishedSlot()
     {
         QJsonDbReadRequest *request = qobject_cast<QJsonDbReadRequest *>(QObject::sender());
         worker->setCache(request->takeResults());
-        worker->cache_mutex.unlock();
+        if (cache_timeout.isActive())
+            worker->cache_mutex.unlock();
+        cache_timeout.stop();
         request->deleteLater();
+    }
+    void cacheRequestTimeout()
+    {
+        qWarning() << "SFW timeout fetching services from jsondb";
+        QList<QJsonObject> empty;
+        worker->setCache(empty);
+        worker->cache_mutex.unlock();
     }
 
     void requestFinishedSlot()
@@ -187,18 +208,32 @@ private slots:
         disconnect(QObject::sender(), SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
                 this, SLOT(requestErrorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
 
-        worker->request_mutex.unlock();
+        if (req_timeout.isActive())
+            worker->request_mutex.unlock();
+        req_timeout.stop();
     }
     void requestErrorSlot(QtJsonDb::QJsonDbRequest::ErrorCode err, QString msg)
     {
         worker->results_error = err;
         worker->results_errormsg = msg;
+        if (req_timeout.isActive())
+            worker->request_mutex.unlock();
+        req_timeout.stop();
+    }
+    void requestTimeout()
+    {
+        qWarning() << "SFW timeout fetching jsondb request";
+        worker->results_error = QJsonDbRequest::DatabaseError;
+        worker->results_errormsg = QStringLiteral("Database timeout");
         worker->request_mutex.unlock();
     }
 
 private:
     QJsonDbConnection *db;
     JsondbWorker *worker;
+
+    QTimer cache_timeout;
+    QTimer req_timeout;
 };
 
 JsondbWorker::JsondbWorker() :
@@ -217,7 +252,7 @@ JsondbWorker::JsondbWorker() :
     dbwatcher->setQuery(QLatin1String("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
     db->addWatcher(dbwatcher);
 
-    thread_timeout.setInterval(15000);
+    thread_timeout.setInterval(JSON_EXPIRATION_TIMER*2);
     thread_timeout.setSingleShot(true);
     connect(&thread_timeout, SIGNAL(timeout()), this, SLOT(reapThread()));
 
