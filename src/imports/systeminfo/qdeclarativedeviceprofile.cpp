@@ -110,15 +110,15 @@ int QDeclarativeDeviceProfile::voiceRingtoneVolume() const
 }
 
 /*!
-    \qmlproperty enum DeviceProfile::currentProfileType
+    \qmlproperty enumeration DeviceProfile::currentProfileType
 
     Returns the type of the current profile, possible types are:
     \list
-    \li UnknownProfile    Profile unknown, profile type requested but no result received yet or an error occured.
-    \li SilentProfile     Neither sound nor vibration is on.
-    \li NormalProfile     Normal sound is on.
-    \li VibrationProfile  Only vibration is on, and sound is off.
-    \li BeepProfile       Only beep is on.
+    \li DeviceProfile.UnknownProfile    - Profile unknown, profile type requested but no result received yet or an error occured.
+    \li DeviceProfile.SilentProfile     - Neither sound nor vibration is on.
+    \li DeviceProfile.NormalProfile     - Normal sound is on.
+    \li DeviceProfile.VibrationProfile  - Only vibration is on, and sound is off.
+    \li DeviceProfile.BeepProfile       - Only beep is on.
     \endlist
  */
 

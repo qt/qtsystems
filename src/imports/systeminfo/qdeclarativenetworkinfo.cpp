@@ -113,20 +113,20 @@ void QDeclarativeNetworkInfo::setMonitorCurrentNetworkMode(bool monitor)
 }
 
 /*!
-    \qmlproperty enum NetworkInfo::currentNetworkMode
+    \qmlproperty enumeration NetworkInfo::currentNetworkMode
 
     This property holds the current network mode. Possible values are:
     \list
-    \li UnknownMode
-    \li GsmMode
-    \li CdmaMode
-    \li WcdmaMode
-    \li WlanMode
-    \li EthernetMode
-    \li BluetoothMode
-    \li WimaxMode
-    \li LteMode
-    \li TdscdmaMode
+    \li NetworkInfo.UnknownMode     - The network is unknown or an error occured.
+    \li NetworkInfo.GsmMode         - Global System for Mobile (GSM) network.
+    \li NetworkInfo.CdmaMode        - Code Division Multiple Access (CDMA) network.
+    \li NetworkInfo.WcdmaMode       - Wideband Code Division Multiple Access (WCDMA) network.
+    \li NetworkInfo.WlanMode        - Wireless local area network (WLAN) network.
+    \li NetworkInfo.EthernetMode    - Local area network (LAN), or Ethernet network.
+    \li NetworkInfo.BluetoothMode   - Bluetooth network.
+    \li NetworkInfo.WimaxMode       - Worldwide Interoperability for Microwave Access (WiMAX) network.
+    \li NetworkInfo.LteMode         - 3GPP Long Term Evolution (LTE) network.
+    \li NetworkInfo.TdscdmaMode     - Time Division Synchronous Code Division Multiple Access (TD-SCDMA) network.
     \endlist
  */
 QDeclarativeNetworkInfo::NetworkMode QDeclarativeNetworkInfo::currentNetworkMode() const
@@ -263,11 +263,11 @@ void QDeclarativeNetworkInfo::setMonitorCurrentCellDataTechnology(bool monitor)
 
     Returns the current cell data technology of the given \a interface. Possible values are:
     \list
-    \li UnknownDataTechnology
-    \li GprsDataTechnology
-    \li EdgeDataTechnology
-    \li UmtsDataTechnology
-    \li HspaDataTechnology
+    \li NetworkInfo.UnknownDataTechnology   - The cellular technology is unknown or an error occured.
+    \li NetworkInfo.GprsDataTechnology      - General Packet Radio Service (GPRS) data service.
+    \li NetworkInfo.EdgeDataTechnology      - Enhanced Data Rates for GSM Evolution (EDGE) data service.
+    \li NetworkInfo.UmtsDataTechnology      - Universal Mobile Telecommunications System (UMTS) data service.
+    \li NetworkInfo.HspaDataTechnology      - High Speed Packet Access (HSPA) data service.
     \endlist
  */
 int QDeclarativeNetworkInfo::currentCellDataTechnology(int interface) const
@@ -318,14 +318,14 @@ void QDeclarativeNetworkInfo::setMonitorNetworkStatus(bool monitor)
 
     Returns the status of the given \a mode and \a interface. Possible values are:
     \list
-    \li UnknownStatus
-    \li NoNetworkAvailable
-    \li EmergencyOnly
-    \li Searching
-    \li Busy
-    \li Denied
-    \li HomeNetwork
-    \li Roaming
+    \li NetworkInfo.UnknownStatus        - The status is unknown or an error occured.
+    \li NetworkInfo.NoNetworkAvailable   - There is no network available.
+    \li NetworkInfo.EmergencyOnly        - The network only allows emergency calls.
+    \li NetworkInfo.Searching            - The device is searching or connecting to the network.
+    \li NetworkInfo.Busy                 - The network is too busy to be connected.
+    \li NetworkInfo.Denied               - The connection to the network has been denied.
+    \li NetworkInfo.HomeNetwork          - The device is connected to the home network.
+    \li NetworkInfo.Roaming              - The device is connected to some roaming network.
     \endlist
  */
 int QDeclarativeNetworkInfo::networkStatus(QDeclarativeNetworkInfo::NetworkMode mode, int interface) const

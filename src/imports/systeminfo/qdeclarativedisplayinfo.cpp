@@ -149,10 +149,10 @@ int QDeclarativeDisplayInfo::physicalWidth(int screen) const
 
     Returns the backlight state of the given \a screen. Possible values are:
     \list
-    \li BacklightUnknown  The state of the backlight is unkown.
-    \li BacklightOff      Backlight is turned off.
-    \li BacklightDimmed   Backlight has been dimmed.
-    \li BacklightOn       Backlight is on.
+    \li DisplayInfo.BacklightUnknown  - The state of the backlight is unkown.
+    \li DisplayInfo.BacklightOff      - Backlight is turned off.
+    \li DisplayInfo.BacklightDimmed   - Backlight has been dimmed.
+    \li DisplayInfo.BacklightOn       - Backlight is on.
     \endlist
 */
 int QDeclarativeDisplayInfo::backlightState(int screen) const

@@ -72,10 +72,10 @@ QDeclarativeDeviceInfo::~QDeclarativeDeviceInfo()
 
     This property holds the activated locks. Available locks include:
     \list
-    \li NoLock               No lock.
-    \li PinLock              Device can be locked by PIN code or password.
-    \li TouchOrKeyboardLock  Device can be locked by touch or keyboard.
-    \li UnknownLock          lock types requested but no result received yet.
+    \li DeviceInfo.NoLock               - No lock.
+    \li DeviceInfo.PinLock              - Device can be locked by PIN code or password.
+    \li DeviceInfo.TouchOrKeyboardLock  - Device can be locked by touch or keyboard.
+    \li DeviceInfo.UnknownLock          - Lock types requested but no result received yet.
     \endlist
 */
 QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::activatedLocks() const
@@ -99,10 +99,10 @@ QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::activatedLocks() c
 
     This property holds the enabled locks. Available locks include:
     \list
-    \li NoLock               No lock.
-    \li PinLock              Device can be locked by PIN code or password.
-    \li TouchOrKeyboardLock  Device can be locked by touch or keyboard.
-    \li UnknownLock          lock types requested but no result received yet.
+    \li DeviceInfo.NoLock               - No lock.
+    \li DeviceInfo.PinLock              - Device can be locked by PIN code or password.
+    \li DeviceInfo.TouchOrKeyboardLock  - Device can be locked by touch or keyboard.
+    \li DeviceInfo.UnknownLock          - Lock types requested but no result received yet.
     \endlist
 */
 QDeclarativeDeviceInfo::LockTypeFlags QDeclarativeDeviceInfo::enabledLocks() const
@@ -147,15 +147,15 @@ void QDeclarativeDeviceInfo::setMonitorThermalState(bool monitor)
 }
 
 /*!
-    \qmlproperty enum DeviceInfo::thermalState
+    \qmlproperty enumeration DeviceInfo::thermalState
 
     This property holds the thermal state. Possible values are:
     \list
-    \li UnknownThermal
-    \li NormalThermal
-    \li WarningThermal
-    \li AlertThermal
-    \li ErrorThermal
+    \li DeviceInfo.UnknownThermal   - The thermal state is unknown.
+    \li DeviceInfo.NormalThermal    - The thermal state is normal.
+    \li DeviceInfo.WarningThermal   - The thermal state is warning.
+    \li DeviceInfo.AlertThermal     - The thermal state is alert.
+    \li DeviceInfo.ErrorThermal     - The thermal state is error.
     \endlist
 */
 QDeclarativeDeviceInfo::ThermalState QDeclarativeDeviceInfo::thermalState() const
@@ -169,21 +169,21 @@ QDeclarativeDeviceInfo::ThermalState QDeclarativeDeviceInfo::thermalState() cons
     Returns true if the \a feature is supported, otherwise false. The following features can be
     queried:
     \list
-    \li BluetoothFeature      Bluetooth feature.
-    \li CameraFeature         Camera feature.
-    \li FmRadioFeature        Frequency modulation (FM) radio feature.
-    \li FmTransmitterFeature  Frequency modulation (FM) radio transmitter feature.
-    \li InfraredFeature       Infrared communication feature.
-    \li LedFeature            Light-emitting diode (LED) feature.
-    \li MemoryCardFeature     Memory card feature.
-    \li UsbFeature            Universal system bus (USB) feature.
-    \li VibrationFeature      Vibration feature.
-    \li WlanFeature           Wireless local area network (WLAN) feature.
-    \li SimFeature            Subscriber identity module (SIM) feature.
-    \li PositioningFeature    Positioning feature, e.g. Global Positioning System (GPS).
-    \li VideoOutFeature       Video out feature.
-    \li HapticsFeature        Haptics feature, the platform can provide audio and/or visual and/or vibration feedback.
-    \li NfcFeature            Near Field Communication (NFC) feature
+    \li DeviceInfo.BluetoothFeature      - Bluetooth feature.
+    \li DeviceInfo.CameraFeature         - Camera feature.
+    \li DeviceInfo.FmRadioFeature        - Frequency modulation (FM) radio feature.
+    \li DeviceInfo.FmTransmitterFeature  - Frequency modulation (FM) radio transmitter feature.
+    \li DeviceInfo.InfraredFeature       - Infrared communication feature.
+    \li DeviceInfo.LedFeature            - Light-emitting diode (LED) feature.
+    \li DeviceInfo.MemoryCardFeature     - Memory card feature.
+    \li DeviceInfo.UsbFeature            - Universal system bus (USB) feature.
+    \li DeviceInfo.VibrationFeature      - Vibration feature.
+    \li DeviceInfo.WlanFeature           - Wireless local area network (WLAN) feature.
+    \li DeviceInfo.SimFeature            - Subscriber identity module (SIM) feature.
+    \li DeviceInfo.PositioningFeature    - Positioning feature, e.g. Global Positioning System (GPS).
+    \li DeviceInfo.VideoOutFeature       - Video out feature.
+    \li DeviceInfo.HapticsFeature        - Haptics feature, the platform can provide audio and/or visual and/or vibration feedback.
+    \li DeviceInfo.NfcFeature            - Near Field Communication (NFC) feature
     \endlist
 */
 bool QDeclarativeDeviceInfo::hasFeature(QDeclarativeDeviceInfo::Feature feature) const
@@ -264,10 +264,10 @@ QString QDeclarativeDeviceInfo::uniqueDeviceID() const
     Returns the version of \a type. In case of error, or the version is unknown, an empty string
     is returned. The following versions can be queried:
     \list
-    \li Os        Operating system version. For Linux, it returns the version of the
-                 distribution if any.
-    \li Firmware  Version of (flashable) system as a whole. For Linux, it's the version
-                 of the kernel.
+    \li DeviceInfo.Os         - Operating system version. For Linux, it returns the version of the
+                                distribution if any.
+    \li DeviceInfo.Firmware   - Version of (flashable) system as a whole. For Linux, it's the version
+                                of the kernel.
     \endlist
 */
 QString QDeclarativeDeviceInfo::version(QDeclarativeDeviceInfo::Version type) const

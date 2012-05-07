@@ -140,14 +140,14 @@ void QDeclarativeBatteryInfo::setMonitorChargerType(bool monitor)
 }
 
 /*!
-    \qmlproperty enum BatteryInfo::chargerType
+    \qmlproperty enumeration BatteryInfo::chargerType
 
     This property holds the type of the charger. Possible values are:
     \list
-    \li BatteryInfo.UnknownCharger
-    \li BatteryInfo.WallCharger
-    \li BatteryInfo.USBCharger
-    \li BatteryInfo.VariableCurrentCharger
+    \li BatteryInfo.UnknownCharger           - The charger type is unknown, or no charger.
+    \li BatteryInfo.WallCharger              - Using wall (mains) charger.
+    \li BatteryInfo.USBCharger               - Using USB charger when the system cannot differentiate the current.
+    \li BatteryInfo.VariableCurrentCharger   - Using variable current charger such as bicycle or solar.
     \endlist
 */
 QDeclarativeBatteryInfo::ChargerType QDeclarativeBatteryInfo::chargerType() const
@@ -384,11 +384,11 @@ void QDeclarativeBatteryInfo::setMonitorChargingState(bool monitor)
 
     Returns the charging state of the given \a battery. Possible values are:
     \list
-    \li BatteryInfo.UnknownChargingState
-    \li BatteryInfo.NotCharging
-    \li BatteryInfo.Charging
-    \li BatteryInfo.Discharging
-    \li BatteryInfo.Full
+    \li BatteryInfo.UnknownChargingState  - The charging state is unknown or charging error occured.
+    \li BatteryInfo.NotCharging           - The battery is not charging, i.e. too low charger power.
+    \li BatteryInfo.Charging              - The battery is charging.
+    \li BatteryInfo.Discharging           - The battery is discharging.
+    \li BatteryInfo.Full                  - The battery is fully charged.
     \endlist
 
     \sa onChargingStateChanged
@@ -412,13 +412,13 @@ void QDeclarativeBatteryInfo::_q_chargingStateChanged(int battery, QBatteryInfo:
 }
 
 /*!
-    \qmlproperty enum BatteryInfo::energyUnit
+    \qmlproperty enumeration BatteryInfo::energyUnit
 
     This property holds the energy unit used. Possible values are:
     \list
-    \li BatteryInfo.UnitUnknown
-    \li BatteryInfo.UnitmAh
-    \li BatteryInfo.UnitmWh
+    \li BatteryInfo.UnitUnknown            - Energy unit unknown.
+    \li BatteryInfo.UnitmAh                - Energy described in milliamp-hour (mAh)
+    \li BatteryInfo.UnitmWh                - Energy described in milliwatt-hour (mWh)
     \endlist
 */
 QDeclarativeBatteryInfo::EnergyUnit QDeclarativeBatteryInfo::energyUnit() const
@@ -468,11 +468,11 @@ void QDeclarativeBatteryInfo::setMonitorBatteryStatus(bool monitor)
 
     Returns the status of the given \a battery. Possible values are:
     \list
-    \li BatteryInfo.BatteryStatusUnknown
-    \li BatteryInfo.BatteryEmpty
-    \li BatteryInfo.BatteryLow
-    \li BatteryInfo.BatteryOk
-    \li BatteryInfo.BatteryFull
+    \li BatteryInfo.BatteryStatusUnknown      - Battery level undetermined.
+    \li BatteryInfo.BatteryEmpty              - Battery is considered be empty and device needs to shut down.
+    \li BatteryInfo.BatteryLow                - Battery level is low and warnings need to be issued to the user.
+    \li BatteryInfo.BatteryOk                 - Battery level is Ok. It is above "Low" but not "Full".
+    \li BatteryInfo.BatteryFull               - Battery is fully charged.
     \endlist
 
     \sa onBatteryStatusChanged
