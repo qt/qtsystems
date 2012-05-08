@@ -44,7 +44,6 @@
 #include <QtCore/qmetaobject.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qscreen.h>
-#include <QtGui/qplatformscreen_qpa.h>
 
 #if defined(Q_OS_LINUX)
 #  include "qdisplayinfo_linux_p.h"
