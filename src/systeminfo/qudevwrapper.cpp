@@ -150,6 +150,7 @@ void QUDevWrapper::disconnectNotify(const QMetaMethod &signal)
         udevMonitor = 0;
         udevFd = -1;
         watcherEnabled = false;
+        udev_unref(udev);
     }
 }
 
@@ -227,6 +228,7 @@ void QUDevWrapper::onUDevChanges()
                         emit batteryDataChanged(i, "capacity_level", batteryStatus);
                 }
             }
+            udev_device_unref(device);
         }
     }
 }
