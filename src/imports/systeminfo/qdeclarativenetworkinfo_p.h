@@ -69,11 +69,11 @@ class QDeclarativeNetworkInfo : public QObject
     Q_PROPERTY(bool monitorNetworkSignalStrength READ monitorNetworkSignalStrength WRITE setMonitorNetworkSignalStrength NOTIFY monitorNetworkSignalStrengthChanged)
     Q_PROPERTY(bool monitorNetworkStatus READ monitorNetworkStatus WRITE setMonitorNetworkStatus NOTIFY monitorNetworkStatusChanged)
     Q_PROPERTY(bool monitorNetworkName READ monitorNetworkName WRITE setMonitorNetworkName NOTIFY monitorNetworkNameChanged)
+    Q_PROPERTY(bool monitorCurrentNetworkMode READ monitorCurrentNetworkMode WRITE setMonitorCurrentNetworkMode NOTIFY monitorCurrentNetworkModeChanged)
 
     Q_PROPERTY(NetworkMode currentNetworkMode READ currentNetworkMode NOTIFY currentNetworkModeChanged)
 
     // obsoleted
-    Q_PROPERTY(bool monitorCurrentNetworkMode READ monitorCurrentNetworkMode WRITE setMonitorCurrentNetworkMode NOTIFY monitorCurrentNetworkModeChanged)
     Q_PROPERTY(bool monitorNetworkInterfaceCount READ monitorNetworkInterfaceCount WRITE setMonitorNetworkInterfaceCount NOTIFY monitorNetworkInterfaceCountChanged)
     Q_PROPERTY(bool monitorCurrentCellDataTechnology READ monitorCurrentCellDataTechnology WRITE setMonitorCurrentCellDataTechnology NOTIFY monitorCurrentCellDataTechnologyChanged)
     Q_PROPERTY(bool monitorCellId READ monitorCellId WRITE setMonitorCellId NOTIFY monitorCellIdChanged)
