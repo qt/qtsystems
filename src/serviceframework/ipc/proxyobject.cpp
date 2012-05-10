@@ -361,12 +361,12 @@ int QServiceProxyBase::qt_metacall(QMetaObject::Call c, int id, void **a)
 
     if (c == QMetaObject::InvokeMetaMethod) {
         // ipcfailure is the local offset, so is id
-        if (id == d->ipcfailure) {
+        const int mcount = d->meta->methodCount() - d->meta->methodOffset();
+        int oldid = id;
+        id-=mcount;
+        if (oldid == d->ipcfailure) {
             QMetaObject::activate(this, d->meta, d->ipcfailure, a);
         }
-
-        const int mcount = d->meta->methodCount() - d->meta->methodOffset();
-        id-=mcount;
     }
     return id;
 }
