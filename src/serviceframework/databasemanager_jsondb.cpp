@@ -143,18 +143,26 @@ public:
 
         qRegisterMetaType<QJsonDbRequest*>("QJsonDbRequest*");
 
-        cache_timeout.setSingleShot(true);
-        cache_timeout.setInterval(JSON_EXPIRATION_TIMER);
-        req_timeout.setSingleShot(true);
-        req_timeout.setInterval(JSON_EXPIRATION_TIMER);
+        cache_timeout = new QTimer(this);
+        cache_timeout->setSingleShot(true);
+        cache_timeout->setInterval(JSON_EXPIRATION_TIMER);
+        req_timeout = new QTimer(this);
+        req_timeout->setSingleShot(true);
+        req_timeout->setInterval(JSON_EXPIRATION_TIMER);
 
-        connect(&cache_timeout, SIGNAL(timeout()), this, SLOT(cacheRequestTimeout()));
-        connect(&req_timeout, SIGNAL(timeout()), this, SLOT(requestTimeout()));
+        connect(cache_timeout, SIGNAL(timeout()), this, SLOT(cacheRequestTimeout()));
+        connect(req_timeout, SIGNAL(timeout()), this, SLOT(requestTimeout()));
     }
 
     // called from any thread
     void newCacheRequest(QJsonDbRequest *req)
     {
+        /* don't deadlock if run before QCoreApplication */
+        if (!QCoreApplication::instance()) {
+            qWarning() << "SFW failing to load cache, no QApplication exists";
+            return;
+        }
+
         worker->cache_mutex.lock();
         QMetaObject::invokeMethod(this, "doCacheRequest", Q_ARG(QJsonDbRequest *, req));
     }
@@ -162,6 +170,12 @@ public:
     // called from any thread
     void newRequest(QJsonDbRequest *req)
     {
+        /* don't deadlock if run before QCoreApplication */
+        if (!QCoreApplication::instance()) {
+            qWarning() << "SFW failing to query jsondb, no QApplication exists";
+            return;
+        }
+
         worker->request_mutex.lock();
         QMetaObject::invokeMethod(this, "doNewRequest", Q_ARG(QJsonDbRequest *, req));
     }
@@ -173,7 +187,7 @@ private slots:
         db->send(req);
         connect(req, SIGNAL(finished()), this, SLOT(requestCacheFinishedSlot()));
         connect(req, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)), this, SLOT(requestCacheFinishedSlot()));
-        cache_timeout.start();
+        cache_timeout->start();
     }
 
     void doNewRequest(QJsonDbRequest *req)
@@ -182,16 +196,16 @@ private slots:
         connect(req, SIGNAL(finished()), this, SLOT(requestFinishedSlot()));
         connect(req, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
                 this, SLOT(requestErrorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
-        req_timeout.start();
+        req_timeout->start();
     }
 
     void requestCacheFinishedSlot()
     {
         QJsonDbReadRequest *request = qobject_cast<QJsonDbReadRequest *>(QObject::sender());
         worker->setCache(request->takeResults());
-        if (cache_timeout.isActive())
+        if (cache_timeout->isActive())
             worker->cache_mutex.unlock();
-        cache_timeout.stop();
+        cache_timeout->stop();
         request->deleteLater();
     }
     void cacheRequestTimeout()
@@ -208,17 +222,17 @@ private slots:
         disconnect(QObject::sender(), SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
                 this, SLOT(requestErrorSlot(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
 
-        if (req_timeout.isActive())
+        if (req_timeout->isActive())
             worker->request_mutex.unlock();
-        req_timeout.stop();
+        req_timeout->stop();
     }
     void requestErrorSlot(QtJsonDb::QJsonDbRequest::ErrorCode err, QString msg)
     {
         worker->results_error = err;
         worker->results_errormsg = msg;
-        if (req_timeout.isActive())
+        if (req_timeout->isActive())
             worker->request_mutex.unlock();
-        req_timeout.stop();
+        req_timeout->stop();
     }
     void requestTimeout()
     {
@@ -232,8 +246,8 @@ private:
     QJsonDbConnection *db;
     JsondbWorker *worker;
 
-    QTimer cache_timeout;
-    QTimer req_timeout;
+    QTimer *cache_timeout;
+    QTimer *req_timeout;
 };
 
 JsondbWorker::JsondbWorker() :
