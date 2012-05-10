@@ -133,7 +133,7 @@
     of the service name. Similarly if no ServiceList::versionMatch is provided the filter
     will search with a minimum version match rule.
 
-    The actual QDeclarativeListProperty of \l Service elements can be obtained by reading
+    The actual QQmlListProperty of \l Service elements can be obtained by reading
     the ServiceList::services property which searches based on the filter values. This
     list model can then be used in a list view element.
 

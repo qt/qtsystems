@@ -81,7 +81,7 @@ public:
     bool isValid() const;
     QObject* serviceObject();
 
-    //Derived from QDeclarativeParserStatus
+    //Derived from QQmlParserStatus
     virtual void classBegin();
     virtual void componentComplete();
 
@@ -164,7 +164,7 @@ public:
 
     void listUpdated();
 
-    //Derived from QDeclarativeParserStatus
+    //Derived from QQmlParserStatus
     virtual void classBegin();
     virtual void componentComplete();
 
