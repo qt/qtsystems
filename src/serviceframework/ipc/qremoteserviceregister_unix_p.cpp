@@ -95,6 +95,24 @@ QT_BEGIN_NAMESPACE
 class UnixEndPoint;
 class Waiter;
 
+static void qt_ignore_sigpipe()
+{
+#ifndef Q_NO_POSIX_SIGNALS
+     // Set to ignore SIGPIPE once only.
+     static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
+     if (atom.testAndSetRelaxed(0, 1)) {
+         struct sigaction noaction;
+         memset(&noaction, 0, sizeof(noaction));
+         noaction.sa_handler = SIG_IGN;
+         ::sigaction(SIGPIPE, &noaction, 0);
+         QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("---  Disable SIGPIPE due to it being broken in general"));
+     }
+#else
+     // Posix signals are not supported by the underlying platform
+     QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("---  Unable to disable SIGPIPE due to no posix signals"));
+#endif
+}
+
 Q_GLOBAL_STATIC(QThreadStorage<QList<UnixEndPoint *> >, _q_unixendpoints);
 Q_GLOBAL_STATIC(QThreadStorage<QList<QRemoteServiceRegisterUnixPrivate *> >, _q_remoteservice);
 Q_GLOBAL_STATIC(QThreadStorage<QList<Waiter *> >, _q_connectionfds);
@@ -215,6 +233,8 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
       pending_bytes(0)
 
 {
+    qt_ignore_sigpipe();
+
     if (!_qt_service_old_winch_override) {
         _qt_service_old_winch = ::signal(SIGWINCH, dump_op_log);
         _qt_service_old_winch_override = true;
