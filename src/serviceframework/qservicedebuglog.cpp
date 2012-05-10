@@ -60,6 +60,7 @@ QServiceDebugLog *QServiceDebugLog::instance()
 
 void QServiceDebugLog::appendToLog(const QString &message)
 {
+//    qWarning() << "SFW" << message;
 #ifdef QT_SFW_IPC_DEBUG
     logCount++;
     log.append(QTime::currentTime().toString("hh:mm:ss.zzz") +

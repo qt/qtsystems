@@ -41,6 +41,8 @@
 
 #include "ipcendpoint_p.h"
 
+#include "qservicedebuglog_p.h"
+
 #include <QEventLoop>
 #include <QTimer>
 
@@ -55,6 +57,9 @@ QServiceIpcEndPoint::QServiceIpcEndPoint(QObject* parent)
 
 QServiceIpcEndPoint::~QServiceIpcEndPoint()
 {
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete ipcendpoint %1")
+                .arg(this->objectName()));
     incoming.clear();
 }
 

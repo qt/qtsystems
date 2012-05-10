@@ -172,7 +172,7 @@ public:
     void getSecurityCredentials(QServiceClientCredentials &creds);
 
     bool event(QEvent *e);
-    void terminateConnection();
+    void terminateConnection(bool error);
 
     int waitForData();
     static int last_packet_size;
@@ -230,8 +230,15 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
 
 UnixEndPoint::~UnixEndPoint()
 {
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete unix endpoint %1")
+                .arg(this->objectName()));
     if (connection_open)
-        terminateConnection();
+        terminateConnection(false);
+    else
+        qDebug() << "Skipping";
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd done delete unix endpoint"));
 }
 
 void UnixEndPoint::getSecurityCredentials(QServiceClientCredentials &creds)
@@ -277,7 +284,7 @@ bool UnixEndPoint::event(QEvent *e)
     return QServiceIpcEndPoint::event(e);
 }
 
-void UnixEndPoint::terminateConnection()
+void UnixEndPoint::terminateConnection(bool error)
 {
     if (connection_open) {
         QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
@@ -286,11 +293,13 @@ void UnixEndPoint::terminateConnection()
         QServiceDebugLog::instance()->appendToLog(op);
         endp.removeAll(this);
         readNotifier->setEnabled(false);
+        delete readNotifier;
         ::close(client_fd);
         client_fd = -1;
         connection_open = false;
         emit disconnected();
-        ipcfault();
+        if (error)
+            ipcfault();
     } else {
         QString op = QString::fromLatin1("<-> SFW 2nd close on interface %3").arg(objectName());
         QServiceDebugLog::instance()->appendToLog(op);
@@ -363,7 +372,7 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
             foreach (UnixEndPoint *e, endp) {
                 if (fstat(e->client_fd, &buf) == -1) {
                     QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("### holding a bad endpoint file descriptor %1").arg(e->client_fd));
-                    e->terminateConnection();
+                    e->terminateConnection(true);
                 }
             }
 
@@ -460,13 +469,13 @@ void UnixEndPoint::flushPackage(const QServicePackage& package)
     int bytes = write(sizeblock.constData(), sizeblock.length());
     if (bytes != sizeof(quint32)) {
         qWarning() << "SFW Failed to write length" << client_fd << bytes;
-        terminateConnection();
+        terminateConnection(true);
         return;
     }
     bytes = write(block.constData(), block.length());
     if (bytes != block.length()){
         qWarning() << "SFW Can't send package, socket error" << block.length() << bytes;
-        terminateConnection();
+        terminateConnection(true);
         return;
     }
 }
@@ -480,13 +489,13 @@ void UnixEndPoint::readIncoming()
     raw_data.resize(4096);
     int bytes = ::read(client_fd, raw_data.data(), 4096);
     if (bytes <= 0) {
-        /* Linux can give us a spurious EAGAIN... isn't it nice? */
+        /* Linux can give us a spurious EAGAIN. */
         /* No Comment */
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return;
 
-        terminateConnection();
         socketError(qt_error_string(errno));
+        terminateConnection(true);
         return;
     }
     raw_data.resize(bytes);
@@ -563,6 +572,7 @@ void UnixEndPoint::socketError(const QString &error)
 void UnixEndPoint::ipcfault()
 {
     emit errorUnrecoverableIPCFault(QService::ErrorServiceNoLongerAvailable);
+//    QMetaObject::invokeMethod(this, "errorUnrecoverableIPCFault", Qt::QueuedConnection, Q_ARG(QService::UnrecoverableIPCError, QService::ErrorServiceNoLongerAvailable));
 }
 
 int UnixEndPoint::write(const char *data, int len)
@@ -656,8 +666,14 @@ QRemoteServiceRegisterUnixPrivate::QRemoteServiceRegisterUnixPrivate(QObject* pa
 
 QRemoteServiceRegisterUnixPrivate::~QRemoteServiceRegisterUnixPrivate()
 {
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete remote service register private object %1")
+                .arg(this->objectName()));
     QList<QRemoteServiceRegisterUnixPrivate *> &endp = _q_remoteservice()->localData();
     endp.removeAll(this);
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete done %1")
+                .arg(this->objectName()));
 }
 
 void QRemoteServiceRegisterUnixPrivate::publishServices( const QString& ident)
@@ -688,7 +704,7 @@ void QRemoteServiceRegisterUnixPrivate::processIncoming()
 
             getSecurityFilter()(&creds);
             if (!creds.isClientAccepted()) {
-                ipcEndPoint->terminateConnection();
+                ipcEndPoint->terminateConnection(true);
                 return;
             }
         }
@@ -1063,6 +1079,9 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
         ipcEndPoint->setParent(proxy);
         endPoint->setParent(proxy);
         qWarning() << "SFW created object for" << entry.interfaceName();
+        QServiceDebugLog::instance()->appendToLog(
+                    QString::fromLatin1("+++ SFW created object for %1 %2")
+                    .arg(entry.interfaceName()).arg(proxy->objectName()));
         return proxy;
     }
     return 0;

@@ -212,11 +212,17 @@ ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* pa
 
 ObjectEndPoint::~ObjectEndPoint()
 {
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete object endpoint %1")
+                .arg(this->objectName()));
     delete d;
 }
 
 void ObjectEndPoint::disconnected()
 {
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd disconnected in %1")
+                .arg(this->objectName()));
     if (d->endPointType == Service) {
         InstanceManager::instance()->removeObjectInstance(d->entry, d->serviceInstanceId);
         deleteLater();

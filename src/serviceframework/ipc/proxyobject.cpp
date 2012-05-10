@@ -120,11 +120,17 @@ QServiceProxy::QServiceProxy(const QByteArray& metadata, ObjectEndPoint* endPoin
 
 QServiceProxy::~QServiceProxy()
 {
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete proxy object %1")
+                .arg(this->objectName()));
     delete[] d->remoteToLocal;
     delete[] d->localToRemote;
     if (d->meta)
         free(d->meta);
     delete d;
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete done %1")
+                .arg(this->objectName()));
 }
 
 //provide custom Q_OBJECT implementation
@@ -307,6 +313,9 @@ QServiceProxyBase::QServiceProxyBase(ObjectEndPoint *endpoint, QObject *parent)
 
 QServiceProxyBase::~QServiceProxyBase()
 {
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("ddd delete ServiceProxyBase %1")
+                .arg(this->objectName()));
     if (d->meta)
         free(d->meta);
     delete d;
