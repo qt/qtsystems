@@ -255,10 +255,6 @@ UnixEndPoint::~UnixEndPoint()
                 .arg(this->objectName()));
     if (connection_open)
         terminateConnection(false);
-    else
-        qDebug() << "Skipping";
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd done delete unix endpoint"));
 }
 
 void UnixEndPoint::getSecurityCredentials(QServiceClientCredentials &creds)
@@ -1095,13 +1091,20 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             QObject::connect(proxy, SIGNAL(destroyed()), endPoint, SLOT(deleteLater()));
             QObject::connect(ipcEndPoint, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                              proxy, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)));
+            QServiceDebugLog::instance()->appendToLog(
+                        QString::fromLatin1("+++ SFW created object for %1 %2")
+                        .arg(entry.interfaceName()).arg(proxy->objectName()));
+            ipcEndPoint->setParent(proxy);
+            endPoint->setParent(proxy);
+            qWarning() << "SFW created object for" << entry.interfaceName();
         }
-        ipcEndPoint->setParent(proxy);
-        endPoint->setParent(proxy);
-        qWarning() << "SFW created object for" << entry.interfaceName();
-        QServiceDebugLog::instance()->appendToLog(
-                    QString::fromLatin1("+++ SFW created object for %1 %2")
-                    .arg(entry.interfaceName()).arg(proxy->objectName()));
+        else {
+            qWarning() << "SFW failed to create object for" << entry.interfaceName();
+            QServiceDebugLog::instance()->appendToLog(
+                        QString::fromLatin1("+++ SFW create failed object for %1")
+                        .arg(entry.interfaceName()));
+            delete endPoint;
+        }
         return proxy;
     }
     return 0;
