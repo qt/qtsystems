@@ -378,7 +378,7 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
     tv.tv_usec = msec*1000;
     tv.tv_sec = 0;
 
-//    UnixEndPoint::op_log.append(QStringLiteral("<!> select"));
+//    QServiceDebugLog::instance()->appendToLog(QStringLiteral("<!> select"));
 
     int ret = ::select(n, &reader, 0, 0, &tv);
     if (ret < 0) {
@@ -505,10 +505,12 @@ void UnixEndPoint::readIncoming()
     raw_data.resize(4096);
     int bytes = ::read(client_fd, raw_data.data(), 4096);
     if (bytes <= 0) {
-        /* Linux can give us a spurious EAGAIN. */
+        /* Linux can give us a spurious EAGAIN, only check on error */
         /* No Comment */
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        if ((bytes < 0) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("zzz SFW spurious EAGAIN for %1").arg(this->objectName()));
             return;
+        }
 
         socketError(qt_error_string(errno));
         terminateConnection(true);
