@@ -235,10 +235,12 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
 {
     qt_ignore_sigpipe();
 
+#ifdef QT_SFW_IPC_DEBUG
     if (!_qt_service_old_winch_override) {
         _qt_service_old_winch = ::signal(SIGWINCH, dump_op_log);
         _qt_service_old_winch_override = true;
     }
+#endif
 
     registerWithThreadData();
     readNotifier = new QSocketNotifier(client_fd, QSocketNotifier::Read, this);
@@ -843,7 +845,7 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 
 #ifdef QT_MTCLIENT_PRESENT
 
-#define SFW_PROCESS_TIMEOUT 5000
+#define SFW_PROCESS_TIMEOUT 10000
 
 int doStart(const QString &location) {
 
