@@ -59,6 +59,7 @@
 #include <QtJsonDb/qjsondbwatcher.h>
 
 #include "databasemanager_jsondb_p.h"
+#include "qservicedebuglog_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -164,6 +165,7 @@ public:
         }
 
         worker->cache_mutex.lock();
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj fetching cache data, locked mutex"));
         QMetaObject::invokeMethod(this, "doCacheRequest", Q_ARG(QJsonDbRequest *, req));
     }
 
@@ -203,6 +205,7 @@ private slots:
     {
         QJsonDbReadRequest *request = qobject_cast<QJsonDbReadRequest *>(QObject::sender());
         worker->setCache(request->takeResults());
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj fetched cache data, unlocking"));
         if (cache_timeout->isActive())
             worker->cache_mutex.unlock();
         cache_timeout->stop();
@@ -275,6 +278,7 @@ JsondbWorker::JsondbWorker() :
     QJsonDbReadRequest *request = new QJsonDbReadRequest();
 
     request->setQuery(QString::fromLatin1("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
+
     request->moveToThread(workerThread);
 
     jsonthread->newCacheRequest(request);
@@ -318,7 +322,12 @@ const QList<QJsonObject> JsondbWorker::getCache()
 
 void JsondbWorker::waitForCache()
 {
-    QMutexLocker m(&cache_mutex);
+    if (cache_mutex.tryLock(JSON_EXPIRATION_TIMER)) {
+        cache_mutex.unlock();
+    } else {
+        qWarning() << "SFW timeout waiting for jsondb caching thread";
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj Failed to aquire cache data"));
+    }
 }
 
 static bool serviceGreaterThan(const QJsonObject &s1, const QJsonObject &s2)
@@ -365,6 +374,7 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
 
     if (request->status() != QJsonDbRequest::Error) {
         QMutexLocker c(&cache_mutex);
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj locking cache in sendRequest"));
         QJsonDbCreateRequest *create = qobject_cast<QJsonDbCreateRequest *>(request);
         if (create) {
             foreach (const QJsonObject &o, create->objects()) {
@@ -413,6 +423,7 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
                     emit serviceRemoved(service, DatabaseManager::SystemScope);
                 }
             }
+            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj unlocking cache in sendRequest"));
         }
         QJsonDbUpdateRequest *update = qobject_cast<QJsonDbUpdateRequest *>(request);
         if (update) {
@@ -436,7 +447,11 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
 void JsondbWorker::onNotification()
 {
     QMutexLocker c(&cache_mutex);
+    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj locking cache in onNotification"));
     Q_ASSERT(sender() == dbwatcher);
+
+    QStringList servicesAdded;
+    QStringList servicesRemoved;
 
     QList<QJsonDbNotification> notifications = dbwatcher->takeNotifications();
 
@@ -466,7 +481,7 @@ void JsondbWorker::onNotification()
                 qSort(cache.begin(), cache.end(), serviceGreaterThan);
             }
             if (!contains) {
-                emit serviceAdded(service, DatabaseManager::SystemScope);
+                servicesAdded += service;
             }
         } else if (n.action() == QJsonDbWatcher::Removed) {
             // if we removed the service ourselves we're already cleared out the
@@ -492,7 +507,7 @@ void JsondbWorker::onNotification()
                 }
             }
             if (!containsService) {
-                emit serviceRemoved(service, DatabaseManager::SystemScope);
+                servicesRemoved += service;
             }
         } else if (n.action() == QJsonDbWatcher::Updated) {
             for (int i = 0; i < cache.count(); i++) {
@@ -502,6 +517,17 @@ void JsondbWorker::onNotification()
             }
         }
     }
+
+    // Do not emit these signals while the cache mutex is locked.
+    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj unlocking cache in onNotification"));
+    c.unlock();
+
+    foreach (const QString &service, servicesAdded)
+        emit serviceAdded(service, DatabaseManager::SystemScope);
+
+    foreach (const QString &service, servicesRemoved)
+        emit serviceRemoved(service, DatabaseManager::SystemScope);
+
 }
 
 void JsondbWorker::reapThread()

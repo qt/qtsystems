@@ -987,14 +987,18 @@ int doStart(const QString &location) {
         }
 #endif
 
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc connect woke up"));
+
         ret = ::connect(socketfd, (struct sockaddr *)&name, sizeof(name));
         if (ret == 0 || (ret == -1 && errno == EISCONN)) {
+            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc is connected"));
             if (!waiter.receivedLaunched) {
                 qWarning() << "SFW asked the PM for a start, PM never replied, application started...something appears broken";
             }
             success = true;
             break;
         } else if (ret == -1 && errno == EINPROGRESS) {
+            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc is in progress"));
             w->setEnabled(true);
         } else {
             w->setEnabled(false);
@@ -1002,10 +1006,13 @@ int doStart(const QString &location) {
 
         if (!waiter.errorString.isEmpty()) {
             qWarning() << "SFW Error talking to PM" << socketfd << waiter.errorString;
+            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc error received from PM %1").arg(waiter.errorString));
             success = false;
             break;
         }
     }
+
+    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc done connect %1 %2 %3").arg(total_time.elapsed()).arg(socketfd).arg(waiter.receivedLaunched));
     qWarning() << QTime::currentTime().toString(fmt) <<
                  "SFW doStart done. Total time" << total_time.elapsed() <<
                  "Socket exists:" << file.exists() <<
