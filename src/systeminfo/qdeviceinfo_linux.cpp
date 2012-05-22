@@ -304,6 +304,8 @@ QString QDeviceInfoPrivate::model()
         if (!jsondbWrapper)
             jsondbWrapper = new QJsonDbWrapper(this);
         modelBuffer = jsondbWrapper->model();
+        if (modelBuffer.startsWith(manufacturer()))
+           modelBuffer = modelBuffer.right(modelBuffer.length() - manufacturerBuffer.length()).trimmed();
 #else
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_name"));
         if (file.open(QIODevice::ReadOnly))
