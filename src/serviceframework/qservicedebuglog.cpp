@@ -43,13 +43,54 @@
 #include <QDebug>
 #include <QTime>
 
+#ifdef Q_OS_UNIX
+#include <signal.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QServiceDebugLog, _q_servicedebuglog)
 
+#ifdef QT_SFW_IPC_DEBUG
+static sighandler_t _qt_service_old_winch = 0;
+
+void dump_op_log(int num) {
+
+    qWarning() << "SFW OP LOG";
+    QServiceDebugLog::instance()->dumpLog();
+
+    if (_qt_service_old_winch)
+        _qt_service_old_winch(num);
+}
+
+void dump_live_log(int num) {
+    Q_UNUSED(num);
+
+    QServiceDebugLog::instance()->setLiveDump(!QServiceDebugLog::instance()->liveDump());
+    qWarning() << "SFW toggle live logging enabled:" << QServiceDebugLog::instance()->liveDump();
+}
+#endif
+
 QServiceDebugLog::QServiceDebugLog()
-    : logCount(0), length(500), autoDump(false)
+    : logCount(0), length(500), autoDump(false), liveDumping(false)
 {
+
+#ifdef QT_SFW_IPC_DEBUG
+
+    if (::getenv("SFW_LOG_STDOUT"))
+        liveDumping = true;
+
+    // Set to ignore winch once
+    static QBasicAtomicInt atom_winch = Q_BASIC_ATOMIC_INITIALIZER(0);
+    if (atom_winch.testAndSetRelaxed(0, 1)) {
+        _qt_service_old_winch = ::signal(SIGWINCH, dump_op_log);
+    }
+
+    static QBasicAtomicInt atom_usr = Q_BASIC_ATOMIC_INITIALIZER(0);
+    if (atom_usr.testAndSetRelaxed(0, 1)) {
+        ::signal(SIGSYS, dump_live_log);
+    }
+#endif
 
 }
 
@@ -58,10 +99,22 @@ QServiceDebugLog *QServiceDebugLog::instance()
     return _q_servicedebuglog();
 }
 
+bool QServiceDebugLog::liveDump() const
+{
+    return liveDumping;
+}
+
+void QServiceDebugLog::setLiveDump(bool enabled)
+{
+    liveDumping = enabled;
+}
+
 void QServiceDebugLog::appendToLog(const QString &message)
 {
-//    qWarning() << "SFW" << message;
 #ifdef QT_SFW_IPC_DEBUG
+    if (liveDumping)
+        qWarning() << message;
+
     logCount++;
     log.append(QTime::currentTime().toString("hh:mm:ss.zzz") +
                QString::fromLatin1(" %1 ").arg(logCount) +

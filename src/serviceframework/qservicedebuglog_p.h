@@ -61,6 +61,9 @@ public:
     void setLength(int length);
     void setEnableAutoOutput(bool enabled);
 
+    void setLiveDump(bool enabled);
+    bool liveDump() const;
+
     void dumpLog();
     const QStringList fetchLog();
 
@@ -69,6 +72,7 @@ private:
     int logCount;
     int length;
     bool autoDump;
+    bool liveDumping;
 
 };
 

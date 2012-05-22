@@ -169,18 +169,6 @@ private:
     bool enabled;
 };
 
-static sighandler_t _qt_service_old_winch = 0;
-static bool _qt_service_old_winch_override = false;
-
-void dump_op_log(int num) {
-
-    qWarning() << "SFW OP LOG";
-    QServiceDebugLog::instance()->dumpLog();
-
-    if (_qt_service_old_winch)
-        _qt_service_old_winch(num);
-}
-
 class UnixEndPoint : public QServiceIpcEndPoint
 {
     Q_OBJECT
@@ -238,13 +226,6 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
 
 {
     qt_ignore_sigpipe();
-
-#ifdef QT_SFW_IPC_DEBUG
-    if (!_qt_service_old_winch_override) {
-        _qt_service_old_winch = ::signal(SIGWINCH, dump_op_log);
-        _qt_service_old_winch_override = true;
-    }
-#endif
 
     registerWithThreadData();
     readNotifier = new QSocketNotifier(client_fd, QSocketNotifier::Read, this);
@@ -1058,9 +1039,9 @@ int doStart(const QString &location) {
         }
 #endif
 
-        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc connect woke up"));
-
         ret = ::connect(socketfd, (struct sockaddr *)&name, sizeof(name));
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc connect woke up %1 %2").arg(ret).arg(qt_error_string(errno)));
+
         if (ret == 0 || (ret == -1 && errno == EISCONN)) {
             QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc is connected"));
             if (!waiter.receivedLaunched) {
