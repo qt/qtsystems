@@ -64,6 +64,7 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include <signal.h>
 
@@ -206,6 +207,7 @@ protected:
     void flushPackage(const QServicePackage& package);
 protected slots:
     void readIncoming();
+    void flushWriteBuffer();
 
     void registerWithThreadData();
     void socketError(const QString &error);
@@ -219,6 +221,8 @@ private:
     int client_fd;
     bool connection_open;
     QSocketNotifier *readNotifier;
+    QSocketNotifier *writeNotifier;
+    QByteArray pending_write;
 
     QRemoteServiceRegisterUnixPrivate *serviceRegPriv;
     QByteArray pending_header;
@@ -244,8 +248,14 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
 
     registerWithThreadData();
     readNotifier = new QSocketNotifier(client_fd, QSocketNotifier::Read, this);
-
     QObject::connect(readNotifier, SIGNAL(activated(int)), this, SLOT(readIncoming()));
+
+    writeNotifier = new QSocketNotifier(client_fd, QSocketNotifier::Write, this);
+    QObject::connect(writeNotifier, SIGNAL(activated(int)), this, SLOT(flushWriteBuffer()));
+
+    int flags = fcntl(client_fd, F_GETFL, 0);
+    fcntl(client_fd, F_SETFL, flags|O_NONBLOCK);
+
     QString op = QString::fromLatin1("<-> SFW uepc on %1 service %3").arg(client_fd).arg(objectName());
     QServiceDebugLog::instance()->appendToLog(op);
 }
@@ -315,6 +325,8 @@ void UnixEndPoint::terminateConnection(bool error)
         QServiceDebugLog::instance()->appendToLog(op);
         readNotifier->setEnabled(false);
         delete readNotifier;
+        writeNotifier->setEnabled(false);
+        delete writeNotifier;
         ::close(client_fd);
         client_fd = -1;
         connection_open = false;
@@ -349,6 +361,9 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
 
     foreach (UnixEndPoint *e, endp) {
         FD_SET(e->client_fd, &reader);
+        if (!e->pending_write.isEmpty()) {
+            FD_SET(e->client_fd, &writer);
+        }
         if (n <= e->client_fd) {
             n = e->client_fd+1;
         }
@@ -387,7 +402,8 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
 
     int ret = ::select(n, &reader, 0, 0, &tv);
     if (ret < 0) {
-        qWarning() << Q_FUNC_INFO << "SFW Select failed" << qt_error_string(errno);
+        QServiceDebugLog::instance()->appendToLog(QStringLiteral("<!> select failed returned with %1")
+                                                  .arg(qt_error_string(errno)));
         if (errno == EBADF) {
             struct stat buf;
             foreach (UnixEndPoint *e, endp) {
@@ -412,15 +428,22 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
                     }
                 }
             }
+        } else if (errno == EINTR) {
+            /* no error, play it again sam */
+            return 0;
         }
         return 0;
     } else if (ret == 0) {
+        /* timeout */
         return 0;
     }
 
     foreach (UnixEndPoint *e, endp) {
         if (FD_ISSET(e->client_fd, &reader)) {
             e->readIncoming();
+        }
+        if (!e->pending_write.isEmpty() && FD_ISSET(e->client_fd, &writer)) {
+            e->flushWriteBuffer();
         }
     }
 
@@ -602,39 +625,61 @@ void UnixEndPoint::ipcfault()
 
 int UnixEndPoint::write(const char *data, int len)
 {
-    int left = len;
+    int bytes_writen = 0;
 
-    while (left > 0) {
-        int ret = ::write(client_fd, data+(len-left), left);
-        if (ret == len) {
-            break;
-        } else if ((ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) ||
-                   (ret >= 0)) {
+    if (pending_write.isEmpty()) {
+        int ret = ::write(client_fd, data, len);
 
-            left -= ret;
-
-            fd_set write;
-
-            FD_ZERO(&write);
-
-            FD_SET(client_fd, &write);
-            int n = client_fd+1;
-            struct timeval tv;
-            tv.tv_sec = 5;
-            tv.tv_usec = 0;
-
-            ::select(n, 0, &write, 0, &tv);
-
-            if (!FD_ISSET(client_fd, &write)) {
-                qWarning() << "Failed to write data to socket" << client_fd << errno << qt_error_string(errno);
-                return -1;
-            }
+        if (ret > 0) {
+            bytes_writen = ret;
+        } else if ((ret == -1) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            /* no bytes writen */
         } else {
-            qWarning() << "SFW Error, failed to write to socket" << client_fd << qt_error_string(errno);
+            QServiceDebugLog::instance()->appendToLog(
+                        QString::fromLatin1("~~~ sfw failed to write to socket %1 %2")
+                        .arg(client_fd)
+                        .arg(this->objectName()));
             return -1;
         }
     }
+
+    if (bytes_writen < len) {
+        pending_write.append(data+bytes_writen, len-bytes_writen);
+    }
+
     return len;
+}
+
+void UnixEndPoint::flushWriteBuffer()
+{
+    QServiceDebugLog::instance()->appendToLog(
+                QString::fromLatin1("~>~ sfw flush write buffer for socket %1 %2 holding %3 bytes")
+                .arg(client_fd)
+                .arg(this->objectName())
+                .arg(pending_write.size()));
+
+    writeNotifier->setEnabled(false);
+
+    if (!pending_write.isEmpty()) {
+        int ret = ::write(client_fd, pending_write.constData(), pending_write.length());
+
+        if (ret > 0) {
+            pending_write.remove(0, ret);
+            if (!pending_write.isEmpty()) {
+                writeNotifier->setEnabled(true);
+            }
+        } else if ((ret == -1) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            /* no data writen, but socket is open */
+            writeNotifier->setEnabled(true);
+        } else {
+            QServiceDebugLog::instance()->appendToLog(
+                        QString::fromLatin1("~~~ sfw failed to write to socket %1 %2")
+                        .arg(client_fd)
+                        .arg(this->objectName()));
+        }
+    } else {
+        writeNotifier->setEnabled(false);
+    }
 }
 
 #ifdef QT_MTCLIENT_PRESENT
