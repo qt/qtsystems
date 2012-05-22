@@ -215,7 +215,9 @@ QString QNetworkInfoPrivate::cellId(int interface)
 #if !defined(QT_NO_SFW_NETREG)
     if (!networkServiceWrapper)
         networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getCellId(interface);
+    QString cellId = networkServiceWrapper->getCellId(interface);
+    if (cellId.toInt() != 0)
+       return cellId;
 #elif !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
