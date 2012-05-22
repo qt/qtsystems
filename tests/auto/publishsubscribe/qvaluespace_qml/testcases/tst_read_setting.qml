@@ -48,33 +48,18 @@ TestCase {
     id: readSettingTests
 
     ValueSpaceSubscriber {
-        id: usernameAppSubscriber
-        path: "/org/qt-project/test/app/read/setting/username"
-    }
-
-    ValueSpaceSubscriber {
-        id: passwordAppSubscriber
-        path: "/org/qt-project/test/app/read/setting/password"
-    }
-
-    ValueSpaceSubscriber {
-        id: activeAppSubscriber
-        path: "/org/qt-project/test/app/read/setting/active"
-    }
-
-    ValueSpaceSubscriber {
         id: usernameSysSubscriber
-        path: "/org/qt-project/test/sys/read/setting/username"
+        path: "/com/nokia/mt/settings/test/sys/read/setting/username"
     }
 
     ValueSpaceSubscriber {
         id: passwordSysSubscriber
-        path: "/org/qt-project/test/sys/read/setting/password"
+        path: "/com/nokia/mt/settings/test/sys/read/setting/password"
     }
 
     ValueSpaceSubscriber {
         id: activeSysSubscriber
-        path: "/org/qt-project/test/sys/read/setting/active"
+        path: "/com/nokia/mt/settings/test/sys/read/setting/active"
     }
 
     TestTools {
@@ -84,17 +69,7 @@ TestCase {
     function init() {
         var settingsObjects = [
             {
-                "identifier": "org.qt-project.test.app.read.setting",
-                "version": "1.0.0",
-                "_type": "com.nokia.mt.settings.ApplicationSettings",
-                "settings": {
-                    "username": "Fred",
-                    "password": "Bedrock",
-                    "active": true
-                }
-            },
-            {
-                "identifier": "org.qt-project.test.sys.read.setting",
+                "identifier": "com.nokia.mt.settings.test.sys.read.setting",
                 "version": "1.0.0",
                 "_type": "com.nokia.mt.settings.SystemSettings",
                 "settings": {
@@ -113,11 +88,6 @@ TestCase {
     }
 
     function test_read_setting() {
-        verify(usernameAppSubscriber.value === "Fred")
-        verify(passwordAppSubscriber.value === "Bedrock")
-        verify(activeAppSubscriber.value === true)
-
-
         verify(usernameSysSubscriber.value === "Noname")
         verify(passwordSysSubscriber.value === "Password")
         verify(activeSysSubscriber.value === true)

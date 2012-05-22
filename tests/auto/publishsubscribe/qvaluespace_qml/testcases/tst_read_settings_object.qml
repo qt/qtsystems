@@ -48,13 +48,8 @@ TestCase {
     id: readSettingsObjectTests
 
     ValueSpaceSubscriber {
-        id: appSettingsObject
-        path: "/org/qt-project/test/app/read/settings/object"
-    }
-
-    ValueSpaceSubscriber {
         id: sysSettingsObject
-        path: "/org/qt-project/test/sys/read/settings/object"
+        path: "/com/nokia/mt/settings/test/sys/read/settings/object"
     }
 
     TestTools {
@@ -64,17 +59,7 @@ TestCase {
     function init() {
         var settingsObjects = [
             {
-                "identifier": "org.qt-project.test.app.read.settings.object",
-                "version": "1.0.0",
-                "_type": "com.nokia.mt.settings.ApplicationSettings",
-                "settings": {
-                    "username": "Fred",
-                    "password": "Bedrock",
-                    "active": false
-                }
-            },
-            {
-                "identifier": "org.qt-project.test.sys.read.settings.object",
+                "identifier": "com.nokia.mt.settings.test.sys.read.settings.object",
                 "version": "1.0.0",
                 "_type": "com.nokia.mt.settings.SystemSettings",
                 "settings": {
@@ -93,16 +78,8 @@ TestCase {
     }
 
     function test_read_settings_object() {
-        var obj = appSettingsObject.value
-        verify(obj.identifier === "org.qt-project.test.app.read.settings.object")
-        verify(obj.version === "1.0.0")
-        verify(obj._type === "com.nokia.mt.settings.ApplicationSettings")
-        verify(obj.settings.username === "Fred")
-        verify(obj.settings.password === "Bedrock")
-        verify(!obj.settings.active)
-
-        obj = sysSettingsObject.value
-        verify(obj.identifier === "org.qt-project.test.sys.read.settings.object")
+        var obj = sysSettingsObject.value
+        verify(obj.identifier === "com.nokia.mt.settings.test.sys.read.settings.object")
         verify(obj.version === "1.0.0")
         verify(obj._type === "com.nokia.mt.settings.SystemSettings")
         verify(obj.settings.username === "Noname")

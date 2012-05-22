@@ -6,7 +6,6 @@
 
 QT       += testlib
 QT       += jsondb
-QT       += publishsubscribe
 QT       += core-private
 QT       += concurrent
 
@@ -14,9 +13,9 @@ TARGET = tst_testpublishsubscribe
 target.path = /usr/bin
 INSTALLS += target
 
-QMAKE_EXTRA_TARGETS = check
-check.depends = $$TARGET
-check.commands = ./$$TARGET
+#QMAKE_EXTRA_TARGETS = check
+#check.depends = $$TARGET
+#check.commands = ./$$TARGET
 
 CONFIG   += console
 CONFIG   += qtestlib
@@ -29,6 +28,7 @@ INCLUDEPATH += $$PWD/../../../../include/QtPublishSubscribe $$PWD/../../../../sr
 SOURCES += tst_valuespace_jsondb.cpp \
     $$PWD/../../../../src/publishsubscribe/jsondblayer.cpp \
     $$PWD/../../../../src/publishsubscribe/qvaluespace.cpp \
+    $$PWD/../../../../src/publishsubscribe/qvaluespacesubscriber.cpp \
     $$PWD/../../../../src/publishsubscribe/qvaluespacepublisher.cpp \
     $$PWD/../../../../src/publishsubscribe/qvaluespacemanager.cpp
 
@@ -37,11 +37,13 @@ DEFINES += SRCDIR=\\\"$$PWD/\\\"
 HEADERS += \
     $$PWD/../../../../src/publishsubscribe/jsondblayer_p.h \
     $$PWD/../../../../src/publishsubscribe/qvaluespace_p.h \
+    $$PWD/../../../../src/publishsubscribe/qvaluespacesubscriber.h \
+    $$PWD/../../../../src/publishsubscribe/qvaluespacesubscriber_p.h \
     $$PWD/../../../../src/publishsubscribe/qvaluespacepublisher.h \
     $$PWD/../../../../src/publishsubscribe/qvaluespacemanager_p.h
 
-QMAKE_EXTRA_TARGETS = check
-check.depends = $$TARGET
-check.commands = ./$$TARGET
+#QMAKE_EXTRA_TARGETS = check
+#check.depends = $$TARGET
+#check.commands = ./$$TARGET
 
 DEFINES += QT_NO_GCONFLAYER

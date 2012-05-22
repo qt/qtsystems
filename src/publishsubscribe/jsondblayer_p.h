@@ -105,8 +105,8 @@ class JsonDbSyncCall: public QObject
     Q_OBJECT
 
     public:
-        JsonDbSyncCall(const QString &query, QList<QJsonObject> *result);
-        JsonDbSyncCall(const QJsonObject *object);
+        JsonDbSyncCall(const QString &partition, const QString &query, QList<QJsonObject> *result);
+        JsonDbSyncCall(const QString &partition, const QJsonObject *object);
         ~JsonDbSyncCall();
 
         bool wasSuccessful() const;
@@ -123,6 +123,7 @@ class JsonDbSyncCall: public QObject
     private:
         const QString &mQuery;
         const QJsonObject *mObject;
+        const QString mPartition;
         QList<QJsonObject> *mResult;
         bool mSuccess;
         QtJsonDb::QJsonDbConnection *mConnection;
@@ -209,14 +210,14 @@ class JsonDbHandle : public QObject
         bool connected;
 
         static QJsonObject getObject(const QString &identifier, const QString &property);
-        static QList<QJsonObject> getResponse(const QString& query);
+        static QList<QJsonObject> getResponse(const QString &partition, const QString& query);
         QString getWholePath(const QString &path) const;
         static QString getObjectQuery(const QString &identifier);
         static QString getSettingQuery(const QString &identifier);
 
         void getNotificationQueryAndActions(QString path, QString &query, QtJsonDb::QJsonDbWatcher::Actions &actions);
 
-        bool doUpdateRequest(const QJsonObject&);
+        bool doUpdateRequest(const QString &partition, const QJsonObject&);
 };
 
 

@@ -65,6 +65,17 @@ QT_BEGIN_NAMESPACE
 
 #define WAIT_FOR_THREAD_TIMEOUT 500
 
+static const QString applicationPartition() { return QStringLiteral("Private"); }
+static const QString systemPartition() { return QStringLiteral("com.nokia.mt.Settings"); }
+
+static QString getPartition(const QString &identifier)
+{
+    if (identifier.startsWith(QStringLiteral("com.nokia.mt.settings")))
+        return systemPartition();
+    else
+        return applicationPartition();
+}
+
 JsonDbPath::JsonDbPath() : path(QStringLiteral(""))
 {
 }
@@ -136,9 +147,10 @@ QStringList JsonDbPath::getIdentifier(const QString &path)
 
 
 
-JsonDbSyncCall::JsonDbSyncCall(const QString &query, QList<QJsonObject> *result):
+JsonDbSyncCall::JsonDbSyncCall(const QString &partition, const QString &query, QList<QJsonObject> *result):
     mQuery(query),
     mObject(NULL),
+    mPartition(partition),
     mResult(result),
     mSuccess(false),
     mConnection(NULL),
@@ -148,9 +160,10 @@ JsonDbSyncCall::JsonDbSyncCall(const QString &query, QList<QJsonObject> *result)
     startTimer(WAIT_FOR_THREAD_TIMEOUT);
 }
 
-JsonDbSyncCall::JsonDbSyncCall(const QJsonObject *object):
+JsonDbSyncCall::JsonDbSyncCall(const QString &partition, const QJsonObject *object):
     mQuery(QStringLiteral("")),
     mObject(object),
+    mPartition(partition),
     mResult(NULL),
     mSuccess(false),
     mConnection(NULL),
@@ -191,6 +204,7 @@ void JsonDbSyncCall::createSyncReadRequest()
     mReadRequest = new QtJsonDb::QJsonDbReadRequest;
 
     mReadRequest->setQuery(mQuery);
+    mReadRequest->setPartition(mPartition);
 
     connect(mReadRequest,
             SIGNAL(resultsAvailable(int)),
@@ -213,6 +227,7 @@ void JsonDbSyncCall::createSyncUpdateRequest()
     mConnection->connectToServer();
 
     mUpdateRequest = new QtJsonDb::QJsonDbUpdateRequest(*mObject);
+    mUpdateRequest->setPartition(mPartition);
 
     connect(mUpdateRequest,
             SIGNAL(finished()),
@@ -236,9 +251,11 @@ void JsonDbSyncCall::handleResponse(int)
     QThread::currentThread()->quit();
 }
 
-void JsonDbSyncCall::handleError(QtJsonDb::QJsonDbRequest::ErrorCode, QString)
+void JsonDbSyncCall::handleError(QtJsonDb::QJsonDbRequest::ErrorCode code, QString)
 {
     DEBUG_SIGNATURE
+
+    Q_ASSERT(code != QtJsonDb::QJsonDbRequest::InvalidPartition);
 
     mSuccess = false;
 
@@ -289,13 +306,14 @@ bool JsonDbHandle::value(const QString &path, QVariant *data)
     DEBUG_SIGNATURE
 
     QString wholePath = getWholePath(path);
+    QString partition = getPartition(wholePath);
 
     // Assume caller wants to get the value of a setting
-    QList<QJsonObject> result = getResponse(getSettingQuery(wholePath));
+    QList<QJsonObject> result = getResponse(partition, getSettingQuery(wholePath));
 
     if (!result.count() || result[0].isEmpty()) {
         // Assume the caller wants to get the whole settings object
-        result = getResponse(getObjectQuery(wholePath));
+        result = getResponse(partition, getObjectQuery(wholePath));
 
         if (!result.count()) {
             return false;
@@ -313,7 +331,8 @@ bool JsonDbHandle::setValue(const QString &path, const QVariant &data)
 {
     DEBUG_SIGNATURE
 
-    QStringList parts = JsonDbPath::getIdentifier(getWholePath(path));
+    QString wholePath = getWholePath(path);
+    QStringList parts = JsonDbPath::getIdentifier(wholePath);
 
     QJsonObject updateObject = getObject(parts[0], IDENTIFIER);
 
@@ -331,13 +350,13 @@ bool JsonDbHandle::setValue(const QString &path, const QVariant &data)
     settings[parts[1]] = QJsonValue::fromVariant(data);
     updateObject[QStringLiteral("settings")] = settings;
 
-    return doUpdateRequest(updateObject);
+    return doUpdateRequest(getPartition(wholePath), updateObject);
 }
 
-bool JsonDbHandle::doUpdateRequest(const QJsonObject &updateObject)
+bool JsonDbHandle::doUpdateRequest(const QString &partition, const QJsonObject &updateObject)
 {
     QThread syncThread;
-    JsonDbSyncCall *call = new JsonDbSyncCall(&updateObject);
+    JsonDbSyncCall *call = new JsonDbSyncCall(partition, &updateObject);
 
     connect(&syncThread,
             SIGNAL(started()),
@@ -360,10 +379,11 @@ QJsonObject JsonDbHandle::getObject(const QString &identifier, const QString &pr
 {
     DEBUG_SIGNATURE
 
-    QList<QJsonObject> result = getResponse(QString(QStringLiteral("[?%1=\"%2\"]%3")).
-                                            arg(property).
-                                            arg(identifier).
-                                            arg(SETTINGS_FILTER));
+            QList<QJsonObject> result = getResponse(getPartition(identifier),
+                                                    QString(QStringLiteral("[?%1=\"%2\"]%3")).
+                                                    arg(property).
+                                                    arg(identifier).
+                                                    arg(SETTINGS_FILTER));
 
     if (!result.count())
         return QJsonObject();
@@ -371,14 +391,14 @@ QJsonObject JsonDbHandle::getObject(const QString &identifier, const QString &pr
     return result.at(0);
 }
 
-QList<QJsonObject> JsonDbHandle::getResponse(const QString& query)
+QList<QJsonObject> JsonDbHandle::getResponse(const QString &partition, const QString& query)
 {
     DEBUG_SIGNATURE
     DEBUG_MSG(QString("Query: " + query).toStdString().c_str())
 
     QList<QJsonObject> result;
     QThread syncThread;
-    JsonDbSyncCall *call = new JsonDbSyncCall(query, &result);
+    JsonDbSyncCall *call = new JsonDbSyncCall(partition, query, &result);
 
     connect(&syncThread,
             SIGNAL(started()),
@@ -428,10 +448,11 @@ void JsonDbHandle::subscribe()
         return;
     }
 
+    QString wholePath = getWholePath(QStringLiteral(""));
     QString query;
     QtJsonDb::QJsonDbWatcher::Actions actions;
 
-    getNotificationQueryAndActions(getWholePath(QStringLiteral("")), query, actions);
+    getNotificationQueryAndActions(wholePath, query, actions);
 
     if (!client) {
         client = new QtJsonDb::QJsonDbConnection();
@@ -440,6 +461,7 @@ void JsonDbHandle::subscribe()
 
     watcher = new QtJsonDb::QJsonDbWatcher;
     watcher->setQuery(query);
+    watcher->setPartition(getPartition(wholePath));
     watcher->setWatchedActions(actions);
 
     connect(watcher,
@@ -518,8 +540,12 @@ void JsonDbHandle::unsubscribe()
     if (connected) {
         DEBUG_MSG("DISCONNECT")
 
-        client->removeWatcher(watcher);
-        delete watcher;
+        if (watcher) {
+            if (watcher->isActive())
+                client->removeWatcher(watcher);
+
+            delete watcher;
+        }
 
         connected = false;
     }
@@ -531,9 +557,11 @@ QSet<QString> JsonDbHandle::children()
 
     QString identifier = getWholePath(QStringLiteral(""));
 
-    QList<QJsonObject> children = getResponse(QString(QStringLiteral("[?identifier startsWith \"%1\"]%2[={id:identifier}]")).
-      arg(identifier).
-      arg(SETTINGS_FILTER));
+    QList<QJsonObject> children = getResponse(
+                getPartition(identifier),
+                QString(QStringLiteral("[?identifier startsWith \"%1\"]%2[={id:identifier}]")).
+                    arg(identifier).
+                    arg(SETTINGS_FILTER));
 
     QSet<QString> result;
 

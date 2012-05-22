@@ -48,23 +48,13 @@ TestCase {
     id: changeSettingTests
 
     ValueSpaceSubscriber {
-        id: usernameAppSubscriber
-        path: "/org/qt-project/test/app/change/setting/username"
-    }
-
-    ValueSpaceSubscriber {
         id: usernameSysSubscriber
-        path: "/org/qt-project/test/sys/change/setting/username"
-    }
-
-    ValueSpacePublisher {
-        id: usernameAppPublisher
-        path: "/org/qt-project/test/app/change/setting/username"
+        path: "/com/nokia/mt/settings/test/sys/change/setting/username"
     }
 
     ValueSpacePublisher {
         id: usernameSysPublisher
-        path: "/org/qt-project/test/sys/change/setting/username"
+        path: "/com/nokia/mt/settings/test/sys/change/setting/username"
     }
 
     TestTools {
@@ -74,17 +64,7 @@ TestCase {
     function init() {
         var settingsObjects = [
             {
-                "identifier": "org.qt-project.test.app.change.setting",
-                "version": "1.0.0",
-                "_type": "com.nokia.mt.settings.ApplicationSettings",
-                "settings": {
-                    "username": "Fred",
-                    "password": "Bedrock",
-                    "active": true
-                }
-            },
-            {
-                "identifier": "org.qt-project.test.sys.change.setting",
+                "identifier": "com.nokia.mt.settings.test.sys.change.setting",
                 "version": "1.0.0",
                 "_type": "com.nokia.mt.settings.SystemSettings",
                 "settings": {
@@ -103,10 +83,6 @@ TestCase {
     }
 
     function test_change_setting() {
-        verify(usernameAppSubscriber.value === "Fred")
-        usernameAppPublisher.value = "new name"
-        verify(usernameAppSubscriber.value === "new name")
-
         verify(usernameSysSubscriber.value === "Noname")
         usernameSysPublisher.value = "new name"
         verify(usernameSysSubscriber.value === "new name")
