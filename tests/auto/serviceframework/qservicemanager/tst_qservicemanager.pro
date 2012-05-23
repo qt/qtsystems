@@ -3,7 +3,6 @@ CONFIG += testcase
 
 QT = core sql serviceframework serviceframework-private testlib
 QT -= gui
-CONFIG += parallel_test
 
 jsondb|contains(QT_CONFIG, jsondb) {
     mtlib|contains(config_test_mtlib, yes) {
