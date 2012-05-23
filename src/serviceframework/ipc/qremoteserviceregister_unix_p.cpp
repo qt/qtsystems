@@ -305,11 +305,14 @@ bool UnixEndPoint::event(QEvent *e)
 void UnixEndPoint::terminateConnection(bool error)
 {
     if (connection_open) {
-        QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
-        QString op = QString::fromLatin1("<-> SFW close on %1 uep %2 interface %3").arg(client_fd)
-                .arg(endp.indexOf(this)).arg(objectName());
+        if (_q_unixendpoints()) {
+            QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
+            endp.removeAll(this);
+        }
+        QString op = QString::fromLatin1("<-> SFW close on %1 interface %2")
+                .arg(client_fd)
+                .arg(objectName());
         QServiceDebugLog::instance()->appendToLog(op);
-        endp.removeAll(this);
         readNotifier->setEnabled(false);
         delete readNotifier;
         ::close(client_fd);
