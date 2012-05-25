@@ -43,13 +43,14 @@
 #include <QDebug>
 #include <QTime>
 
+#include <QMutex>
+#include <QMutexLocker>
+
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #endif
 
 QT_BEGIN_NAMESPACE
-
-Q_GLOBAL_STATIC(QServiceDebugLog, _q_servicedebuglog)
 
 #ifdef QT_SFW_IPC_DEBUG
 static sighandler_t _qt_service_old_winch = 0;
@@ -96,7 +97,13 @@ QServiceDebugLog::QServiceDebugLog()
 
 QServiceDebugLog *QServiceDebugLog::instance()
 {
-    return _q_servicedebuglog();
+    static QServiceDebugLog *dbg = 0;
+    static QMutex m;
+    QMutexLocker l(&m);
+
+    if (!dbg)
+        dbg = new QServiceDebugLog();
+    return dbg;
 }
 
 bool QServiceDebugLog::liveDump() const
@@ -116,7 +123,7 @@ void QServiceDebugLog::appendToLog(const QString &message)
         qWarning() << message;
 
     logCount++;
-    log.append(QTime::currentTime().toString("hh:mm:ss.zzz") +
+    log.append(QTime::currentTime().toString(QStringLiteral("hh:mm:ss.zzz")) +
                QString::fromLatin1(" %1 ").arg(logCount) +
                message);
     if (autoDump && ((logCount%length) == 0))

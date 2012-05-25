@@ -540,7 +540,17 @@ void JsondbWorker::reapThread()
     workerThread = 0;
 }
 
-Q_GLOBAL_STATIC(JsondbWorker, _q_service_jsondbworker);
+//Q_GLOBAL_STATIC(JsondbWorker, _q_service_jsondbworker);
+JsondbWorker *_q_service_jsondbworker()
+{
+    static JsondbWorker *w = 0;
+    static QMutex m;
+
+    QMutexLocker l(&m);
+    if (!w)
+        w = new JsondbWorker();
+    return w;
+}
 
 /*
     \class DatabaseManager
