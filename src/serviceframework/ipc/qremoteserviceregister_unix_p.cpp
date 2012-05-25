@@ -140,8 +140,13 @@ public:
 
     ~Waiter()
     {
-        QList<Waiter *> &conn = _q_connectionfds()->localData();
-        conn.removeAll(this);
+        if (_q_connectionfds()) {
+            QList<Waiter *> &conn = _q_connectionfds()->localData();
+            conn.removeAll(this);
+        } else {
+            qWarning("%s:%d: waiter destroyed after _q_connectionfds",
+                     __FILE__, __LINE__);
+        }
     }
 
     void setEnabled(bool enabled)
@@ -284,7 +289,7 @@ void UnixEndPoint::getSecurityCredentials(QServiceClientCredentials &creds)
 
 bool UnixEndPoint::event(QEvent *e)
 {
-    if (e->type() == QEvent::ThreadChange) {
+    if (e->type() == QEvent::ThreadChange && _q_unixendpoints()) {
         QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
         endp.removeAll(this);
         QMetaObject::invokeMethod(this, "registerWithThreadData", Qt::QueuedConnection);
@@ -335,6 +340,11 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
 
     FD_ZERO(&reader);
     FD_ZERO(&writer);
+
+    if (!_q_unixendpoints() || !_q_remoteservice() || !_q_connectionfds()) {
+        qWarning("%s:%d: runLocalEventLoop called but global statics are invalid!",
+                 __FILE__, __LINE__);
+    }
 
     QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
 
@@ -589,6 +599,12 @@ void UnixEndPoint::readIncoming()
 
 void UnixEndPoint::registerWithThreadData()
 {
+    if (!_q_unixendpoints()) {
+        qWarning("%s:%d: registerWithThreadData called, no thread local data!",
+                 __FILE__, __LINE__);
+        return;
+    }
+
     QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
     endp.append(this);
 }
@@ -720,8 +736,11 @@ QRemoteServiceRegisterUnixPrivate::~QRemoteServiceRegisterUnixPrivate()
     QServiceDebugLog::instance()->appendToLog(
                 QString::fromLatin1("ddd delete remote service register private object %1")
                 .arg(this->objectName()));
-    QList<QRemoteServiceRegisterUnixPrivate *> &endp = _q_remoteservice()->localData();
-    endp.removeAll(this);
+    if (_q_remoteservice()) {
+        QList<QRemoteServiceRegisterUnixPrivate *> &endp =
+                _q_remoteservice()->localData();
+        endp.removeAll(this);
+    }
     QServiceDebugLog::instance()->appendToLog(
                 QString::fromLatin1("ddd delete done %1")
                 .arg(this->objectName()));
@@ -857,7 +876,7 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
 
 bool QRemoteServiceRegisterUnixPrivate::event(QEvent *e)
 {
-    if (e->type() == QEvent::ThreadChange && server_fd != -1) {
+    if (e->type() == QEvent::ThreadChange && server_fd != -1 && _q_remoteservice()) {
         QList<QRemoteServiceRegisterUnixPrivate *> &endp = _q_remoteservice()->localData();
         endp.removeAll(this);
         QMetaObject::invokeMethod(this, "registerWithThreadData", Qt::QueuedConnection);
@@ -868,7 +887,7 @@ bool QRemoteServiceRegisterUnixPrivate::event(QEvent *e)
 
 void QRemoteServiceRegisterUnixPrivate::registerWithThreadData()
 {
-    if (server_fd != -1) {
+    if (server_fd != -1 && _q_remoteservice()) {
         QList<QRemoteServiceRegisterUnixPrivate *> &endp = _q_remoteservice()->localData();
         endp.append(this);
     }
