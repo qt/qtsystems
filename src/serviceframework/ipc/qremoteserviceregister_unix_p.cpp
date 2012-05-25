@@ -758,6 +758,9 @@ void QRemoteServiceRegisterUnixPrivate::processIncoming()
 
     int client_fd = ::accept(server_fd, (struct sockaddr *) &name, (socklen_t *) &len);
 
+    int flags = fcntl(client_fd, F_GETFL, 0);
+    fcntl(client_fd, F_SETFL, flags|O_NONBLOCK);
+
     QString op = QString::fromLatin1("<-> SFW accep on %1 for %2 service %5").arg(server_fd).
             arg(client_fd).arg(objectName());
     QServiceDebugLog::instance()->appendToLog(op);
@@ -853,6 +856,9 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
         qWarning("Failed to rename %s to %s", qPrintable(tempLocation),
                  qPrintable(location));
     }
+
+    int flags = fcntl(server_fd, F_GETFL, 0);
+    fcntl(server_fd, F_SETFL, flags|O_NONBLOCK);
 
     server_notifier = new QSocketNotifier(server_fd, QSocketNotifier::Read, this);
     connect(server_notifier, SIGNAL(activated(int)), this, SLOT(processIncoming()));
