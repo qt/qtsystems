@@ -159,6 +159,9 @@ QServiceInterfaceDescriptor::QServiceInterfaceDescriptor(const QVariantMap &map)
 */
 QServiceInterfaceDescriptor& QServiceInterfaceDescriptor::operator=(const QServiceInterfaceDescriptor& other)
 {
+    if (&other == this)
+        return *this;
+
     if ( !other.isValid() ) {
         if (d)
             delete d;

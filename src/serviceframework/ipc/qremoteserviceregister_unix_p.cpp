@@ -775,7 +775,11 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
         return false;
     }
 
-    ::chmod(tempLocation.toLatin1(), S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IWOTH|S_IROTH);
+    if (-1 == ::chmod(tempLocation.toLatin1(),
+                S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IWOTH|S_IROTH)) {
+        qWarning("SFW failed to chmod %s: %s", qPrintable(tempLocation),
+                 ::strerror(errno));
+    }
     int uid = getuid();
     int gid = getgid();
     bool doChown = false;
@@ -797,7 +801,10 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
         return false;
     }
 
-    ::rename(tempLocation.toLatin1(), location.toLatin1());
+    if (-1 == ::rename(tempLocation.toLatin1(), location.toLatin1())) {
+        qWarning("Failed to rename %s to %s", qPrintable(tempLocation),
+                 qPrintable(location));
+    }
 
     server_notifier = new QSocketNotifier(server_fd, QSocketNotifier::Read, this);
     connect(server_notifier, SIGNAL(activated(int)), this, SLOT(processIncoming()));
@@ -865,9 +872,23 @@ int doStart(const QString &location) {
 #endif
 
     int socketfd = ::socket(PF_UNIX, SOCK_STREAM, 0);
+    if (socketfd < 0) {
+        qWarning("socket(2) failed: %s", ::strerror(errno));
+        delete w_inotify;
+        return -1;
+    }
     // set non blocking so we can try to connect and it wont wait
     int flags = ::fcntl(socketfd, F_GETFL, 0);
-    fcntl(socketfd, F_SETFL, flags | O_NONBLOCK);
+    if (flags < 0) {
+        qWarning("fcntl(F_GETFL) failed: %s", ::strerror(errno));
+        delete w_inotify;
+        return -1;
+    }
+    if (fcntl(socketfd, F_SETFL, flags | O_NONBLOCK)) {
+        qWarning("fcntl(F_SETFL) failed: %s", ::strerror(errno));
+        delete w_inotify;
+        return -1;
+    }
 
     struct sockaddr_un name;
     name.sun_family = PF_UNIX;

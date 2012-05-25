@@ -190,6 +190,9 @@ QServiceFilter::~QServiceFilter()
 */
 QServiceFilter& QServiceFilter::operator=(const QServiceFilter& other)
 {
+    if (&other == this)
+        return *this;
+
     d->interface = other.d->interface;
     d->service = other.d->service;
     d->majorVersion = other.d->majorVersion;

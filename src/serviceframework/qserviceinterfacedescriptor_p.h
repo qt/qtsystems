@@ -87,6 +87,9 @@ public:
 
     QServiceInterfaceDescriptorPrivate& operator=(const QServiceInterfaceDescriptorPrivate& other)
     {
+        if (&other == this)
+            return *this;
+
         serviceName = other.serviceName;
         interfaceName = other.interfaceName;
         minor = other.minor;

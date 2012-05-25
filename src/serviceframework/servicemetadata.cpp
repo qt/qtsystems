@@ -104,11 +104,11 @@ SERVICEMETADATA_EXPORT QDataStream &operator>>(QDataStream &in, ServiceMetaDataR
  * @param aXmlFilePath path to the xml file that describes the service.
  */
 ServiceMetaData::ServiceMetaData(const QString &aXmlFilePath)
-{
-    xmlDevice = new QFile(aXmlFilePath);
-    ownsXmlDevice = true;
-    latestError = 0;
-}
+    : xmlDevice(new QFile(aXmlFilePath)),
+      ownsXmlDevice(true),
+      serviceType(QService::Plugin),
+      latestError(0)
+{}
 
 /*
  *  Class constructor
@@ -116,11 +116,11 @@ ServiceMetaData::ServiceMetaData(const QString &aXmlFilePath)
  * @param device QIODevice that contains the XML data that describes the service.
  */
 ServiceMetaData::ServiceMetaData(QIODevice *device)
-{
-    xmlDevice = device;
-    ownsXmlDevice = false;
-    latestError = 0;
-}
+    : xmlDevice(device),
+      ownsXmlDevice(false),
+      serviceType(QService::Plugin),
+      latestError(0)
+{}
 
 /*
  *  Class destructor

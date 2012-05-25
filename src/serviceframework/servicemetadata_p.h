@@ -75,11 +75,11 @@ class QServiceInterfaceDescriptor;
 class SERVICEMETADATA_EXPORT ServiceMetaDataResults
 {
 public:
-    ServiceMetaDataResults() {}
+    ServiceMetaDataResults() : type(0) {}
 
     ServiceMetaDataResults(const ServiceMetaDataResults& other)
     {
-        type = other.type;;
+        type = other.type;
         location = other.location;
         name = other.name;
         description = other.description;
@@ -156,6 +156,8 @@ private:
     bool processServiceElement(QXmlStreamReader &aXMLReader);
     bool processInterfaceElement(QXmlStreamReader &aXMLReader);
     void clearMetadata();
+
+    Q_DISABLE_COPY(ServiceMetaData);
 
 private:
     bool lessThan(const QServiceInterfaceDescriptor &d1,

@@ -73,6 +73,8 @@ private slots:
 
 private:
     QSlotInvokerPrivate *d;
+
+    Q_DISABLE_COPY(QSlotInvoker);
 };
 
 QT_END_NAMESPACE

@@ -76,6 +76,7 @@ protected:
 
 private:
     QSignalIntercepterPrivate *d;
+    Q_DISABLE_COPY(QSignalIntercepter);
 
     static int typeFromName( const QByteArray& name );
 };

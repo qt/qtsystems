@@ -114,9 +114,23 @@ private:
 class ObjectEndPointPrivate
 {
 public:
-    ObjectEndPointPrivate()
+    //used on client and service side
+    ObjectEndPoint::Type endPointType;
+    ObjectEndPoint* parent;
+
+    //used on service side
+    QRemoteServiceRegister::Entry entry;
+    QUuid serviceInstanceId;
+
+    // user on the client side
+    bool functionReturned;
+    QUuid waitingOnReturnUuid;
+
+    ObjectEndPointPrivate() :
+        endPointType(ObjectEndPoint::Service),
+        parent(0),
+        functionReturned(false)
     {
-        functionReturned = false;
         waitingOnReturnUuid = QUuid();
     }
 
@@ -171,18 +185,6 @@ public:
         id -= methodsThisType;
         return id;
     }
-
-    //used on client and service side
-    ObjectEndPoint::Type endPointType;
-    ObjectEndPoint* parent;
-
-    //used on service side
-    QRemoteServiceRegister::Entry entry;
-    QUuid serviceInstanceId;
-
-    // user on the client side
-    bool functionReturned;
-    QUuid waitingOnReturnUuid;
 };
 
 ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* parent)

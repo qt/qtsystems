@@ -73,6 +73,7 @@ protected:
 
 private:
     QServiceProxyBasePrivate* d;
+    Q_DISABLE_COPY(QServiceProxyBase);
 };
 
 class QServiceProxyPrivate;
@@ -91,6 +92,7 @@ public:
 
 private:
     QServiceProxyPrivate* d;
+    Q_DISABLE_COPY(QServiceProxy);
 };
 
 
