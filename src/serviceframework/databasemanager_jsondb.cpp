@@ -89,6 +89,8 @@ public slots:
 
 private slots:
     void reapThread();
+    void startNotifier(qint32 stateNumber);
+    void watcherStatusChanged(QtJsonDb::QJsonDbWatcher::Status status);
 
 private:
 
@@ -205,10 +207,16 @@ private slots:
     {
         QJsonDbReadRequest *request = qobject_cast<QJsonDbReadRequest *>(QObject::sender());
         worker->setCache(request->takeResults());
-        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj fetched cache data, unlocking"));
+        QString s;
+        foreach (const QJsonObject &e, worker->cache) {
+            s.append(e.value(QStringLiteral("service")).toString());
+            s.append(QStringLiteral(", "));
+        }
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj fetched cache data, unlocking %1 %2").arg(request->stateNumber()).arg(s));
         if (cache_timeout->isActive())
             worker->cache_mutex.unlock();
         cache_timeout->stop();
+        emit cacheLoaded(request->stateNumber());
         request->deleteLater();
     }
     void cacheRequestTimeout()
@@ -245,6 +253,9 @@ private slots:
         worker->request_mutex.unlock();
     }
 
+signals:
+    void cacheLoaded(qint32 stateNumber);
+
 private:
     QJsonDbConnection *db;
     JsondbWorker *worker;
@@ -261,13 +272,8 @@ JsondbWorker::JsondbWorker() :
     cacheLoaded(false)
 
 {
-    db = QJsonDbConnection::defaultConnection();
-    db->connectToServer();
+    db = 0x0; // don't connect to the db until we're in the right thread
     connect(dbwatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onNotification()));
-
-    dbwatcher->setWatchedActions(QJsonDbWatcher::Created | QJsonDbWatcher::Updated | QJsonDbWatcher::Removed);
-    dbwatcher->setQuery(QLatin1String("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
-    db->addWatcher(dbwatcher);
 
     thread_timeout.setInterval(JSON_EXPIRATION_TIMER*2);
     thread_timeout.setSingleShot(true);
@@ -275,8 +281,9 @@ JsondbWorker::JsondbWorker() :
 
     startThread();
 
-    QJsonDbReadRequest *request = new QJsonDbReadRequest();
+    connect(jsonthread, SIGNAL(cacheLoaded(qint32)), this, SLOT(startNotifier(qint32)));
 
+    QJsonDbReadRequest *request = new QJsonDbReadRequest();
     request->setQuery(QString::fromLatin1("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
 
     request->moveToThread(workerThread);
@@ -284,6 +291,12 @@ JsondbWorker::JsondbWorker() :
     jsonthread->newCacheRequest(request);
 
     workerThread->start();
+
+    if (!QCoreApplication::instance()) {
+        qWarning() << "SFW failing to start jsondb backend no QCoreApplication exists, expect massive failure";
+        return;
+    }
+    this->moveToThread(QCoreApplication::instance()->thread());
 }
 
 JsondbWorker::~JsondbWorker()
@@ -293,6 +306,36 @@ JsondbWorker::~JsondbWorker()
         workerThread->quit();
         workerThread->wait();
     }
+}
+
+void JsondbWorker::startNotifier(qint32 stateNumber)
+{
+    db = QJsonDbConnection::defaultConnection();
+    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj start notifier %1").arg(stateNumber));
+    dbwatcher->setWatchedActions(QJsonDbWatcher::Created | QJsonDbWatcher::Updated | QJsonDbWatcher::Removed);
+    dbwatcher->setQuery(QLatin1String("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
+    dbwatcher->setInitialStateNumber(stateNumber);
+    db->addWatcher(dbwatcher);
+    connect(dbwatcher, SIGNAL(statusChanged(QtJsonDb::QJsonDbWatcher::Status)), this, SLOT(watcherStatusChanged(QtJsonDb::QJsonDbWatcher::Status)));
+}
+
+void JsondbWorker::watcherStatusChanged(QtJsonDb::QJsonDbWatcher::Status status)
+{
+    QString statusString = QStringLiteral("unknown");
+
+    switch (status) {
+    case QtJsonDb::QJsonDbWatcher::Inactive:
+        statusString = QStringLiteral("Inactive");
+        break;
+    case QtJsonDb::QJsonDbWatcher::Activating:
+        statusString = QStringLiteral("Activating");
+        break;
+    case QtJsonDb::QJsonDbWatcher::Active:
+        statusString = QStringLiteral("Active");
+        break;
+    }
+
+    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj watcher status changed %1").arg(statusString));
 }
 
 /*
@@ -379,6 +422,7 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
         if (create) {
             foreach (const QJsonObject &o, create->objects()) {
                 bool contains = false;
+                QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("j>j Created request %1").arg(o.value(QStringLiteral("service")).toString()));
                 foreach (const QJsonObject &e, cache) {
                     if (e.value(QStringLiteral("service")).toString() == o.value(QStringLiteral("service")).toString()) {
                         contains = true;
@@ -386,6 +430,7 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
                     }
                 }
                 if (!contains) {
+                    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jnj added Notify %1").arg(o.value(QStringLiteral("service")).toString()));
                     emit serviceAdded(o.value(QStringLiteral("service")).toString(), DatabaseManager::SystemScope);
                 }
                 cache.append(o);
@@ -397,6 +442,7 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
             QStringList services;
             for (int i = 0; i < cache.count(); i++) {
                 const QJsonObject cached_value = cache.at(i);
+                QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("j>j Remove request %1").arg(cached_value.value(QStringLiteral("service")).toString()));
                 foreach (const QJsonObject &o, remove->objects()) {
                     if (o.value(QStringLiteral("identifier")) ==
                             cached_value.value(QStringLiteral("identifier"))) {
@@ -420,6 +466,7 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
                     }
                 }
                 if (!contains) {
+                    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jnj removed Notify %1").arg(service));
                     emit serviceRemoved(service, DatabaseManager::SystemScope);
                 }
             }
@@ -432,6 +479,7 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
                 foreach (const QJsonObject &o, update->objects()) {
                     if (o.value(QStringLiteral("identifier")) ==
                             cached_value.value(QStringLiteral("identifier"))) {
+                        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("j>j Update request %1").arg(o.value(QStringLiteral("service")).toString()));
                         cache.replace(i, o);
                         i = cache.count() + 1; // exit both loops
                         break;
@@ -459,6 +507,8 @@ void JsondbWorker::onNotification()
         QJsonObject map = n.object();
         QString service = map.value(QStringLiteral("service")).toString();
         QString id = map.value(QStringLiteral("identifier")).toString();
+
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jNj Notification %1").arg(service));
 
         if (n.action() == QJsonDbWatcher::Created) {
             bool updated = false;
@@ -522,11 +572,15 @@ void JsondbWorker::onNotification()
     QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jjj unlocking cache in onNotification"));
     c.unlock();
 
-    foreach (const QString &service, servicesAdded)
+    foreach (const QString &service, servicesAdded) {
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jnj emit added notification %1").arg(service));
         emit serviceAdded(service, DatabaseManager::SystemScope);
+    }
 
-    foreach (const QString &service, servicesRemoved)
+    foreach (const QString &service, servicesRemoved) {
+        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("jnj emit removed notification %1").arg(service));
         emit serviceRemoved(service, DatabaseManager::SystemScope);
+    }
 
 }
 
