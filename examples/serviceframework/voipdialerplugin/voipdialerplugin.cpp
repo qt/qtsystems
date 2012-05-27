@@ -49,6 +49,4 @@ QObject* VoipDialerPlugin::createInstance(const QServiceInterfaceDescriptor& des
     Q_UNUSED(descriptor);
     return new VoipDialer(this);
 }
-
-Q_EXPORT_PLUGIN2(serviceframework_voipdialerservice, VoipDialerPlugin)
 //! [0]

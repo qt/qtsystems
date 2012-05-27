@@ -48,5 +48,3 @@ QObject* SampleServicePlugin2::createInstance(const QServiceInterfaceDescriptor&
     Q_UNUSED(descriptor);
     return new SampleServicePluginClass2;
 }
-
-Q_EXPORT_PLUGIN2(sfw_sampleserviceplugin2, SampleServicePlugin2)

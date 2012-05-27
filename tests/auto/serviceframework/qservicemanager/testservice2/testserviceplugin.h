@@ -52,6 +52,7 @@ class TestServicePlugin : public QObject, public QServicePluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(QServicePluginInterface)
+    Q_PLUGIN_METADATA(IID "com.nokia.qt.QServicePluginInterface/1.0")
 
 public:
     QObject* createInstance(const QServiceInterfaceDescriptor& descriptor);

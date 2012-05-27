@@ -100,5 +100,3 @@ QServiceInterfaceDescriptor SampleServicePluginClass::descriptor() const
 { 
     return m_descriptor;
 }
-
-Q_EXPORT_PLUGIN2(sfw_sampleserviceplugin, SampleServicePlugin)

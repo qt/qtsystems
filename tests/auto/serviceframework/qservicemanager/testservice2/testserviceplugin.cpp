@@ -58,5 +58,3 @@ QObject* TestServicePlugin::createInstance(const QServiceInterfaceDescriptor& de
 
     return new TestService();
 }
-
-Q_EXPORT_PLUGIN2(tst_sfw2_sampleserviceplugin,TestServicePlugin)

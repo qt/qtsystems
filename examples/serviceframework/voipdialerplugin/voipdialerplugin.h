@@ -51,6 +51,7 @@ class VoipDialerPlugin : public QObject,
 {
     Q_OBJECT
     Q_INTERFACES(QServicePluginInterface)
+    Q_PLUGIN_METADATA(IID "com.nokia.qt.QServicePluginInterface/1.0")
 //! [0]
 
 public:
