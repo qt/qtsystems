@@ -145,6 +145,7 @@ void QSfwTestUtil::saveDatabases_jsondb()
     QList<QJsonObject> args;
 
     QJsonDbReadRequest request;
+    request.setPartition(QStringLiteral("com.nokia.mt.Settings"));
     request.setQuery(QStringLiteral("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
 
     QSignalSpy response(&request, SIGNAL(finished()));
@@ -172,6 +173,7 @@ void QSfwTestUtil::saveDatabases_jsondb()
     storage->append(args);
 
     QJsonDbRemoveRequest rm(args);
+    rm.setPartition(QStringLiteral("com.nokia.mt.Settings"));
 
     QSignalSpy response2(&rm, SIGNAL(finished()));
     QSignalSpy error2(&rm, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
@@ -198,6 +200,7 @@ void QSfwTestUtil::clearDatabases_jsondb()
     QList<QJsonObject> args;
 
     QJsonDbReadRequest request;
+    request.setPartition(QStringLiteral("com.nokia.mt.Settings"));
     request.setQuery(QStringLiteral("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
 
     QSignalSpy response(&request, SIGNAL(finished()));
@@ -221,6 +224,7 @@ void QSfwTestUtil::clearDatabases_jsondb()
     }
 
     QJsonDbRemoveRequest rm(args);
+    rm.setPartition(QStringLiteral("com.nokia.mt.Settings"));
 
     QSignalSpy response2(&rm, SIGNAL(finished()));
     QSignalSpy error2(&rm, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
@@ -250,6 +254,7 @@ void QSfwTestUtil::restoreDatabases_jsondb()
     QList<QJsonObject> args;
 
     QJsonDbReadRequest request;
+    request.setPartition(QStringLiteral("com.nokia.mt.Settings"));
     request.setQuery(QStringLiteral("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
 
     QSignalSpy response(&request, SIGNAL(finished()));
@@ -271,6 +276,7 @@ void QSfwTestUtil::restoreDatabases_jsondb()
     if (!args.isEmpty()) {
 
         QJsonDbRemoveRequest rm(args);
+        rm.setPartition(QStringLiteral("com.nokia.mt.Settings"));
 
         QSignalSpy response2(&rm, SIGNAL(finished()));
         QSignalSpy error2(&rm, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
@@ -289,6 +295,7 @@ void QSfwTestUtil::restoreDatabases_jsondb()
 
     if (!storage->isEmpty()) {
         QJsonDbWriteRequest add;
+        add.setPartition(QStringLiteral("com.nokia.mt.Settings"));
         add.setObjects(*storage);
 
         QSignalSpy response_w(&add, SIGNAL(finished()));

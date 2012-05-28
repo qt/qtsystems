@@ -189,6 +189,10 @@ private slots:
 
     void doCacheRequest(QJsonDbRequest *req)
     {
+        /* ALL SFW partion are in setting */
+        if (req->partition().isEmpty()) {
+            req->setPartition(QStringLiteral("com.nokia.mt.Settings"));
+        }
         db->send(req);
         connect(req, SIGNAL(finished()), this, SLOT(requestCacheFinishedSlot()));
         connect(req, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)), this, SLOT(requestCacheFinishedSlot()));
@@ -197,6 +201,10 @@ private slots:
 
     void doNewRequest(QJsonDbRequest *req)
     {
+        /* ALL SFW partion are in setting */
+        if (req->partition().isEmpty()) {
+            req->setPartition(QStringLiteral("com.nokia.mt.Settings"));
+        }
         db->send(req);
         connect(req, SIGNAL(finished()), this, SLOT(requestFinishedSlot()));
         connect(req, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
