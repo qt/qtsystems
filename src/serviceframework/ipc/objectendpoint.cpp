@@ -95,12 +95,12 @@ public:
 protected:
     void activated( const QList<QVariant>& args )
     {
-        QServiceDebugLog::instance()->appendToLog(
-                    QString::fromLatin1("--> SIGNAL for %1 index %2/%3 args count %4")
-                    .arg(endPoint->objectName())
-                    .arg(metaIndex)
-                    .arg(QString::fromLatin1(signal))
-                    .arg(args.count()));
+        qServiceLog() << "class" << "servicesignalinter"
+                      << "event" << "signal"
+                      << "endpoint" << endPoint->objectName()
+                      << "metaidx" << metaIndex
+                      << "signal" << QString::fromLatin1(signal)
+                      << "args" << args.count();
 
         endPoint->invokeRemote(metaIndex, args, QMetaType::Void);
     }
@@ -214,17 +214,17 @@ ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* pa
 
 ObjectEndPoint::~ObjectEndPoint()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete object endpoint %1")
-                .arg(this->objectName()));
+    qServiceLog() << "class" << "objectendpoint"
+                  << "event" << "delete"
+                  << "name" << objectName();
     delete d;
 }
 
 void ObjectEndPoint::disconnected()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd disconnected in %1")
-                .arg(this->objectName()));
+    qServiceLog() << "class" << "objectendpoint"
+                  << "event" << "disconnected"
+                  << "name" << objectName();
     if (d->endPointType == Service) {
         InstanceManager::instance()->removeObjectInstance(d->entry, d->serviceInstanceId);
         deleteLater();
@@ -551,7 +551,8 @@ void ObjectEndPoint::methodCall(const QServicePackage& p)
 
             qWarning() << "SFW FATAL ERROR. Client got a method call that wasn't a signal" << objectName();
 
-            QServiceDebugLog::instance()->dumpLog();
+            qServiceLog() << "error" << "non-signal method call on client"
+                          << "fatal" << 1;
 
 #ifdef Q_OS_LINUX
             void *symbols[128];
@@ -770,19 +771,23 @@ void ObjectEndPoint::waitForResponse(const QUuid& requestId)
         QTime elapsed;
         elapsed.start();
         while (r->isFinished == false && (elapsed.elapsed() < 15000)) {
-            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("~~~ Waiting for %1ms blocking call in %2 for uuid %3")
-                                                      .arg(elapsed.elapsed())
-                                                      .arg(objectName())
-                                                      .arg(requestId.toString()));
+            qServiceLog() << "class" << "objectendpoint"
+                          << "event" << "waiting"
+                          << "elapsed" << elapsed.elapsed()
+                          << "name" << objectName()
+                          << "uuid" << requestId.toString();
             int ret = dispatch->waitForData();
             if (ret != 0) {
                 qWarning() << this << "SFW ipc error" << r->error;
                 break;
             }
         }
-        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("=== BLOCKED for %1ms in %2")
-                                                  .arg(elapsed.elapsed())
-                                                  .arg(objectName()));
+
+        qServiceLog() << "class" << "objectendpoint"
+                      << "event" << "waiting done"
+                      << "elapsed" << elapsed.elapsed()
+                      << "name" << objectName();
+
         if (r->isFinished == false) {
             qWarning() << "SFW IPC failure, remote end failed to respond to blocking IPC call in" << elapsed.elapsed()/1000 << "seconds." << objectName();
         }

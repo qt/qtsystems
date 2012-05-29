@@ -58,6 +58,7 @@ class QDebug;
 class QServicePackagePrivate;
 class Q_AUTOTEST_EXPORT QServicePackage
 {
+    Q_GADGET
 public:
     QServicePackage();
     QServicePackage(const QServicePackage& other);
@@ -69,12 +70,14 @@ public:
         MethodCall,
         PropertyCall
     };
+    Q_ENUMS(Type)
 
     enum ResponseType {
         NotAResponse = 0,
         Success,
         Failed
     };
+    Q_ENUMS(ResponseType)
 
     QServicePackage createResponse() const;
 

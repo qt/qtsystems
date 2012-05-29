@@ -120,17 +120,15 @@ QServiceProxy::QServiceProxy(const QByteArray& metadata, ObjectEndPoint* endPoin
 
 QServiceProxy::~QServiceProxy()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete proxy object %1")
-                .arg(this->objectName()));
+    qServiceLog() << "event" << "delete"
+                  << "class" << "QServiceProxy"
+                  << "name" << objectName();
+
     delete[] d->remoteToLocal;
     delete[] d->localToRemote;
     if (d->meta)
         free(d->meta);
     delete d;
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete done %1")
-                .arg(this->objectName()));
 }
 
 //provide custom Q_OBJECT implementation
@@ -180,19 +178,17 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 
         if (returnType == QMetaType::Void) {
 
-            QServiceDebugLog::instance()->appendToLog(
-                        QString::fromLatin1("--> non-blocking method %1 for %2")
-                        .arg(QString::fromLatin1(method.methodSignature()))
-                        .arg(d->endPoint->objectName()));
+            qServiceLog() << "event" << "nonblocking void call"
+                          << "method" << QString::fromLatin1(method.methodSignature())
+                          << "endpoint" << d->endPoint->objectName();
 
             d->endPoint->invokeRemote(d->localToRemote[metaIndex], args, returnType);
         } else {
             //TODO: invokeRemote() parameter list needs review
 
-            QServiceDebugLog::instance()->appendToLog(
-                        QString::fromLatin1("--> non-BLOCKING method %1 for %2")
-                        .arg(QString::fromLatin1(method.methodSignature()))
-                        .arg(d->endPoint->objectName()));
+            qServiceLog() << "event" << "nonblocking call"
+                          << "method" << QString::fromLatin1(method.methodSignature())
+                          << "endpoint" << d->endPoint->objectName();
 
             QVariant result = d->endPoint->invokeRemote(d->localToRemote[metaIndex], args, returnType);
             if (result.type() != QVariant::Invalid){
@@ -220,11 +216,9 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
             QVariant arg;
             if ( c == QMetaObject::WriteProperty ) {
 
-                QServiceDebugLog::instance()->appendToLog(
-                            QString::fromLatin1("--> proerty WRITE operation %1 for %2")
-                            .arg(QString::fromLatin1(property.name()))
-                            .arg(d->endPoint->objectName()));
-
+                qServiceLog() << "event" << "property write"
+                              << "property" << property.name()
+                              << "endpoint" << d->endPoint->objectName();
 
                 if (pType == QMetaType::QVariant)
                     arg =  *reinterpret_cast<const QVariant(*)>(a[0]);
@@ -238,10 +232,9 @@ int QServiceProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
             QVariant result;
             if (c == QMetaObject::ReadProperty) {
 
-                QServiceDebugLog::instance()->appendToLog(
-                            QString::fromLatin1("--> proerty READ operation %1 for %2")
-                            .arg(QString::fromLatin1(property.name()))
-                            .arg(d->endPoint->objectName()));
+                qServiceLog() << "event" << "property read"
+                              << "property" << property.name()
+                              << "endpoint" << d->endPoint->objectName();
 
                 result = d->endPoint->invokeRemoteProperty(metaIndex, arg, pType, c);
                 //wrap result for client
@@ -313,9 +306,10 @@ QServiceProxyBase::QServiceProxyBase(ObjectEndPoint *endpoint, QObject *parent)
 
 QServiceProxyBase::~QServiceProxyBase()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete ServiceProxyBase %1")
-                .arg(this->objectName()));
+    qServiceLog() << "event" << "delete"
+                  << "class" << "QServiceProxyBase"
+                  << "name" << objectName();
+
     if (d->meta)
         free(d->meta);
     delete d;

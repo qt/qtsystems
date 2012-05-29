@@ -84,12 +84,14 @@ QServiceOperations::QServiceOperations(QObject *parent)
     connect(this, SIGNAL(destroyed()),
             processor, SLOT(deleteLater()));
 
-    QServiceDebugLog::instance()->appendToLog(QStringLiteral("&&& Service operation instance created"));
+    qServiceLog() << "event" << "new"
+                  << "class" << "QServiceOperations";
 }
 
 QServiceOperations::~QServiceOperations()
 {
-    QServiceDebugLog::instance()->appendToLog(QStringLiteral("&&& Service operation instance destroyed"));
+    qServiceLog() << "event" << "delete"
+                  << "class" << "QServiceOperations";
 }
 
 /*
@@ -97,9 +99,9 @@ QServiceOperations::~QServiceOperations()
 */
 QServiceOperations *QServiceOperations::instance()
 {
-    QString op = QString::fromLatin1("&&& Service operations instance accessed client count: %1").
-            arg(q_service_operations_object()->clientCount());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "event" << "instance access"
+                  << "class" << "QServiceOperations"
+                  << "clients" << q_service_operations_object()->clientCount();
 
     return q_service_operations_object();
 }
@@ -117,9 +119,9 @@ void QServiceOperations::engage()
     } else {
         m_engageCount.ref();
     }
-    QString op = QString::fromLatin1("&&& Service operations engage client count: %1").
-            arg(q_service_operations_object()->clientCount());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "event" << "engage"
+                  << "class" << "QServiceOperations"
+                  << "clients" << q_service_operations_object()->clientCount();
 }
 
 /*
@@ -136,13 +138,13 @@ void QServiceOperations::engage()
 */
 void QServiceOperations::disengage()
 {
-    QString op = QString::fromLatin1("&&& Service operations disengage client count: %1")
-            .arg(q_service_operations_object()->clientCount());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "event" << "disengage"
+                  << "class" << "QServiceOperations"
+                  << "clients" << q_service_operations_object()->clientCount();
 
     if (!m_engageCount.deref()) {
-        QServiceDebugLog::instance()->appendToLog(QStringLiteral("&&& Service operations shutting down"));
-
+        qServiceLog() << "event" << "shutdown"
+                      << "class" << "QServiceOperations";
         quit();
         int triesLeft = 3;
         bool exitedCleanly = false;
@@ -159,7 +161,6 @@ void QServiceOperations::disengage()
             wait();
         }
     }
-    QServiceDebugLog::instance()->appendToLog(QStringLiteral("&&& Service operations done"));
 }
 
 /*
@@ -171,9 +172,9 @@ void QServiceOperations::disengage()
 */
 void QServiceOperations::initiateRequest(const QServiceRequest &req)
 {
-    QString op = QString::fromLatin1("&&& Service initialRequest for: %1")
-            .arg(req.descriptor().interfaceName());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "event" << "initiate"
+                  << "class" << "QServiceOperations"
+                  << "iface" << req.descriptor().interfaceName();
 
     emit newRequest(req);
 }
@@ -184,9 +185,9 @@ void QServiceOperations::initiateRequest(const QServiceRequest &req)
 */
 void QServiceOperations::run()
 {
-    QString op = QString::fromLatin1("&&& Service run priority: %1")
-            .arg(priority());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "event" << "run"
+                  << "class" << "QServiceOperations"
+                  << "priority" << (qint32)priority();
 
     // spin the per-thread event loop
     exec();
@@ -203,7 +204,8 @@ void QServiceOperations::run()
 QServiceOperationProcessor::QServiceOperationProcessor(QObject *parent)
     : QObject(parent), inRequest(false)
 {
-    QServiceDebugLog::instance()->appendToLog(QStringLiteral("^^^ Service processor start"));
+    qServiceLog() << "event" << "new"
+                  << "class" << "QServiceOperationProc";
 }
 
 /*
@@ -212,7 +214,8 @@ QServiceOperationProcessor::QServiceOperationProcessor(QObject *parent)
 */
 QServiceOperationProcessor::~QServiceOperationProcessor()
 {
-    QServiceDebugLog::instance()->appendToLog(QStringLiteral("^^^ Service processor terminate"));
+    qServiceLog() << "event" << "delete"
+                  << "class" << "QServiceOperationProc";
 }
 
 /*
@@ -225,9 +228,9 @@ void QServiceOperationProcessor::handleRequest(const QServiceRequest &inrequest)
     pendingList.append(inrequest);
 
     if (inRequest) {
-        QServiceDebugLog::instance()->appendToLog(
-                    QString::fromLatin1("^^^ Service queue request for %1")
-                    .arg(inrequest.descriptor().interfaceName()));
+        qServiceLog() << "event" << "already handle req"
+                      << "class" << "QServiceOperationProc"
+                      << "iface" << inrequest.descriptor().interfaceName();
         return;
     }
 
@@ -238,9 +241,9 @@ void QServiceOperationProcessor::handleRequest(const QServiceRequest &inrequest)
     while (!pendingList.isEmpty()) {
         req = pendingList.takeFirst();
 
-        QServiceDebugLog::instance()->appendToLog(
-                    QString::fromLatin1("^^^ Service handle request for %1")
-                    .arg(req.descriptor().interfaceName()));
+        qServiceLog() << "event" << "handle req start"
+                      << "class" << "QServiceOperationProc"
+                      << "iface" << inrequest.descriptor().interfaceName();
 
         QServiceInterfaceDescriptor descriptor = req.descriptor();
         QServiceReply *reply = req.reply();
@@ -296,9 +299,9 @@ void QServiceOperationProcessor::handleRequest(const QServiceRequest &inrequest)
         QMetaObject::invokeMethod(reply, "setProxyObject", Qt::QueuedConnection, Q_ARG(QObject*, obj));
         QMetaObject::invokeMethod(reply, "finish", Qt::QueuedConnection);
 
-        QServiceDebugLog::instance()->appendToLog(
-                    QString::fromLatin1("^^^ Service finished request for %1")
-                    .arg(req.descriptor().interfaceName()));
+        qServiceLog() << "event" << "handle req done"
+                      << "class" << "QServiceOperationProc"
+                      << "iface" << inrequest.descriptor().interfaceName();
     }
 
     inRequest = false;

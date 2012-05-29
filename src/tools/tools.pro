@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-!without-serviceframework: SUBDIRS = servicefw
+!without-serviceframework: SUBDIRS = servicefw sfwlisten

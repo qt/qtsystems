@@ -247,11 +247,11 @@ QVariant QSlotInvoker::invoke( const QList<QVariant>& args )
         }
     }
 
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("<-- slot invoked %1 %2 num of args %2")
-                .arg(d->receiver->objectName())
-                .arg(QString::fromLatin1(d->member))
-                .arg(numArgs));
+    qServiceLog() << "event" << "slot invoked"
+                  << "class" << "QSlotInvoker"
+                  << "receiver" << d->receiver->objectName()
+                  << "member" << QString::fromLatin1(d->member)
+                  << "args" << numArgs;
 
     // Invoke the specified slot.
     d->receiver->qt_metacall( QMetaObject::InvokeMetaMethod,

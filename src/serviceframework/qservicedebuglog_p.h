@@ -46,35 +46,119 @@
 
 #include <QString>
 #include <QStringList>
+#include <QBuffer>
+#include <QDataStream>
+#include <QSharedPointer>
+#include <QMutex>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 
-class  QServiceDebugLog
+class QServiceDebugMessage
+{
+public:
+    enum DataType {
+        Int32Type = 1,
+        FloatType = 2,
+        StringType = 3
+    };
+
+    QServiceDebugMessage();
+    ~QServiceDebugMessage();
+
+    QBuffer *buffer;
+    QDataStream ds;
+};
+
+class QServiceDebugValue;
+class QServiceDebugKey;
+class QUdpSocket;
+
+class QServiceDebugLog
 {
 public:
     QServiceDebugLog();
 
     static QServiceDebugLog* instance();
 
-    void appendToLog(const QString &message);
-
-    void setLength(int length);
-    void setEnableAutoOutput(bool enabled);
-
-    void setLiveDump(bool enabled);
-    bool liveDump() const;
-
-    void dumpLog();
-    const QStringList fetchLog();
+    QServiceDebugValue operator<<(const char *key);
+    void logMessage(QServiceDebugMessage *msg);
 
 private:
-    QStringList log;
-    int logCount;
-    int length;
-    bool autoDump;
-    bool liveDumping;
-
+    QList<QBuffer *> queue;
+    QVector<QUdpSocket *> sockets;
+    void makeSockets();
+    QMutex socketLock;
 };
+
+inline QServiceDebugLog &qServiceLog()
+{
+    return (*QServiceDebugLog::instance());
+}
+
+class QServiceDebugKey
+{
+public:
+    inline QServiceDebugKey(const QSharedPointer<QServiceDebugMessage> &ptr)
+        : ptr(ptr) {}
+    QServiceDebugValue operator<<(const char *key);
+private:
+    QSharedPointer<QServiceDebugMessage> ptr;
+};
+
+class QServiceDebugValue
+{
+public:
+    inline QServiceDebugValue(const QSharedPointer<QServiceDebugMessage> &ptr)
+        : ptr(ptr) {}
+    QServiceDebugKey operator<<(const qint32 &val);
+    QServiceDebugKey operator<<(const float &val);
+    QServiceDebugKey operator<<(const QString &val);
+    QServiceDebugKey operator<<(const char *val);
+private:
+    QSharedPointer<QServiceDebugMessage> ptr;
+};
+
+inline QServiceDebugValue QServiceDebugKey::operator<<(const char *key)
+{
+    ptr->ds.writeBytes(key, ::strlen(key));
+    return QServiceDebugValue(ptr);
+}
+
+inline QServiceDebugKey QServiceDebugValue::operator<<(const qint32 &val)
+{
+    ptr->ds << (qint8)QServiceDebugMessage::Int32Type;
+    ptr->ds << val;
+    return QServiceDebugKey(ptr);
+}
+
+inline QServiceDebugKey QServiceDebugValue::operator<<(const float &val)
+{
+    ptr->ds << (qint8)QServiceDebugMessage::FloatType;
+    ptr->ds << val;
+    return QServiceDebugKey(ptr);
+}
+
+inline QServiceDebugKey QServiceDebugValue::operator<<(const QString &val)
+{
+    ptr->ds << (qint8)QServiceDebugMessage::StringType;
+    QByteArray ba = val.toLatin1();
+    ptr->ds.writeBytes(ba.constData(), ba.size());
+    return QServiceDebugKey(ptr);
+}
+
+inline QServiceDebugKey QServiceDebugValue::operator<<(const char *val)
+{
+    ptr->ds << (qint8)QServiceDebugMessage::StringType;
+    ptr->ds.writeBytes(val, ::strlen(val));
+    return QServiceDebugKey(ptr);
+}
+
+inline QServiceDebugValue QServiceDebugLog::operator<<(const char *key)
+{
+    QSharedPointer<QServiceDebugMessage> msg(new QServiceDebugMessage());
+    return (QServiceDebugKey(msg) << key);
+}
 
 QT_END_NAMESPACE
 

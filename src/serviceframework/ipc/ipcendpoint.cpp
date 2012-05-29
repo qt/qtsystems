@@ -57,9 +57,9 @@ QServiceIpcEndPoint::QServiceIpcEndPoint(QObject* parent)
 
 QServiceIpcEndPoint::~QServiceIpcEndPoint()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete ipcendpoint %1")
-                .arg(this->objectName()));
+    qServiceLog() << "event" << "delete"
+                  << "class" << "QServiceIpcEndPoint"
+                  << "name" << objectName();
     incoming.clear();
 }
 

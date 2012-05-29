@@ -106,11 +106,12 @@ static void qt_ignore_sigpipe()
          memset(&noaction, 0, sizeof(noaction));
          noaction.sa_handler = SIG_IGN;
          ::sigaction(SIGPIPE, &noaction, 0);
-         QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("---  Disable SIGPIPE due to it being broken in general"));
+         qServiceLog() << "disable_sigpipe" << 1;
      }
 #else
      // Posix signals are not supported by the underlying platform
-     QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("---  Unable to disable SIGPIPE due to no posix signals"));
+     qServiceLog() << "disable_sigpipe" << 0
+                   << "reason" << QString::fromLatin1("no posix signals");
 #endif
 }
 
@@ -242,15 +243,19 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
     int flags = fcntl(client_fd, F_GETFL, 0);
     fcntl(client_fd, F_SETFL, flags|O_NONBLOCK|O_CLOEXEC);
 
-    QString op = QString::fromLatin1("<-> SFW uepc on %1 service %3").arg(client_fd).arg(objectName());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "class" << "unixep"
+                  << "event" << "new"
+                  << "client_fd" << client_fd
+                  << "name" << objectName();
 }
 
 UnixEndPoint::~UnixEndPoint()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete unix endpoint %1")
-                .arg(this->objectName()));
+    qServiceLog() << "class" << "unixep"
+                  << "event" << "delete"
+                  << "client_fd" << client_fd
+                  << "name" << objectName()
+                  << "was_open" << (connection_open ? 1 : 0);
     if (connection_open)
         terminateConnection(false);
 }
@@ -268,6 +273,9 @@ void UnixEndPoint::getSecurityCredentials(QServiceClientCredentials &creds)
         creds.d->gid = xuc.cr_gid;
 
     } else {
+        qServiceLog() << "class" << "unixep"
+                      << "event" << "getsockopt failed"
+                      << "errno" << qt_error_string(errno);
         qDebug("SFW getsockopt failed: %s", qPrintable(qt_error_string(errno)));
     }
 #elif defined(SO_PEERCRED)
@@ -279,6 +287,9 @@ void UnixEndPoint::getSecurityCredentials(QServiceClientCredentials &creds)
         creds.d->uid = uc.uid;
         creds.d->gid = uc.gid;
     } else {
+        qServiceLog() << "class" << "unixep"
+                      << "event" << "getsockopt failed"
+                      << "errno" << qt_error_string(errno);
         qDebug("SFW getsockopt failed: %s", qPrintable(qt_error_string(errno)));
     }
 #else
@@ -305,10 +316,10 @@ void UnixEndPoint::terminateConnection(bool error)
             QList<UnixEndPoint *> &endp = _q_unixendpoints()->localData();
             endp.removeAll(this);
         }
-        QString op = QString::fromLatin1("<-> SFW close on %1 interface %2")
-                .arg(client_fd)
-                .arg(objectName());
-        QServiceDebugLog::instance()->appendToLog(op);
+        qServiceLog() << "class" << "unixep"
+                      << "event" << "terminate"
+                      << "client_fd" << client_fd
+                      << "name" << objectName();
         readNotifier->setEnabled(false);
         delete readNotifier;
         writeNotifier->setEnabled(false);
@@ -320,8 +331,9 @@ void UnixEndPoint::terminateConnection(bool error)
         if (error)
             ipcfault();
     } else {
-        QString op = QString::fromLatin1("<-> SFW 2nd close on interface %3").arg(objectName());
-        QServiceDebugLog::instance()->appendToLog(op);
+        qServiceLog() << "class" << "unixep"
+                      << "event" << "double terminate"
+                      << "name" << objectName();
     }
 }
 
@@ -397,20 +409,25 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
 
     int ret = ::select(n, &reader, 0, 0, &tv);
     if (ret < 0) {
-        QServiceDebugLog::instance()->appendToLog(QStringLiteral("<!> select failed returned with %1")
-                                                  .arg(qt_error_string(errno)));
+        qServiceLog() << "class" << "unixep:static"
+                      << "event" << "select failed"
+                      << "errno" << qt_error_string(errno);
         if (errno == EBADF) {
             struct stat buf;
             foreach (UnixEndPoint *e, endp) {
                 if (fstat(e->client_fd, &buf) == -1) {
-                    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("### holding a bad endpoint file descriptor %1").arg(e->client_fd));
+                    qServiceLog() << "class" << "unixep:static"
+                                  << "event" << "holding uep with bad fd"
+                                  << "client_fd" << e->client_fd;
                     e->terminateConnection(true);
                 }
             }
 
             foreach (QRemoteServiceRegisterUnixPrivate *e, endpu) {
                 if (fstat(e->server_fd, &buf) == -1) {
-                    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("### holding a bad service file descriptor %1").arg(e->server_fd));
+                    qServiceLog() << "class" << "unixep:static"
+                                  << "event" << "holding qrsrup with bad fd"
+                                  << "server_fd" << e->server_fd;
                     endpu.removeAll(e);
                 }
             }
@@ -418,7 +435,9 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
             foreach (Waiter *w, conn) {
                 if (w->type != Waiter::Timer) {
                     if (fstat(w->fd, &buf) == -1) {
-                        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("### holding a bad file descriptor %1").arg(w->fd));
+                        qServiceLog() << "class" << "unixep:static"
+                                      << "event" << "holding waiter with bad fd"
+                                      << "fd" << w->fd;
                         conn.removeAll(w);
                     }
                 }
@@ -461,7 +480,9 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
     if (times_str) {
         int times = QString::fromLatin1(times_str).toInt();
         if (total_time.elapsed() > times) {
-            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("... SFW spun the local eventloop for %1 ms").arg(total_time.elapsed()));
+            qServiceLog() << "class" << "unixep:static"
+                          << "event" << "spun local loop"
+                          << "time_ms" << total_time.elapsed();
         }
     }
 #endif
@@ -485,21 +506,23 @@ void UnixEndPoint::flushPackage(const QServicePackage& package)
     outsize << size;
 
 #ifdef QT_SFW_IPC_DEBUG
-    QString op = QString::fromLatin1("--> %1 SFW write to %2 size %3 name %4 ").arg(package.d->messageId.toString()).
-            arg(client_fd).arg(size).arg(objectName());
-    if (package.d->packageType == QServicePackage::ObjectCreation)
-        op += QStringLiteral("ObjectCreation ");
-    else if (package.d->packageType == QServicePackage::MethodCall)
-        op += QStringLiteral("MethodCall ");
-    else if (package.d->packageType == QServicePackage::PropertyCall)
-        op += QStringLiteral("PropertyCall ");
-    if (package.d->responseType == QServicePackage::NotAResponse)
-        op += QStringLiteral("NotAResponse");
-    else if (package.d->responseType == QServicePackage::Success)
-        op += QStringLiteral("Success");
-    else if (package.d->responseType == QServicePackage::Failed)
-        op += QStringLiteral("Failed");
-    QServiceDebugLog::instance()->appendToLog(op);
+    const QMetaObject *mo = &QServicePackage::staticMetaObject;
+
+    const QMetaEnum typeEnum = mo->enumerator(
+                mo->indexOfEnumerator("Type"));
+    const char *type = typeEnum.valueToKey(package.d->packageType);
+
+    const QMetaEnum rtypeEnum = mo->enumerator(
+                mo->indexOfEnumerator("ResponseType"));
+    const char *rtype = rtypeEnum.valueToKey(package.d->responseType);
+
+    qServiceLog() << "class" << "unixep"
+                  << "event" << "write"
+                  << "fd" << client_fd
+                  << "size" << (qint32)size
+                  << "name" << objectName()
+                  << "packageType" << type
+                  << "respType" << rtype;
 #endif
 
     if (!connection_open)
@@ -522,7 +545,9 @@ void UnixEndPoint::flushPackage(const QServicePackage& package)
 void UnixEndPoint::readIncoming()
 {
     if (!connection_open) {
-        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("zzz SFW reading incoming on closed socket? %1").arg(this->objectName()));
+        qServiceLog() << "class" << "unixep"
+                      << "event" << "read on closed socket"
+                      << "name" << objectName();
         return;
     }
 
@@ -533,7 +558,9 @@ void UnixEndPoint::readIncoming()
         /* Linux can give us a spurious EAGAIN, only check on error */
         /* No Comment */
         if ((bytes < 0) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("zzz SFW spurious EAGAIN for %1").arg(this->objectName()));
+            qServiceLog() << "class" << "unixep"
+                          << "event" << "spurious eagain"
+                          << "name" << objectName();
             return;
         }
 
@@ -576,21 +603,23 @@ void UnixEndPoint::readIncoming()
             in >> package;
 
 #ifdef QT_SFW_IPC_DEBUG
-            QString op = QString::fromLatin1("<-- %1 SFW read fro %2 size %3 name %4 ").arg(package.d->messageId.toString()).
-                    arg(client_fd).arg(size).arg(objectName());
-            if (package.d->packageType == QServicePackage::ObjectCreation)
-                op += QStringLiteral("ObjectCreation ");
-            else if (package.d->packageType == QServicePackage::MethodCall)
-                op += QStringLiteral("MethodCall ");
-            else if (package.d->packageType == QServicePackage::PropertyCall)
-                op += QStringLiteral("PropertyCall ");
-            if (package.d->responseType == QServicePackage::NotAResponse)
-                op += QStringLiteral("NotAResponse");
-            else if (package.d->responseType == QServicePackage::Success)
-                op += QStringLiteral("Success");
-            else if (package.d->responseType == QServicePackage::Failed)
-                op += QStringLiteral("Failed");
-            QServiceDebugLog::instance()->appendToLog(op);
+            const QMetaObject *mo = &QServicePackage::staticMetaObject;
+
+            const QMetaEnum typeEnum = mo->enumerator(
+                        mo->indexOfEnumerator("Type"));
+            const char *type = typeEnum.valueToKey(package.d->packageType);
+
+            const QMetaEnum rtypeEnum = mo->enumerator(
+                        mo->indexOfEnumerator("ResponseType"));
+            const char *rtype = rtypeEnum.valueToKey(package.d->responseType);
+
+            qServiceLog() << "class" << "unixep"
+                          << "event" << "read"
+                          << "fd" << client_fd
+                          << "size" << (qint32)size
+                          << "name" << objectName()
+                          << "packageType" << type
+                          << "respType" << rtype;
 #endif
 
             incoming.enqueue(package);
@@ -636,10 +665,10 @@ int UnixEndPoint::write(const char *data, int len)
         } else if ((ret == -1) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
             /* no bytes writen */
         } else {
-            QServiceDebugLog::instance()->appendToLog(
-                        QString::fromLatin1("~~~ sfw failed to write to socket %1 %2")
-                        .arg(client_fd)
-                        .arg(this->objectName()));
+            qServiceLog() << "class" << "unixep"
+                          << "event" << "write FAIL"
+                          << "client_fd" << client_fd
+                          << "name" << objectName();
             return -1;
         }
     }
@@ -647,6 +676,12 @@ int UnixEndPoint::write(const char *data, int len)
     if (bytes_writen < len) {
         writeNotifier->setEnabled(true);
         pending_write.append(data+bytes_writen, len-bytes_writen);
+
+        qServiceLog() << "class" << "unixep"
+                      << "event" << "deferred write"
+                      << "size" << len
+                      << "done" << bytes_writen
+                      << "pending" << pending_write.size();
     }
 
     return len;
@@ -654,11 +689,11 @@ int UnixEndPoint::write(const char *data, int len)
 
 void UnixEndPoint::flushWriteBuffer()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("~>~ sfw flush write buffer for socket %1 %2 holding %3 bytes")
-                .arg(client_fd)
-                .arg(this->objectName())
-                .arg(pending_write.size()));
+    qServiceLog() << "class" << "unixep"
+                  << "event" << "flush"
+                  << "client_fd" << client_fd
+                  << "name" << objectName()
+                  << "pending" << pending_write.size();
 
     writeNotifier->setEnabled(false);
 
@@ -674,10 +709,10 @@ void UnixEndPoint::flushWriteBuffer()
             /* no data writen, but socket is open */
             writeNotifier->setEnabled(true);
         } else {
-            QServiceDebugLog::instance()->appendToLog(
-                        QString::fromLatin1("~~~ sfw failed to write to socket %1 %2")
-                        .arg(client_fd)
-                        .arg(this->objectName()));
+            qServiceLog() << "class" << "unixep"
+                          << "event" << "write FAIL"
+                          << "client_fd" << client_fd
+                          << "name" << objectName();
         }
     } else {
         writeNotifier->setEnabled(false);
@@ -738,17 +773,19 @@ QRemoteServiceRegisterUnixPrivate::QRemoteServiceRegisterUnixPrivate(QObject* pa
 
 QRemoteServiceRegisterUnixPrivate::~QRemoteServiceRegisterUnixPrivate()
 {
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete remote service register private object %1")
-                .arg(this->objectName()));
+    qServiceLog() << "class" << "qrsrup"
+                  << "event" << "delete start"
+                  << "name" << objectName();
+
     if (_q_remoteservice()) {
         QList<QRemoteServiceRegisterUnixPrivate *> &endp =
                 _q_remoteservice()->localData();
         endp.removeAll(this);
     }
-    QServiceDebugLog::instance()->appendToLog(
-                QString::fromLatin1("ddd delete done %1")
-                .arg(this->objectName()));
+
+    qServiceLog() << "class" << "qrsrup"
+                  << "event" << "delete done"
+                  << "name" << objectName();
 }
 
 void QRemoteServiceRegisterUnixPrivate::publishServices( const QString& ident)
@@ -766,9 +803,10 @@ void QRemoteServiceRegisterUnixPrivate::processIncoming()
     int flags = ::fcntl(client_fd, F_GETFL, 0);
     ::fcntl(client_fd, F_SETFL, flags|O_NONBLOCK|FD_CLOEXEC);
 
-    QString op = QString::fromLatin1("<-> SFW accep on %1 for %2 service %5").arg(server_fd).
-            arg(client_fd).arg(objectName());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "class" << "qrsrup"
+                  << "event" << "accept"
+                  << "client_fd" << client_fd
+                  << "name" << objectName();
 
     if (client_fd != -1) {
         //LocalSocketEndPoint owns socket
@@ -811,9 +849,10 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
     location = QDir::cleanPath(QDir::tempPath());
     location += QLatin1Char('/') + ident;
 
-    QString op = QString::fromLatin1("<-> SFW listen on %1 for %2 op %4 service %5").arg(server_fd).arg(objectName());
-    QServiceDebugLog::instance()->appendToLog(op);
-
+    qServiceLog() << "class" << "qrsrup"
+                  << "event" << "createservice start"
+                  << "server_fd" << server_fd
+                  << "name" << objectName();
 
     // Note safe, but temporary code
     QString tempLocation = location + QStringLiteral(".temp");
@@ -870,9 +909,10 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
 
     registerWithThreadData();
 
-    op = QString::fromLatin1("<-> %1 SFW creat to %2 size %3 name %4").arg(QString()).
-            arg(server_fd).arg(0).arg(objectName());
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "class" << "qrsrup"
+                  << "event" << "createservice done"
+                  << "server_fd" << server_fd
+                  << "name" << objectName();
 
     FILE *f = ::fopen(pidLocation.toLatin1(), "w");
     if (f) {
@@ -1070,17 +1110,18 @@ int doStart(const QString &location) {
 #endif
 
         ret = ::connect(socketfd, (struct sockaddr *)&name, sizeof(name));
-        QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc connect woke up %1 %2").arg(ret).arg(qt_error_string(errno)));
+        qServiceLog() << "class" << "qrsrup"
+                      << "event" << "connect woke up"
+                      << "return" << ret
+                      << "errno" << qt_error_string(errno);
 
         if (ret == 0 || (ret == -1 && errno == EISCONN)) {
-            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc is connected"));
             if (!waiter.receivedLaunched) {
                 qWarning() << "SFW asked the PM for a start, PM never replied, application started...something appears broken";
             }
             success = true;
             break;
         } else if (ret == -1 && errno == EINPROGRESS) {
-            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc is in progress"));
             w->setEnabled(true);
         } else {
             w->setEnabled(false);
@@ -1088,13 +1129,20 @@ int doStart(const QString &location) {
 
         if (!waiter.errorString.isEmpty()) {
             qWarning() << "SFW Error talking to PM" << socketfd << waiter.errorString;
-            QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc error received from PM %1").arg(waiter.errorString));
+            qServiceLog() << "func" << __FUNCTION__
+                          << "event" << "error from waiter"
+                          << "error" << waiter.errorString;
             success = false;
             break;
         }
     }
 
-    QServiceDebugLog::instance()->appendToLog(QString::fromLatin1("ccc done connect %1 %2 %3").arg(total_time.elapsed()).arg(socketfd).arg(waiter.receivedLaunched));
+    qServiceLog() << "func" << __FUNCTION__
+                  << "event" << "connect done"
+                  << "time" << total_time.elapsed()
+                  << "fd" << socketfd
+                  << "pm_reply" << waiter.receivedLaunched;
+
     qWarning() << QTime::currentTime().toString(fmt) <<
                  "SFW doStart done. Total time" << total_time.elapsed() <<
                  "Socket exists:" << file.exists() <<
@@ -1125,9 +1173,10 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
     qWarning() << "(all ok) starting SFW proxyForService" << location;
 
 #ifdef QT_SFW_IPC_DEBUG
-    QString op = QString::fromLatin1("<-> SFW proxyx to %2 size %3 name %4").
-            arg(entry.d->iface).arg(0).arg(location);
-    QServiceDebugLog::instance()->appendToLog(op);
+    qServiceLog() << "class" << "qrsrp"
+                  << "event" << "proxy start"
+                  << "iface" << entry.d->iface
+                  << "name" << location;
 #endif
 
 #ifdef QT_MTCLIENT_PRESENT
@@ -1184,18 +1233,19 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
             QObject::connect(proxy, SIGNAL(destroyed()), endPoint, SLOT(deleteLater()));
             QObject::connect(ipcEndPoint, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                              proxy, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)));
-            QServiceDebugLog::instance()->appendToLog(
-                        QString::fromLatin1("+++ SFW created object for %1 %2")
-                        .arg(entry.interfaceName()).arg(proxy->objectName()));
+            qServiceLog() << "class" << "qrsrp"
+                          << "event" << "create object"
+                          << "iface" << entry.interfaceName()
+                          << "name" << proxy->objectName();
             ipcEndPoint->setParent(proxy);
             endPoint->setParent(proxy);
             qWarning() << "SFW created object for" << entry.interfaceName();
         }
         else {
             qWarning() << "SFW failed to create object for" << entry.interfaceName();
-            QServiceDebugLog::instance()->appendToLog(
-                        QString::fromLatin1("+++ SFW create failed object for %1")
-                        .arg(entry.interfaceName()));
+            qServiceLog() << "class" << "qrsrp"
+                          << "event" << "create object FAIL"
+                          << "iface" << entry.interfaceName();
             delete endPoint;
         }
         return proxy;

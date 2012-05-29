@@ -45,6 +45,10 @@
 
 #include <QMutex>
 #include <QMutexLocker>
+#include <QUdpSocket>
+#include <QCoreApplication>
+#include <QFileInfo>
+#include <QNetworkInterface>
 
 #ifdef Q_OS_UNIX
 #include <signal.h>
@@ -52,47 +56,90 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_SFW_IPC_DEBUG
-static sighandler_t _qt_service_old_winch = 0;
-
-void dump_op_log(int num) {
-
-    qWarning() << "SFW OP LOG";
-    QServiceDebugLog::instance()->dumpLog();
-
-    if (_qt_service_old_winch)
-        _qt_service_old_winch(num);
+QServiceDebugMessage::QServiceDebugMessage()
+{
+    buffer = new QBuffer();
+    buffer->open(QIODevice::WriteOnly);
+    ds.setDevice(buffer);
+    ds << (quint32)(QCoreApplication::applicationPid());
+    QFileInfo fi(QCoreApplication::applicationFilePath());
+    QByteArray ba = fi.fileName().toLatin1();
+    ds.writeBytes(ba.constData(), ba.size());
 }
 
-void dump_live_log(int num) {
-    Q_UNUSED(num);
-
-    QServiceDebugLog::instance()->setLiveDump(!QServiceDebugLog::instance()->liveDump());
-    qWarning() << "SFW toggle live logging enabled:" << QServiceDebugLog::instance()->liveDump();
+QServiceDebugMessage::~QServiceDebugMessage()
+{
+    /* when we're destructed, we're ready to send! */
+    buffer->close();
+    QServiceDebugLog::instance()->logMessage(this);
 }
-#endif
+
+const static QHostAddress _group_addr("224.0.105.201");
 
 QServiceDebugLog::QServiceDebugLog()
-    : logCount(0), length(500), autoDump(false), liveDumping(false)
 {
+    makeSockets();
+}
 
+void QServiceDebugLog::makeSockets()
+{
 #ifdef QT_SFW_IPC_DEBUG
+    if (sockets.size() > 0)
+        return;
 
-    if (::getenv("SFW_LOG_STDOUT"))
-        liveDumping = true;
+    QList<QNetworkInterface> ifs = QNetworkInterface::allInterfaces();
+    foreach (const QNetworkInterface &inf, ifs) {
+        /* avoid the loopback or any wireless interfaces
+         * (we probably don't want debug over those) */
+        if (inf.name() == "lo" || inf.name().startsWith("wifi")
+                || inf.name().startsWith("wl") || inf.name().startsWith("ppp")
+                || inf.name().startsWith("tun") || inf.name().startsWith("tap"))
+            continue;
 
-    // Set to ignore winch once
-    static QBasicAtomicInt atom_winch = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (atom_winch.testAndSetRelaxed(0, 1)) {
-        _qt_service_old_winch = ::signal(SIGWINCH, dump_op_log);
-    }
+        QUdpSocket *socket = new QUdpSocket();
+        if (!socket->bind(QHostAddress::AnyIPv4, 10520, QAbstractSocket::ShareAddress)) {
+            delete socket;
+            continue;
+        }
+        socket->setMulticastInterface(inf);
+        if (!socket->joinMulticastGroup(_group_addr, inf)) {
+            delete socket;
+            continue;
+        }
 
-    static QBasicAtomicInt atom_usr = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (atom_usr.testAndSetRelaxed(0, 1)) {
-        ::signal(SIGSYS, dump_live_log);
+        qDebug("SFW udp debug on interface %s", qPrintable(inf.name()));
+        sockets << socket;
     }
 #endif
+}
 
+void QServiceDebugLog::logMessage(QServiceDebugMessage *msg)
+{
+#ifdef QT_SFW_IPC_DEBUG
+    QMutexLocker m(&socketLock);
+
+    if (sockets.size() == 0) {
+        makeSockets();
+
+        if (sockets.size() > 0) {
+            while (!queue.isEmpty()) {
+                foreach (QUdpSocket *socket, sockets)
+                    socket->writeDatagram(queue.front()->data(), _group_addr, 10520);
+                delete queue.front();
+                queue.pop_front();
+            }
+        } else {
+            queue << msg->buffer;
+        }
+    }
+
+    if (sockets.size() > 0) {
+        foreach (QUdpSocket *socket, sockets) {
+            socket->writeDatagram(msg->buffer->data(), _group_addr, 10520);
+        }
+        delete msg->buffer;
+    }
+#endif
 }
 
 QServiceDebugLog *QServiceDebugLog::instance()
@@ -104,46 +151,6 @@ QServiceDebugLog *QServiceDebugLog::instance()
     if (!dbg)
         dbg = new QServiceDebugLog();
     return dbg;
-}
-
-bool QServiceDebugLog::liveDump() const
-{
-    return liveDumping;
-}
-
-void QServiceDebugLog::setLiveDump(bool enabled)
-{
-    liveDumping = enabled;
-}
-
-void QServiceDebugLog::appendToLog(const QString &message)
-{
-#ifdef QT_SFW_IPC_DEBUG
-    if (liveDumping)
-        qWarning() << message;
-
-    logCount++;
-    log.append(QTime::currentTime().toString(QStringLiteral("hh:mm:ss.zzz")) +
-               QString::fromLatin1(" %1 ").arg(logCount) +
-               message);
-    if (autoDump && ((logCount%length) == 0))
-        dumpLog();
-    while (log.length() > length)
-        log.removeFirst();
-#else
-    Q_UNUSED(message);
-#endif
-}
-
-const QStringList QServiceDebugLog::fetchLog()
-{
-    return log;
-}
-
-void QServiceDebugLog::dumpLog()
-{
-    foreach (QString line, log)
-        qDebug() << line;
 }
 
 QT_END_NAMESPACE
