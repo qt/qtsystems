@@ -1,5 +1,6 @@
 TARGET = tst_qservicemanager_ipc
 CONFIG += testcase
+testcase.timeout = 600 # this test is slow
 
 QT += serviceframework testlib
 QT -= gui
