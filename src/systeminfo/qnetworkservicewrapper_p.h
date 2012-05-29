@@ -72,6 +72,7 @@ class QNetworkServiceWrapper : public QObject
 
 public:
     QNetworkServiceWrapper(QObject *parent = 0);
+    ~QNetworkServiceWrapper();
 
     int getNetworkInterfaceCount();
     int getSignalStrength(int interfaceIndex);
@@ -119,6 +120,7 @@ private Q_SLOTS:
     void onHomeMccChanged(const QString &homeMcc);
     void onHomeMncChanged(const QString &homeMnc);
     void onImsiChanged(const QString &imsi);
+    void IPCFault(QService::UnrecoverableIPCError errorValue);
 
 private:
     QServiceManager *serviceManager;

@@ -75,6 +75,13 @@ QNetworkServiceWrapper::QNetworkServiceWrapper(QObject *parent)
             this, SLOT(onServiceRemoved(const QString&,QService::Scope)));
 }
 
+QNetworkServiceWrapper::~QNetworkServiceWrapper()
+{
+    int count = loadedNetworkManagerInterfaces.size();
+    for (int i = 0; i < count; i++)
+        loadedNetworkManagerInterfaces.take(i)->deleteLater();
+}
+
 void QNetworkServiceWrapper::initServiceInterfaces()
 {
     QList<QServiceInterfaceDescriptor> serviceInterfaceList = serviceManager->findInterfaces(*NETWORK_REGISTRATION_MANAGER_FILTER());
@@ -93,6 +100,8 @@ bool QNetworkServiceWrapper::loadNetworkManagerInterface(int interfaceIndex)
         QObject *serviceInterfaceObject = serviceManager->loadInterface(allNetworkManagerInterfaces.value(interfaceIndex));
         if (!serviceInterfaceObject)
             return false;
+        connect(serviceInterfaceObject, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
+               this, SLOT(IPCFault(QService::UnrecoverableIPCError)));
         loadedNetworkManagerInterfaces.insert(interfaceIndex, serviceInterfaceObject);
     }
     return true;
@@ -598,6 +607,30 @@ void QNetworkServiceWrapper::onServiceRemoved(const QString &serviceName, QServi
             emit networkInterfaceCountChanged(QNetworkInfo::LteMode, interfaceCount);
         }
     }
+}
+
+void QNetworkServiceWrapper::IPCFault(QService::UnrecoverableIPCError errorValue)
+{
+    QString error;
+    switch (errorValue) {
+    case QService::ErrorServiceNoLongerAvailable:
+        error = QLatin1String("IPC Error: Service no longer available");
+        break;
+    case QService::ErrorOutofMemory:
+        error = QLatin1String("IPC Error: Out of memory");
+        break;
+    case QService::ErrorPermissionDenied:
+        error = QLatin1String("IPC Error: Permission Denied");
+        break;
+    case QService::ErrorInvalidArguments:
+        error = QLatin1String("IPC Error: Invalid Arguments");
+        break;
+    case QService::ErrorUnknown:
+    default:
+        error = QLatin1String("IPC Error: Unkown Error");
+        break;
+    }
+    qWarning() << Q_FUNC_INFO << error;
 }
 
 void QNetworkServiceWrapper::onSignalStrengthChanged(const int strength)
