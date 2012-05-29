@@ -327,6 +327,10 @@ void UnixEndPoint::terminateConnection(bool error)
 
 int UnixEndPoint::waitForData()
 {
+    /* no point waiting around for a dead client */
+    if (client_fd == -1)
+        return -1;
+
     return UnixEndPoint::runLocalEventLoop();
 }
 
