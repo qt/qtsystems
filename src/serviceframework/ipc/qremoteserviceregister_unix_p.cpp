@@ -667,46 +667,13 @@ void UnixEndPoint::ipcfault()
 
 int UnixEndPoint::write(const char *data, int len)
 {
-    int bytes_writen = 0;
-
-    if (pending_write.isEmpty()) {
-        int ret = ::write(client_fd, data, len);
-
-        if (ret > 0) {
-            bytes_writen = ret;
-        } else if ((ret == -1) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-            /* no bytes writen */
-        } else {
-            qServiceLog() << "class" << "unixep"
-                          << "event" << "write FAIL"
-                          << "client_fd" << client_fd
-                          << "name" << objectName();
-            return -1;
-        }
-    }
-
-    if (bytes_writen < len) {
-        writeNotifier->setEnabled(true);
-        pending_write.append(data+bytes_writen, len-bytes_writen);
-
-        qServiceLog() << "class" << "unixep"
-                      << "event" << "deferred write"
-                      << "size" << len
-                      << "done" << bytes_writen
-                      << "pending" << pending_write.size();
-    }
-
+    pending_write.append(data, len);
+    flushWriteBuffer();
     return len;
 }
 
 void UnixEndPoint::flushWriteBuffer()
 {
-    qServiceLog() << "class" << "unixep"
-                  << "event" << "flush"
-                  << "client_fd" << client_fd
-                  << "name" << objectName()
-                  << "pending" << pending_write.size();
-
     writeNotifier->setEnabled(false);
 
     if (!pending_write.isEmpty()) {
@@ -717,14 +684,27 @@ void UnixEndPoint::flushWriteBuffer()
             if (!pending_write.isEmpty()) {
                 writeNotifier->setEnabled(true);
             }
+
+            qServiceLog() << "class" << "unixep"
+                          << "event" << "flush ok"
+                          << "client_fd" << client_fd
+                          << "wrote" << ret
+                          << "pending" << pending_write.size();
+
         } else if ((ret == -1) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
             /* no data writen, but socket is open */
+            qServiceLog() << "class" << "unixep"
+                          << "event" << "flush eagain"
+                          << "client_fd" << client_fd
+                          << "pending" << pending_write.size();
+
             writeNotifier->setEnabled(true);
         } else {
             qServiceLog() << "class" << "unixep"
-                          << "event" << "write FAIL"
+                          << "event" << "flush FAIL"
                           << "client_fd" << client_fd
-                          << "name" << objectName();
+                          << "pending" << pending_write.size()
+                          << "errno" << qt_error_string(errno);
         }
     } else {
         writeNotifier->setEnabled(false);
