@@ -645,6 +645,7 @@ int UnixEndPoint::write(const char *data, int len)
     }
 
     if (bytes_writen < len) {
+        writeNotifier->setEnabled(true);
         pending_write.append(data+bytes_writen, len-bytes_writen);
     }
 
