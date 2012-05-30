@@ -240,7 +240,7 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
     QObject::connect(writeNotifier, SIGNAL(activated(int)), this, SLOT(flushWriteBuffer()));
 
     int flags = fcntl(client_fd, F_GETFL, 0);
-    fcntl(client_fd, F_SETFL, flags|O_NONBLOCK);
+    fcntl(client_fd, F_SETFL, flags|O_NONBLOCK|O_CLOEXEC);
 
     QString op = QString::fromLatin1("<-> SFW uepc on %1 service %3").arg(client_fd).arg(objectName());
     QServiceDebugLog::instance()->appendToLog(op);
@@ -762,8 +762,8 @@ void QRemoteServiceRegisterUnixPrivate::processIncoming()
 
     int client_fd = ::accept(server_fd, (struct sockaddr *) &name, (socklen_t *) &len);
 
-    int flags = fcntl(client_fd, F_GETFL, 0);
-    fcntl(client_fd, F_SETFL, flags|O_NONBLOCK);
+    int flags = ::fcntl(client_fd, F_GETFL, 0);
+    ::fcntl(client_fd, F_SETFL, flags|O_NONBLOCK|FD_CLOEXEC);
 
     QString op = QString::fromLatin1("<-> SFW accep on %1 for %2 service %5").arg(server_fd).
             arg(client_fd).arg(objectName());
@@ -802,6 +802,9 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
         qWarning() << "SFW Failed to create server socket" << ident << qt_error_string(errno);
         return false;
     }
+
+    int flags = fcntl(server_fd, F_GETFL, 0);
+    fcntl(server_fd, F_SETFL, flags|O_NONBLOCK|O_CLOEXEC);
 
     QString location = ident;
     location = QDir::cleanPath(QDir::tempPath());
@@ -860,9 +863,6 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
         qWarning("Failed to rename %s to %s", qPrintable(tempLocation),
                  qPrintable(location));
     }
-
-    int flags = fcntl(server_fd, F_GETFL, 0);
-    fcntl(server_fd, F_SETFL, flags|O_NONBLOCK);
 
     server_notifier = new QSocketNotifier(server_fd, QSocketNotifier::Read, this);
     connect(server_notifier, SIGNAL(activated(int)), this, SLOT(processIncoming()));
@@ -942,7 +942,7 @@ int doStart(const QString &location) {
         delete w_inotify;
         return -1;
     }
-    if (fcntl(socketfd, F_SETFL, flags | O_NONBLOCK)) {
+    if (fcntl(socketfd, F_SETFL, flags | O_NONBLOCK | O_CLOEXEC)) {
         qWarning("fcntl(F_SETFL) failed: %s", ::strerror(errno));
         delete w_inotify;
         return -1;
