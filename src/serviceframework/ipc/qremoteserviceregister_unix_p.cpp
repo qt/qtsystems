@@ -286,6 +286,10 @@ void UnixEndPoint::getSecurityCredentials(QServiceClientCredentials &creds)
         creds.d->pid = uc.pid;
         creds.d->uid = uc.uid;
         creds.d->gid = uc.gid;
+        qServiceLog() << "class" << "unixep"
+                      << "event" << "identified"
+                      << "client_fd" << client_fd
+                      << "pid" << uc.pid;
     } else {
         qServiceLog() << "class" << "unixep"
                       << "event" << "getsockopt failed"
@@ -547,6 +551,7 @@ void UnixEndPoint::readIncoming()
     if (!connection_open) {
         qServiceLog() << "class" << "unixep"
                       << "event" << "read on closed socket"
+                      << "client_fd" << client_fd
                       << "name" << objectName();
         return;
     }
@@ -562,6 +567,7 @@ void UnixEndPoint::readIncoming()
         if ((bytes < 0) && (errno == EAGAIN || errno == EWOULDBLOCK)) {
             qServiceLog() << "class" << "unixep"
                           << "event" << "spurious eagain"
+                          << "client_fd" << client_fd
                           << "name" << objectName();
             readNotifier->setEnabled(true);
             return;
@@ -820,10 +826,10 @@ void QRemoteServiceRegisterUnixPrivate::processIncoming()
 
         ipcEndPoint->setObjectName(objectName() + QString(QLatin1String(" instance on fd %1")).arg(client_fd));
 
-        if (getSecurityFilter()){
-            QServiceClientCredentials creds;
-            ipcEndPoint->getSecurityCredentials(creds);
+        QServiceClientCredentials creds;
+        ipcEndPoint->getSecurityCredentials(creds);
 
+        if (getSecurityFilter()){
             getSecurityFilter()(&creds);
             if (!creds.isClientAccepted()) {
                 ipcEndPoint->terminateConnection(true);
