@@ -551,6 +551,8 @@ void UnixEndPoint::readIncoming()
         return;
     }
 
+    readNotifier->setEnabled(false);
+
     QByteArray raw_data;
     raw_data.resize(4096);
     int bytes = ::read(client_fd, raw_data.data(), 4096);
@@ -561,6 +563,7 @@ void UnixEndPoint::readIncoming()
             qServiceLog() << "class" << "unixep"
                           << "event" << "spurious eagain"
                           << "name" << objectName();
+            readNotifier->setEnabled(true);
             return;
         }
 
@@ -627,6 +630,9 @@ void UnixEndPoint::readIncoming()
             emit readyRead();
         }
     }
+
+    readNotifier->setEnabled(true);
+
     Q_ASSERT(raw_data.isEmpty());
 }
 
