@@ -328,6 +328,7 @@ void JsondbWorker::startNotifier(qint32 stateNumber)
                   << "state" << stateNumber;
     dbwatcher->setWatchedActions(QJsonDbWatcher::Created | QJsonDbWatcher::Updated | QJsonDbWatcher::Removed);
     dbwatcher->setQuery(QLatin1String("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
+    dbwatcher->setPartition(QStringLiteral("com.nokia.mt.Settings"));
     dbwatcher->setInitialStateNumber(stateNumber);
     db->addWatcher(dbwatcher);
     connect(dbwatcher, SIGNAL(statusChanged(QtJsonDb::QJsonDbWatcher::Status)), this, SLOT(watcherStatusChanged(QtJsonDb::QJsonDbWatcher::Status)));
@@ -469,14 +470,17 @@ bool JsondbWorker::sendRequest(QJsonDbRequest *request)
             QStringList services;
             for (int i = 0; i < cache.count(); i++) {
                 const QJsonObject cached_value = cache.at(i);
-                qServiceLog() << "class" << "dbm_jsondb"
-                              << "event" << "request remove"
-                              << "service" << cached_value.value(QStringLiteral("service")).toString()
-                              << "ident" << cached_value.value(QStringLiteral("identifier")).toString();
                 foreach (const QJsonObject &o, remove->objects()) {
                     if (o.value(QStringLiteral("identifier")) ==
                             cached_value.value(QStringLiteral("identifier"))) {
                         QString service = o.value(QStringLiteral("service")).toString();
+
+                        qServiceLog() << "class" << "dbm_jsondb"
+                                      << "event" << "request remove"
+                                      << "service" << service
+                                      << "ident" << cached_value.value(QStringLiteral("identifier")).toString()
+                                      << "dup" << services.contains(service);
+
                         if (!services.contains(service))
                             services.append(service);
                         cache_deleted_items.append(cached_value);
