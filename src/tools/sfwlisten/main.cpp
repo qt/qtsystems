@@ -63,15 +63,19 @@ public:
     SFWReceiver(const QString &intfFilter);
 
 public slots:
-    void makeSockets();
     void socketReadyRead();
+    void socketVerify();
+    void makeSockets();
 
 private:
     QString intfFilter;
+    QTimer socketCheck;
+    QUdpSocket *socket;
 };
 
 SFWReceiver::SFWReceiver(const QString &intfFilter) : intfFilter(intfFilter)
 {
+    connect(&socketCheck, SIGNAL(timeout()), this, SLOT(socketVerify()));
     makeSockets();
 }
 
@@ -89,7 +93,7 @@ void SFWReceiver::makeSockets()
             || intf.name().startsWith("tun") || intf.name().startsWith("tap"))
             continue;
 
-        QUdpSocket *socket = new QUdpSocket(this);
+        socket = new QUdpSocket(this);
         printf("Trying interface %s ...", qPrintable(intf.name()));
         if (!socket->bind(QHostAddress::AnyIPv4, 10520, QUdpSocket::ShareAddress)) {
             printf("Couldn't bind: %s\n", qPrintable(socket->errorString()));
@@ -113,12 +117,36 @@ void SFWReceiver::makeSockets()
 
     if (!gotone) {
         QTimer::singleShot(200, this, SLOT(makeSockets()));
+        socketCheck.stop();
+    } else {
+        socketCheck.setInterval(1000);
+        socketCheck.start();
+    }
+}
+
+void SFWReceiver::socketVerify()
+{
+    QList<QNetworkInterface> intfs = QNetworkInterface::allInterfaces();
+    bool gotone = false;
+    QString name = socket->multicastInterface().name();
+
+    foreach (const QNetworkInterface &intf, intfs) {
+        if (intf.name() == name) {
+            gotone = true;
+            break;
+        }
+    }
+
+    if (!gotone) {
+        printf("Interface down...\n");
+        delete socket;
+        socket = 0;
+        makeSockets();
     }
 }
 
 void SFWReceiver::socketReadyRead()
 {
-    QUdpSocket *socket = qobject_cast<QUdpSocket *>(sender());
     QString intf = socket->multicastInterface().name();
 
     while (socket->hasPendingDatagrams()) {
