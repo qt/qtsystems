@@ -1487,17 +1487,17 @@ void tst_QServiceManager_IPC::verifyThreadSafety_data()
     QTest::addColumn<int>("runs");
     QTest::addColumn<int>("threads");
 
-    QTest::newRow("unique, 2 threads") << 0 << 5000 << 2;
-    QTest::newRow("unique, 4 threads") << 0 << 2500 << 4;
-    QTest::newRow("unique, 16 threads") << 0 << 500 << 16;
-    QTest::newRow("shared, 2 threads") << 1 << 5000 << 2;
-    QTest::newRow("shared, 4 threads") << 1 << 2500 << 4;
-    QTest::newRow("shared, 16 threads") << 1 << 500 << 16;
-    QTest::newRow("mixed, 16 threads") << 2 << 500 << 16;
+    QTest::newRow("unique, 2 threads") << 0 << 50 << 2;
+    QTest::newRow("unique, 4 threads") << 0 << 25 << 4;
+    QTest::newRow("unique, 16 threads") << 0 << 5 << 16;
+    QTest::newRow("shared, 2 threads") << 1 << 50 << 2;
+    QTest::newRow("shared, 4 threads") << 1 << 25 << 4;
+    QTest::newRow("shared, 16 threads") << 1 << 5 << 16;
+    QTest::newRow("mixed, 16 threads") << 2 << 5 << 16;
 #ifndef Q_OS_WIN // Limit on event notifiers.
-    QTest::newRow("unique, 128 threads") << 0 << 50 << 128;
-    QTest::newRow("shared, 128 threads") << 1 << 50 << 128;
-    QTest::newRow("mixed, 128 threads") << 2 << 50 << 128;
+    QTest::newRow("unique, 128 threads") << 0 << 5 << 128;
+    QTest::newRow("shared, 128 threads") << 1 << 5 << 128;
+    QTest::newRow("mixed, 128 threads") << 2 << 5 << 128;
 #endif // Q_OS_WIN
 }
 

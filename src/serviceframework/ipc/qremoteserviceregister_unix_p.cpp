@@ -411,7 +411,7 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
 
 //    QServiceDebugLog::instance()->appendToLog(QStringLiteral("<!> select"));
 
-    int ret = ::select(n, &reader, 0, 0, &tv);
+    int ret = ::select(n, &reader, &writer, 0, &tv);
     if (ret < 0) {
         qServiceLog() << "class" << "unixep:static"
                       << "event" << "select failed"
@@ -577,6 +577,7 @@ void UnixEndPoint::readIncoming()
         terminateConnection(true);
         return;
     }
+    readNotifier->setEnabled(true);
     raw_data.resize(bytes);
 
     while (!raw_data.isEmpty()) {
@@ -636,8 +637,6 @@ void UnixEndPoint::readIncoming()
             emit readyRead();
         }
     }
-
-    readNotifier->setEnabled(true);
 
     Q_ASSERT(raw_data.isEmpty());
 }
