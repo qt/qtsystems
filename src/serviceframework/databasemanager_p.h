@@ -90,7 +90,7 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
 
         void setChangeNotificationsEnabled(DbScope scope, bool enabled);
 
-    signals:
+    Q_SIGNALS:
         void serviceAdded(const QString &serviceName, DatabaseManager::DbScope scope);
         void serviceRemoved(const QString &serviceName, DatabaseManager::DbScope scope);
 
@@ -119,7 +119,7 @@ public:
 
     void setEnabled(ServiceDatabase *database, bool enabled);
 
-private slots:
+private Q_SLOTS:
     void databaseChanged(const QString &path);
     void databaseDirectoryChanged(const QString &path);
 

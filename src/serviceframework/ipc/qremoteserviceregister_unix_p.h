@@ -67,10 +67,10 @@ public:
 
     bool event(QEvent *e);
 
-public slots:
+public Q_SLOTS:
     void processIncoming();
 
-protected slots:
+protected Q_SLOTS:
     void registerWithThreadData();
 
 private:

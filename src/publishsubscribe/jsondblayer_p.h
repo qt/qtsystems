@@ -111,11 +111,11 @@ class JsonDbSyncCall: public QObject
 
         bool wasSuccessful() const;
 
-    public slots:
+    public Q_SLOTS:
         void createSyncReadRequest();
         void createSyncUpdateRequest();
 
-    private slots:
+    private Q_SLOTS:
         void handleResponse(int id);
         void handleFinished();
         void handleError(QtJsonDb::QJsonDbRequest::ErrorCode id, QString code);
@@ -195,11 +195,11 @@ class JsonDbHandle : public QObject
 
         inline QString getPath() { return path.getPath(); }
 
-    signals:
+    Q_SIGNALS:
         void valueChanged();
         void interestChanged(QString path, bool status);
 
-    private slots:
+    private Q_SLOTS:
         void onError(int id, int code, const QString & message);
         void onNotificationsAvailable(int);
 
@@ -297,11 +297,11 @@ class JsonDbLayer : public QAbstractValueSpaceLayer
         // Other methods
         static JsonDbLayer *instance();
 
-    signals:
+    Q_SIGNALS:
         void valueChanged();
         void interestChanged(QString path, bool status);
 
-    private slots:
+    private Q_SLOTS:
         void jsonDbHandleChanged();
 };
 

@@ -62,7 +62,7 @@ public:
 
     void getSecurityCredentials(QServiceClientCredentials &creds);
 
-public slots:
+public Q_SLOTS:
     void processIncoming();
 
 private:

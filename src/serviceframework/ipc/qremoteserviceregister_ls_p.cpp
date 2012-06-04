@@ -180,7 +180,7 @@ protected:
         }
     }
 
-protected slots:
+protected Q_SLOTS:
     void readIncoming()
     {
         while (socket->bytesAvailable()) {
@@ -224,7 +224,7 @@ protected slots:
 //        qWarning() << "Socket error!" << err << socket->errorString();
     }
 
-protected slots:
+protected Q_SLOTS:
     void ipcfault()
     {
         emit errorUnrecoverableIPCFault(QService::ErrorServiceNoLongerAvailable);

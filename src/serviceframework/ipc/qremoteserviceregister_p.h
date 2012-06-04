@@ -75,7 +75,7 @@ public:
     void setSecurityOptions(QRemoteServiceRegister::SecurityAccessOptions options);
 
 
-public slots:
+public Q_SLOTS:
     // Must be implemented in the subclass
     //void processIncoming();
 

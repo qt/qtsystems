@@ -68,14 +68,14 @@ public:
     QString request() const;
     void setRequest(const QString &request);
 
-signals:
+Q_SIGNALS:
     void started();
     void finished();
     void errorChanged();
 
 protected:
 
-private slots:
+private Q_SLOTS:
     void start();
     void finish();
     void setError(QServiceManager::Error error);

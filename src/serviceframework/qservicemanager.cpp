@@ -182,7 +182,7 @@ public:
             manager->errorChanged();
     }
 
-private slots:
+private Q_SLOTS:
     void serviceAdded(const QString &service, DatabaseManager::DbScope dbScope)
     {
         QService::Scope s = (dbScope == DatabaseManager::SystemScope ?

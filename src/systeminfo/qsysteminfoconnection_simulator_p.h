@@ -78,13 +78,13 @@ private:
 
     bool save() const { return mInitialDataSent; }
 
-private slots:
+private Q_SLOTS:
     void initialSystemInfoDataSent();
     void setBatteryInfoData(const QBatteryInfoData &data);
     void setDeviceInfoData(const QDeviceInfoData &data);
     void setNetworkInfoData(const QNetworkInfoData &data);
 
-signals:
+Q_SIGNALS:
     void initialDataReceived();
 
 private:

@@ -97,7 +97,7 @@ Q_SIGNALS:
 
     void error(const QString &errorString);
 
-private slots:
+private Q_SLOTS:
     void IPCFault(QService::UnrecoverableIPCError);
 
 private:
@@ -178,7 +178,7 @@ Q_SIGNALS:
     void versionMatchChanged();
     void monitorServiceRegistrationsChanged();
 
-protected slots:
+protected Q_SLOTS:
     void servicesAddedRemoved();
     void updateFilterResults();
     void updateServiceList();

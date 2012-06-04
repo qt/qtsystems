@@ -65,10 +65,10 @@ public:
     int *parameterTypes() const;
     int parameterTypesCount() const;
 
-public slots:
+public Q_SLOTS:
     QVariant invoke( const QList<QVariant>& args );
 
-private slots:
+private Q_SLOTS:
     void receiverDestroyed();
 
 private:

@@ -83,7 +83,7 @@ public:
     {
     }
 
-public slots:
+public Q_SLOTS:
     void closeIncoming()
     {
         QDBusMessage msg = interface->callWithArgumentList(QDBus::AutoDetect, QLatin1String("closeIncoming"),
@@ -114,7 +114,7 @@ protected:
         interface->asyncCall(QLatin1String("writePackage"), block, endType, packageId);
     }
 
-protected slots:
+protected Q_SLOTS:
     void readPackage(const QByteArray &package, int type, const QString &id, int pid, int uid) {
         // Check that its of a client-server nature
         if (endType != type) {
@@ -183,7 +183,7 @@ public:
     DBusSessionAdaptor(QObject *parent);
     ~DBusSessionAdaptor() {}
 
-public slots:
+public Q_SLOTS:
     QByteArray writePackage(const QByteArray &package, int type, const QString &id) {
         QByteArray ret;
         QMetaObject::invokeMethod(parent(), "writePackage",
@@ -214,7 +214,7 @@ public slots:
     void q_autostart() {
     }
 
-signals:
+Q_SIGNALS:
     void packageReceived(const QByteArray &package, int type, const QString &id, int uid, int pid);
     void newConnection(int pid, int uid);
 };

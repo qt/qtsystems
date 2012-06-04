@@ -79,15 +79,15 @@ public:
     const QList<QJsonObject> getCache();
     void waitForCache();
 
-signals:
+Q_SIGNALS:
     void serviceAdded(const QString &service, DatabaseManager::DbScope);
     void serviceRemoved(const QString &service,  DatabaseManager::DbScope);
 
-public slots:
+public Q_SLOTS:
     bool sendRequest(QJsonDbRequest *request);
     void onNotification();
 
-private slots:
+private Q_SLOTS:
     void reapThread();
     void startNotifier(qint32 stateNumber);
     void watcherStatusChanged(QtJsonDb::QJsonDbWatcher::Status status);
@@ -185,7 +185,7 @@ public:
         QMetaObject::invokeMethod(this, "doNewRequest", Q_ARG(QJsonDbRequest *, req));
     }
 
-private slots:
+private Q_SLOTS:
 
     void doCacheRequest(QJsonDbRequest *req)
     {
@@ -265,7 +265,7 @@ private slots:
         worker->request_mutex.unlock();
     }
 
-signals:
+Q_SIGNALS:
     void cacheLoaded(qint32 stateNumber);
 
 private:

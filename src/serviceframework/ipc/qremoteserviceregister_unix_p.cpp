@@ -199,13 +199,13 @@ Q_SIGNALS:
 
 protected:
     void flushPackage(const QServicePackage& package);
-protected slots:
+protected Q_SLOTS:
     void readIncoming();
     void flushWriteBuffer();
 
     void registerWithThreadData();
     void socketError(const QString &error);
-protected slots:
+protected Q_SLOTS:
     void ipcfault();
 
 private:
@@ -728,11 +728,11 @@ public:
     QString errorString;
     bool receivedLaunched;
 
-signals:
+Q_SIGNALS:
     void ok();
     void error();
 
-protected slots:
+protected Q_SLOTS:
     void errorEvent(const QString &, const QString& errorString) {
         qDebug() << "Got error evernt";
         this->errorString = errorString;

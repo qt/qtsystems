@@ -69,7 +69,7 @@ public:
     }
     ~DBusSession() {}
 
-public slots:
+public Q_SLOTS:
     QByteArray writePackage(const QByteArray &package, int type, const QString &id) {
 
         QDataStream data(package);
@@ -139,7 +139,7 @@ public:
     ~QRemoteServiceRegisterDBusPrivate();
     void publishServices(const QString& ident );
 
-public slots:
+public Q_SLOTS:
     void processIncoming(int pid, int uid);
 
 private:

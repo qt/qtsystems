@@ -101,7 +101,7 @@ public:
     explicit QServiceOperationProcessor(QObject *parent = 0);
     ~QServiceOperationProcessor();
 
-public slots:
+public Q_SLOTS:
     void handleRequest(const QServiceRequest &inrequest);
 
 private:

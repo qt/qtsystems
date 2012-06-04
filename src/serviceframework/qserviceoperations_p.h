@@ -76,13 +76,13 @@ public:
     void disengage();
     int clientCount() { return m_engageCount.fetchAndAddRelaxed(0); }
 
-public slots:
+public Q_SLOTS:
     void initiateRequest(const QServiceRequest &req);
 
 protected:
     virtual void run();
 
-signals:
+Q_SIGNALS:
     void newRequest(QServiceRequest);
 
 private:
