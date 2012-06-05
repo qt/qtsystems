@@ -159,6 +159,7 @@ void QJsonDbWrapper::sendJsonDbSoundSettingsReadRequest()
 {
     QJsonDbReadRequest *request = new QJsonDbReadRequest();
     request->setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.sounds\"][={settings:settings}]")));
+    request->setPartition(QString(QStringLiteral("com.nokia.mt.Settings")));
     connect(request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this, SLOT(onJsonDbReadRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
     connect(request, SIGNAL(finished()), this, SLOT(onJsonDbSoundSettingsReadRequestFinished()));
@@ -172,6 +173,7 @@ QJsonValue QJsonDbWrapper::getSystemSettingValue(const QString &settingId, const
        request.setPartition(partition);
     request.setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.%1\"][={settings:settings}]"))
                      .arg(settingId));
+    request.setPartition(QString(QStringLiteral("com.nokia.mt.Settings")));
     connect(&request, SIGNAL(error(QtJsonDb::QJsonDbRequest::ErrorCode,QString)),
             this, SLOT(onJsonDbSynchronousRequestError(QtJsonDb::QJsonDbRequest::ErrorCode,QString)));
     connect(&request, SIGNAL(finished()), this, SLOT(onJsonDbSynchronousRequestFinished()));
@@ -390,6 +392,7 @@ void QJsonDbWrapper::onJsonDbSoundSettingsReadRequestFinished()
         soundSettingsWatcher = new QJsonDbWatcher(this);
         soundSettingsWatcher->setWatchedActions(QJsonDbWatcher::Updated);
         soundSettingsWatcher->setQuery(QString(QStringLiteral("[?_type=\"com.nokia.mt.settings.SystemSettings\"][?identifier=\"com.nokia.mt.settings.sounds\"][={settings:settings}]")));
+        soundSettingsWatcher->setPartition(QString(QStringLiteral("com.nokia.mt.Settings")));
         connect(soundSettingsWatcher, SIGNAL(notificationsAvailable(int)),
                 this, SLOT(onJsonDbWatcherSoundSettingsNotificationsAvailable()));
         jsonDbConnection.addWatcher(soundSettingsWatcher);

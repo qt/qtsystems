@@ -109,9 +109,9 @@ void QDeviceProfilePrivate::connectNotify(const QMetaMethod &signal)
         QMetaMethod sourceSignal = proxyToSourceSignal(signal, &jsondbWrapper);
         connect(&jsondbWrapper, sourceSignal, this, signal, Qt::UniqueConnection);
     } else if (signal == messageRingtoneVolumeChangedSignal) {
-        connect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(messageRingtoneVolumeChangedSignal(int)), Qt::UniqueConnection);
+        connect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(messageRingtoneVolumeChanged(int)), Qt::UniqueConnection);
     } else if (signal == voiceRingtoneVolumeChangedSignal) {
-        connect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(voiceRingtoneVolumeChangedSignal(int)), Qt::UniqueConnection);
+        connect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(voiceRingtoneVolumeChanged(int)), Qt::UniqueConnection);
     }
 #endif // // QT_NO_JSONDB
 }
@@ -128,9 +128,9 @@ void QDeviceProfilePrivate::disconnectNotify(const QMetaMethod &signal)
         QMetaMethod sourceSignal = proxyToSourceSignal(signal, &jsondbWrapper);
         disconnect(&jsondbWrapper, sourceSignal, this, signal);
     } else if (signal == messageRingtoneVolumeChangedSignal) {
-        disconnect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(messageRingtoneVolumeChangedSignal(int)));
+        disconnect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(messageRingtoneVolumeChanged(int)));
     } else if (signal == voiceRingtoneVolumeChangedSignal) {
-        disconnect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(voiceRingtoneVolumeChangedSignal(int)));
+        disconnect(&jsondbWrapper, SIGNAL(ringtoneVolumeChanged(int)), this, SIGNAL(voiceRingtoneVolumeChanged(int)));
     }
 #endif // QT_NO_JSONDB
 }
