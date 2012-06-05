@@ -116,13 +116,13 @@ int QNetworkServiceWrapper::getSignalStrength(int interfaceIndex)
 {
     if (!watchSignalStrengths) {
         if (loadNetworkManagerInterface(interfaceIndex)) {
-            uint signalStrength = 0;
-            QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "signalBars", Q_RETURN_ARG(uint, signalStrength));
-            return int(signalStrength * 20);
+            int signalStrength = 0;
+            QMetaObject::invokeMethod(loadedNetworkManagerInterfaces.value(interfaceIndex), "signalBars", Q_RETURN_ARG(int, signalStrength));
+            return signalStrength * 20;
         }
     } else {
         if (signalStrengths.contains(interfaceIndex))
-            return signalStrengths[interfaceIndex] * 20;
+            return signalStrengths[interfaceIndex];
     }
 
     return -1;
@@ -640,9 +640,9 @@ void QNetworkServiceWrapper::onSignalStrengthChanged(const int strength)
     if (signalSender)
         interfaceIndex = loadedNetworkManagerInterfaces.key(signalSender, -1);
     if (interfaceIndex > -1) {
-        if (signalStrengths[interfaceIndex] != strength) {
-            signalStrengths[interfaceIndex] = strength;
-            emit (networkSignalStrengthChanged(networkModes[interfaceIndex], interfaceIndex, strength * 20));
+        if (signalStrengths[interfaceIndex] != (strength * 20)) {
+            signalStrengths[interfaceIndex] = strength * 20;
+            emit (networkSignalStrengthChanged(networkModes[interfaceIndex], interfaceIndex, signalStrengths[interfaceIndex]));
         }
     }
 }
