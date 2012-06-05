@@ -65,8 +65,6 @@ class QDeclarativeStorageInfo : public QObject
     Q_ENUMS(DriveType)
 
     Q_PROPERTY(QStringList allLogicalDrives READ allLogicalDrives NOTIFY logicalDriveChanged)
-
-    // obsoleted
     Q_PROPERTY(bool monitorAllLogicalDrives READ monitorAllLogicalDrives WRITE setMonitorAllLogicalDrives NOTIFY monitorAllLogicalDrivesChanged)
 
 public:

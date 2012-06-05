@@ -70,7 +70,7 @@ QDeclarativeStorageInfo::~QDeclarativeStorageInfo()
 /*!
     \qmlproperty bool StorageInfo::monitorAllLogicalDrives
 
-    This property is obsoleted, and will be removed soon. You don't need to use it at all.
+    This property triggers the active monitoring of all available logical drives.
  */
 bool QDeclarativeStorageInfo::monitorAllLogicalDrives() const
 {
@@ -99,8 +99,6 @@ void QDeclarativeStorageInfo::setMonitorAllLogicalDrives(bool monitor)
 */
 QStringList QDeclarativeStorageInfo::allLogicalDrives() const
 {
-    connect(storageInfo, SIGNAL(logicalDriveChanged(QString,bool)),
-            this, SIGNAL(logicalDriveChanged(QString,bool)), Qt::UniqueConnection);
     return storageInfo->allLogicalDrives();
 }
 
