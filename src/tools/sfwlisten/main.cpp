@@ -158,6 +158,13 @@ void SFWReceiver::socketReadyRead()
         buff.open(QIODevice::ReadOnly);
         QDataStream ds(&buff);
 
+        quint8 hour,minute,second;
+        quint16 msec;
+        ds >> hour;
+        ds >> minute;
+        ds >> second;
+        ds >> msec;
+
         qint32 pid;
         ds >> pid;
 
@@ -169,7 +176,8 @@ void SFWReceiver::socketReadyRead()
         delete[] str;
 
         QTime t = QTime::currentTime();
-        printf("{%4s} %2d:%02d:%02d.%03d ", qPrintable(intf), t.hour(), t.minute(), t.second(), t.msec());
+        printf("{%4s} %2d:%02d:%02d.%03d ", qPrintable(intf), hour, minute,
+               second, msec);
         printf("[%5d/%10s] ", pid, appName.constData());
         while (!ds.atEnd()) {
             ds.readBytes(str, len);

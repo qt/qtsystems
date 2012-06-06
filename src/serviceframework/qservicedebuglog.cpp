@@ -61,6 +61,11 @@ QServiceDebugMessage::QServiceDebugMessage()
     buffer = new QBuffer();
     buffer->open(QIODevice::WriteOnly);
     ds.setDevice(buffer);
+    QTime t = QTime::currentTime();
+    ds << (quint8)t.hour();
+    ds << (quint8)t.minute();
+    ds << (quint8)t.second();
+    ds << (quint16)t.msec();
     ds << (quint32)(QCoreApplication::applicationPid());
     QFileInfo fi(QCoreApplication::applicationFilePath());
     QByteArray ba = fi.fileName().toLatin1();
