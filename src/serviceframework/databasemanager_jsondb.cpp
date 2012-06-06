@@ -278,14 +278,13 @@ private:
 
 JsondbWorker::JsondbWorker() :
     QObject(),
-    dbwatcher(new QJsonDbWatcher(this)),
+    dbwatcher(0),
     workerThread(0),
     jsonthread(0),
     cacheLoaded(false)
 
 {
     db = 0x0; // don't connect to the db until we're in the right thread
-    connect(dbwatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onNotification()));
 
     thread_timeout.setInterval(JSON_EXPIRATION_TIMER*2);
     thread_timeout.setSingleShot(true);
@@ -326,6 +325,8 @@ void JsondbWorker::startNotifier(qint32 stateNumber)
     qServiceLog() << "class" << "dbm_jsondb"
                   << "event" << "notifier start"
                   << "state" << stateNumber;
+    dbwatcher = new QJsonDbWatcher(this);
+    connect(dbwatcher, SIGNAL(notificationsAvailable(int)), this, SLOT(onNotification()));
     dbwatcher->setWatchedActions(QJsonDbWatcher::Created | QJsonDbWatcher::Updated | QJsonDbWatcher::Removed);
     dbwatcher->setQuery(QLatin1String("[?_type=\"com.nokia.mt.serviceframework.interface\"]"));
     dbwatcher->setPartition(QStringLiteral("com.nokia.mt.Settings"));
@@ -1191,6 +1192,9 @@ void DatabaseManager::setChangeNotificationsEnabled(DbScope scope, bool enabled)
     m_lastError.setError(DBError::NoError);
 
     if (enabled) {
+        /* wait for the cache so that we're in a consistent state */
+        _q_service_jsondbworker()->waitForCache();
+
         connect(_q_service_jsondbworker(), SIGNAL(serviceAdded(QString,DatabaseManager::DbScope)),
                 this, SIGNAL(serviceAdded(QString,DatabaseManager::DbScope)));
         connect(_q_service_jsondbworker(), SIGNAL(serviceRemoved(QString,DatabaseManager::DbScope)),
