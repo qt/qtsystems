@@ -1,5 +1,7 @@
 TEMPLATE = subdirs
 
-SUBDIRS += \
-    battery-charge \
-    publish-subscribe
+!contains(QT_CONFIG, no-widgets) {
+    SUBDIRS += \
+        battery-charge \
+        publish-subscribe
+}

@@ -2,8 +2,12 @@ TEMPLATE      = subdirs
 SUBDIRS       = \
                 voipdialerplugin \
                 remotedialerservice \
-                dialer \
+                dialer
+
+!contains(QT_CONFIG, no-widgets) {
+    SUBDIRS  += \
                 servicebrowser
+}
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtsystems/statemachine
