@@ -110,7 +110,7 @@ private:
     void sendJsonDbLockObjectsReadRequest();
     void sendJsonDbSoundSettingsReadRequest();
 
-    QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition = QStringLiteral(""));
+    QJsonValue getSystemSettingValue(const QString &settingId, const QString &setting, const QString &partition = QString());
     bool waitForResponse();
 
     QtJsonDb::QJsonDbConnection jsonDbConnection;
