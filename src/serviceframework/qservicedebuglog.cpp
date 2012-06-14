@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 
 QServiceDebugMessage::QServiceDebugMessage()
 {
+#ifdef QT_SFW_IPC_DEBUG
     buffer = new QBuffer();
     buffer->open(QIODevice::WriteOnly);
     ds.setDevice(buffer);
@@ -70,13 +71,16 @@ QServiceDebugMessage::QServiceDebugMessage()
     QFileInfo fi(QCoreApplication::applicationFilePath());
     QByteArray ba = fi.fileName().toLatin1();
     ds.writeBytes(ba.constData(), ba.size());
+#endif
 }
 
 QServiceDebugMessage::~QServiceDebugMessage()
 {
+#ifdef QT_SFW_IPC_DEBUG
     /* when we're destructed, we're ready to send! */
     buffer->close();
     QServiceDebugLog::instance()->logMessage(this);
+#endif
 }
 
 const static QHostAddress _group_addr("224.0.105.201");
@@ -85,6 +89,10 @@ QServiceDebugLog::QServiceDebugLog()
 {
     makeSockets();
 }
+
+#ifdef QT_SFW_IPC_DEBUG
+#include <fcntl.h>
+#endif
 
 void QServiceDebugLog::makeSockets()
 {
@@ -112,6 +120,18 @@ void QServiceDebugLog::makeSockets()
             continue;
         }
 
+        int fd = socket->socketDescriptor();
+        int flags = ::fcntl(fd, F_GETFL, 0);
+        if (flags < 0) {
+            delete socket;
+            continue;
+        }
+        flags |= O_NONBLOCK;
+        if (::fcntl(fd, F_SETFL, flags)) {
+            delete socket;
+            continue;
+        }
+
         qDebug("SFW udp debug on interface %s", qPrintable(inf.name()));
         sockets << socket;
     }
@@ -126,21 +146,30 @@ void QServiceDebugLog::logMessage(QServiceDebugMessage *msg)
     if (sockets.size() == 0) {
         makeSockets();
 
-        if (sockets.size() > 0) {
-            while (!queue.isEmpty()) {
-                foreach (QUdpSocket *socket, sockets)
-                    socket->writeDatagram(queue.front()->data(), _group_addr, 10520);
-                delete queue.front();
-                queue.pop_front();
-            }
-        } else {
+        if (sockets.size() == 0) {
             queue << msg->buffer;
+            return;
         }
     }
 
     if (sockets.size() > 0) {
+        while (!queue.isEmpty()) {
+            foreach (QUdpSocket *socket, sockets) {
+                int ret = socket->writeDatagram(queue.front()->data(), _group_addr, 10520);
+                if (ret == -1 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
+                    queue << msg->buffer;
+                    return;
+                }
+            }
+            delete queue.front();
+            queue.pop_front();
+        }
         foreach (QUdpSocket *socket, sockets) {
-            socket->writeDatagram(msg->buffer->data(), _group_addr, 10520);
+            int ret = socket->writeDatagram(msg->buffer->data(), _group_addr, 10520);
+            if (ret == -1 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
+                queue << msg->buffer;
+                return;
+            }
         }
         delete msg->buffer;
     }

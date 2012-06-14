@@ -66,8 +66,10 @@ public:
     QServiceDebugMessage();
     ~QServiceDebugMessage();
 
+#ifdef QT_SFW_IPC_DEBUG
     QBuffer *buffer;
     QDataStream ds;
+#endif
 };
 
 class QServiceDebugValue;
@@ -99,65 +101,102 @@ inline QServiceDebugLog &qServiceLog()
 class QServiceDebugKey
 {
 public:
+#ifdef QT_SFW_IPC_DEBUG
     inline QServiceDebugKey(const QSharedPointer<QServiceDebugMessage> &ptr)
         : ptr(ptr) {}
+
+#else
+    inline QServiceDebugKey() {}
+#endif
     QServiceDebugValue operator<<(const char *key);
 private:
+#ifdef QT_SFW_IPC_DEBUG
     QSharedPointer<QServiceDebugMessage> ptr;
+#endif
 };
 
 class QServiceDebugValue
 {
 public:
+#ifdef QT_SFW_IPC_DEBUG
     inline QServiceDebugValue(const QSharedPointer<QServiceDebugMessage> &ptr)
         : ptr(ptr) {}
+#else
+    inline QServiceDebugValue() {}
+#endif
     QServiceDebugKey operator<<(const qint32 &val);
     QServiceDebugKey operator<<(const float &val);
     QServiceDebugKey operator<<(const QString &val);
     QServiceDebugKey operator<<(const char *val);
 private:
+#ifdef QT_SFW_IPC_DEBUG
     QSharedPointer<QServiceDebugMessage> ptr;
+#endif
 };
 
 inline QServiceDebugValue QServiceDebugKey::operator<<(const char *key)
 {
+#ifdef QT_SFW_IPC_DEBUG
     ptr->ds.writeBytes(key, ::strlen(key));
     return QServiceDebugValue(ptr);
+#else
+    return QServiceDebugValue();
+#endif
 }
 
 inline QServiceDebugKey QServiceDebugValue::operator<<(const qint32 &val)
 {
+#ifdef QT_SFW_IPC_DEBUG
     ptr->ds << (qint8)QServiceDebugMessage::Int32Type;
     ptr->ds << val;
     return QServiceDebugKey(ptr);
+#else
+    return QServiceDebugKey();
+#endif
 }
 
 inline QServiceDebugKey QServiceDebugValue::operator<<(const float &val)
 {
+#ifdef QT_SFW_IPC_DEBUG
     ptr->ds << (qint8)QServiceDebugMessage::FloatType;
     ptr->ds << val;
     return QServiceDebugKey(ptr);
+#else
+    return QServiceDebugKey();
+#endif
 }
 
 inline QServiceDebugKey QServiceDebugValue::operator<<(const QString &val)
 {
+#ifdef QT_SFW_IPC_DEBUG
     ptr->ds << (qint8)QServiceDebugMessage::StringType;
     QByteArray ba = val.toLatin1();
     ptr->ds.writeBytes(ba.constData(), ba.size());
     return QServiceDebugKey(ptr);
+#else
+    return QServiceDebugKey();
+#endif
 }
 
 inline QServiceDebugKey QServiceDebugValue::operator<<(const char *val)
 {
+#ifdef QT_SFW_IPC_DEBUG
     ptr->ds << (qint8)QServiceDebugMessage::StringType;
     ptr->ds.writeBytes(val, ::strlen(val));
     return QServiceDebugKey(ptr);
+#else
+    return QServiceDebugKey();
+#endif
 }
 
 inline QServiceDebugValue QServiceDebugLog::operator<<(const char *key)
 {
+#ifdef QT_SFW_IPC_DEBUG
     QSharedPointer<QServiceDebugMessage> msg(new QServiceDebugMessage());
     return (QServiceDebugKey(msg) << key);
+#else
+    return QServiceDebugValue();
+#endif
 }
 
 QT_END_NAMESPACE
