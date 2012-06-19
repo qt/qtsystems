@@ -47,6 +47,7 @@
 #include "qserviceoperations_p.h"
 #include "qservicereply.h"
 #include "qservicerequest_p.h"
+#include "qservicedebuglog_p.h"
 
 #ifdef QT_ADDON_JSONDB_LIB
     #include "databasemanager_jsondb_p.h"
@@ -461,6 +462,11 @@ QObject *QServiceManager::loadInProcessService(const QServiceInterfaceDescriptor
 */
 QObject* QServiceManager::loadInterface(const QServiceInterfaceDescriptor& descriptor)
 {
+    qServiceLog() << "class" << "QServiceManager"
+                  << "event" << "loadInterface"
+                  << "interface" << descriptor.interfaceName()
+                  << "service" << descriptor.serviceName();
+
     d->setError(QServiceManager::NoError);
     if (!descriptor.isValid()) {
         d->setError(QServiceManager::InvalidServiceInterfaceDescriptor);

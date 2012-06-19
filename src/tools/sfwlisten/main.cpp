@@ -70,7 +70,7 @@ public slots:
 private:
     QString intfFilter;
     QTimer socketCheck;
-    QUdpSocket *socket;
+    QList<QUdpSocket *> sockets;
 };
 
 SFWReceiver::SFWReceiver(const QString &intfFilter) : intfFilter(intfFilter)
@@ -93,7 +93,7 @@ void SFWReceiver::makeSockets()
             || intf.name().startsWith("tun") || intf.name().startsWith("tap"))
             continue;
 
-        socket = new QUdpSocket(this);
+        QUdpSocket *socket = new QUdpSocket(this);
         printf("Trying interface %s ...", qPrintable(intf.name()));
         if (!socket->bind(QHostAddress::AnyIPv4, 10520, QUdpSocket::ShareAddress)) {
             printf("Couldn't bind: %s\n", qPrintable(socket->errorString()));
@@ -108,6 +108,7 @@ void SFWReceiver::makeSockets()
         }
 
         printf("ok\n");
+        sockets.append(socket);
         if (!gotone) {
             connect(socket, SIGNAL(readyRead()),
                     this, SLOT(socketReadyRead()));
@@ -128,94 +129,99 @@ void SFWReceiver::socketVerify()
 {
     QList<QNetworkInterface> intfs = QNetworkInterface::allInterfaces();
     bool gotone = false;
-    QString name = socket->multicastInterface().name();
 
-    foreach (const QNetworkInterface &intf, intfs) {
-        if (intf.name() == name) {
-            gotone = true;
-            break;
+    foreach (QUdpSocket *socket, sockets) {
+        QString name = socket->multicastInterface().name();
+
+        foreach (const QNetworkInterface &intf, intfs) {
+            if (intf.name() == name) {
+                gotone = true;
+                break;
+            }
         }
-    }
 
-    if (!gotone) {
-        printf("Interface down...\n");
-        delete socket;
-        socket = 0;
-        makeSockets();
+        if (!gotone) {
+            printf("Interface down...\n");
+            delete socket;
+            sockets.removeAll(socket);
+            makeSockets();
+        }
     }
 }
 
 void SFWReceiver::socketReadyRead()
 {
-    QString intf = socket->multicastInterface().name();
+    foreach (QUdpSocket *socket, sockets) {
+        QString intf = socket->multicastInterface().name();
 
-    while (socket->hasPendingDatagrams()) {
-        QByteArray dgram;
-        dgram.resize(socket->pendingDatagramSize());
-        socket->readDatagram(dgram.data(), dgram.size());
+        while (socket->hasPendingDatagrams()) {
+            QByteArray dgram;
+            dgram.resize(socket->pendingDatagramSize());
+            socket->readDatagram(dgram.data(), dgram.size());
 
-        QBuffer buff(&dgram);
-        buff.open(QIODevice::ReadOnly);
-        QDataStream ds(&buff);
+            QBuffer buff(&dgram);
+            buff.open(QIODevice::ReadOnly);
+            QDataStream ds(&buff);
 
-        quint8 hour,minute,second;
-        quint16 msec;
-        ds >> hour;
-        ds >> minute;
-        ds >> second;
-        ds >> msec;
+            quint8 hour,minute,second;
+            quint16 msec;
+            ds >> hour;
+            ds >> minute;
+            ds >> second;
+            ds >> msec;
 
-        qint32 pid;
-        ds >> pid;
+            qint32 pid;
+            ds >> pid;
 
-        char *str;
-        uint len;
+            char *str;
+            uint len;
 
-        ds.readBytes(str, len);
-        QByteArray appName(str, len);
-        delete[] str;
-
-        QTime t = QTime::currentTime();
-        printf("{%4s} %2d:%02d:%02d.%03d ", qPrintable(intf), hour, minute,
-               second, msec);
-        printf("[%5d/%10s] ", pid, appName.constData());
-        while (!ds.atEnd()) {
             ds.readBytes(str, len);
-            QByteArray termName(str, len);
+            QByteArray appName(str, len);
             delete[] str;
 
-            printf("{%s, ", termName.constData());
+            QTime t = QTime::currentTime();
+            printf("{%4s} %2d:%02d:%02d.%03d ", qPrintable(intf), hour, minute,
+                   second, msec);
+            printf("[%5d/%10s] ", pid, appName.constData());
+            while (!ds.atEnd()) {
+                ds.readBytes(str, len);
+                QByteArray termName(str, len);
+                delete[] str;
 
-            qint8 type;
-            ds >> type;
-            DataType dt = static_cast<DataType>(type);
-            switch (dt) {
-            case Int32Type:
+                printf("{%s, ", termName.constData());
+
+                qint8 type;
+                ds >> type;
+                DataType dt = static_cast<DataType>(type);
+                switch (dt) {
+                case Int32Type:
                 {
                     qint32 data;
                     ds >> data;
                     printf("%d} ", data);
                 }
-                break;
-            case FloatType:
+                    break;
+                case FloatType:
                 {
                     float data;
                     ds >> data;
                     printf("%.4f} ", data);
                 }
-                break;
-            case StringType:
+                    break;
+                case StringType:
                 {
                     ds.readBytes(str, len);
                     QByteArray ba(str, len);
                     ba.truncate(35);
                     printf("'%s'} ", ba.constData());
                 }
-                break;
+                    break;
+                }
             }
-        }
 
-        printf("\n");
+            printf("\n");
+        }
     }
 }
 
