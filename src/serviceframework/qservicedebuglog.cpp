@@ -104,7 +104,7 @@ void QServiceDebugLog::makeSockets()
     foreach (const QNetworkInterface &inf, ifs) {
         /* avoid the loopback or any wireless interfaces
          * (we probably don't want debug over those) */
-        if (inf.name() == "lo" || inf.name().startsWith("wifi")
+        if (inf.name().startsWith("wifi")
                 || inf.name().startsWith("wl") || inf.name().startsWith("ppp")
                 || inf.name().startsWith("tun") || inf.name().startsWith("tap"))
             continue;

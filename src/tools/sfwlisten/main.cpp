@@ -88,7 +88,7 @@ void SFWReceiver::makeSockets()
         if (!intfFilter.isEmpty() && !intf.name().startsWith(intfFilter))
             continue;
 
-        if (intf.name() == "lo" || intf.name().startsWith("wifi")
+        if (intf.name().startsWith("wifi")
             || intf.name().startsWith("wl") || intf.name().startsWith("ppp")
             || intf.name().startsWith("tun") || intf.name().startsWith("tap"))
             continue;
