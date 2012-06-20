@@ -83,7 +83,7 @@ QServiceDebugMessage::~QServiceDebugMessage()
 #endif
 }
 
-const static QHostAddress _group_addr("224.0.105.201");
+const static QHostAddress _group_addr(QLatin1String("224.0.105.201"));
 
 QServiceDebugLog::QServiceDebugLog()
 {
