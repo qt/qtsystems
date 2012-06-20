@@ -45,7 +45,7 @@
 // fall back on the one automatically created by the compiler but let's be
 // explicit so no mistakes are made - eg, does m_reply get set to zero?
 QServiceRequest::QServiceRequest()
-    : m_reply(0), m_type(DefaultInterfaceRequest), m_scope(QService::UserScope)
+    : m_reply(0), m_scope(QService::UserScope), m_type(DefaultInterfaceRequest)
 {
     // nothing to do here
 }
@@ -53,8 +53,8 @@ QServiceRequest::QServiceRequest()
 QServiceRequest::QServiceRequest(const QString &interfaceName)
     : m_interfaceName(interfaceName),
       m_reply(0),
-      m_type(DefaultInterfaceRequest),
-      m_scope(QService::UserScope)
+      m_scope(QService::UserScope),
+      m_type(DefaultInterfaceRequest)
 {
     // nothing to do here
 }
@@ -62,20 +62,20 @@ QServiceRequest::QServiceRequest(const QString &interfaceName)
 QServiceRequest::QServiceRequest(const QServiceInterfaceDescriptor &descriptor)
     : m_descriptor(descriptor),
       m_reply(0),
-      m_type(DescriptorRequest),
-      m_scope(QService::UserScope)
+      m_scope(QService::UserScope),
+      m_type(DescriptorRequest)
 {
     // nothing to do here
 }
 
 // copy constructor - required by meta-type system - again let's be explicit
 QServiceRequest::QServiceRequest(const QServiceRequest &other)
+    : m_interfaceName(other.m_interfaceName),
+      m_descriptor(other.m_descriptor),
+      m_reply(other.m_reply),
+      m_scope(other.m_scope),
+      m_type(other.m_type)
 {
-    m_interfaceName = other.m_interfaceName;
-    m_descriptor = other.m_descriptor;
-    m_reply = other.m_reply;
-    m_type = other.m_type;
-    m_scope = other.m_scope;
 }
 
 // public destructor - required by meta-type system
