@@ -68,7 +68,6 @@
 
 #include <signal.h>
 
-#ifdef QT_MTCLIENT_PRESENT
 #include "qservicemanager.h"
 #include <QCoreApplication>
 #include <QTime>
@@ -82,7 +81,6 @@
 #endif
 #include <unistd.h>
 #include <fcntl.h>
-#endif
 
 
 #ifdef LOCAL_PEERCRED /* from sys/un.h */
@@ -710,7 +708,6 @@ void UnixEndPoint::flushWriteBuffer()
     }
 }
 
-#ifdef QT_MTCLIENT_PRESENT
 class ServiceRequestWaiter : public QObject
 {
     Q_OBJECT
@@ -754,8 +751,6 @@ protected Q_SLOTS:
         emit ok();
     }
 };
-
-#endif
 
 QRemoteServiceRegisterUnixPrivate::QRemoteServiceRegisterUnixPrivate(QObject* parent)
     : QRemoteServiceRegisterPrivate(parent), server_fd(-1), server_notifier(0)
@@ -939,8 +934,6 @@ QRemoteServiceRegisterPrivate* QRemoteServiceRegisterPrivate::constructPrivateOb
 {
   return new QRemoteServiceRegisterUnixPrivate(parent);
 }
-
-#ifdef QT_MTCLIENT_PRESENT
 
 #define SFW_PROCESS_TIMEOUT 10000
 
@@ -1154,7 +1147,6 @@ int doStart(const QString &location) {
 #endif
     return socketfd;
 }
-#endif
 
 /*
     Creates endpoint on client side.
@@ -1170,48 +1162,8 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
                   << "name" << location;
 #endif
 
-#ifdef QT_MTCLIENT_PRESENT
     int socketfd = doStart(location);
-#else
 
-    socket->connectToServer(location);
-
-    if (!socket->waitForConnected()){
-        if (!socket->isValid()) {
-            QString path = location;
-            qWarning() << "Cannot connect to remote service, trying to start service " << path;
-            // If we have autotests enable, check for the service in .
-#ifdef QT_BUILD_INTERNAL
-            QFile file(QStringLiteral("./") + path);
-            if (file.exists()){
-                path.prepend(QStringLiteral("./"));
-            }
-#endif /* QT_BUILD_INTERNAL */
-            qint64 pid = 0;
-            // Start the service as a detached process
-            if (QProcess::startDetached(path, QStringList(), QString(), &pid)){
-                int i;
-                socket->connectToServer(location);
-                for (i = 0; !socket->isValid() && i < 1000; i++){
-                    // Temporary hack till we can improve startup signaling
-                    struct timespec tm;
-                    tm.tv_sec = 0;
-                    tm.tv_nsec = 1000000;
-                    nanosleep(&tm, 0x0);
-                    socket->connectToServer(location);
-                    // keep trying for a while
-                }
-                if (!socket->isValid()){
-                    qWarning() << "Server failed to start within waiting period";
-                    return false;
-                }
-            }
-            else {
-                qWarning() << "Server could not be started";
-            }
-        }
-    }
-#endif
     if (socketfd >= 0){
         UnixEndPoint* ipcEndPoint = new UnixEndPoint(socketfd);
         ObjectEndPoint* endPoint = new ObjectEndPoint(ObjectEndPoint::Client, ipcEndPoint);

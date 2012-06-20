@@ -38,7 +38,6 @@
     "gconf" => {},
     "bluez" => {},
     "udev" => {},
-    "mtlib" => {},
     "x11" => {},
     "libsysinfo" => {}
 );
