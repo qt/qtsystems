@@ -173,6 +173,8 @@ void QServiceDebugLog::logMessage(QServiceDebugMessage *msg)
         }
         delete msg->buffer;
     }
+#else
+    Q_UNUSED(msg)
 #endif
 }
 

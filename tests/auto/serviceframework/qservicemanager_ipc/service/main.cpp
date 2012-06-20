@@ -265,7 +265,7 @@ public:
     }
 
     UniqueTestService(QObject* parent = 0)
-        : QObject(0)
+        : QObject(parent)
     {
         qFatal("Wrong constructor called, must call secure constructor only");
         abort();

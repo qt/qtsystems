@@ -140,6 +140,7 @@ inline QServiceDebugValue QServiceDebugKey::operator<<(const char *key)
     ptr->ds.writeBytes(key, ::strlen(key));
     return QServiceDebugValue(ptr);
 #else
+    Q_UNUSED(key)
     return QServiceDebugValue();
 #endif
 }
@@ -151,6 +152,7 @@ inline QServiceDebugKey QServiceDebugValue::operator<<(const qint32 &val)
     ptr->ds << val;
     return QServiceDebugKey(ptr);
 #else
+    Q_UNUSED(val)
     return QServiceDebugKey();
 #endif
 }
@@ -162,6 +164,7 @@ inline QServiceDebugKey QServiceDebugValue::operator<<(const float &val)
     ptr->ds << val;
     return QServiceDebugKey(ptr);
 #else
+    Q_UNUSED(val)
     return QServiceDebugKey();
 #endif
 }
@@ -174,6 +177,7 @@ inline QServiceDebugKey QServiceDebugValue::operator<<(const QString &val)
     ptr->ds.writeBytes(ba.constData(), ba.size());
     return QServiceDebugKey(ptr);
 #else
+    Q_UNUSED(val)
     return QServiceDebugKey();
 #endif
 }
@@ -185,6 +189,7 @@ inline QServiceDebugKey QServiceDebugValue::operator<<(const char *val)
     ptr->ds.writeBytes(val, ::strlen(val));
     return QServiceDebugKey(ptr);
 #else
+    Q_UNUSED(val)
     return QServiceDebugKey();
 #endif
 }
@@ -195,6 +200,7 @@ inline QServiceDebugValue QServiceDebugLog::operator<<(const char *key)
     QSharedPointer<QServiceDebugMessage> msg(new QServiceDebugMessage());
     return (QServiceDebugKey(msg) << key);
 #else
+    Q_UNUSED(key)
     return QServiceDebugValue();
 #endif
 }

@@ -393,7 +393,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
     Returns true is the service is running
 */
 
-bool QRemoteServiceRegisterPrivate::isServiceRunning(const QRemoteServiceRegister::Entry &entry, const QString &location)
+bool QRemoteServiceRegisterPrivate::isServiceRunning(const QRemoteServiceRegister::Entry &entry, const QString & /*location*/)
 {
     QDBusConnection connection = QDBusConnection::sessionBus();
     if (!connection.isConnected()) {
