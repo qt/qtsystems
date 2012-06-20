@@ -5,29 +5,41 @@ win32 {
 
 QT += core-private
 
-contains(DEFINES, QT_ADDON_JSONDB_LIB): {
+isEmpty(SFW_BACKEND) {
+    contains(DEFINES, QT_ADDON_JSONDB_LIB) {
+        SFW_BACKEND = unix
+    } else {
+        !jsondb:!contains(config_test_jsondb, yes):contains(QT_CONFIG,dbus) {
+            SFW_BACKEND = dbus
+        } else {
+            SFW_BACKEND = localsocket
+        }
+    }
+}
+
+equals(SFW_BACKEND,unix) {
     PRIVATE_HEADERS += ipc/qremoteserviceregister_unix_p.h \
         ipc/objectendpoint_p.h
     SOURCES += ipc/qremoteserviceregister_unix_p.cpp \
         ipc/objectendpoint.cpp
+} else:equals(SFW_BACKEND,dbus) {
+    DEFINES += SFW_USE_DBUS_BACKEND
+    QT += dbus \
+        network
+    PRIVATE_HEADERS += ipc/qremoteserviceregister_dbus_p.h \
+        ipc/objectendpoint_dbus_p.h \
+        ipc/qservicemetaobject_dbus_p.h
+    SOURCES += ipc/qremoteserviceregister_dbus_p.cpp \
+        ipc/objectendpoint_dbus.cpp \
+        ipc/qservicemetaobject_dbus.cpp
+} else:equals(SFW_BACKEND,localsocket) {
+    QT += network
+    PRIVATE_HEADERS += ipc/qremoteserviceregister_ls_p.h \
+        ipc/objectendpoint_p.h
+    SOURCES += ipc/qremoteserviceregister_ls_p.cpp \
+        ipc/objectendpoint.cpp
 } else {
-    !jsondb:!contains(config_test_jsondb, yes):contains(QT_CONFIG,dbus) {
-        DEFINES += SFW_USE_DBUS_BACKEND
-        QT += dbus \
-            network
-        PRIVATE_HEADERS += ipc/qremoteserviceregister_dbus_p.h \
-            ipc/objectendpoint_dbus_p.h \
-            ipc/qservicemetaobject_dbus_p.h
-        SOURCES += ipc/qremoteserviceregister_dbus_p.cpp \
-            ipc/objectendpoint_dbus.cpp \
-            ipc/qservicemetaobject_dbus.cpp
-    } else {
-        QT += network
-        PRIVATE_HEADERS += ipc/qremoteserviceregister_ls_p.h \
-            ipc/objectendpoint_p.h
-        SOURCES += ipc/qremoteserviceregister_ls_p.cpp \
-            ipc/objectendpoint.cpp
-    }
+    error("Unkown SFW_BACKEND $$SFW_BACKEND")
 }
 
 PRIVATE_HEADERS += ipc/qslotinvoker_p.h \

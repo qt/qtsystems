@@ -14,13 +14,12 @@ load(qt_module_config)
 
 sfwdebug: {
     DEFINES += QT_SFW_IPC_DEBUG
+    QT += network
 }
 
-jsondb|contains(QT_CONFIG, jsondb): {
-    mtlib|contains(config_test_mtlib, yes): {
-        DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB QT_MTCLIENT_PRESENT
-        QT += jsondb
-    }
+jsondb {
+    DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB QT_MTCLIENT_PRESENT
+    QT += jsondb
 }
 
 include(ipc/ipc.pri)
@@ -51,7 +50,7 @@ SOURCES += servicemetadata.cpp \
     qservicereply.cpp \
     qservicerequest.cpp
 
-contains(DEFINES, QT_ADDON_JSONDB_LIB): {
+jsondb {
     SOURCES += databasemanager_jsondb.cpp
     PRIVATE_HEADERS += databasemanager_jsondb_p.h
 } else {
