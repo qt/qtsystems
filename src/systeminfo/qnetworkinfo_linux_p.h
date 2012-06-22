@@ -57,6 +57,11 @@
 
 #include <QtCore/qmap.h>
 
+#if !defined(QT_NO_UDEV)
+struct udev;
+struct udev_monitor;
+#endif // QT_NO_UDEV
+
 QT_BEGIN_NAMESPACE
 
 class QTimer;
@@ -69,8 +74,6 @@ class QOfonoWrapper;
 
 #if !defined(QT_NO_UDEV)
 class QSocketNotifier;
-struct udev;
-struct udev_monitor;
 #endif // QT_NO_UDEV
 
 class QNetworkInfoPrivate : public QObject
