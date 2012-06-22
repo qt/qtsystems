@@ -43,30 +43,14 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(Q_OS_WIN)
-#  if defined(QT_NODLL)
-#    undef QT_MAKEDLL
-#    undef QT_DLL
-#  elif defined(QT_MAKEDLL)
-#    if defined(QT_DLL)
-#      undef QT_DLL
-#    endif
+#ifndef QT_STATIC
 #    if defined(QT_BUILD_SERVICEFRAMEWORK_LIB)
 #      define Q_SERVICEFW_EXPORT Q_DECL_EXPORT
 #    else
 #      define Q_SERVICEFW_EXPORT Q_DECL_IMPORT
 #    endif
-#  elif defined(QT_DLL)
-#    define Q_SERVICEFW_EXPORT Q_DECL_IMPORT
-#  endif
-#endif
-
-#if !defined(Q_SERVICEFW_EXPORT)
-#  if defined(QT_SHARED)
-#    define Q_SERVICEFW_EXPORT Q_DECL_EXPORT
-#  else
+#else
 #    define Q_SERVICEFW_EXPORT
-#  endif
 #endif
 
 #endif // QSERVICEFRAMEWORK_H
