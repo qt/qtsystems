@@ -154,10 +154,15 @@ void SFWReceiver::socketReadyRead()
     foreach (QUdpSocket *socket, sockets) {
         QString intf = socket->multicastInterface().name();
 
+        static QByteArray last;
+
         while (socket->hasPendingDatagrams()) {
             QByteArray dgram;
             dgram.resize(socket->pendingDatagramSize());
             socket->readDatagram(dgram.data(), dgram.size());
+
+            if (dgram == last)
+                continue;
 
             QBuffer buff(&dgram);
             buff.open(QIODevice::ReadOnly);
@@ -221,6 +226,7 @@ void SFWReceiver::socketReadyRead()
             }
 
             printf("\n");
+            last = dgram;
         }
     }
 }

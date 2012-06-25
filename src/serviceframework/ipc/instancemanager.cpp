@@ -152,9 +152,7 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
             instanceId = descr.globalId;
             descr.globalRefCount++;
             if (!QMetaObject::invokeMethod(service, "verifyNewServiceClientCredentials", Q_ARG(QServiceClientCredentials*, &creds))){
-#ifdef QT_MTCLIENT_PRESENT
                 qWarning() << "Unable to authenticate new client connection on shared object" << descr.entryData->meta->className();
-#endif
             }
         } else {
             bool hasSecureConstructor = false;
@@ -169,9 +167,7 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
                 }
             }
             if (!hasSecureConstructor) {
-#ifdef QT_MTCLIENT_PRESENT
                 qWarning() << "caution SFW using constructor without security credentials" << descr.entryData->meta->className();
-#endif
                 service = (*descr.entryData->cptr)();
             }
             if (!service)
@@ -194,9 +190,7 @@ QObject* InstanceManager::createObjectInstance(const QRemoteServiceRegister::Ent
             }
         }
         if (!hasSecureConstructor) {
-#ifdef QT_MTCLIENT_PRESENT
             qWarning() << "caution SFW using constructor without security credentials" << descr.entryData->meta->className();
-#endif
             service = (*descr.entryData->cptr)();
         }
         if (!service)

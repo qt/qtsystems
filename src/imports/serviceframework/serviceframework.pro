@@ -19,9 +19,3 @@ HEADERS += qdeclarativeservice_p.h \
 SOURCES += qdeclarativeservice.cpp \
            qdeclarativeserviceold.cpp \
            serviceframework.cpp 
-
-jsondb|contains(QT_CONFIG, jsondb): {
-    mtlib|config_mtlib {
-        DEFINES += QT_NO_DBUS QT_MTCLIENT_PRESENT
-    }
-}

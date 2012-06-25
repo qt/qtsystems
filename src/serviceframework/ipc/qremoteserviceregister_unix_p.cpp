@@ -708,50 +708,6 @@ void UnixEndPoint::flushWriteBuffer()
     }
 }
 
-class ServiceRequestWaiter : public QObject
-{
-    Q_OBJECT
-public:
-    ServiceRequestWaiter(QObject *request, QObject *parent = 0)
-        : QObject(parent), receivedLaunched(false)
-    {
-        connect(request, SIGNAL(launched(QString)), this, SLOT(launched()));
-        connect(request, SIGNAL(failed(QString, QString)), this, SLOT(errorEvent(QString, QString)));
-        connect(request, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
-                this, SLOT(ipcFault(QService::UnrecoverableIPCError)));
-    }
-    ~ServiceRequestWaiter() { }
-
-    QString errorString;
-    bool receivedLaunched;
-
-Q_SIGNALS:
-    void ok();
-    void error();
-
-protected Q_SLOTS:
-    void errorEvent(const QString &, const QString& errorString) {
-        qDebug() << "Got error evernt";
-        this->errorString = errorString;
-        emit error();
-    }
-
-    void ipcFault(QService::UnrecoverableIPCError) {
-        errorEvent(QString(), QStringLiteral("Unrecoverable IPC fault, unable to request service start"));
-    }
-
-    void timeout() {
-        qWarning() << "SFW Timeout talking to the process manager?? exect failure";
-        errorEvent(QString(), QStringLiteral("Timeout waiting for reply"));
-    }
-
-    void launched() {
-        qWarning() << "SFW got laucnhed from PM";
-        receivedLaunched = true;
-        emit ok();
-    }
-};
-
 QRemoteServiceRegisterUnixPrivate::QRemoteServiceRegisterUnixPrivate(QObject* parent)
     : QRemoteServiceRegisterPrivate(parent), server_fd(-1), server_notifier(0)
 {
@@ -943,6 +899,10 @@ int doStart(const QString &location) {
     QTime total_time;
     total_time.start();
 
+    qServiceLog() << "class" << "doStart"
+                  << "event" << "start"
+                  << "location" << location;
+
 #ifndef Q_OS_MAC
     int fd = ::inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
     int wd = ::inotify_add_watch(fd, "/tmp/", IN_MOVED_TO|IN_CREATE);
@@ -991,6 +951,10 @@ int doStart(const QString &location) {
         QTime e;
         e.start();
 
+        qServiceLog() << "class" << "doStart"
+                      << "event" << "found process"
+                      << "location" << location;
+
         while ((e.elapsed() < 5000) && !w->done) {
             UnixEndPoint::runLocalEventLoop();
         }
@@ -1017,48 +981,96 @@ int doStart(const QString &location) {
     qWarning() << QTime::currentTime().toString(fmt)
                << "SFW unable to connect to service, trying to start it." << ret << qt_error_string(errno);
 
-    if (location == QStringLiteral("com.nokia.mt.processmanager.ServiceRequest") ||
-        location == QStringLiteral("com.nokia.mt.processmanager.ServiceRequestSocket")) {
+    QString path = location;
+    // If we have autotests enable, check for the service in .
+#ifdef QT_BUILD_INTERNAL
+    QFile filei(QStringLiteral("./") + path);
+    if (filei.exists()){
+        path.prepend(QStringLiteral("./"));
+        qServiceLog() << "class" << "doStart"
+                      << "event" << "found daemon in ."
+                      << "location" << path;
+    }
+#endif /* QT_BUILD_INTERNAL */
+
+
+    int pipefd[2];
+
+    if (-1 == (pipe2(pipefd, O_CLOEXEC))) {
+        qWarning("pipe2 failed: %s", ::strerror(errno));
 #ifndef Q_OS_MAC
         ::inotify_rm_watch(fd, wd);
         ::close(fd);
 #endif
         delete w;
         delete w_inotify;
-        close(socketfd);
-        return -1;
+        return socketfd;
     }
 
-    QVariantMap map;
-    map.insert(QStringLiteral("interfaceName"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequest"));
-    map.insert(QStringLiteral("serviceName"), QStringLiteral("com.nokia.mt.processmanager"));
-    map.insert(QStringLiteral("major"), 1);
-    map.insert(QStringLiteral("minor"), 0);
-    map.insert(QStringLiteral("Location"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequestSocket"));
-    map.insert(QStringLiteral("ServiceType"), QService::InterProcess);
+    qint64 pid = 0;
 
-    QServiceInterfaceDescriptor desc(map);
-    QServiceManager manager;
-    QObject *serviceRequest = manager.loadInterface(desc);
+    // Start the service as a detached process
+    if (!(pid = fork())) {
+        char buffer[] = "FAIL";
+        close(pipefd[0]);
 
-    qWarning() << QTime::currentTime().toString(fmt)
-               << "SFW Called loadinterface" << serviceRequest;
+        qServiceLog() << "class" << "doStart"
+                      << "event" << "client starting"
+                      << "location" << path;
 
-    if (!serviceRequest) {
-        qWarning() << "Failed to initiate communications with Process manager, can't start service" << location;
+        // child, move it away from the parent
+        if (-1 == (setsid())) {
+            qWarning("setsit failed: %s", ::strerror(errno));
+            write(pipefd[1], buffer, 5);
+            exit(-1);
+        }
+
+        setpgid(getpid(), getpid());
+
+        execlp(path.toLatin1(), path.toLatin1(), NULL);
+
+        qWarning("exec of process %s failed: %s", path.toLatin1(), ::strerror(errno));
+
+        qServiceLog() << "class" << "doStart"
+                      << "event" << "failed start"
+                      << "error" << ::strerror(errno);
+
+        write(pipefd[1], buffer, 5);
+        exit(-1);
+    }
+
+    if (pid == -1) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        qWarning("process start failed %s", ::strerror(errno));
 #ifndef Q_OS_MAC
         ::inotify_rm_watch(fd, wd);
         ::close(fd);
 #endif
         delete w;
         delete w_inotify;
-        close(socketfd);
-        return -1;
+        return socketfd;
     }
 
-    ServiceRequestWaiter waiter(serviceRequest);
+    close(pipefd[1]);
 
-    QMetaObject::invokeMethod(serviceRequest, "startService", Qt::DirectConnection, Q_ARG(QString, location));
+    char buffer[5];
+    if (read(pipefd[0], buffer, 5) > 0) {
+        qServiceLog() << "class" << "doStart"
+                      << "event" << "ddeamon error reported";
+        qWarning("process start failed");
+#ifndef Q_OS_MAC
+        ::inotify_rm_watch(fd, wd);
+        ::close(fd);
+#endif
+        delete w;
+        delete w_inotify;
+        return socketfd;
+    }
+    close(pipefd[0]);
+
+    qServiceLog() << "class" << "doStart"
+                  << "event" << "deamon started";
 
     QFileInfo file(QStringLiteral("/tmp/") + location);
     qWarning() << QTime::currentTime().toString(fmt)
@@ -1100,9 +1112,6 @@ int doStart(const QString &location) {
                       << "errno" << qt_error_string(errno);
 
         if (ret == 0 || (ret == -1 && errno == EISCONN)) {
-            if (!waiter.receivedLaunched) {
-                qWarning() << "SFW asked the PM for a start, PM never replied, application started...something appears broken";
-            }
             success = true;
             break;
         } else if (ret == -1 && errno == EINPROGRESS) {
@@ -1110,28 +1119,17 @@ int doStart(const QString &location) {
         } else {
             w->setEnabled(false);
         }
-
-        if (!waiter.errorString.isEmpty()) {
-            qWarning() << "SFW Error talking to PM" << socketfd << waiter.errorString;
-            qServiceLog() << "func" << __FUNCTION__
-                          << "event" << "error from waiter"
-                          << "error" << waiter.errorString;
-            success = false;
-            break;
-        }
     }
 
     qServiceLog() << "func" << __FUNCTION__
                   << "event" << "connect done"
                   << "time" << total_time.elapsed()
-                  << "fd" << socketfd
-                  << "pm_reply" << waiter.receivedLaunched;
+                  << "fd" << socketfd;
 
     qWarning() << QTime::currentTime().toString(fmt) <<
                  "SFW doStart done. Total time" << total_time.elapsed() <<
                  "Socket exists:" << file.exists() <<
-                 "isSocketValid" << socketfd <<
-                 "pm reply" << waiter.receivedLaunched;
+                 "isSocketValid" << socketfd;
 
     if (success == false) {
         ::close(socketfd);
@@ -1140,7 +1138,6 @@ int doStart(const QString &location) {
 
     delete w;
     delete w_inotify;
-    delete serviceRequest;
 #ifndef Q_OS_MAC
     ::inotify_rm_watch(fd, wd);
     ::close(fd);

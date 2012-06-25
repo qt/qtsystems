@@ -11,13 +11,13 @@ DEFINES += QT_BUILD_SFW_LIB QT_MAKEDLL
 
 load(qt_module_config)
 
-sfwdebug: {
+sfwdebug {
     DEFINES += QT_SFW_IPC_DEBUG
     QT += network
 }
 
 jsondb {
-    DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB QT_MTCLIENT_PRESENT
+    DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
     QT += jsondb
 }
 

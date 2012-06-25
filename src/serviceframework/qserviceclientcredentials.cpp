@@ -127,11 +127,9 @@ void QServiceClientCredentials::setClientAccepted(bool isAccepted)
 */
 bool QServiceClientCredentials::isClientAccepted() const
 {
-#ifdef QT_MTCLIENT_PRESENT
     if (!d->acceptedSet) {
         qWarning() << "SFW credentials were queried, but service never called setClientAccepted(bool).  Returning default accepted.  This will break in the furture.";
     }
-#endif
     return d->accepted;
 }
 

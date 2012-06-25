@@ -136,22 +136,6 @@ QServiceInterfaceDescriptor::QServiceInterfaceDescriptor(const QServiceInterface
 }
 
 /*!
-    Create a minimum QServiceInterfaceDescriptor from a hard coded serivce. Useful
-    if no database/metadata storage is available. Different platforms may have different
-    requirements
-*/
-QServiceInterfaceDescriptor::QServiceInterfaceDescriptor(const QVariantMap &map)
-{
-    d = new QServiceInterfaceDescriptorPrivate;
-    d->interfaceName = map.value(QStringLiteral("interfaceName")).toString();
-    d->serviceName = map.value(QStringLiteral("serviceName")).toString();
-    d->major = map.value(QStringLiteral("major")).toInt();
-    d->minor = map.value(QStringLiteral("minor")).toInt();
-    d->attributes[QServiceInterfaceDescriptor::Location] = map.value(QStringLiteral("Location")).toString();
-    d->attributes[QServiceInterfaceDescriptor::ServiceType] = map.value(QStringLiteral("ServiceType")).toString();
-}
-
-/*!
     \fn  QServiceInterfaceDescriptor& QServiceInterfaceDescriptor::operator=(const QServiceInterfaceDescriptor& other)
 
     Copies the content of the QServiceInterfaceDescriptor object contained

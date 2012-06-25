@@ -197,7 +197,7 @@ ObjectEndPoint::ObjectEndPoint(Type type, QServiceIpcEndPoint* comm, QObject* pa
     d->endPointType = type;
 
     dispatch->setParent(this);
-#ifdef QT_MTCLIENT_PRESENT
+#ifdef SFW_USE_UNIX_BACKEND
     connect(dispatch, SIGNAL(readyRead()), this, SLOT(newPackageReady()), Qt::DirectConnection);
     connect(dispatch, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
 #else
@@ -258,7 +258,14 @@ QObject* ObjectEndPoint::constructProxy(const QRemoteServiceRegister::Entry & en
     openRequests.insert(p.d->messageId, response);
 
     dispatch->writePackage(p);
+    qServiceLog() << "class" << "objectendpoint"
+                  << "event" << "constructProxy"
+                  << "progress" << "wait for result";
     waitForResponse(p.d->messageId);
+    qServiceLog() << "class" << "objectendpoint"
+                  << "event" << "constructProxy"
+                  << "progress" << "got result";
+
 
     if (response->isFinished) {
         if (response->result == 0)
@@ -437,35 +444,11 @@ void ObjectEndPoint::objectRequest(const QServicePackage& p)
         dispatch->getSecurityCredentials(creds);
 
         // not supported on windows at the moment
-#ifdef QT_MTCLIENT_PRESENT
-//        if (!creds.isValid()) {
-//            disconnected();
-//            return;
-//        }
-//        // default to reject all clients unless accepted
-//        creds.setClientAccepted(false);
         if (!creds.isValid()) {
             qWarning() << "SFW Unable to get socket credentials client asking for" << p.d->entry.interfaceName() << p.d->entry.serviceName() << "this may fail in the future";
             disconnected();
             return;
         }
-        QString testingdata = QLatin1Literal("/tmp/sfwtestdata/") +  p.d->entry.interfaceName();
-        qDebug() << "SFW Looking for false credentials in" << testingdata;
-        if (QFile::exists(testingdata)) {
-            QFile data(testingdata);
-            data.open(QIODevice::ReadOnly);
-            const QString line = QString::fromLatin1(data.readLine(128)).simplified();
-            const QStringList list = line.split(QLatin1Char(' '), QString::SkipEmptyParts);
-            if (list.count() != 3) {
-                qWarning() << "File needs to be [pid] [uid] [gid]";
-            }
-            else {
-                creds.d->pid = list.at(0).toInt();
-                creds.d->uid = list.at(1).toInt();
-                creds.d->gid = list.at(2).toInt();
-            }
-        }
-#endif
 
         //instantiate service object from type register
         service = m->createObjectInstance(p.d->entry, d->serviceInstanceId, creds);
@@ -681,6 +664,9 @@ QVariant ObjectEndPoint::invokeRemoteProperty(int metaIndex, const QVariant& arg
         openRequests.insert(p.d->messageId, response);
 
         dispatch->writePackage(p);
+        qServiceLog() << "class" << "objectendpoint"
+                      << "event" << "invokeRemoteProperty"
+                      << "progress" << "wait for result";
         waitForResponse(p.d->messageId);
 
         QVariant result;
@@ -736,6 +722,9 @@ QVariant ObjectEndPoint::invokeRemote(int metaIndex, const QVariantList& args, i
         d->waitingOnReturnUuid = p.d->messageId;
 
         dispatch->writePackage(p);
+        qServiceLog() << "class" << "objectendpoint"
+                      << "event" << "invokeRemote"
+                      << "progress" << "wait for result";
         waitForResponse(p.d->messageId);
 
         d->waitingOnReturnUuid = QUuid();
