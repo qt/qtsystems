@@ -39,71 +39,96 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if defined(Q_OS_LINUX)
-#include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#elif defined(Q_OS_MAC)
-#  include "qscreensaver_mac_p.h"
-#else
+#ifndef QSTORAGEINFO_MAC_P_H
+#define QSTORAGEINFO_MAC_P_H
+
+#include <qstorageinfo.h>
+#include <QtCore/QTimer>
+#include <QtCore/QMap>
+#include <QtCore/QThread>
+#include <QtCore/QMutex>
+
+#include <SystemConfiguration/SystemConfiguration.h>
+#include <DiskArbitration/DiskArbitration.h>
+
 QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
+
+class QDASessionThread;
+class QStorageInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
-    QScreenSaverPrivate(QScreenSaver *) {}
+    QStorageInfoPrivate(QStorageInfo *parent);
+    ~QStorageInfoPrivate();
 
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
+    qlonglong availableDiskSpace(const QString &drive);
+    qlonglong totalDiskSpace(const QString &drive);
+    QString uriForDrive(const QString &drive);
+    QStringList allLogicalDrives();
+    QStorageInfo::DriveType driveType(const QString &drive);
+
+public Q_SLOTS:
+    void storageChanged( bool added,const QString &vol);
+
+Q_SIGNALS:
+    void logicalDriveChanged(const QString &drive, bool added);
+
+protected:
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
+
+private:
+    QStorageInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QStorageInfo)
+
+    QMap<QString, QString> mountEntriesMap;
+    bool updateVolumesMap();
+    void mountEntries();
+    bool sessionThread();
+//    QMap<QString, QStorageInfo::StorageState> stateMap;
+    QDASessionThread *daSessionThread;
+    bool sessionThreadStarted;
+
 };
-QT_END_NAMESPACE
-#endif
 
-QT_BEGIN_NAMESPACE
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information about the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
+class QDASessionThread : public QObject
 {
-}
+    Q_OBJECT
 
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
-{
-    delete d_ptr;
-}
+public:
+    QDASessionThread(QObject *parent = 0);
+    ~QDASessionThread();
+    bool keepRunning;
+    void stop();
+    DASessionRef session;
+public Q_SLOTS:
+    void doWork();
+Q_SIGNALS:
+    void logicalDrivesChanged(bool added,const QString & vol);
 
-/*!
-    \property QScreenSaver::screenSaverEnabled
-    \brief The state of the screen saver.
+protected:
+    QThread t;
 
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
-{
-    return d_ptr->screenSaverEnabled();
-}
+private:
+    QMutex mutex;
 
-/*!
-    Sets the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
-}
+};
+
+
 
 QT_END_NAMESPACE
+
+#endif // QSTORAGEINFO_MAC_P_H

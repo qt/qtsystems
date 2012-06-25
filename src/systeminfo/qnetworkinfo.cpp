@@ -47,6 +47,8 @@
 #  include "qnetworkinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
 #  include "qnetworkinfo_win_p.h"
+#elif defined(Q_OS_MAC)
+#  include "qnetworkinfo_mac_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QNetworkInfoPrivate

@@ -3,6 +3,8 @@ TEMPLATE = subdirs
 !without-sericeframework: SUBDIRS += serviceframework
 
 !without-publishsubscribe: SUBDIRS += publishsubscribe
+!without-systeminfo: SUBDIRS += systeminfo
+
 
 # install
 sources.files = README *.pro

@@ -54,9 +54,7 @@ class QStorageInfoPrivate;
 class Q_SYSTEMINFO_EXPORT QStorageInfo : public QObject
 {
     Q_OBJECT
-
     Q_ENUMS(DriveType)
-
     Q_PROPERTY(QStringList allLogicalDrives READ allLogicalDrives NOTIFY logicalDriveChanged)
 
 public:

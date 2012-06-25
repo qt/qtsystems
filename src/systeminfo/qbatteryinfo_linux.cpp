@@ -136,7 +136,7 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
     if (!watchRemainingChargingTime)
         return getRemainingChargingTime(battery);
 
-    return remainingCapacities.value(battery);
+    return remainingChargingTimes.value(battery);
 }
 
 int QBatteryInfoPrivate::voltage(int battery)

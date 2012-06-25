@@ -63,5 +63,5 @@ void tst_QScreenSaver::tst_screensaver()
     QVERIFY(screensaver.screenSaverEnabled() == false);
 }
 
-QTEST_APPLESS_MAIN(tst_QScreenSaver);
+QTEST_MAIN(tst_QScreenSaver);
 #include "tst_qscreensaver.moc"

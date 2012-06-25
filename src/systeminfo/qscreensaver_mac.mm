@@ -39,71 +39,59 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+#include "qscreensaver_mac_p.h"
+#include <QtCore/QTimer>
 
-#if defined(Q_OS_LINUX)
-#include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#elif defined(Q_OS_MAC)
-#  include "qscreensaver_mac_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
-
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QT_END_NAMESPACE
-#endif
+#include <CoreServices/CoreServices.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information about the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
+QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
+    : q_ptr(parent)
+    , isInhibited(0)
 {
+    ssTimer = new QTimer(this);
+    connect(ssTimer, SIGNAL(timeout()), this, SLOT(activityTimeout()));
 }
 
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
+QScreenSaverPrivate::~QScreenSaverPrivate()
 {
-    delete d_ptr;
+    setScreenSaverEnabled(false);
 }
 
-/*!
-    \property QScreenSaver::screenSaverEnabled
-    \brief The state of the screen saver.
-
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
+bool QScreenSaverPrivate::screenSaverEnabled()
 {
-    return d_ptr->screenSaverEnabled();
+    return isInhibited;
 }
 
-/*!
-    Sets the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
+void QScreenSaverPrivate::setScreenSaverEnabled(bool on)
 {
-    d_ptr->setScreenSaverEnabled(enabled);
+    if (on) {
+        setScreenSaverInhibit();
+    } else {
+        if (ssTimer->isActive())
+            ssTimer->stop();
+        isInhibited = false;
+    }
+}
+
+void QScreenSaverPrivate::activityTimeout()
+{
+    UpdateSystemActivity(OverallAct);
+}
+
+bool QScreenSaverPrivate::setScreenSaverInhibit()
+{
+    activityTimeout();
+    ssTimer->start(1000 * 60);
+
+    if (ssTimer->isActive()) {
+        isInhibited = true;
+        return isInhibited;
+    }
+
+    return false;
 }
 
 QT_END_NAMESPACE
+

@@ -47,6 +47,8 @@
 #  include "qdeviceinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
 #  include "qdeviceinfo_win_p.h"
+#elif defined(Q_OS_MAC)
+#  include "qdeviceinfo_mac_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QDeviceInfoPrivate

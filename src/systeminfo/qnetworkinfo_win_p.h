@@ -123,7 +123,7 @@ private:
     QBasicTimer netStrengthTimer;
     bool wlanCallbackInitialized;
 
-private slots:
+private Q_SLOTS:
     void networkStrengthTimeout();
     void networkStatusTimeout();
 };

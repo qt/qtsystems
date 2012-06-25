@@ -90,6 +90,7 @@ public:
         Denied,
         HomeNetwork,
         Roaming
+        // ,Connected //desktop
     };
 
     QNetworkInfo(QObject *parent = 0);

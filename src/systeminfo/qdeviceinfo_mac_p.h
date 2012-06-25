@@ -39,71 +39,62 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if defined(Q_OS_LINUX)
-#include "qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "qscreensaver_win_p.h"
-#elif defined(Q_OS_MAC)
-#  include "qscreensaver_mac_p.h"
-#else
+#ifndef QDEVICEINFO_MAC_P_H
+#define QDEVICEINFO_MAC_P_H
+
+#include <qdeviceinfo.h>
+
+#include <QStringList>
+
 QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
 
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QT_END_NAMESPACE
+class QTimer;
+
+class QDeviceInfoPrivate : public QObject
+{
+    Q_OBJECT
+
+public:
+    QDeviceInfoPrivate(QDeviceInfo *parent = 0);
+
+    bool hasFeature(QDeviceInfo::Feature feature);
+    int imeiCount();
+    QDeviceInfo::LockTypeFlags activatedLocks();
+    QDeviceInfo::LockTypeFlags enabledLocks();
+    QDeviceInfo::ThermalState thermalState();
+    QString imei(int interface);
+    QString manufacturer();
+    QString model();
+    QString productName();
+    QString uniqueDeviceID();
+    QString version(QDeviceInfo::Version type);
+
+Q_SIGNALS:
+//    void thermalStateChanged(QDeviceInfo::ThermalState state);
+
+private:
+#if !defined(QT_SIMULATOR)
+    QDeviceInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QDeviceInfo)
 #endif
 
-QT_BEGIN_NAMESPACE
+//    bool watchThermalState;
+//    QDeviceInfo::ThermalState currentThermalState;
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information about the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
-{
-}
-
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
-{
-    delete d_ptr;
-}
-
-/*!
-    \property QScreenSaver::screenSaverEnabled
-    \brief The state of the screen saver.
-
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
-{
-    return d_ptr->screenSaverEnabled();
-}
-
-/*!
-    Sets the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
-}
+//    QDeviceInfo::ThermalState getThermalState();
+};
 
 QT_END_NAMESPACE
+
+#endif // QDEVICEINFO_MAC_P_H

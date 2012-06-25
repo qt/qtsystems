@@ -1,4 +1,6 @@
 TARGET = QtSystemInfo
+QPRO_PWD = $PWD
+
 QT = core gui network
 
 PUBLIC_HEADERS = qsysteminfoglobal.h \
@@ -135,6 +137,37 @@ linux-*: !simulator: {
     } else: {
         DEFINES += QT_NO_LIBSYSINFO
     }
+}
+
+macx:!simulator {
+#CONFIG -= x86_64
+QT += core-private
+         OBJECTIVE_SOURCES += qbatteryinfo_mac.mm \
+                  qdeviceinfo_mac.mm \
+                  qdisplayinfo_mac.mm \
+                  qnetworkinfo_mac.mm \
+                  qscreensaver_mac.mm \
+                  qstorageinfo_mac.mm
+
+         PRIVATE_HEADERS += qbatteryinfo_mac_p.h \
+                  qdeviceinfo_mac_p.h \
+                  qdisplayinfo_mac_p.h \
+                  qnetworkinfo_mac_p.h \
+                  qscreensaver_mac_p.h \
+                  qstorageinfo_mac_p.h
+
+         LIBS += -framework SystemConfiguration \
+                -framework Foundation \
+                -framework IOKit  \
+                -framework QTKit \
+                -framework CoreWlan \
+                -framework CoreLocation \
+                -framework CoreFoundation \
+                -framework ScreenSaver \
+                -framework IOBluetooth \
+                -framework CoreServices \
+                -framework DiskArbitration \
+                -framework ApplicationServices
 }
 
 simulator {
