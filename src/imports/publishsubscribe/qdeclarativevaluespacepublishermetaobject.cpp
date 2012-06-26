@@ -58,7 +58,7 @@ QDeclarativeValueSpacePublisherMetaObject::QDeclarativeValueSpacePublisherMetaOb
 
 QDeclarativeValueSpacePublisherMetaObject::~QDeclarativeValueSpacePublisherMetaObject()
 {
-    qFree(metaObject);
+    ::free(metaObject);
 }
 
 int QDeclarativeValueSpacePublisherMetaObject::createProperty(const char *name, const char *type)
@@ -67,7 +67,7 @@ int QDeclarativeValueSpacePublisherMetaObject::createProperty(const char *name, 
     metaObjectBuilder.addSignal("__" + QByteArray::number(id) + "()");
     metaObjectBuilder.addProperty(name, type, id);
 
-    qFree(metaObject);
+    ::free(metaObject);
     metaObject = metaObjectBuilder.toMetaObject();
     d = metaObject->d;
 
