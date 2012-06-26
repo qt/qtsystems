@@ -49,6 +49,16 @@ win32: !simulator: {
 }
 
 linux-*: !simulator: {
+    # bluetooth.h is not standards compliant
+    contains(QMAKE_CXXFLAGS, -std=c++0x) {
+        QMAKE_CXXFLAGS -= -std=c++0x
+        QMAKE_CXXFLAGS += -std=gnu++0x
+        CONFIG -= c++11
+    }
+    c++11 {
+        CONFIG -= c++11
+        QMAKE_CXXFLAGS += -std=gnu++0x
+    }
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
                        qstorageinfo_linux_p.h \
