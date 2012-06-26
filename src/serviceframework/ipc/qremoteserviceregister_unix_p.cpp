@@ -604,13 +604,13 @@ void UnixEndPoint::readIncoming()
         }
 
         if (pending_bytes == 0 && !pending_buf.isEmpty()) {
-            int size = pending_buf.length();
             QDataStream in(pending_buf);
             in.setVersion(QDataStream::Qt_4_6);
             QServicePackage package;
             in >> package;
 
 #ifdef QT_SFW_IPC_DEBUG
+            int size = pending_buf.length();
             const QMetaObject *mo = &QServicePackage::staticMetaObject;
 
             const QMetaEnum typeEnum = mo->enumerator(
