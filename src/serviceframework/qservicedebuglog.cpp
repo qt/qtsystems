@@ -45,10 +45,8 @@
 
 #include <QMutex>
 #include <QMutexLocker>
-#include <QUdpSocket>
 #include <QCoreApplication>
 #include <QFileInfo>
-#include <QNetworkInterface>
 
 #ifdef Q_OS_UNIX
 #include <signal.h>
@@ -83,7 +81,10 @@ QServiceDebugMessage::~QServiceDebugMessage()
 #endif
 }
 
+#ifdef QT_SFW_IPC_DEBUG
+#include <QHostAddress>
 const static QHostAddress _group_addr(QLatin1String("224.0.105.201"));
+#endif
 
 QServiceDebugLog::QServiceDebugLog()
 {
