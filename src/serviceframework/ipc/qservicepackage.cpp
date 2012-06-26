@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qservicepackage_p.h"
+#include <QDataStream>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
