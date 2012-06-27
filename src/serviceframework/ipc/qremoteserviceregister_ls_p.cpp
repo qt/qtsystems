@@ -316,13 +316,7 @@ QObject* QRemoteServiceRegisterPrivate::proxyForService(const QRemoteServiceRegi
         if (!socket->isValid()) {
             QString path = location;
             qWarning() << "Cannot connect to remote service, trying to start service " << path;
-            // If we have autotests enable, check for the service in .
-#ifdef QT_BUILD_INTERNAL
-            QFile file(QStringLiteral("./") + path);
-            if (file.exists()){
-                path.prepend(QStringLiteral("./"));
-            }
-#endif /* QT_BUILD_INTERNAL */
+
             qint64 pid = 0;
             // Start the service as a detached process
             if (QProcess::startDetached(path, QStringList(), QString(), &pid)){

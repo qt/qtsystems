@@ -982,17 +982,6 @@ int doStart(const QString &location) {
                << "SFW unable to connect to service, trying to start it." << ret << qt_error_string(errno);
 
     QString path = location;
-    // If we have autotests enable, check for the service in .
-#ifdef QT_BUILD_INTERNAL
-    QFile filei(QStringLiteral("./") + path);
-    if (filei.exists()){
-        path.prepend(QStringLiteral("./"));
-        qServiceLog() << "class" << "doStart"
-                      << "event" << "found daemon in ."
-                      << "location" << path;
-    }
-#endif /* QT_BUILD_INTERNAL */
-
 
     int pipefd[2];
 

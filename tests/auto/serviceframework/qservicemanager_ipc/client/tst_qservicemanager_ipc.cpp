@@ -326,7 +326,7 @@ void tst_QServiceManager_IPC::initTestCase()
     qDebug() << "DDDDD" << file << QFileInfo(QFINDTESTDATA("qt_sfw_example_ipc_unittest")).absoluteFilePath();
 #endif // SFW_USE_DBUS_BACKEND
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_UNIX
     char *p = getenv("PATH");
     char newpath[strlen(p)+3];
     strcpy(newpath, p);
