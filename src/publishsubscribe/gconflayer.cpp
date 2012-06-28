@@ -43,6 +43,8 @@
 
 #include "gconflayer_p.h"
 
+#include <QtCore/QDataStream>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(GConfLayer, gConfLayer)

@@ -45,6 +45,8 @@
 #include "qremoteserviceregister_p.h"
 #include "qserviceclientcredentials_p.h"
 
+#include <QtCore/QDataStream>
+
 QT_BEGIN_NAMESPACE
 
 /*!
