@@ -48,8 +48,13 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 
+#ifdef QT_SFW_IPC_DEBUG
 #ifdef Q_OS_UNIX
 #include <signal.h>
+#include <errno.h>
+#endif
+#include <QNetworkInterface>
+#include <QUdpSocket>
 #endif
 
 QT_BEGIN_NAMESPACE

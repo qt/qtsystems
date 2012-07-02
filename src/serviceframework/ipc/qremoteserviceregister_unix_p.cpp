@@ -985,7 +985,7 @@ int doStart(const QString &location) {
 
     int pipefd[2];
 
-    if (-1 == (pipe2(pipefd, O_CLOEXEC))) {
+    if (-1 == (pipe(pipefd))) {
         qWarning("pipe2 failed: %s", ::strerror(errno));
 #ifndef Q_OS_MAC
         ::inotify_rm_watch(fd, wd);
@@ -995,6 +995,12 @@ int doStart(const QString &location) {
         delete w_inotify;
         return socketfd;
     }
+
+    flags = fcntl(pipefd[0], F_GETFL, 0);
+    fcntl(pipefd[0], F_SETFL, flags|O_CLOEXEC);
+    flags = fcntl(pipefd[1], F_GETFL, 0);
+    fcntl(pipefd[1], F_SETFL, flags|O_CLOEXEC);
+
 
     qint64 pid = 0;
 
@@ -1018,7 +1024,7 @@ int doStart(const QString &location) {
 
         execlp(path.toLatin1(), path.toLatin1(), NULL);
 
-        qWarning("exec of process %s failed: %s", path.toLatin1(), ::strerror(errno));
+        qWarning() << "exec of process" << path.toLatin1() << ::strerror(errno);
 
         qServiceLog() << "class" << "doStart"
                       << "event" << "failed start"
