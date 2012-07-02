@@ -405,7 +405,9 @@ int UnixEndPoint::runLocalEventLoop(int msec) {
     }
 
     tv.tv_usec = msec*1000;
-    tv.tv_sec = 0;
+    // OSX does not support usec > 1 million
+    tv.tv_sec = tv.tv_usec%1000000;
+    tv.tv_usec /= 1000000;
 
 //    QServiceDebugLog::instance()->appendToLog(QStringLiteral("<!> select"));
 
