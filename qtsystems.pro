@@ -5,28 +5,8 @@ qtCompileTest(udev)
 qtCompileTest(x11)
 qtCompileTest(libsysinfo)
 
-TEMPLATE = subdirs
+# FIXME: This causes tests to be installed (if examples are installed as well),
+# which is needed to run some tests because they are broken.
 CONFIG += ordered
 
-module_qtsystems_src.subdir = src
-module_qtsystems_src.target = module-qtsystems-src
-
-module_qtsystems_tests.subdir = tests
-module_qtsystems_tests.target = module-qtsystems-tests
-module_qtsystems_tests.depends = module_qtsystems_src
-module_qtsystems_tests.CONFIG = no_default_install
-!contains(QT_BUILD_PARTS,tests):!with-tests {
-    module_qtsystems_tests.CONFIG += no_default_target
-}
-
-module_qtsystems_examples.subdir = examples
-module_qtsystems_examples.target = module-qtsystems-examples
-module_qtsystems_examples.depends = module_qtsystems_src
-!contains(QT_BUILD_PARTS,examples):!with-examples {
-    module_qtsystems_examples.CONFIG = no_default_target no_default_install
-    warning("No examples being used")
-}
-
-SUBDIRS += module_qtsystems_src \
-           module_qtsystems_tests \
-           module_qtsystems_examples
+load(qt_parts)
