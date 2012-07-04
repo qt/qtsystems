@@ -259,3 +259,8 @@ simulator {
 }
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+
+
+# Enable doc submodule doc builds
+include (../../doc/config/systeminfo/qtsysteminfo_doc.pri)
+

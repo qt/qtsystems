@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass ValueSpacePublisher QDeclarativeValueSpacePublisher
-    \inqmlmodule QtPublishSubscribe
+    \inqmlmodule QtPublishSubscribe 1.0
     \ingroup qml-publishsubscribe
 
     \brief The ValueSpacePublisher allows application to publish values to Value Space.

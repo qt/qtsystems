@@ -59,3 +59,7 @@ HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS \
     qservicereply.h \
     qservicereply_p.h \
     qservicerequest_p.h
+
+
+# Enable doc submodule doc builds
+include (../../doc/config/serviceframework/qtserviceframework_doc.pri)

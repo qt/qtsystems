@@ -57,3 +57,6 @@ win32: {
 }
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+
+# Enable doc submodule doc builds
+include (../../doc/config/publishsubscribe/qtpublishsubscribe_doc.pri)

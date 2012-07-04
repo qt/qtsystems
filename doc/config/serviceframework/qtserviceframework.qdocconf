@@ -1,0 +1,92 @@
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-defines.qdocconf)
+
+# Name of the project.
+project = Qt ServiceFramework
+description = Qt ServiceFramework Documentation
+
+# Directories in which to search for files to document and images.
+# By default set to the root directory of the project for sources
+# and headers and qdoc will therefore generate output for each file.
+# Images should be placed in <rootdir>/dic/images and examples in
+# <rootdir>/examples.
+# Paths are relative to the  location of this file.
+
+exampledirs += ../../src/serviceframework/examples \
+               ../../.. \
+               ../../../examples/serviceframework \
+               ../../src/serviceframework
+
+headerdirs += ../../src/serviceframework \
+             ../../../src/serviceframework \
+              ../../../src/imports/serviceframework \
+              ../../../../qtdeclarative/src
+
+imagedirs += ./images \
+             ../../src/serviceframework/images
+
+sourcedirs += ../../src/serviceframework \
+              ../../../src/serviceframework \
+              ../../../examples/serviceframework \
+              ../../../src/imports/serviceframework \
+              ../../../qtdeclarative/src
+
+excludedirs +=
+
+# The index file contains links to the Qt 5 documentation.
+# Point to the any .index file to cross link to other projects
+#indexes = $QT5DOC/doc/html/qt.index
+
+# The following parameters are for creating a qhp file, the qhelpgenerator
+# program can convert the qhp file into a qch file which can be opened in
+# Qt Assistant and/or Qt Creator.
+
+# Defines the name of the project. You cannot use operators (+, =, -) in
+# the name. Properties for this project are set using a qhp.<projectname>.property
+# format.
+qhp.projects = qtserviceframework
+
+# Sets the name of the output qhp file.
+qhp.qtserviceframework.file = qtserviceframework.qhp
+
+# Namespace for the output file. This namespace is used to distinguish between
+# different documentation files in Creator/Assistant.
+qhp.qtserviceframework.namespace = qtserviceframework.500
+
+# Title for the package, will be the main title for the package in
+# Assistant/Creator.
+qhp.qtserviceframework.indexTitle = Qt ServiceFramework Documentation
+
+# Extra files to add to the output which are not linked to from anywhere
+# using a qdoc \l command.
+qhp.qtserviceframework.extraFiles = style/common.css
+
+# Only update the name of the project for the next variables.
+qhp.qtserviceframework.virtualFolder  = qdoc
+qhp.qtserviceframework.subprojects = classes
+qhp.qtserviceframework.subprojects.classes.title = Classes
+qhp.qtserviceframework.subprojects.classes.selectors = class fake:headerfile
+qhp.qtserviceframework.subprojects.classes.sortPages = true
+
+
+
+# Do NOT change the variables after this line unless you know what you are doing.
+
+outputdir = ../../html
+outputformats = HTML
+
+examples.fileextensions = "*.cpp *.h *.js *.svg *.xml *.ui *.qml"
+examples.imageextensions = "*.png *.jpeg *.jpg *.gif *.mng"
+headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
+sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
+
+HTML.nobreadcrumbs = "true"
+
+HTML.templatedir = .
+HTML.stylesheets = style/common.css
+
+HTML.headerstyles = "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/common.css\" />\n"
+HTML.endheader = "</head>\n<body>\n"
+
+HTML.footer = "<div class=\"footer\">Copyright (c) 2012 Nokia Corporation and/or its subsidiaries. All rights reserved.</div>\n"
