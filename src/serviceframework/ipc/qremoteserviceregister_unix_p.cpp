@@ -239,7 +239,8 @@ UnixEndPoint::UnixEndPoint(int client_fd, QObject* parent)
     QObject::connect(writeNotifier, SIGNAL(activated(int)), this, SLOT(flushWriteBuffer()));
 
     int flags = fcntl(client_fd, F_GETFL, 0);
-    fcntl(client_fd, F_SETFL, flags|O_NONBLOCK|O_CLOEXEC);
+    fcntl(client_fd, F_SETFL, flags|O_NONBLOCK);
+    fcntl(client_fd, F_SETFD, FD_CLOEXEC);
 
     qServiceLog() << "class" << "unixep"
                   << "event" << "new"
@@ -745,7 +746,8 @@ void QRemoteServiceRegisterUnixPrivate::processIncoming()
     int client_fd = ::accept(server_fd, (struct sockaddr *) &name, (socklen_t *) &len);
 
     int flags = ::fcntl(client_fd, F_GETFL, 0);
-    ::fcntl(client_fd, F_SETFL, flags|O_NONBLOCK|FD_CLOEXEC);
+    ::fcntl(client_fd, F_SETFL, flags|O_NONBLOCK);
+    ::fcntl(client_fd, F_SETFD, FD_CLOEXEC);
 
     qServiceLog() << "class" << "qrsrup"
                   << "event" << "accept"
@@ -787,7 +789,8 @@ bool QRemoteServiceRegisterUnixPrivate::createServiceEndPoint(const QString& ide
     }
 
     int flags = fcntl(server_fd, F_GETFL, 0);
-    fcntl(server_fd, F_SETFL, flags|O_NONBLOCK|O_CLOEXEC);
+    fcntl(server_fd, F_SETFL, flags|O_NONBLOCK);
+    fcntl(server_fd, F_SETFD, FD_CLOEXEC);
 
     QString location = ident;
     location = QDir::cleanPath(QDir::tempPath());
@@ -929,11 +932,12 @@ int doStart(const QString &location) {
         delete w_inotify;
         return -1;
     }
-    if (fcntl(socketfd, F_SETFL, flags | O_NONBLOCK | O_CLOEXEC)) {
+    if (fcntl(socketfd, F_SETFL, flags | O_NONBLOCK)) {
         qWarning("fcntl(F_SETFL) failed: %s", ::strerror(errno));
         delete w_inotify;
         return -1;
     }
+    fcntl(socketfd, F_SETFD, FD_CLOEXEC);
 
     struct sockaddr_un name;
     name.sun_family = PF_UNIX;
@@ -998,11 +1002,8 @@ int doStart(const QString &location) {
         return socketfd;
     }
 
-    flags = fcntl(pipefd[0], F_GETFL, 0);
-    fcntl(pipefd[0], F_SETFL, flags|O_CLOEXEC);
-    flags = fcntl(pipefd[1], F_GETFL, 0);
-    fcntl(pipefd[1], F_SETFL, flags|O_CLOEXEC);
-
+    fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
+    fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
 
     qint64 pid = 0;
 
