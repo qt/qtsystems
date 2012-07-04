@@ -66,8 +66,8 @@
 #include <errno.h>
 #else
 // Needed for ::Sleep, while we wait for a better solution
-#include <Windows.h>
-#include <Winbase.h>
+#include <windows.h>
+#include <winbase.h>
 #endif
 
 #ifdef LOCAL_PEERCRED /* from sys/un.h */
