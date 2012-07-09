@@ -1,14 +1,3 @@
-TARGET  = declarative_systeminfo
-TARGETPATH = QtSystemInfo
-include(qsysteminfoimport.pri)
-target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
-DESTDIR = $$QT.systeminfo.imports/$$TARGETPATH
-INSTALLS += target
-
-qmldir.files += $$PWD/qmldir
-qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
-INSTALLS += qmldir
-
 QT += qml systeminfo
 
 HEADERS += \
@@ -27,3 +16,5 @@ SOURCES += \
     qdeclarativestorageinfo.cpp \
     qdeclarativedeviceprofile.cpp \
     qsysteminfo.cpp
+
+load(qml_plugin)
