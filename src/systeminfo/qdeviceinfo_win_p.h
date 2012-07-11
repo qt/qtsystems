@@ -76,7 +76,7 @@ public:
 
 private:
     QDeviceInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QDeviceInfo)
+    Q_DECLARE_PUBLIC(QDeviceInfo);
 
     QString deviceID;
     QString systemManufacturerName;

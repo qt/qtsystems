@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtSystems module of the Qt Toolkit.
+** This file is part of the QtSensors module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef WMIHELPER_H
+#define WMIHELPER_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -50,68 +53,85 @@
 // We mean it.
 //
 
-#ifndef QBATTERYINFO_WIN_P_H
-#define QBATTERYINFO_WIN_P_H
+#include "../qsysteminfoglobal_p.h"
 
-#include <qbatteryinfo.h>
-#include <QMap>
-#include <QTimer>
+#ifndef Q_CC_MINGW
+#include <QObject>
+#include <QVariant>
+#include <QString>
+#include <Wbemidl.h>
 
+#include <QStringList>
 
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QTimer;
-
-class QBatteryInfoPrivate : public QObject
+class Q_SYSTEMINFO_PRIVATE_EXPORT WMIHelper : public QObject
 {
     Q_OBJECT
 
 public:
-    QBatteryInfoPrivate(QBatteryInfo *parent);
-    ~QBatteryInfoPrivate();
+    WMIHelper(QObject *parent = 0);
+    ~WMIHelper();
+    QVariant getWMIData();
+    QVariant getWMIData(const QString &wmiNamespace,const QString &className, const QStringList &classProperties);
+    QList <QVariant> wmiVariantList;
+    void setWmiNamespace(const QString &wmiNamespace);
+    void setClassName(const QString &className);
+    void setClassProperty(const QStringList &classProperties);
 
-    int batteryCount();
-    int currentFlow(int battery);
-    int maximumCapacity(int battery);
-    int remainingCapacity(int battery);
-    int remainingChargingTime(int battery);
-    int voltage(int battery);
-    QBatteryInfo::ChargerType chargerType();
-    QBatteryInfo::ChargingState chargingState(int battery);
-    QBatteryInfo::EnergyUnit energyUnit();
-    QBatteryInfo::BatteryStatus batteryStatus(int battery);
+    void setConditional(const QString &conditional); //see WQL SQL for WMI)
+    void setupNotfication(const QString &wmiNamespace,const QString &className, const QStringList &classProperties);
+    static QVariant  msVariantToQVariant(VARIANT msVariant, CIMTYPE variantType);
+
+    static  WMIHelper *instance();
+    void emitNotificationArrived();
 
 Q_SIGNALS:
-    void batteryCountChanged(int count);
-    void chargerTypeChanged(QBatteryInfo::ChargerType type);
-    void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
-    void currentFlowChanged(int battery, int flow);
-    void remainingCapacityChanged(int battery, int capacity);
-    void remainingChargingTimeChanged(int battery, int seconds);
-    void voltageChanged(int battery, int voltage);
-    void batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus status);
+    void wminotificationArrived();
 
 private:
-    QBatteryInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QBatteryInfo);
+    IWbemLocator *wbemLocator;
+    IWbemServices *wbemServices;
+    IWbemClassObject *wbemCLassObject;
+    IEnumWbemClassObject *wbemEnumerator;
 
-    int timeToFull;
-    int numberOfBatteries;
+    QString m_className;
+    QStringList m_classProperties;
+    QString m_conditional;
+    QString m_wmiNamespace;
+    void initializeWMI(const QString &wmiNamespace);
 
-    QMap<int, int> currentFlows; // <battery ID, current value> pair
-    QMap<int, int> voltages;
-    QMap<int, int> remainingCapacities;
-    QMap<int, int> remainingChargingTimes;
-    QMap<int, int> maximumCapacities;
-    QMap<int, QBatteryInfo::ChargingState> chargingStates;
-    QBatteryInfo::ChargerType currentChargerType;
-    QMap<int, QBatteryInfo::BatteryStatus> batteryStatuses;
+    bool initialized;
+};
 
-private Q_SLOTS:
-    void getBatteryStatus();
+class Q_SYSTEMINFO_PRIVATE_EXPORT EventSink : public IWbemObjectSink
+{
+    LONG m_lRef;
+    bool bDone;
+
+public:
+    EventSink() { m_lRef = 0; }
+    ~EventSink() { bDone = true; }
+
+    virtual ULONG STDMETHODCALLTYPE AddRef();
+    virtual ULONG STDMETHODCALLTYPE Release();
+    virtual HRESULT
+            STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv);
+
+    virtual HRESULT STDMETHODCALLTYPE Indicate(
+            LONG lObjectCount,
+            IWbemClassObject __RPC_FAR *__RPC_FAR *apObjArray);
+
+    virtual HRESULT STDMETHODCALLTYPE SetStatus(
+            LONG lFlags,
+            HRESULT hResult,
+            BSTR strParam,
+            IWbemClassObject __RPC_FAR *pObjParam);
 
 };
 
 QT_END_NAMESPACE
-
-#endif // QBATTERYINFO_WIN_P_H
+QT_END_HEADER
+#endif
+#endif // WMIHELPER_H

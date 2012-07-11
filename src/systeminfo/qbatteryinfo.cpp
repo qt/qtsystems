@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qbatteryinfo.h>
+#include "qbatteryinfo.h"
 
 #if defined(QT_SIMULATOR)
 #  include "qsysteminfo_simulator_p.h"

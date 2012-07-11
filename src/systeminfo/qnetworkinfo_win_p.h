@@ -53,7 +53,12 @@
 #ifndef QNETWORKINFO_WIN_P_H
 #define QNETWORKINFO_WIN_P_H
 
-#include <qnetworkinfo.h>
+#include <QBasicTimer>
+
+#include "qnetworkinfo.h"
+
+
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,46 +68,67 @@ class QNetworkInfoPrivate : public QObject
 
 public:
     QNetworkInfoPrivate(QNetworkInfo *parent = 0);
+    ~QNetworkInfoPrivate();
 
     int networkInterfaceCount(QNetworkInfo::NetworkMode mode);
-    int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
-    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface);
+    int networkSignalStrength(QNetworkInfo::NetworkMode mode, int netInterface);
+    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int netInterface);
     QNetworkInfo::NetworkMode currentNetworkMode();
-    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface);
+    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int netInterface);
 #ifndef QT_NO_NETWORKINTERFACE
-    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface);
+    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int netInterface);
 #endif // QT_NO_NETWORKINTERFACE
-    QString cellId(int interface);
-    QString currentMobileCountryCode(int interface);
-    QString currentMobileNetworkCode(int interface);
-    QString homeMobileCountryCode(int interface);
-    QString homeMobileNetworkCode(int interface);
-    QString imsi(int interface);
-    QString locationAreaCode(int interface);
-    QString macAddress(QNetworkInfo::NetworkMode mode, int interface);
-    QString networkName(QNetworkInfo::NetworkMode mode, int interface);
+    QString cellId(int netInterface);
+    QString currentMobileCountryCode(int netInterface);
+    QString currentMobileNetworkCode(int netInterface);
+    QString homeMobileCountryCode(int netInterface);
+    QString homeMobileNetworkCode(int netInterface);
+    QString imsi(int netInterface);
+    QString locationAreaCode(int netInterface);
+    QString macAddress(QNetworkInfo::NetworkMode mode, int netInterface);
+    QString networkName(QNetworkInfo::NetworkMode mode, int netInterface);
 
+    void emitNetworkStatusChanged(QNetworkInfo::NetworkMode, QNetworkInfo::NetworkStatus);
+    void emitNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int);
+
+    static QNetworkInfoPrivate *instance();
 Q_SIGNALS:
-    void cellIdChanged(int interface, const QString &id);
-    void currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);
-    void currentMobileCountryCodeChanged(int interface, const QString &mcc);
-    void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
+    void cellIdChanged(int netInterface, const QString &id);
+    void currentCellDataTechnologyChanged(int netInterface, QNetworkInfo::CellDataTechnology tech);
+    void currentMobileCountryCodeChanged(int netInterface, const QString &mcc);
+    void currentMobileNetworkCodeChanged(int netInterface, const QString &mnc);
     void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
-    void locationAreaCodeChanged(int interface, const QString &lac);
+    void locationAreaCodeChanged(int netInterface, const QString &lac);
     void networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
-    void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
-    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
-    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
+    void networkNameChanged(QNetworkInfo::NetworkMode mode, int netInterface, const QString &name);
+    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int netInterface, int strength);
+    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int netInterface, QNetworkInfo::NetworkStatus status);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
     void disconnectNotify(const QMetaMethod &signal);
+    void timerEvent(QTimerEvent *event);
 
 private:
     QNetworkInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QNetworkInfo)
+    Q_DECLARE_PUBLIC(QNetworkInfo);
+
+    void startWifiCallback();
+    bool isDefaultMode(QNetworkInfo::NetworkMode mode);
+
+    quint32 wifiStrength;
+    quint32 ethStrength;
+    Qt::HANDLE hWlan;
+    int timerMs;
+    QBasicTimer netStrengthTimer;
+    bool wlanCallbackInitialized;
+
+private slots:
+    void networkStrengthTimeout();
+    void networkStatusTimeout();
 };
 
 QT_END_NAMESPACE
+
 
 #endif // QNETWORKINFO_WIN_P_H

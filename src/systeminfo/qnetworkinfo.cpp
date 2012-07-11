@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qnetworkinfo.h>
+#include "qnetworkinfo.h"
 
 #if defined(QT_SIMULATOR)
 #  include "qsysteminfo_simulator_p.h"
@@ -226,20 +226,20 @@ int QNetworkInfo::networkInterfaceCount(QNetworkInfo::NetworkMode mode) const
 }
 
 /*!
-    Returns the signal strength for \a interface of \a mode, in 0 - 100 scale. If the information
+    Returns the signal strength for \a interfaceDevice of \a mode, in 0 - 100 scale. If the information
     is not available, or error occurs, -1 is returned.
 */
-int QNetworkInfo::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface) const
+int QNetworkInfo::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interfaceDevice) const
 {
-    return d_ptr->networkSignalStrength(mode, interface);
+    return d_ptr->networkSignalStrength(mode, interfaceDevice);
 }
 
 /*!
-    Returns the current cell data technology used for \a interface.
+    Returns the current cell data technology used for \a interfaceDevice.
 */
-QNetworkInfo::CellDataTechnology QNetworkInfo::currentCellDataTechnology(int interface) const
+QNetworkInfo::CellDataTechnology QNetworkInfo::currentCellDataTechnology(int interfaceDevice) const
 {
-    return d_ptr->currentCellDataTechnology(interface);
+    return d_ptr->currentCellDataTechnology(interfaceDevice);
 }
 
 /*!
@@ -252,105 +252,105 @@ QNetworkInfo::NetworkMode QNetworkInfo::currentNetworkMode() const
 }
 
 /*!
-    Returns the current status for \a interface of \a mode.
+    Returns the current status for \a interfaceDevice of \a mode.
 */
-QNetworkInfo::NetworkStatus QNetworkInfo::networkStatus(QNetworkInfo::NetworkMode mode, int interface) const
+QNetworkInfo::NetworkStatus QNetworkInfo::networkStatus(QNetworkInfo::NetworkMode mode, int interfaceDevice) const
 {
-    return d_ptr->networkStatus(mode, interface);
+    return d_ptr->networkStatus(mode, interfaceDevice);
 }
 
 #ifndef QT_NO_NETWORKINTERFACE
 /*!
-    Returns the first found interface for \a interface of \a mode. If none is found, or it can't be
+    Returns the first found interface for \a interfaceDevice of \a mode. If none is found, or it can't be
     represented by QNetworkInterface (e.g. Bluetooth), and empty object is returned.
 */
-QNetworkInterface QNetworkInfo::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface) const
+QNetworkInterface QNetworkInfo::interfaceForMode(QNetworkInfo::NetworkMode mode, int interfaceDevice) const
 {
-    return d_ptr->interfaceForMode(mode, interface);
+    return d_ptr->interfaceForMode(mode, interfaceDevice);
 }
 #endif // QT_NO_NETWORKINTERFACE
 
 /*!
-    Returns the cell ID of the connected tower or based station for \a interface. If this information
+    Returns the cell ID of the connected tower or based station for \a interfaceDevice. If this information
     is not available or error occurs, an empty string is returned.
 */
-QString QNetworkInfo::cellId(int interface) const
+QString QNetworkInfo::cellId(int interfaceDevice) const
 {
-    return d_ptr->cellId(interface);
+    return d_ptr->cellId(interfaceDevice);
 }
 
 /*!
-    Returns the current Mobile Country Code (MCC) for \a interface. An empty string is returned if the
+    Returns the current Mobile Country Code (MCC) for \a interfaceDevice. An empty string is returned if the
     information is not available or an error occurs.
 */
-QString QNetworkInfo::currentMobileCountryCode(int interface) const
+QString QNetworkInfo::currentMobileCountryCode(int interfaceDevice) const
 {
-    return d_ptr->currentMobileCountryCode(interface);
+    return d_ptr->currentMobileCountryCode(interfaceDevice);
 }
 
 /*!
-    Returns the current Mobile Network Code (MNC) for \a interface. An empty string is returned if the
+    Returns the current Mobile Network Code (MNC) for \a interfaceDevice. An empty string is returned if the
     information is not available or an error occurs.
 */
-QString QNetworkInfo::currentMobileNetworkCode(int interface) const
+QString QNetworkInfo::currentMobileNetworkCode(int interfaceDevice) const
 {
-    return d_ptr->currentMobileNetworkCode(interface);
+    return d_ptr->currentMobileNetworkCode(interfaceDevice);
 }
 
 /*!
-    Returns the home Mobile Country Code (MCC) for \a interface. An empty string is returned if the
+    Returns the home Mobile Country Code (MCC) for \a interfaceDevice. An empty string is returned if the
     information is not available or an error occurs.
 */
-QString QNetworkInfo::homeMobileCountryCode(int interface) const
+QString QNetworkInfo::homeMobileCountryCode(int interfaceDevice) const
 {
-    return d_ptr->homeMobileCountryCode(interface);
+    return d_ptr->homeMobileCountryCode(interfaceDevice);
 }
 
 /*!
-    Returns the home Mobile Network Code (MNC) for \a interface. An empty string is returned if the
+    Returns the home Mobile Network Code (MNC) for \a interfaceDevice. An empty string is returned if the
     information is not available or an error occurs.
 */
-QString QNetworkInfo::homeMobileNetworkCode(int interface) const
+QString QNetworkInfo::homeMobileNetworkCode(int interfaceDevice) const
 {
-    return d_ptr->homeMobileNetworkCode(interface);
+    return d_ptr->homeMobileNetworkCode(interfaceDevice);
 }
 
 /*!
-    Returns the International Mobile Subscriber Identity (IMSI) for \a interface. If this information is
+    Returns the International Mobile Subscriber Identity (IMSI) for \a interfaceDevice. If this information is
     not available, or error occurs, an empty string is returned.
 */
-QString QNetworkInfo::imsi(int interface) const
+QString QNetworkInfo::imsi(int interfaceDevice) const
 {
-    return d_ptr->imsi(interface);
+    return d_ptr->imsi(interfaceDevice);
 }
 
 /*!
-    Returns the location area code of the current cellular radio network for \a interface. If this information
+    Returns the location area code of the current cellular radio network for \a interfaceDevice. If this information
     is not available or error occurs, an empty string is returned.
 */
-QString QNetworkInfo::locationAreaCode(int interface) const
+QString QNetworkInfo::locationAreaCode(int interfaceDevice) const
 {
-    return d_ptr->locationAreaCode(interface);
+    return d_ptr->locationAreaCode(interfaceDevice);
 }
 
 /*!
-    Returns the MAC address for \a interface of \a mode. If the MAC address is not available or error
+    Returns the MAC address for \a interfaceDevice of \a mode. If the MAC address is not available or error
     occurs, an empty string is returned.
 */
-QString QNetworkInfo::macAddress(QNetworkInfo::NetworkMode mode, int interface) const
+QString QNetworkInfo::macAddress(QNetworkInfo::NetworkMode mode, int interfaceDevice) const
 {
-    return d_ptr->macAddress(mode, interface);
+    return d_ptr->macAddress(mode, interfaceDevice);
 }
 
 /*!
-    Returns the name of the operator for \a interface of \a mode. If the information is not available,
+    Returns the name of the operator for \a interfaceDevice of \a mode. If the information is not available,
     or an error occurs, an empty string is returned.
 
     In case of WLAN, the SSID is returned; for Ethernet, the domain name is returned if available.
 */
-QString QNetworkInfo::networkName(QNetworkInfo::NetworkMode mode, int interface) const
+QString QNetworkInfo::networkName(QNetworkInfo::NetworkMode mode, int interfaceDevice) const
 {
-    return d_ptr->networkName(mode, interface);
+    return d_ptr->networkName(mode, interfaceDevice);
 }
 
 extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);

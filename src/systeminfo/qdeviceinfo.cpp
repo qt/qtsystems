@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qdeviceinfo.h>
+#include "qdeviceinfo.h"
 
 #if defined(QT_SIMULATOR)
 #  include "qsysteminfo_simulator_p.h"

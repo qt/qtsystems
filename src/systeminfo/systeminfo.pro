@@ -24,7 +24,7 @@ win32: !simulator: {
     }
 
     win32-msvc*: {
-        LIBS += -lUser32 -lGdi32 -lPowrProf -lBthprops -lWlanapi -lWs2_32 -lVfw32
+        LIBS += -lUser32 -lGdi32 -lPowrProf -lBthprops -lWlanapi -lWs2_32 -lVfw32 -lSetupapi -lIphlpapi -lOle32 -lWbemuuid
     }
 
     win32-g++*: {
@@ -35,13 +35,31 @@ win32: !simulator: {
                        qdeviceinfo_win_p.h \
                        qstorageinfo_win_p.h \
                        qbatteryinfo_win_p.h \
-                       qnetworkinfo_win_p.h
+                       qnetworkinfo_win_p.h \
+                       windows/qwmihelper_win_p.h \
+                       qsysteminfoglobal_p.h
 
     SOURCES += qscreensaver_win.cpp \
                qdeviceinfo_win.cpp \
                qstorageinfo_win.cpp \
                qbatteryinfo_win.cpp \
-               qnetworkinfo_win.cpp
+               qnetworkinfo_win.cpp \
+               windows/qwmihelper_win.cpp
+
+       LIBS += \
+            -lOle32 \
+            -lUser32 \
+            -lGdi32 \
+            -lIphlpapi \
+            -lOleaut32 \
+            -lDxva2 \
+            -lPowrProf \
+            -lSetupapi
+
+  win32-g++: {
+        LIBS += -luser32 -lgdi32
+    }
+
 }
 
 linux-*: !simulator: {
@@ -210,7 +228,6 @@ simulator {
 }
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
-
 load(qt_module)
 
 # This must be done after loading qt_module.prf

@@ -41,6 +41,12 @@
 
 #include "qstorageinfo_win_p.h"
 
+#if !defined( Q_CC_MINGW)
+#ifndef Q_OS_WINCE
+#include "windows/qwmihelper_win_p.h"
+#endif
+#endif
+
 #include <QtCore/qdir.h>
 #include <QtCore/qmetaobject.h>
 
@@ -52,6 +58,19 @@ QStorageInfoPrivate::QStorageInfoPrivate(QStorageInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
 {
+#if !defined( Q_CC_MINGW)
+#if !defined( Q_OS_WINCE)
+    WMIHelper *wHelper;
+    wHelper =  WMIHelper::instance();
+    wHelper->setWmiNamespace(QLatin1String("root/cimv2"));
+    wHelper->setClassName(QLatin1String("Win32_VolumeChangeEvent"));
+    QString aString = QLatin1String("SELECT * FROM __InstanceOperationEvent WITHIN 1 WHERE (TargetInstance ISA 'Win32_LogicalDisk') AND (TargetInstance.DriveType = 5 OR TargetInstance.DriveType = 2)");
+
+    wHelper->setupNotfication(QLatin1String("root/cimv2"),aString,QStringList());
+
+    connect(wHelper,SIGNAL(wminotificationArrived()),this,SLOT(notificationArrived()));
+#endif
+#endif
 }
 
 QStorageInfoPrivate::~QStorageInfoPrivate()
@@ -84,11 +103,11 @@ QString QStorageInfoPrivate::uriForDrive(const QString &drive)
 
 QStringList QStorageInfoPrivate::allLogicalDrives()
 {
+    mountEntriesList.clear();
     QFileInfoList drives = QDir::drives();
-    QStringList drivesList;
     foreach (const QFileInfo &drive, drives)
-        drivesList << drive.absoluteFilePath();
-    return drivesList;
+        mountEntriesList << drive.absoluteFilePath();
+    return mountEntriesList;
 }
 
 QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
@@ -125,5 +144,32 @@ void QStorageInfoPrivate::disconnectNotify(const QMetaMethod &signal)
     if (signal == logicalDriveChangedSignal) {
     }
 }
+
+void QStorageInfoPrivate::notificationArrived()
+{
+    QStringList oldDrives;
+
+     oldDrives = mountEntriesList;
+     allLogicalDrives();
+
+     if (mountEntriesList.count() < oldDrives.count()) {
+         QStringListIterator i(oldDrives);
+          while (i.hasNext()) {
+             QString key = i.next();
+              if (!mountEntriesList.contains(key)) {
+                  emit logicalDriveChanged(key, false);
+              }
+          }
+      } else if (mountEntriesList.count() > oldDrives.count()) {
+         QStringListIterator i(mountEntriesList);
+          while (i.hasNext()) {
+             QString key = i.next();
+
+              if (oldDrives.contains(key))
+                  continue;
+                 emit logicalDriveChanged(key, true);
+         }
+     }
+ }
 
 QT_END_NAMESPACE

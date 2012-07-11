@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtSystems module of the Qt Toolkit.
+** This file is part of the QtSystemKit module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -50,47 +50,18 @@
 // We mean it.
 //
 
-#ifndef QSTORAGEINFO_WIN_P_H
-#define QSTORAGEINFO_WIN_P_H
+#ifndef QSYSTEMINFOPRIVATEGLOBAL_P_H
+#define QSYSTEMINFOPRIVATEGLOBAL_P_H
+#include <QtCore/qglobal.h>
 
-#include "qstorageinfo.h"
-#include "windows/qwmihelper_win_p.h"
+#ifndef QT_STATIC
+#    if defined(QT_BUILD_SYSTEMINFO_LIB)
+#      define Q_SYSTEMINFO_PRIVATE_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_SYSTEMINFO_PRIVATE_EXPORT Q_DECL_IMPORT
+#    endif
+#else
+#    define Q_SYSTEMINFO_PRIVATE_EXPORT
+#endif
 
-QT_BEGIN_NAMESPACE
-
-class QSocketNotifier;
-
-class QStorageInfoPrivate : public QObject
-{
-    Q_OBJECT
-
-public:
-    QStorageInfoPrivate(QStorageInfo *parent);
-    ~QStorageInfoPrivate();
-
-    qlonglong availableDiskSpace(const QString &drive);
-    qlonglong totalDiskSpace(const QString &drive);
-    QString uriForDrive(const QString &drive);
-    QStringList allLogicalDrives();
-    QStorageInfo::DriveType driveType(const QString &drive);
-
-Q_SIGNALS:
-    void logicalDriveChanged(const QString &drive, bool added);
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-
-private:
-    QStorageInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QStorageInfo);
-
-    QStringList mountEntriesList;
-
-private Q_SLOTS:
-    void notificationArrived();
-};
-
-QT_END_NAMESPACE
-
-#endif // QSTORAGEINFO_WIN_P_H
+#endif // QSYSTEMINFOPRIVATEGLOBAL_P_H

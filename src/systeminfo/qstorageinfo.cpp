@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qstorageinfo.h>
+#include "qstorageinfo.h"
 
 #include <QtCore/qstringlist.h>
 
