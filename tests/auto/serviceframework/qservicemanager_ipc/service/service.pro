@@ -5,7 +5,13 @@ mac {
     CONFIG -= app_bundle
 }
 
-DESTDIR = ../client  #service must be in same dir as client binary
+debug_and_release {
+    CONFIG(debug, debug|release): \
+        INFIX = /debug
+    else: \
+        INFIX = /release
+}
+DESTDIR = ../client$$INFIX  #service must be in same dir as client binary
 
 jsondb|contains(QT_CONFIG, jsondb) {
     mtlib|config_mtlib {
