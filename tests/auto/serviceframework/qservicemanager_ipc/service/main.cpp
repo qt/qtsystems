@@ -572,34 +572,6 @@ private:
 };
 
 
-void unregisterExampleService()
-{
-    QServiceManager m;
-    m.removeService("IPCExampleService");
-}
-
-void registerExampleService()
-{
-    unregisterExampleService();
-    QServiceManager m;
-
-    // Because the service destination directory and install directory are different
-    // from standard, use qmake-time hard-coded paths to search the service XML
-    QString path = QString(TESTDATA_INSTALL_DIR) + "xmldata/ipcexampleservice.xml";
-    if (!QFileInfo(path).exists()) {
-        path = QString(TESTDATA_SRC_DIR) + "xmldata/ipcexampleservice.xml";
-        if (!QFileInfo(path).exists()) {
-            path = QFINDTESTDATA("xmldata/ipcexampleservice.xml");
-        }
-    }
-
-    bool r = m.addService(path);
-    if (!r) {
-        qWarning() << "Cannot register IPCExampleService" << path;
-    }
-}
-
-
 Q_DECLARE_METATYPE(QMetaType::Type);
 
 QT_BEGIN_NAMESPACE
@@ -628,8 +600,6 @@ int main(int argc, char** argv)
 #ifdef SFW_USE_DBUS_BACKEND
     qDBusRegisterMetaType<QVariantHash>();
 #endif
-
-    registerExampleService();
 
     QRemoteServiceRegister* serviceRegister = new QRemoteServiceRegister();
 
@@ -680,8 +650,6 @@ int main(int argc, char** argv)
     int res =  app.exec();
     delete serviceRegister;
 
-    // Do not unregister when done, otherwise autostart can't start the service
-    unregisterExampleService();
     return res;
 }
 

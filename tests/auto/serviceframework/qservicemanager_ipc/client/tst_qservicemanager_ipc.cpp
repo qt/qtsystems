@@ -319,7 +319,7 @@ void tst_QServiceManager_IPC::initTestCase()
         QTextStream out(&data);
         out << "[D-BUS Service]\n"
             << "Name=com.nokia.qtmobility.sfw.IPCExampleService" << '\n'
-            << "Exec=" << QFileInfo(QFINDTESTDATA("qt_sfw_example_ipc_unittest")).absoluteFilePath();
+            << "Exec=" << QFileInfo(QFINDTESTDATA("qt_sfw_example_ipc_unittest")).absoluteFilePath() << '\n';
         data.close();
     }
     QVERIFY(data.exists());
@@ -1350,6 +1350,12 @@ void FetchLotsOfProperties::setup()
     }
 
     QList<QServiceInterfaceDescriptor> list = mgr->findInterfaces("IPCExampleService");
+    if (list.isEmpty()) {
+        qWarning() << "Thread failed to query the database, or the database contained no services";
+        emit error();
+        exit(-1);
+        return;
+    }
     foreach (const QServiceInterfaceDescriptor &d, list) {
         if (d.majorVersion() == 3 && d.minorVersion() == 5 && !shared) {
             service = mgr->loadInterface(d);
@@ -1451,11 +1457,7 @@ void tst_QServiceManager_IPC::verifyThreadSafety()
         connect(this, SIGNAL(threadRemaining()), fetch, SLOT(printProgress()));
         fetch->start();
     }
-    QTRY_COMPARE(ready.count(), threads);
-    QVERIFY2(!errors.count(), "Threads reported errors on setup");
-    emit threadRun();
 
-    qDebug() << "Waiting on" << threads << "threads to finish";
 
 #define THREAD_TIMEOUT 30*1000
 
@@ -1466,7 +1468,19 @@ void tst_QServiceManager_IPC::verifyThreadSafety()
 
     QTime start = QTime::currentTime();
 
+    while (((ready.count()) < threads) && (timer.isActive())) {
+        QCOMPARE(errors.count(), 0);
+        QCoreApplication::processEvents();
+        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    }
+    QTRY_COMPARE(ready.count(), threads);
+    QVERIFY2(!errors.count(), "Threads reported errors on setup");
+    emit threadRun();
+
+    qDebug() << "Waiting on" << threads << "threads to finish";
+
     while (((finished.count() + errors.count()) < threads) && (timer.isActive())) {
+        QCOMPARE(errors.count(), 0);
         QCoreApplication::processEvents();
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
