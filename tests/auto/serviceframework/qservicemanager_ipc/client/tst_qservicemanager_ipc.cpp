@@ -483,13 +483,13 @@ void tst_QServiceManager_IPC::sharedTestService()
     QMetaProperty propOther = metaOther->property(1);
 
     // check that the property values are the same before and after an edit
-    qWarning() << "Part of the autotest commented out on mac...this probably a real problem, fix me";
-#ifndef Q_OS_MAC
     QCOMPARE(prop.read(serviceShared), propOther.read(serviceSharedOther));
     prop.write(serviceShared, "Shared");
+    // write does not block so the QCOMPARE below may result in serviceSharedOther being read before
+    // the new value has been sent to the service. To avoid this, read the property back now
+    (void)prop.read(serviceShared); // flush
     QCOMPARE(prop.read(serviceShared), propOther.read(serviceSharedOther));
     prop.reset(serviceShared);
-#endif
 
     // test changes through a method call
     uint hash, hashOther;
