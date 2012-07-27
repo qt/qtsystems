@@ -44,7 +44,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass DeviceProfile QDeclarativeDeviceProfile
+    \qmltype DeviceProfile
+    \instantiates QDeclarativeDeviceProfile
     \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The DeviceProfile element provides information about the profile of the device.

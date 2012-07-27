@@ -46,7 +46,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass ValueSpacePublisher QDeclarativeValueSpacePublisher
+    \qmltype ValueSpacePublisher
+    \instantiates QDeclarativeValueSpacePublisher
     \inqmlmodule QtPublishSubscribe 1.0
     \ingroup qml-publishsubscribe
 

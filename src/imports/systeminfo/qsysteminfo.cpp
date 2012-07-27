@@ -79,7 +79,8 @@ QT_END_NAMESPACE
 #include "qsysteminfo.moc"
 
 /*!
-    \qmlclass ScreenSaver QScreenSaver
+    \qmltype ScreenSaver
+    \instantiates QScreenSaver
     \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The ScreenSaver element provides information about the screen saver.

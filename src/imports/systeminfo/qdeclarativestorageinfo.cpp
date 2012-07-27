@@ -44,7 +44,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass StorageInfo QDeclarativeStorageInfo
+    \qmltype StorageInfo
+    \instantiates QDeclarativeStorageInfo
     \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The StorageInfo element provides various information about the storage system.

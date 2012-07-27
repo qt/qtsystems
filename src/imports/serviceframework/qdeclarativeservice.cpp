@@ -49,7 +49,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass ServiceLoader QDeclarativeService
+    \qmltype ServiceLoader
+    \instantiates QDeclarativeService
 
     \brief The ServiceLoader element holds an instance of a service object.
     \inherits QObject
@@ -289,7 +290,8 @@ void QDeclarativeServiceLoader::IPCFault(QService::UnrecoverableIPCError errorVa
 }
 
 /*!
-    \qmlclass ServiceDescriptor QDeclarativeServiceDescriptor
+    \qmltype ServiceDescriptor
+    \instantiates QDeclarativeServiceDescriptor
 
     \brief The ServiceDescriptor element holds a description of a service.
     \inherits QObject
@@ -331,7 +333,8 @@ void QDeclarativeServiceLoader::IPCFault(QService::UnrecoverableIPCError errorVa
     I have no clue what this property does, but it's probably important.
 */
 /*!
-    \qmlclass ServiceFilter QDeclarativeServiceFilter
+    \qmltype ServiceFilter
+    \instantiates QDeclarativeServiceFilter
 
     \brief The ServiceFilter element holds a list of \l ServiceDescriptor objects.
     \inherits QObject

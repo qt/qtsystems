@@ -44,7 +44,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass NetworkInfo QDeclarativeNetworkInfo
+    \qmltype NetworkInfo
+    \instantiates QDeclarativeNetworkInfo
     \inqmlmodule QtSystemInfo
     \ingroup qml-systeminfo
     \brief The NetworkInfo element provides various information about the network status.

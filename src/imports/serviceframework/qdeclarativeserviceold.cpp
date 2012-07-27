@@ -47,7 +47,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass Service QDeclarativeService
+    \qmltype Service
+    \instantiates QDeclarativeService
 
     \brief The Service element holds an instance of a service object.
     \inherits QObject
@@ -314,7 +315,8 @@ bool QDeclarativeService::operator ==(const QServiceInterfaceDescriptor& other )
 }
 
 /*!
-    \qmlclass ServiceList QDeclarativeServiceList
+    \qmltype ServiceList
+    \instantiates QDeclarativeServiceList
 
     \brief The ServiceList element holds a list of \l Service elements.
     \inherits QObject
