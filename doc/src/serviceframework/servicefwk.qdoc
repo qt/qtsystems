@@ -60,6 +60,26 @@ versions, and QObject-based introspection, it may even be used to unify and
 access multiple platform specific service implementations via the same
 Qt-based client application.
 
+\section1 Getting Started
+
+To load the Qt Service Framework module into your .qml files, add the following
+
+\qml
+    import QtServiceFramework 5.0
+\endqml
+
+For C++ files you will need to add the directive
+
+\code
+    #include <QtServiceFramework>
+\endcode
+
+And for linking against the module add this to your qmake .pro file
+
+\code
+    QT += serviceframework
+\endcode
+
 \section1 Overview
 
 A service is an independent component that allows a client to perform a

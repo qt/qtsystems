@@ -1,0 +1,65 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+
+
+/*!
+    \module QtServiceFramework
+    \title Qt Service Framework Module
+    \ingroup modules
+
+    \brief Service Framework is an Inter-Process Communications (IPC) and
+    Remote Procedure Calling (RPC) machanism designed to operate very
+    efficient, platform independent and be very easy to work with. It
+    operates between Qt applications, and extends the well known Qt Signals
+    and Slots mechanism to operate between different applications.
+
+    To use the module in Qt Quick you will need to load it with the command
+    \qml
+        import QtServiceFramework 5.0
+    \endqml
+
+    For C++, to include the definitions of the module's classes, use the
+    following directive:
+
+    \code
+        #include <QtServiceFramework>
+    \endcode
+
+    And for linking against the module add this to your qmake .pro file
+
+    \code
+        QT += serviceframework
+    \endcode
+
+
+    See more in the \l{Qt Service Framework}{Qt Service Framework Overview}.
+
+*/
+
+
