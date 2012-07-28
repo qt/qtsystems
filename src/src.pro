@@ -5,4 +5,6 @@ CONFIG  += ordered
 !without-serviceframework: SUBDIRS += serviceframework
 !without-systeminfo: SUBDIRS += systeminfo # systeminfo has dependencies to serviceframework, thus build it after sfw
 
-SUBDIRS += imports tools
+SUBDIRS += tools
+
+!isEmpty(QT.quick.name): SUBDIRS += imports
