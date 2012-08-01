@@ -24,3 +24,4 @@ jsondb|contains(QT_CONFIG, jsondb): {
 SOURCES += tst_qservicemanager_ipc.cpp
 
 TESTDATA += xmldata/*
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

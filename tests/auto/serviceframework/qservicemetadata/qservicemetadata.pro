@@ -11,3 +11,4 @@ SOURCES += tst_servicemetadata.cpp
 
 
 TESTDATA += testdata/*
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

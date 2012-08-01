@@ -13,3 +13,4 @@ QT += publishsubscribe
 }
 
 SOURCES += tst_qvaluespace.cpp
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

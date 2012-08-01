@@ -20,3 +20,4 @@ SOURCES += tst_qservicemanager.cpp \
 
 
 TESTDATA += xml/*
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

@@ -12,3 +12,4 @@ OTHER_FILES += \
     testcases/tst_change_setting.qml
 
 QT += qmltest publishsubscribe jsondb
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

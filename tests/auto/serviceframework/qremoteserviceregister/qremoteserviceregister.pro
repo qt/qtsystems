@@ -9,3 +9,4 @@ HEADERS += service.h
 
 TESTDATA += xmldata/*
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

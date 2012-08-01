@@ -14,3 +14,4 @@ HEADERS += \
 
 RESOURCES += \
     serviceobject.qrc
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
