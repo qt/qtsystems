@@ -3,7 +3,7 @@ load(qt_build_config)
 TARGET = QtPublishSubscribe
 QT = core-private
 
-load(qt_module_config)
+load(qt_module)
 
 PUBLIC_HEADERS = qpublishsubscribeglobal.h \
                  qvaluespace.h \

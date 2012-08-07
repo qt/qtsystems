@@ -3,7 +3,7 @@ load(qt_build_config)
 TARGET = QtSystemInfo
 QT = core gui network
 
-load(qt_module_config)
+load(qt_module)
 
 PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qdeviceinfo.h \

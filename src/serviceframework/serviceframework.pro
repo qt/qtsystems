@@ -3,7 +3,7 @@ load(qt_build_config)
 TARGET = QtServiceFramework
 QT = core
 
-load(qt_module_config)
+load(qt_module)
 
 sfwdebug {
     DEFINES += QT_SFW_IPC_DEBUG
