@@ -3,8 +3,6 @@ load(qt_build_config)
 TARGET = QtPublishSubscribe
 QT = core-private
 
-load(qt_module)
-
 PUBLIC_HEADERS = qpublishsubscribeglobal.h \
                  qvaluespace.h \
                  qvaluespacepublisher.h \
@@ -36,7 +34,7 @@ unix {
     }
 
     contains(QT_CONFIG,jsondb) {
-        QT += jsondb
+        QT_PRIVATE += jsondb
 
         PRIVATE_HEADERS += jsondblayer_p.h
         SOURCES += jsondblayer.cpp
@@ -57,6 +55,8 @@ win32: {
 }
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+
+load(qt_module)
 
 # Enable doc submodule doc builds
 include (../../doc/config/publishsubscribe/qtpublishsubscribe_doc.pri)
