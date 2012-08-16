@@ -210,35 +210,4 @@ int QDisplayInfo::physicalWidth(int screen) const
     return -1;
 }
 
-extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
-
-/*!
-    \internal
-*/
-void QDisplayInfo::connectNotify(const QMetaMethod &signal)
-{
-#if (defined(Q_OS_LINUX) || defined(QT_SIMULATOR)) && !defined(QT_NO_JSONDB)
-    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
-#else
-    Q_UNUSED(signal)
-#endif
-}
-
-/*!
-    \internal
-*/
-void QDisplayInfo::disconnectNotify(const QMetaMethod &signal)
-{
-#if (defined(Q_OS_LINUX) || defined(QT_SIMULATOR)) && !defined(QT_NO_JSONDB)
-    // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (isSignalConnected(signal))
-        return;
-
-    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-    disconnect(d_ptr, sourceSignal, this, signal);
-#else
-    Q_UNUSED(signal)
-#endif
-}
 QT_END_NAMESPACE

@@ -64,10 +64,6 @@ class QBatteryInfoSimulatorBackend;
 class QDeviceInfoSimulatorBackend;
 class QNetworkInfoSimulatorBackend;
 
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-class QDeviceInfoPrivate;
-#endif
-
 #if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
 class QNetworkInfoPrivate;
 #endif
@@ -146,11 +142,6 @@ private:
     Q_DECLARE_PUBLIC(QDeviceInfo)
 
     QDeviceInfoSimulatorBackend *deviceInfoSimulatorBackend;
-
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-    QDeviceInfoPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QDeviceInfo)
-#endif
 };
 
 class QNetworkInfoSimulator : public QObject

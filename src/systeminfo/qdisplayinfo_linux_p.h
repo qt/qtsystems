@@ -55,15 +55,7 @@
 
 #include <qdisplayinfo.h>
 
-#if !defined(QT_NO_JSONDB)
-#include <QMap>
-#endif //QT_NO_JSONDB
-
 QT_BEGIN_NAMESPACE
-
-#if !defined(QT_NO_JSONDB)
-class QJsonDbWrapper;
-#endif //QT_NO_JSONDB
 
 class QDisplayInfoPrivate : public QObject
 {
@@ -76,30 +68,9 @@ public:
     int contrast(int screen);
     QDisplayInfo::BacklightState backlightState(int screen);
 
-#if !defined(QT_NO_JSONDB)
-Q_SIGNALS:
-    void backlightStateChanged(int screen, QDisplayInfo::BacklightState state);
-
-private Q_SLOTS:
-    void onBacklightStateChanged(int screen, QDisplayInfo::BacklightState state);
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-#endif
-
 private:
     QDisplayInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDisplayInfo)
-
-
-#if !defined(QT_NO_JSONDB)
-    QMap<int, QDisplayInfo::BacklightState> backlightStates;
-    bool backlightStateWatcher;
-    QJsonDbWrapper *jsondbWrapper;
-
-    void initScreenMap();
-#endif //QT_NO_JSONDB
 };
 
 QT_END_NAMESPACE

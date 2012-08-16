@@ -41,10 +41,6 @@
 
 #include "qdeviceinfo_linux_p.h"
 
-#if !defined(QT_NO_JSONDB)
-#include "qjsondbwrapper_p.h"
-#endif // QT_NO_JSONDB
-
 #if !defined(QT_NO_OFONO)
 #include "qofonowrapper_p.h"
 #endif // QT_NO_OFONO
@@ -72,9 +68,6 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 #endif // QT_SIMULATOR
     , watchThermalState(false)
     , timer(0)
-#if !defined(QT_NO_JSONDB)
-    , jsondbWrapper(0)
-#endif // QT_NO_JSONDB
 #if !defined(QT_NO_OFONO)
     , ofonoWrapper(0)
 #endif // QT_NO_OFONO
@@ -175,11 +168,6 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 
     case QDeviceInfo::PositioningFeature:
         // TODO: find the kernel interface for this
-#if !defined(QT_NO_JSONDB)
-        if (!jsondbWrapper)
-            jsondbWrapper = new QJsonDbWrapper(this);
-        return jsondbWrapper->hasFeaturePositioning();
-#endif
         return false;
 
     case QDeviceInfo::VideoOutFeature: {
@@ -216,22 +204,11 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 
 QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
 {
-#if !defined(QT_NO_JSONDB)
-        if (!jsondbWrapper)
-            jsondbWrapper = new QJsonDbWrapper(this);
-        return jsondbWrapper->activatedLockTypes();
-#endif
     return QDeviceInfo::NoLock;
 }
 
 QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::enabledLocks()
 {
-#if !defined(QT_NO_JSONDB)
-        if (!jsondbWrapper)
-            jsondbWrapper = new QJsonDbWrapper(this);
-        return jsondbWrapper->enabledLockTypes();
-#endif
-
     QDeviceInfo::LockTypeFlags enabledLocks = QDeviceInfo::NoLock;
 
     QScreenSaverPrivate screenSaver(0);
@@ -300,17 +277,9 @@ QString QDeviceInfoPrivate::manufacturer()
 QString QDeviceInfoPrivate::model()
 {
     if (modelBuffer.isEmpty()) {
-#if !defined(QT_NO_JSONDB)
-        if (!jsondbWrapper)
-            jsondbWrapper = new QJsonDbWrapper(this);
-        modelBuffer = jsondbWrapper->model();
-        if (modelBuffer.startsWith(manufacturer()))
-           modelBuffer = modelBuffer.right(modelBuffer.length() - manufacturerBuffer.length()).trimmed();
-#else
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_name"));
         if (file.open(QIODevice::ReadOnly))
             modelBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
-#endif
     }
 
     return modelBuffer;
@@ -403,19 +372,6 @@ extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 
 void QDeviceInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
-#if !defined(QT_NO_JSONDB)
-    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::activatedLocksChanged);
-    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::enabledLocksChanged);
-    if (signal == activatedLocksChangedSignal
-            || signal == enabledLocksChangedSignal) {
-        if (!jsondbWrapper)
-            jsondbWrapper = new QJsonDbWrapper(this);
-        QMetaMethod sourceSignal = proxyToSourceSignal(signal, jsondbWrapper);
-        connect(jsondbWrapper, sourceSignal, this, signal, Qt::UniqueConnection);
-        return;
-    }
-#endif // // QT_NO_JSONDB
-
     if (timer == 0) {
         timer = new QTimer;
         timer->setInterval(2000);
@@ -434,18 +390,6 @@ void QDeviceInfoPrivate::connectNotify(const QMetaMethod &signal)
 
 void QDeviceInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
-#if !defined(QT_NO_JSONDB)
-    static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::activatedLocksChanged);
-    static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::enabledLocksChanged);
-    if ((signal == activatedLocksChangedSignal
-         || signal == enabledLocksChangedSignal)
-            && jsondbWrapper) {
-        QMetaMethod sourceSignal = proxyToSourceSignal(signal, jsondbWrapper);
-        disconnect(jsondbWrapper, sourceSignal, this, signal);
-        return;
-    }
-#endif // QT_NO_JSONDB
-
     static const QMetaMethod thermalStateChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoPrivate::thermalStateChanged);
     if (signal == thermalStateChangedSignal) {
         watchThermalState = false;

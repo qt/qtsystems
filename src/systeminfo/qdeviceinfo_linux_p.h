@@ -65,10 +65,6 @@ QT_BEGIN_NAMESPACE
 
 class QTimer;
 
-#if !defined(QT_NO_JSONDB)
-class QJsonDbWrapper;
-#endif // QT_NO_JSONDB
-
 #if !defined(QT_NO_OFONO)
 class QOfonoWrapper;
 #endif // QT_NO_OFONO
@@ -93,10 +89,6 @@ public:
     QString version(QDeviceInfo::Version type);
 
 Q_SIGNALS:
-#if !defined(QT_NO_JSONDB)
-    void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
-    void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
-#endif // QT_NO_JSONDB
     void thermalStateChanged(QDeviceInfo::ThermalState state);
 
 protected:
@@ -127,9 +119,6 @@ private:
 
     QDeviceInfo::ThermalState getThermalState();
 
-#if !defined(QT_NO_JSONDB)
-    QJsonDbWrapper *jsondbWrapper;
-#endif // QT_NO_JSONDB
 #if !defined(QT_NO_OFONO)
     QOfonoWrapper *ofonoWrapper;
 #endif // QT_NO_OFONO

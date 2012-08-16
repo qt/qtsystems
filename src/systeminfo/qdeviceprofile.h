@@ -83,10 +83,6 @@ Q_SIGNALS:
     void voiceRingtoneVolumeChanged(int volume);
     void currentProfileTypeChanged(QDeviceProfile::ProfileType profile);
 
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-
 private:
     Q_DISABLE_COPY(QDeviceProfile)
     QDeviceProfilePrivate * const d_ptr;

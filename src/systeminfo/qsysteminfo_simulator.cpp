@@ -43,10 +43,6 @@
 #include "qsysteminfobackend_simulator_p.h"
 #include "qsysteminfoconnection_simulator_p.h"
 
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-#  include "qdeviceinfo_linux_p.h"
-#endif
-
 #if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
 #  include "qnetworkinfo_linux_p.h"
 #endif
@@ -206,18 +202,12 @@ QDeviceInfoSimulator::QDeviceInfoSimulator(QDeviceInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
     , deviceInfoSimulatorBackend(QDeviceInfoSimulatorBackend::getSimulatorBackend())
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-    , d_ptr(new QDeviceInfoPrivate())
-#endif
 {
     SystemInfoConnection::ensureSimulatorConnection();
 }
 
 QDeviceInfoSimulator::~QDeviceInfoSimulator()
 {
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-    delete d_ptr;
-#endif
 }
 
 bool QDeviceInfoSimulator::hasFeature(QDeviceInfo::Feature feature)
@@ -230,28 +220,16 @@ bool QDeviceInfoSimulator::hasFeature(QDeviceInfo::Feature feature)
 
 QDeviceInfo::LockTypeFlags QDeviceInfoSimulator::activatedLocks()
 {
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-    if (d_ptr)
-        return d_ptr->activatedLocks();
-#else
-
     if (deviceInfoSimulatorBackend)
         return deviceInfoSimulatorBackend->getActivatedLocks();
-#endif
 
     return QDeviceInfo::NoLock;
 }
 
 QDeviceInfo::LockTypeFlags QDeviceInfoSimulator::enabledLocks()
 {
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-    if (d_ptr)
-        return d_ptr->enabledLocks();
-#else
-
     if (deviceInfoSimulatorBackend)
         return deviceInfoSimulatorBackend->getEnabledLocks();
-#endif
 
     return QDeviceInfo::NoLock;
 }
@@ -314,14 +292,8 @@ QString QDeviceInfoSimulator::uniqueDeviceID()
 
 QString QDeviceInfoSimulator::version(QDeviceInfo::Version type)
 {
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-    if (d_ptr)
-        return d_ptr->version(type);
-#else
-
     if (deviceInfoSimulatorBackend)
         return deviceInfoSimulatorBackend->getVersion(type);
-#endif
 
     return QString();
 }
@@ -332,21 +304,12 @@ void QDeviceInfoSimulator::connectNotify(const QMetaMethod &signal)
     static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::enabledLocksChanged);
     static const QMetaMethod thermalStateChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::thermalStateChanged);
 
-    if (signal == activatedLocksChangedSignal
-            || signal == enabledLocksChangedSignal) {
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-        if (d_ptr) {
-            QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-            connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
-        }
-        return;
-#else
+    if (signal == activatedLocksChangedSignal || signal == enabledLocksChangedSignal) {
         if (deviceInfoSimulatorBackend) {
             QMetaMethod sourceSignal = proxyToSourceSignal(signal, deviceInfoSimulatorBackend);
             connect(deviceInfoSimulatorBackend, sourceSignal, this, signal);
         }
         return;
-#endif
     }
 
     if (deviceInfoSimulatorBackend && signal == thermalStateChangedSignal) {
@@ -361,21 +324,12 @@ void QDeviceInfoSimulator::disconnectNotify(const QMetaMethod &signal)
     static const QMetaMethod enabledLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::enabledLocksChanged);
     static const QMetaMethod thermalStateChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::thermalStateChanged);
 
-    if (signal == activatedLocksChangedSignal
-            || signal == enabledLocksChangedSignal) {
-#if defined(Q_OS_LINUX) && !defined(QT_NO_JSONDB)
-        if (d_ptr) {
-            QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-            disconnect(d_ptr, sourceSignal, this, signal);
-        }
-        return;
-#else
+    if (signal == activatedLocksChangedSignal || signal == enabledLocksChangedSignal) {
         if (deviceInfoSimulatorBackend) {
             QMetaMethod sourceSignal = proxyToSourceSignal(signal, deviceInfoSimulatorBackend);
             disconnect(deviceInfoSimulatorBackend, sourceSignal, this, signal);
         }
         return;
-#endif
     }
 
     if (deviceInfoSimulatorBackend && signal == thermalStateChangedSignal) {

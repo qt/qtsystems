@@ -41,10 +41,6 @@
 
 #include "qdisplayinfo_linux_p.h"
 
-#if !defined(QT_NO_JSONDB)
-#include "qjsondbwrapper_p.h"
-#endif // QT_NO_JSONDB
-
 #include <QtCore/qdir.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmetaobject.h>
@@ -56,10 +52,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(const QString, GRAPHICS_SYSFS_PATH, (QStringLiteral("/
 
 QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
     : q_ptr(parent)
-#if !defined(QT_NO_JSONDB)
-    , backlightStateWatcher(false)
-    , jsondbWrapper(0)
-#endif // QT_NO_JSONDB
 {
 }
 
@@ -106,23 +98,6 @@ int QDisplayInfoPrivate::contrast(int screen)
 
 QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
 {
-#if !defined(QT_NO_JSONDB)
-    if (backlightStates.size() == 0)
-        initScreenMap();
-    if (backlightStates[screen] == QDisplayInfo::BacklightUnknown) {
-        int actualBrightness = brightness(screen);
-
-        if (actualBrightness > 0)
-            backlightStates[screen] = QDisplayInfo::BacklightOn;
-        else if (actualBrightness == 0)
-            backlightStates[screen] = QDisplayInfo::BacklightOff;
-        if (!jsondbWrapper) {
-            jsondbWrapper = new QJsonDbWrapper(this);
-            connect(jsondbWrapper, SIGNAL(backlightStateChanged(int, QDisplayInfo::BacklightState)), this, SLOT(onBacklightStateChanged(int, QDisplayInfo::BacklightState)) , Qt::UniqueConnection);
-        }
-    }
-    return backlightStates[screen];
-#else
     int actualBrightness = brightness(screen);
 
     if (actualBrightness > 0)
@@ -131,44 +106,6 @@ QDisplayInfo::BacklightState QDisplayInfoPrivate::backlightState(int screen)
         return QDisplayInfo::BacklightOff;
     else
         return QDisplayInfo::BacklightUnknown;
-#endif // QT_NO_JSONDB
 }
-
-
-#if !defined(QT_NO_JSONDB)
-void QDisplayInfoPrivate::initScreenMap()
-{
-    const QStringList dirs = QDir(*GRAPHICS_SYSFS_PATH()).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (int i = 0; i < dirs.size(); i++)
-       backlightStates.insert(i, QDisplayInfo::BacklightUnknown);
-}
-
-void QDisplayInfoPrivate::onBacklightStateChanged(int screen, QDisplayInfo::BacklightState state)
-{
-    if (backlightStates[screen] != state) {
-        backlightStates[screen] = state;
-        if (backlightStateWatcher)
-           emit backlightStateChanged(screen, state);
-    }
-}
-
-void QDisplayInfoPrivate::connectNotify(const QMetaMethod &signal)
-{
-    static const QMetaMethod backlightStateChangedSignal = QMetaMethod::fromSignal(&QDisplayInfoPrivate::backlightStateChanged);
-    if (!backlightStateWatcher && signal == backlightStateChangedSignal) {
-       backlightStateWatcher = true;
-       if (backlightStates.size() == 0)
-          backlightState(0);
-    }
-}
-
-void QDisplayInfoPrivate::disconnectNotify(const QMetaMethod &signal)
-{
-    static const QMetaMethod backlightStateChangedSignal = QMetaMethod::fromSignal(&QDisplayInfoPrivate::backlightStateChanged);
-    if (signal == backlightStateChangedSignal && jsondbWrapper) {
-        backlightStateWatcher = false;
-    }
-}
-#endif // QT_NO_JSONDB
 
 QT_END_NAMESPACE

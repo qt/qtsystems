@@ -41,9 +41,6 @@
 
 #include <qdeviceprofile.h>
 
-#if defined(Q_OS_LINUX)
-#  include "qdeviceprofile_linux_p.h"
-#else
 QT_BEGIN_NAMESPACE
 class QDeviceProfilePrivate
 {
@@ -56,7 +53,6 @@ public:
     QDeviceProfile::ProfileType currentProfileType() { return QDeviceProfile::UnknownProfile; }
 };
 QT_END_NAMESPACE
-#endif
 
 #include <QtCore/qmetaobject.h>
 
@@ -165,38 +161,6 @@ int QDeviceProfile::voiceRingtoneVolume() const
 QDeviceProfile::ProfileType QDeviceProfile::currentProfileType() const
 {
     return d_ptr->currentProfileType();
-}
-
-extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
-
-/*!
-    \internal
-*/
-void QDeviceProfile::connectNotify(const QMetaMethod &signal)
-{
-#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
-    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
-#else
-    Q_UNUSED(signal)
-#endif
-}
-
-/*!
-    \internal
-*/
-void QDeviceProfile::disconnectNotify(const QMetaMethod &signal)
-{
-#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
-    // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (isSignalConnected(signal))
-        return;
-
-    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-    disconnect(d_ptr, sourceSignal, this, signal);
-#else
-    Q_UNUSED(signal)
-#endif
 }
 
 QT_END_NAMESPACE

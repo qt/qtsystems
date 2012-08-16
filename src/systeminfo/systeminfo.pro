@@ -72,22 +72,13 @@ linux-*: !simulator: {
                qstorageinfo_linux.cpp \
                qbatteryinfo_linux.cpp \
                qnetworkinfo_linux.cpp \
-               qscreensaver_linux.cpp \
-               qdeviceprofile_linux.cpp
+               qscreensaver_linux.cpp
 
     x11|config_x11 {
         CONFIG += link_pkgconfig
         PKGCONFIG += x11
     } else: {
         DEFINES += QT_NO_X11
-    }
-
-    contains(QT_CONFIG, jsondb): {
-        QT +=  jsondb
-        PRIVATE_HEADERS += qjsondbwrapper_p.h
-        SOURCES += qjsondbwrapper.cpp
-    } else: {
-        DEFINES += QT_NO_JSONDB
     }
 
     config_bluez {
@@ -165,7 +156,6 @@ simulator {
 
         SOURCES += qdisplayinfo_linux.cpp \
                    qscreensaver_linux.cpp \
-                   qdeviceprofile_linux.cpp \
                    qstorageinfo_linux.cpp
 
         x11|config_x11 {
@@ -173,17 +163,6 @@ simulator {
             PKGCONFIG += x11
         } else: {
             DEFINES += QT_NO_X11
-        }
-
-        contains(QT_CONFIG, jsondb): {
-            QT +=  jsondb
-            PRIVATE_HEADERS += qjsondbwrapper_p.h \
-                               qdeviceinfo_linux_p.h
-
-            SOURCES += qjsondbwrapper.cpp \
-                       qdeviceinfo_linux.cpp
-        } else: {
-            DEFINES += QT_NO_JSONDB
         }
 
         config_bluez {
