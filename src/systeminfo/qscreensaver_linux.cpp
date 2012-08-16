@@ -41,36 +41,20 @@
 
 #include "qscreensaver_linux_p.h"
 
-#if !defined(QT_NO_MTLIB)
-#include <mt-client/notionclient.h>
-#include <QtCore/qtimer.h>
-#endif // QT_NO_MTLIB
-
 #if !defined(QT_NO_X11)
 #include <X11/Xlib.h>
 #endif // QT_NO_X11
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_MTLIB)
-const int QScreenSaverPrivate::notionDuration(25);
-#endif // QT_NO_MTLIB
-
 QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     : q_ptr(parent)
-#if !defined(QT_NO_MTLIB)
-    , notionClient(0)
-    , timer(0)
-    , isScreenSaverEnabled(true)
-#endif // QT_NO_MTLIB
 {
 }
 
 bool QScreenSaverPrivate::screenSaverEnabled()
 {
-#if !defined(QT_NO_MTLIB)
-    return isScreenSaverEnabled;
-#elif !defined(QT_NO_X11)
+#if !defined(QT_NO_X11)
     int timeout = 0;
     int interval = 0;
     int preferBlanking = 0;
@@ -86,29 +70,7 @@ bool QScreenSaverPrivate::screenSaverEnabled()
 
 void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-#if !defined(QT_NO_MTLIB)
-    if (enabled != isScreenSaverEnabled) {
-        if (enabled) {
-            if (notionClient && timer) {
-                notionClient->mediaPlaying(false);
-                timer->stop();
-            }
-            isScreenSaverEnabled = true;
-        } else {
-            if (!notionClient)
-                notionClient = new NotionClient(this);
-            if (!timer) {
-                timer = new QTimer(this);
-                timer->setInterval((notionDuration - 2) * 1000);
-                connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
-            }
-            if (!timer->isActive())
-                timer->start();
-            onTimeout();
-            isScreenSaverEnabled = false;
-        }
-    }
-#elif !defined(QT_NO_X11)
+#if !defined(QT_NO_X11)
     int timeout = 0;
     int interval = 0;
     int preferBlanking = 0;
@@ -126,12 +88,5 @@ void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
     Q_UNUSED(enabled)
 #endif
 }
-
-#if !defined(QT_NO_MTLIB)
-void QScreenSaverPrivate::onTimeout()
-{
-    notionClient->mediaPlaying(true, notionDuration);
-}
-#endif // QT_NO_MTLIB
 
 QT_END_NAMESPACE

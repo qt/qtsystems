@@ -87,14 +87,7 @@ linux-*: !simulator: {
         PRIVATE_HEADERS += qjsondbwrapper_p.h
         SOURCES += qjsondbwrapper.cpp
     } else: {
-        DEFINES += QT_NO_JSONDB QT_NO_MTLIB
-    }
-
-    mtlib|config_mtlib {
-        CONFIG += link_pkgconfig
-        PKGCONFIG += mt-client
-    } else: {
-        DEFINES += QT_NO_MTLIB
+        DEFINES += QT_NO_JSONDB
     }
 
     config_bluez {
@@ -190,14 +183,7 @@ simulator {
             SOURCES += qjsondbwrapper.cpp \
                        qdeviceinfo_linux.cpp
         } else: {
-            DEFINES += QT_NO_JSONDB QT_NO_MTLIB
-        }
-
-        mtlib|config_mtlib {
-            CONFIG += link_pkgconfig
-            PKGCONFIG += mt-client
-        } else: {
-            DEFINES += QT_NO_MTLIB
+            DEFINES += QT_NO_JSONDB
         }
 
         config_bluez {
