@@ -34,7 +34,7 @@ unix {
     }
 
     contains(QT_CONFIG,jsondb) {
-        QT_PRIVATE += jsondb
+        QT_FOR_PRIVATE += jsondb
 
         PRIVATE_HEADERS += jsondblayer_p.h
         SOURCES += jsondblayer.cpp

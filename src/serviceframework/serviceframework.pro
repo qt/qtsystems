@@ -3,16 +3,14 @@ load(qt_build_config)
 TARGET = QtServiceFramework
 QT = core
 
-load(qt_module)
-
 sfwdebug {
     DEFINES += QT_SFW_IPC_DEBUG
-    QT += network
+    QT_PRIVATE += network
 }
 
 jsondb {
     DEFINES += QT_NO_DBUS QT_ADDON_JSONDB_LIB
-    QT += jsondb
+    QT_FOR_PRIVATE += jsondb
 }
 
 include(ipc/ipc.pri)
@@ -47,7 +45,7 @@ jsondb {
     SOURCES += databasemanager_jsondb.cpp
     PRIVATE_HEADERS += databasemanager_jsondb_p.h
 } else {
-    QT += sql
+    QT_FOR_PRIVATE += sql
     SOURCES += servicedatabase.cpp \
         databasemanager.cpp
     PRIVATE_HEADERS += servicedatabase_p.h \
@@ -60,6 +58,7 @@ HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS \
     qservicereply_p.h \
     qservicerequest_p.h
 
+load(qt_module)
 
 # Enable doc submodule doc builds
 include (../../doc/config/serviceframework/qtserviceframework_doc.pri)

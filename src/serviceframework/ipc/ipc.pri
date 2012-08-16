@@ -25,7 +25,7 @@ equals(SFW_BACKEND,unix) {
         ipc/objectendpoint.cpp
 } else:equals(SFW_BACKEND,dbus) {
     DEFINES += SFW_USE_DBUS_BACKEND
-    QT += dbus \
+    QT_FOR_PRIVATE += dbus \
         network
     PRIVATE_HEADERS += ipc/qremoteserviceregister_dbus_p.h \
         ipc/objectendpoint_dbus_p.h \
@@ -35,7 +35,7 @@ equals(SFW_BACKEND,unix) {
         ipc/qservicemetaobject_dbus.cpp
 } else:equals(SFW_BACKEND,localsocket) {
     DEFINES += SFW_USE_LOCALSOCKET_BACKEND
-    QT += network
+    QT_FOR_PRIVATE += network
     PRIVATE_HEADERS += ipc/qremoteserviceregister_ls_p.h \
         ipc/objectendpoint_p.h
     SOURCES += ipc/qremoteserviceregister_ls_p.cpp \

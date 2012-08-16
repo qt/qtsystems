@@ -3,8 +3,6 @@ load(qt_build_config)
 TARGET = QtSystemInfo
 QT = core gui network
 
-load(qt_module)
-
 PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qdeviceinfo.h \
                  qdisplayinfo.h \
@@ -49,16 +47,6 @@ win32: !simulator: {
 }
 
 linux-*: !simulator: {
-    # bluetooth.h is not standards compliant
-    contains(QMAKE_CXXFLAGS, -std=c++0x) {
-        QMAKE_CXXFLAGS -= -std=c++0x
-        QMAKE_CXXFLAGS += -std=gnu++0x
-        CONFIG -= c++11
-    }
-    c++11 {
-        CONFIG -= c++11
-        QMAKE_CXXFLAGS += -std=gnu++0x
-    }
     PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
                        qdisplayinfo_linux_p.h \
                        qstorageinfo_linux_p.h \
@@ -89,7 +77,7 @@ linux-*: !simulator: {
     }
 
     contains(QT_CONFIG, sfw_netreg) {
-        QT += serviceframework
+        QT_FOR_PRIVATE += serviceframework
         PRIVATE_HEADERS += qnetworkservicewrapper_p.h
         SOURCES += qnetworkservicewrapper.cpp
     } else {
@@ -98,7 +86,7 @@ linux-*: !simulator: {
 
     contains(QT_CONFIG, dbus): {
         config_ofono:!contains(QT_CONFIG, sfw_netreg) {
-            QT += dbus
+            QT_FOR_PRIVATE += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h
             SOURCES += qofonowrapper.cpp
         } else {
@@ -106,7 +94,7 @@ linux-*: !simulator: {
         }
 
         config_udisks {
-            QT += dbus
+            QT_PRIVATE += dbus
         } else: {
             DEFINES += QT_NO_UDISKS
         }
@@ -134,7 +122,7 @@ linux-*: !simulator: {
 }
 
 simulator {
-    QT += simulator
+    QT_PRIVATE += simulator
     DEFINES += QT_SIMULATOR
     PRIVATE_HEADERS += qsysteminfodata_simulator_p.h \
                        qsysteminfobackend_simulator_p.h \
@@ -173,7 +161,7 @@ simulator {
         }
 
         contains(QT_CONFIG, sfw_netreg) {
-            QT += serviceframework
+            QT_PRIVATE += serviceframework
             PRIVATE_HEADERS += qnetworkservicewrapper_p.h \
                                qnetworkinfo_linux_p.h
 
@@ -185,7 +173,7 @@ simulator {
 
         contains(QT_CONFIG, dbus): {
             config_ofono:!contains(QT_CONFIG, sfw_netreg) {
-            QT += dbus
+                QT_PRIVATE += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h \
                                qnetworkinfo_linux_p.h
 
@@ -195,7 +183,7 @@ simulator {
                 DEFINES += QT_NO_OFONO
             }
             contains(config_test_udisks, yes): {
-                QT += dbus
+                QT_PRIVATE += dbus
             } else: {
                 DEFINES += QT_NO_UDISKS
             }
@@ -225,6 +213,21 @@ simulator {
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
+load(qt_module)
+
+# This must be done after loading qt_module.prf
+config_bluez {
+    # bluetooth.h is not standards compliant
+    contains(QMAKE_CXXFLAGS, -std=c++0x) {
+        QMAKE_CXXFLAGS -= -std=c++0x
+        QMAKE_CXXFLAGS += -std=gnu++0x
+        CONFIG -= c++11
+    }
+    c++11 {
+        CONFIG -= c++11
+        QMAKE_CXXFLAGS += -std=gnu++0x
+    }
+}
 
 # Enable doc submodule doc builds
 include (../../doc/config/systeminfo/qtsysteminfo_doc.pri)
