@@ -66,9 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QTimer;
 
-#if !defined(QT_NO_SFW_NETREG)
-class QNetworkServiceWrapper;
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
 class QOfonoWrapper;
 #endif
 
@@ -148,9 +146,7 @@ private:
 
     QTimer *timer;
 
-#if !defined(QT_NO_SFW_NETREG)
-    QNetworkServiceWrapper *networkServiceWrapper;
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     QOfonoWrapper *ofonoWrapper;
 #endif
 

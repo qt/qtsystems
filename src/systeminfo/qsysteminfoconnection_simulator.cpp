@@ -170,7 +170,7 @@ void SystemInfoConnection::setNetworkInfoData(const QNetworkInfoData &data)
         }
     }
 
-#if defined(QT_NO_SFW_NETREG) && defined(QT_NO_OFONO)
+#if defined(QT_NO_OFONO)
     actualCount = networkInfoBackend->getNetworkInterfaceCount(QNetworkInfo::EthernetMode);
     newCount = data.ethernetInfo.count();
     if (newCount < actualCount) {
@@ -234,7 +234,7 @@ void SystemInfoConnection::setNetworkInfoData(const QNetworkInfoData &data)
         networkInfoBackend->setNetworkMacAddress(QNetworkInfo::WlanMode, i, data.wLanInfo[i].macAddress);
     }
 
-#if defined(QT_NO_SFW_NETREG) && defined(QT_NO_OFONO)
+#if defined(QT_NO_OFONO)
     for (int i = 0; i < data.ethernetInfo.count(); i++) {
         networkInfoBackend->setNetworkName(QNetworkInfo::EthernetMode, i, data.ethernetInfo[i].basicNetworkInfo.name);
         networkInfoBackend->setNetworkSignalStrength(QNetworkInfo::EthernetMode, i, data.ethernetInfo[i].basicNetworkInfo.signalStrength);

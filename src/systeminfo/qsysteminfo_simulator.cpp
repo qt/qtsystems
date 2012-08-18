@@ -43,7 +43,7 @@
 #include "qsysteminfobackend_simulator_p.h"
 #include "qsysteminfoconnection_simulator_p.h"
 
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
 #  include "qnetworkinfo_linux_p.h"
 #endif
 
@@ -344,7 +344,7 @@ QNetworkInfoSimulator::QNetworkInfoSimulator(QNetworkInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
     , networkInfoSimulatorBackend(QNetworkInfoSimulatorBackend::getSimulatorBackend())
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     , d_ptr(new QNetworkInfoPrivate())
 #endif
 {
@@ -353,14 +353,14 @@ QNetworkInfoSimulator::QNetworkInfoSimulator(QNetworkInfo *parent)
 
 QNetworkInfoSimulator::~QNetworkInfoSimulator()
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     delete d_ptr;
 #endif
 }
 
 int QNetworkInfoSimulator::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (mode != QNetworkInfo::WlanMode) {
         if (d_ptr)
             return d_ptr->networkInterfaceCount(mode);
@@ -375,7 +375,7 @@ int QNetworkInfoSimulator::networkInterfaceCount(QNetworkInfo::NetworkMode mode)
 
 int QNetworkInfoSimulator::networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (mode != QNetworkInfo::WlanMode) {
         if (d_ptr)
             return d_ptr->networkSignalStrength(mode, interface);
@@ -390,7 +390,7 @@ int QNetworkInfoSimulator::networkSignalStrength(QNetworkInfo::NetworkMode mode,
 
 QNetworkInfo::CellDataTechnology QNetworkInfoSimulator::currentCellDataTechnology(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
         if (d_ptr)
             return d_ptr->currentCellDataTechnology(interface);
         else
@@ -406,7 +406,7 @@ QNetworkInfo::NetworkMode QNetworkInfoSimulator::currentNetworkMode()
     QNetworkInfo::NetworkMode mode = QNetworkInfo::UnknownMode;
     if (networkInfoSimulatorBackend)
         mode = networkInfoSimulatorBackend->getCurrentNetworkMode();
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     QNetworkInfo::NetworkMode mode2 = QNetworkInfo::UnknownMode;
         if (d_ptr)
             mode2 = d_ptr->currentNetworkMode();
@@ -426,7 +426,7 @@ QNetworkInfo::NetworkMode QNetworkInfoSimulator::currentNetworkMode()
 
 QNetworkInfo::NetworkStatus QNetworkInfoSimulator::networkStatus(QNetworkInfo::NetworkMode mode, int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (mode != QNetworkInfo::WlanMode) {
         if (d_ptr)
             return d_ptr->networkStatus(mode, interface);
@@ -442,7 +442,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoSimulator::networkStatus(QNetworkInfo::N
 #ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkInfoSimulator::interfaceForMode(QNetworkInfo::NetworkMode mode, int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (mode != QNetworkInfo::WlanMode) {
         if (d_ptr)
             return d_ptr->interfaceForMode(mode, interface);
@@ -458,7 +458,7 @@ QNetworkInterface QNetworkInfoSimulator::interfaceForMode(QNetworkInfo::NetworkM
 
 QString QNetworkInfoSimulator::cellId(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (d_ptr)
         return d_ptr->cellId(interface);
     else
@@ -471,7 +471,7 @@ QString QNetworkInfoSimulator::cellId(int interface)
 
 QString QNetworkInfoSimulator::currentMobileCountryCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (d_ptr)
         return d_ptr->currentMobileCountryCode(interface);
     else
@@ -484,7 +484,7 @@ QString QNetworkInfoSimulator::currentMobileCountryCode(int interface)
 
 QString QNetworkInfoSimulator::currentMobileNetworkCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (d_ptr)
         return d_ptr->currentMobileNetworkCode(interface);
     else
@@ -497,7 +497,7 @@ QString QNetworkInfoSimulator::currentMobileNetworkCode(int interface)
 
 QString QNetworkInfoSimulator::homeMobileCountryCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (d_ptr)
         return d_ptr->homeMobileCountryCode(interface);
     else
@@ -510,7 +510,7 @@ QString QNetworkInfoSimulator::homeMobileCountryCode(int interface)
 
 QString QNetworkInfoSimulator::homeMobileNetworkCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (d_ptr)
         return d_ptr->homeMobileNetworkCode(interface);
     else
@@ -523,7 +523,7 @@ QString QNetworkInfoSimulator::homeMobileNetworkCode(int interface)
 
 QString QNetworkInfoSimulator::imsi(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (d_ptr)
         return d_ptr->imsi(interface);
     else
@@ -536,7 +536,7 @@ QString QNetworkInfoSimulator::imsi(int interface)
 
 QString QNetworkInfoSimulator::locationAreaCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (d_ptr)
         return d_ptr->locationAreaCode(interface);
     else
@@ -549,7 +549,7 @@ QString QNetworkInfoSimulator::locationAreaCode(int interface)
 
 QString QNetworkInfoSimulator::macAddress(QNetworkInfo::NetworkMode mode, int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (mode != QNetworkInfo::WlanMode) {
         if (d_ptr)
             return d_ptr->macAddress(mode, interface);
@@ -564,7 +564,7 @@ QString QNetworkInfoSimulator::macAddress(QNetworkInfo::NetworkMode mode, int in
 
 QString QNetworkInfoSimulator::networkName(QNetworkInfo::NetworkMode mode, int interface)
 {
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (mode != QNetworkInfo::WlanMode) {
         if (d_ptr)
             return d_ptr->networkName(mode, interface);
@@ -585,7 +585,7 @@ void QNetworkInfoSimulator::connectNotify(const QMetaMethod &signal)
     static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkSignalStrengthChanged);
     static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkStatusChanged);
 
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (signal == networkInterfaceCountChangedSignal) {
         if (networkInfoSimulatorBackend)
             connect(networkInfoSimulatorBackend, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), Qt::UniqueConnection);
@@ -632,7 +632,7 @@ void QNetworkInfoSimulator::disconnectNotify(const QMetaMethod &signal)
     static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkSignalStrengthChanged);
     static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoSimulator::networkStatusChanged);
 
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (signal == networkInterfaceCountChangedSignal) {
         if (networkInfoSimulatorBackend)
             disconnect(networkInfoSimulatorBackend, SIGNAL(networkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)), this, SLOT(onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode,int)));
@@ -671,7 +671,7 @@ void QNetworkInfoSimulator::disconnectNotify(const QMetaMethod &signal)
     }
 }
 
-#if !defined(QT_NO_SFW_NETREG) || !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
 
 void QNetworkInfoSimulator::onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode mode)
 {

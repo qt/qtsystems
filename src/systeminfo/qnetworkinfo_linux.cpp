@@ -41,9 +41,7 @@
 
 #include "qnetworkinfo_linux_p.h"
 
-#if !defined(QT_NO_SFW_NETREG)
-#include "qnetworkservicewrapper_p.h"
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
 #include "qofonowrapper_p.h"
 #endif
 
@@ -86,9 +84,7 @@ QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     , watchNetworkStatus(false)
     , watchNetworkName(false)
     , timer(0)
-#if !defined(QT_NO_SFW_NETREG)
-    , networkServiceWrapper(0)
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     , ofonoWrapper(0)
 #endif
 #if !defined(QT_NO_UDEV)
@@ -132,11 +128,7 @@ int QNetworkInfoPrivate::networkSignalStrength(QNetworkInfo::NetworkMode mode, i
 
 QNetworkInfo::CellDataTechnology QNetworkInfoPrivate::currentCellDataTechnology(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getCurrentCellDataTechnology(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -212,13 +204,7 @@ QNetworkInterface QNetworkInfoPrivate::interfaceForMode(QNetworkInfo::NetworkMod
 
 QString QNetworkInfoPrivate::cellId(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    QString cellId = networkServiceWrapper->getCellId(interface);
-    if (cellId.toInt() != 0)
-       return cellId;
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -237,11 +223,7 @@ QString QNetworkInfoPrivate::cellId(int interface)
 
 QString QNetworkInfoPrivate::currentMobileCountryCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getCurrentMcc(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -260,11 +242,7 @@ QString QNetworkInfoPrivate::currentMobileCountryCode(int interface)
 
 QString QNetworkInfoPrivate::currentMobileNetworkCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getCurrentMnc(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -283,11 +261,7 @@ QString QNetworkInfoPrivate::currentMobileNetworkCode(int interface)
 
 QString QNetworkInfoPrivate::homeMobileCountryCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getHomeMcc(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -306,11 +280,7 @@ QString QNetworkInfoPrivate::homeMobileCountryCode(int interface)
 
 QString QNetworkInfoPrivate::homeMobileNetworkCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getHomeMnc(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -329,11 +299,7 @@ QString QNetworkInfoPrivate::homeMobileNetworkCode(int interface)
 
 QString QNetworkInfoPrivate::imsi(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getImsi(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -352,11 +318,7 @@ QString QNetworkInfoPrivate::imsi(int interface)
 
 QString QNetworkInfoPrivate::locationAreaCode(int interface)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    return networkServiceWrapper->getLac(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -458,14 +420,7 @@ extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 
 void QNetworkInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    {
-        QMetaMethod sourceSignal = proxyToSourceSignal(signal, networkServiceWrapper);
-        connect(networkServiceWrapper, sourceSignal, this, signal, Qt::UniqueConnection);
-    }
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -572,12 +527,7 @@ void QNetworkInfoPrivate::connectNotify(const QMetaMethod &signal)
 
 void QNetworkInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (networkServiceWrapper) {
-        QMetaMethod sourceSignal = proxyToSourceSignal(signal, networkServiceWrapper);
-        disconnect(networkServiceWrapper, sourceSignal, this, signal);
-    }
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (!QOfonoWrapper::isOfonoAvailable() || !ofonoWrapper)
         return;
 
@@ -743,11 +693,7 @@ int QNetworkInfoPrivate::getNetworkInterfaceCount(QNetworkInfo::NetworkMode mode
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
     case QNetworkInfo::TdscdmaMode:
-#if !defined(QT_NO_SFW_NETREG)
-        if (!networkServiceWrapper)
-            networkServiceWrapper = new QNetworkServiceWrapper(this);
-        return networkServiceWrapper->getNetworkInterfaceCount();
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
@@ -811,11 +757,7 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
     case QNetworkInfo::TdscdmaMode:
-#if !defined(QT_NO_SFW_NETREG)
-        if (!networkServiceWrapper)
-            networkServiceWrapper = new QNetworkServiceWrapper(this);
-        return networkServiceWrapper->getSignalStrength(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
@@ -880,13 +822,6 @@ int QNetworkInfoPrivate::getNetworkSignalStrength(QNetworkInfo::NetworkMode mode
 
 QNetworkInfo::NetworkMode QNetworkInfoPrivate::getCurrentNetworkMode()
 {
-#if !defined(QT_NO_SFW_NETREG)
-    if (!networkServiceWrapper)
-        networkServiceWrapper = new QNetworkServiceWrapper(this);
-    QNetworkInfo::NetworkMode modeInHome = networkServiceWrapper->getCurrentNetworkMode(QNetworkInfo::HomeNetwork);
-    QNetworkInfo::NetworkMode modeInRoaming = networkServiceWrapper->getCurrentNetworkMode(QNetworkInfo::Roaming);
-#endif // QT_NO_SFW_NETREG
-
     // TODO multiple-interface support
     if (networkStatus(QNetworkInfo::EthernetMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::EthernetMode;
@@ -896,10 +831,6 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::getCurrentNetworkMode()
         return QNetworkInfo::BluetoothMode;
     else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::WimaxMode;
-#if !defined(QT_NO_SFW_NETREG)
-    else if (modeInHome != QNetworkInfo::UnknownMode)
-        return modeInHome;
-#else
     else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::LteMode;
     else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::HomeNetwork)
@@ -910,13 +841,8 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::getCurrentNetworkMode()
         return QNetworkInfo::GsmMode;
     else if (networkStatus(QNetworkInfo::TdscdmaMode, 0) == QNetworkInfo::HomeNetwork)
         return QNetworkInfo::TdscdmaMode;
-#endif // QT_NO_SFW_NETREG
     else if (networkStatus(QNetworkInfo::WimaxMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::WimaxMode;
-#if !defined(QT_NO_SFW_NETREG)
-    else if (modeInRoaming != QNetworkInfo::UnknownMode)
-        return modeInRoaming;
-#else
     else if (networkStatus(QNetworkInfo::LteMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::LteMode;
     else if (networkStatus(QNetworkInfo::WcdmaMode, 0) == QNetworkInfo::Roaming)
@@ -927,7 +853,6 @@ QNetworkInfo::NetworkMode QNetworkInfoPrivate::getCurrentNetworkMode()
         return QNetworkInfo::GsmMode;
     else if (networkStatus(QNetworkInfo::TdscdmaMode, 0) == QNetworkInfo::Roaming)
         return QNetworkInfo::TdscdmaMode;
-#endif // QT_NO_SFW_NETREG
     else
         return QNetworkInfo::UnknownMode;
 }
@@ -1006,11 +931,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
     case QNetworkInfo::TdscdmaMode:
-#if !defined(QT_NO_SFW_NETREG)
-        if (!networkServiceWrapper)
-            networkServiceWrapper = new QNetworkServiceWrapper(this);
-        return networkServiceWrapper->getNetworkStatus(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);
@@ -1101,11 +1022,7 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
     case QNetworkInfo::WcdmaMode:
     case QNetworkInfo::LteMode:
     case QNetworkInfo::TdscdmaMode:
-#if !defined(QT_NO_SFW_NETREG)
-        if (!networkServiceWrapper)
-            networkServiceWrapper = new QNetworkServiceWrapper(this);
-        return networkServiceWrapper->getOperatorName(interface);
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
         if (QOfonoWrapper::isOfonoAvailable()) {
             if (!ofonoWrapper)
                 ofonoWrapper = new QOfonoWrapper(this);

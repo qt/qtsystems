@@ -97,17 +97,9 @@ linux-*: !simulator: {
         DEFINES += QT_NO_BLUEZ
     }
 
-    contains(QT_CONFIG, sfw_netreg) {
-        QT_FOR_PRIVATE += serviceframework
-        PRIVATE_HEADERS += qnetworkservicewrapper_p.h
-        SOURCES += qnetworkservicewrapper.cpp
-    } else {
-        DEFINES += QT_NO_SFW_NETREG
-    }
-
     contains(QT_CONFIG, dbus): {
-        config_ofono:!contains(QT_CONFIG, sfw_netreg) {
-            QT_FOR_PRIVATE += dbus
+        config_ofono: {
+            QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h
             SOURCES += qofonowrapper.cpp
         } else {
@@ -212,20 +204,9 @@ simulator {
             DEFINES += QT_NO_BLUEZ
         }
 
-        contains(QT_CONFIG, sfw_netreg) {
-            QT_PRIVATE += serviceframework
-            PRIVATE_HEADERS += qnetworkservicewrapper_p.h \
-                               qnetworkinfo_linux_p.h
-
-            SOURCES += qnetworkservicewrapper.cpp \
-                       qnetworkinfo_linux.cpp
-        } else {
-            DEFINES += QT_NO_SFW_NETREG
-        }
-
         contains(QT_CONFIG, dbus): {
-            config_ofono:!contains(QT_CONFIG, sfw_netreg) {
-                QT_PRIVATE += dbus
+            config_ofono: {
+            QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h \
                                qnetworkinfo_linux_p.h
 
@@ -282,4 +263,5 @@ config_bluez {
     }
 }
 
-
+# Enable doc submodule doc builds
+include (../../doc/config/systeminfo/qtsysteminfo_doc.pri)
