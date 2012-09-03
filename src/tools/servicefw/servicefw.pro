@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TEMPLATE = app
 TARGET = servicefw
 DESTDIR = $$QT.serviceframework.bins
