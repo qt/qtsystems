@@ -315,10 +315,10 @@ void tst_QServiceInterfaceDescriptor::testStreamOperators()
 #endif //QT_NO_DATASTREAM
 
 #ifndef QT_NO_DEBUG_STREAM
-static QByteArray msg;
+static QString msg;
 static QtMsgType type;
 
-static void customMsgHandler(QtMsgType t, const char* m)
+static void customMsgHandler(QtMsgType t, const QMessageLogContext &, const QString &m)
 {
     msg = m;
     type = t;
@@ -342,11 +342,11 @@ void tst_QServiceInterfaceDescriptor::testDebugStream()
 
     QServiceInterfaceDescriptor invalid;
 
-    qInstallMsgHandler(customMsgHandler);
+    qInstallMessageHandler(customMsgHandler);
     qDebug() << valid2 << invalid;
     QCOMPARE(type, QtDebugMsg);
-    QCOMPARE(QString::fromLatin1(msg.data()),QString::fromLatin1("QServiceInterfaceDescriptor(service=\"name2\", interface=\"interface2 5.6\") QServiceInterfaceDescriptor(invalid) "));
-    qInstallMsgHandler(0);
+    QCOMPARE(msg,QString::fromLatin1("QServiceInterfaceDescriptor(service=\"name2\", interface=\"interface2 5.6\") QServiceInterfaceDescriptor(invalid) "));
+    qInstallMessageHandler(0);
 }
 #endif
 
