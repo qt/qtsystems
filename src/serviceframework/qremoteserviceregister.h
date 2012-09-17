@@ -50,6 +50,7 @@
 #include <QExplicitlySharedDataPointer>
 
 #include "qserviceclientcredentials.h"
+#include "qservice.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -149,6 +150,9 @@ private:
     Entry createEntry(const QString& serviceName,
                     const QString& interfaceName, const QString& version,
                     CreateServiceFunc cptr, const QMetaObject* meta);
+
+    void init();
+    bool event(QEvent *e);
 
     QRemoteServiceRegisterPrivate* d;
 };

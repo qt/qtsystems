@@ -93,9 +93,12 @@ private:
     bool groupIdentifierSet;
 
 public:
+    // These methods apply to IPC services only
     static QObject* proxyForService(const QRemoteServiceRegister::Entry& entry, const QString& location);
     static QRemoteServiceRegisterPrivate* constructPrivateObject(QObject *parent);
     static bool isServiceRunning(const QRemoteServiceRegister::Entry&, const QString& location);
+    // Create a private object based on the service type
+    static QRemoteServiceRegisterPrivate* constructPrivateObject(QService::Type serviceType, QObject *parent);
 };
 
 QT_END_NAMESPACE

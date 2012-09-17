@@ -141,6 +141,18 @@ bool QRemoteServiceRegisterPrivate::isBaseGroupIdentifierSet() const
     return groupIdentifierSet;
 }
 
+QRemoteServiceRegisterPrivate *QRemoteServiceRegisterPrivate::constructPrivateObject(QService::Type serviceType, QObject *parent)
+{
+    QRemoteServiceRegisterPrivate *d = 0;
+    switch (serviceType) {
+    case QService::InterProcess:
+        d = QRemoteServiceRegisterPrivate::constructPrivateObject(parent);
+        break;
+    default:
+        qFatal("Cannot create a QRemoteServiceRegister with unknown service type %d", serviceType);
+    }
+    return d;
+}
 
 #include "moc_qremoteserviceregister_p.cpp"
 QT_END_NAMESPACE

@@ -46,6 +46,7 @@
 #include "qserviceclientcredentials_p.h"
 
 #include <QtCore/QDataStream>
+#include <QtCore/QEvent>
 
 QT_BEGIN_NAMESPACE
 
@@ -293,9 +294,8 @@ QRemoteServiceRegister::InstanceType QRemoteServiceRegister::Entry::instantiatio
 */
 QRemoteServiceRegister::QRemoteServiceRegister(QObject* parent)
     : QObject(parent)
+    , d(0)
 {
-    d = QRemoteServiceRegisterPrivate::constructPrivateObject(this);
-
     connect(InstanceManager::instance(), SIGNAL(allInstancesClosed()),
             this, SIGNAL(allInstancesClosed()));
     connect(InstanceManager::instance(), SIGNAL(instanceClosed(QRemoteServiceRegister::Entry)),
@@ -322,6 +322,7 @@ QRemoteServiceRegister::~QRemoteServiceRegister()
 */
 void QRemoteServiceRegister::publishEntries(const QString& ident)
 {
+    if (!d) init();
     d->publishServices(ident);
 }
 
@@ -332,11 +333,13 @@ void QRemoteServiceRegister::publishEntries(const QString& ident)
 */
 bool QRemoteServiceRegister::quitOnLastInstanceClosed() const
 {
+    if (!d) const_cast<QRemoteServiceRegister*>(this)->init();
     return d->quitOnLastInstanceClosed();
 }
 
 void QRemoteServiceRegister::setQuitOnLastInstanceClosed(bool quit)
 {
+    if (!d) init();
     d->setQuitOnLastInstanceClosed(quit);
 }
 
@@ -350,6 +353,7 @@ void QRemoteServiceRegister::setQuitOnLastInstanceClosed(bool quit)
 
 void QRemoteServiceRegister::setBaseUserIdentifier(qintptr uid)
 {
+    if (!d) init();
     d->setBaseUserIdentifier(uid);
 }
 
@@ -361,6 +365,7 @@ void QRemoteServiceRegister::setBaseUserIdentifier(qintptr uid)
 
 qintptr QRemoteServiceRegister::getBaseUserIdentifier() const
 {
+    if (!d) const_cast<QRemoteServiceRegister*>(this)->init();
     return d->getBaseUserIdentifier();
 }
 
@@ -373,6 +378,7 @@ qintptr QRemoteServiceRegister::getBaseUserIdentifier() const
 
 void QRemoteServiceRegister::setBaseGroupIdentifier(qintptr gid)
 {
+    if (!d) init();
     d->setBaseGroupIdentifier(gid);
 }
 
@@ -384,6 +390,7 @@ void QRemoteServiceRegister::setBaseGroupIdentifier(qintptr gid)
 
 qintptr QRemoteServiceRegister::getBaseGroupIdentifier() const
 {
+    if (!d) const_cast<QRemoteServiceRegister*>(this)->init();
     return d->getBaseGroupIdentifier();
 }
 
@@ -397,6 +404,7 @@ qintptr QRemoteServiceRegister::getBaseGroupIdentifier() const
 
 void QRemoteServiceRegister::setSecurityAccessOptions(SecurityAccessOptions options)
 {
+    if (!d) init();
     d->setSecurityOptions(options);
 }
 
@@ -437,6 +445,7 @@ void QRemoteServiceRegister::setSecurityAccessOptions(SecurityAccessOptions opti
 */
 QRemoteServiceRegister::SecurityFilter QRemoteServiceRegister::setSecurityFilter(QRemoteServiceRegister::SecurityFilter filter)
 {
+    if (!d) init();
     return d->setSecurityFilter(filter);
 }
 
@@ -471,6 +480,23 @@ QRemoteServiceRegister::Entry QRemoteServiceRegister::createEntry(const QString&
     return e;
 }
 
+bool QRemoteServiceRegister::event(QEvent *e)
+{
+    if (!d && e->type() == QEvent::DynamicPropertyChange) {
+        QDynamicPropertyChangeEvent *event = static_cast<QDynamicPropertyChangeEvent*>(e);
+        if (event->propertyName() == QByteArray("serviceType")) {
+            QService::Type serviceType = static_cast<QService::Type>(property("serviceType").toInt());
+            d = QRemoteServiceRegisterPrivate::constructPrivateObject(serviceType, this);
+        }
+    }
+
+    return QObject::event(e);
+}
+
+void QRemoteServiceRegister::init()
+{
+    d = QRemoteServiceRegisterPrivate::constructPrivateObject(this);
+}
 
 #ifndef QT_NO_DATASTREAM
 Q_SERVICEFW_EXPORT QDataStream& operator>>(QDataStream& s, QRemoteServiceRegister::Entry& entry) {
