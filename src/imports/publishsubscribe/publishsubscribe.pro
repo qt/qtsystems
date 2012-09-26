@@ -1,4 +1,5 @@
 QT += qml publishsubscribe core-private
+QT -= gui
 
 SOURCES += publishsubscribe.cpp \
            qdeclarativevaluespacepublisher.cpp \

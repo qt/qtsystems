@@ -1,11 +1,10 @@
 TARGET = QtSystemInfo
 QPRO_PWD = $PWD
 
-QT = core gui network
+QT = core network
 
 PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qdeviceinfo.h \
-                 qdisplayinfo.h \
                  qstorageinfo.h \
                  qscreensaver.h \
                  qbatteryinfo.h \
@@ -13,12 +12,17 @@ PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qdeviceprofile.h
 
 SOURCES += qdeviceinfo.cpp \
-           qdisplayinfo.cpp \
            qstorageinfo.cpp \
            qscreensaver.cpp \
            qbatteryinfo.cpp \
            qnetworkinfo.cpp \
            qdeviceprofile.cpp
+
+!isEmpty(QT.gui.name) {
+    QT += gui
+    PUBLIC_HEADERS += qdisplayinfo.h
+    SOURCES += qdisplayinfo.cpp
+}
 
 win32: !simulator: {
     contains(CONFIG, release) {

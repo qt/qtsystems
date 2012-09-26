@@ -1,4 +1,5 @@
 QT += qml systeminfo
+QT -= gui
 
 HEADERS += \
     qdeclarativebatteryinfo_p.h \
