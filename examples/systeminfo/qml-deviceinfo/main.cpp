@@ -40,4 +40,4 @@
 ****************************************************************************/
 
 #include "../stub.h"
-SYSINFO_EXAMPLE_MAIN(qml-device)
+SYSINFO_EXAMPLE_MAIN(qml-deviceinfo)

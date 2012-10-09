@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = qml-deviceinfo
+TARGET = qml-storageinfo
 QT += quick
 SOURCES = main.cpp
 

@@ -160,7 +160,7 @@ QT += core-private
                 -framework Foundation \
                 -framework IOKit  \
                 -framework QTKit \
-                -framework CoreWlan \
+                -framework CoreWLAN \
                 -framework CoreLocation \
                 -framework CoreFoundation \
                 -framework ScreenSaver \
