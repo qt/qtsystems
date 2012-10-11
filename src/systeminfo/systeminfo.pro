@@ -260,6 +260,8 @@ simulator {
     }
 }
 
+QMAKE_DOCS = $$PWD/../../doc/config/systeminfo/qtsysteminfo.qdocconf
+
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 load(qt_module)
 
@@ -277,6 +279,4 @@ config_bluez {
     }
 }
 
-# Enable doc submodule doc builds
-include (../../doc/config/systeminfo/qtsysteminfo_doc.pri)
 

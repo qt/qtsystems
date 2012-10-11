@@ -54,7 +54,7 @@ win32: {
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
+QMAKE_DOCS = $$PWD/../../doc/config/publishsubscribe/qtpublishsubscribe.qdocconf
+
 load(qt_module)
 
-# Enable doc submodule doc builds
-include (../../doc/config/publishsubscribe/qtpublishsubscribe_doc.pri)

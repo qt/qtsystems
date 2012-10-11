@@ -56,7 +56,7 @@ HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS \
     qservicereply_p.h \
     qservicerequest_p.h
 
+QMAKE_DOCS = $$PWD/../../doc/config/serviceframework/qtserviceframework.qdocconf
+
 load(qt_module)
 
-# Enable doc submodule doc builds
-include (../../doc/config/serviceframework/qtserviceframework_doc.pri)
