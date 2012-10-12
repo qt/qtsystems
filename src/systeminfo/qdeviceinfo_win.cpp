@@ -157,8 +157,8 @@ QDeviceInfo::LockTypeFlags QDeviceInfoPrivate::activatedLocks()
     if (value)
         types |= QDeviceInfo::TouchOrKeyboardLock;
 
-    HDESK desktop = OpenDesktopA("Default", 0, false, DESKTOP_SWITCHDESKTOP);
-    if (desktop) {
+    if (const HDESK desktop = OpenDesktopA(const_cast<char *>("Default"), 0, false,
+                                           DESKTOP_SWITCHDESKTOP)) {
         if (0 == SwitchDesktop(desktop))
             types |= QDeviceInfo::PinLock;
         CloseDesktop(desktop);

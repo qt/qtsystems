@@ -134,13 +134,10 @@ QVariant WMIHelper::getWMIData(const QString &wmiNamespace, const QString &class
 
       wbemEnumerator = 0;
 
-    if (!m_conditional.isEmpty()) {
-        if (m_conditional.left(1).compare(QLatin1String(" "))) {
-            m_conditional = QLatin1String(" ") + m_conditional;
-        }
-    }
+    if (!m_conditional.isEmpty() && !m_conditional.startsWith(QLatin1Char(' ')))
+        m_conditional.prepend(QLatin1Char(' '));
 
-    QString aString = "SELECT * FROM " + className + m_conditional;
+    const QString aString = QStringLiteral("SELECT * FROM ") + className + m_conditional;
     BSTR bstrQuery;
     const OLECHAR *oleStr = reinterpret_cast<const OLECHAR *>(aString.utf16());
 
@@ -195,7 +192,7 @@ QVariant WMIHelper::msVariantToQVariant(VARIANT msVariant, CIMTYPE variantType)
     case CIM_STRING:
     case CIM_CHAR16:
         {
-            QString str((QChar*)msVariant.bstrVal, wcslen(msVariant.bstrVal));
+            QString str((QChar*)msVariant.bstrVal, int(wcslen(msVariant.bstrVal)));
             QVariant vs(str);
             returnVariant = vs;
         }

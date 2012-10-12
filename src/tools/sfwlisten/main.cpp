@@ -185,7 +185,6 @@ void SFWReceiver::socketReadyRead()
             QByteArray appName(str, len);
             delete[] str;
 
-            QTime t = QTime::currentTime();
             printf("{%4s} %2d:%02d:%02d.%03d ", qPrintable(intf), hour, minute,
                    second, msec);
             printf("[%5d/%10s] ", pid, appName.constData());

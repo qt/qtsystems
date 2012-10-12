@@ -165,7 +165,7 @@ QDebug operator<<(QDebug dbg, const QServicePackage& p)
                 break;
         }
         dbg.nospace() << "QServicePackage ";
-        dbg.nospace() << type << " " << p.d->responseType ; dbg.space();
+        dbg.nospace() << type << ' ' << p.d->responseType ; dbg.space();
         dbg.nospace() << p.d->messageId.toString(); dbg.space();
         dbg.nospace() << p.d->entry;dbg.space();
     } else {

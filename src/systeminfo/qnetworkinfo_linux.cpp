@@ -475,7 +475,6 @@ void QNetworkInfoPrivate::connectNotify(const QMetaMethod &signal)
 #endif
 
     static const QMetaMethod currentNetworkModeChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::currentNetworkModeChanged);
-    static const QMetaMethod networkInterfaceCountChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkInterfaceCountChanged);
     static const QMetaMethod networkNameChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkNameChanged);
     static const QMetaMethod networkSignalStrengthChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkSignalStrengthChanged);
     static const QMetaMethod networkStatusChangedSignal = QMetaMethod::fromSignal(&QNetworkInfoPrivate::networkStatusChanged);

@@ -295,14 +295,14 @@ void CommandProcessor::dbusservice(const QStringList &args)
     QString path;
     if (serviceManager->scope() == QService::UserScope) {
         // the d-bus xdg environment variable for the local service paths
-        QString xdgPath = getenv("XDG_DATA_HOME");
-        if (xdgPath == "") {
+        const QByteArray xdgPath = qgetenv("XDG_DATA_HOME");
+        if (xdgPath.isEmpty()) {
             // if not supplied generate in default
             QDir dir(QDir::homePath());
             dir.mkpath(".local/share/dbus-1/services/");
             path = QDir::homePath() + "/.local/share/dbus-1/services/";
         } else {
-            path = xdgPath;
+            path = QString::fromLocal8Bit(xdgPath);
         }
     } else {
         path = "/usr/share/dbus-1/services/";
@@ -356,7 +356,7 @@ bool CommandProcessor::setOptions(const QStringList &options)
     }
 
     if (!opts.isEmpty()) {
-        *stdoutStream << "Bad options: " << opts.join(" ") << "\n\n";
+        *stdoutStream << "Bad options: " << opts.join(QLatin1Char(' ')) << "\n\n";
         showUsage();
         return false;
     }
