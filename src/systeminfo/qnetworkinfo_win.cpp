@@ -47,6 +47,8 @@
 #include <QtCore/QTimer>
 #include <QtCore/QTimerEvent>
 #include <QtCore/QSettings>
+#include <QtCore/QStringList>
+#include <QtCore/qt_windows.h>
 
 #include <QtCore/qmetaobject.h>
 
@@ -486,6 +488,30 @@ QNetworkInfoPrivate *QNetworkInfoPrivate::instance()
         self = new QNetworkInfoPrivate;
     }
     return self;
+}
+
+// Called by the feature detection code.
+unsigned QNetworkInfoPrivate::wifiInterfaceCount()
+{
+#if !defined( Q_CC_MINGW) && !defined( Q_OS_WINCE)
+    resolveLibrary();
+    if (!local_WlanOpenHandle)
+        return 0;
+    DWORD negotiatedVersion;
+    HANDLE handle;
+    if (ERROR_SUCCESS != local_WlanOpenHandle(1, NULL, &negotiatedVersion, &handle))
+        return 0;
+    WLAN_INTERFACE_INFO_LIST *list;
+    unsigned result = 0;
+    if (ERROR_SUCCESS == local_WlanEnumInterfaces(handle, NULL, &list)) {
+        result = list->dwNumberOfItems;
+        local_WlanFreeMemory(list);
+    }
+    local_WlanCloseHandle(handle, NULL);
+    return result;
+#else // !defined( Q_CC_MINGW) && !defined( Q_OS_WINCE)
+    return 0;
+#endif
 }
 
 void QNetworkInfoPrivate::startWifiCallback()

@@ -55,7 +55,7 @@
 
 #include "../qsysteminfoglobal_p.h"
 
-#ifndef Q_CC_MINGW
+#if !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
 #include <QObject>
 #include <QVariant>
 #include <QString>
@@ -133,5 +133,5 @@ public:
 
 QT_END_NAMESPACE
 QT_END_HEADER
-#endif
+#endif // !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
 #endif // WMIHELPER_H

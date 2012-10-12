@@ -40,17 +40,19 @@
 ****************************************************************************/
 
 #include "qdeviceinfo_win_p.h"
+#include "qnetworkinfo_win_p.h"
 #include "qscreensaver_win_p.h"
 
 #include <QtCore/qsettings.h>
 
 #include <Winsock2.h>
-#include <windows.h>
+#include <qt_windows.h>
 #include <Vfw.h>
-#include <Ws2bth.h>
-#include <Bthsdpdef.h>
-#include <BluetoothAPIs.h>
-#include <Wlanapi.h>
+#if !defined(Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
+#  include <Ws2bth.h>
+#  include <Bthsdpdef.h>
+#  include <BluetoothAPIs.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -68,6 +70,7 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 {
     switch (feature) {
+#if !defined(Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
     case QDeviceInfo::BluetoothFeature: {
         BLUETOOTH_DEVICE_SEARCH_PARAMS searchParameter;
         searchParameter.dwSize = sizeof(BLUETOOTH_DEVICE_SEARCH_PARAMS);
@@ -88,25 +91,6 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
             return false;
         }
     }
-
-    case QDeviceInfo::WlanFeature: {
-        bool supportsWlan(false);
-        DWORD negotiatedVersion;
-        HANDLE handle;
-        if (ERROR_SUCCESS == WlanOpenHandle(1, NULL, &negotiatedVersion, &handle)) {
-            PWLAN_INTERFACE_INFO_LIST list;
-            if (ERROR_SUCCESS == WlanEnumInterfaces(handle, NULL, &list)) {
-                if (list->dwNumberOfItems > 0)
-                    supportsWlan = true;
-                WlanFreeMemory(list);
-            }
-            WlanCloseHandle(handle, NULL);
-        }
-        return supportsWlan;
-    }
-
-    case QDeviceInfo::VideoOutFeature:
-        return (GetSystemMetrics(SM_CMONITORS) > 0);
 
     case QDeviceInfo::InfraredFeature: {
         WSADATA wsaData;
@@ -129,6 +113,18 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         }
         return false;
     }
+#else // !defined(Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
+    case QDeviceInfo::BluetoothFeature:
+    case QDeviceInfo::InfraredFeature:
+    case QDeviceInfo::CameraFeature:
+        Q_UNIMPLEMENTED();
+        return false;
+#endif
+    case QDeviceInfo::WlanFeature:
+        return QNetworkInfoPrivate::wifiInterfaceCount() > 0;
+
+    case QDeviceInfo::VideoOutFeature:
+        return (GetSystemMetrics(SM_CMONITORS) > 0);
 
 //    not sure if we can use WDK, thus not implemented as of now
 //    case QDeviceInfo::MemoryCard:

@@ -50,7 +50,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qmetaobject.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

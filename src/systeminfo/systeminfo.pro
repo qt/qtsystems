@@ -30,11 +30,11 @@ win32: !simulator: {
     }
 
     win32-msvc*: {
-        LIBS += -lUser32 -lGdi32 -lPowrProf -lBthprops -lWlanapi -lWs2_32 -lVfw32 -lSetupapi -lIphlpapi -lOle32 -lWbemuuid
+        LIBS += -lUser32 -lGdi32 -lPowrProf -lBthprops -lWs2_32 -lVfw32 -lSetupapi -lIphlpapi -lOle32 -lWbemuuid
     }
 
     win32-g++*: {
-        LIBS += -luser32 -lgdi32 -lpowrprof -lbthprops -lwlanapi -lws2_32 -lmsvfw32 -lavicap32
+        LIBS += -luser32 -lgdi32 -lpowrprof -lbthprops -lws2_32 -lmsvfw32 -lavicap32 -luuid
     }
 
     PRIVATE_HEADERS += qscreensaver_win_p.h \
@@ -58,7 +58,6 @@ win32: !simulator: {
             -lGdi32 \
             -lIphlpapi \
             -lOleaut32 \
-            -lDxva2 \
             -lPowrProf \
             -lSetupapi
 

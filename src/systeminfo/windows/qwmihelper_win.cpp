@@ -38,7 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef Q_CC_MINGW
+
+#include <QtCore/QtGlobal> // for Q_CC_MINGW
+#if !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
 #define _WIN32_DCOM
 
 #include "qwmihelper_win_p.h"

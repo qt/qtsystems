@@ -46,13 +46,17 @@
 #include <PowrProf.h>
 #include <Setupapi.h>
 
-#include <BatClass.h>
+#if !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
+#  include <BatClass.h>
+#endif
 
 #include <QtCore/qmetaobject.h>
 #include <QtCore/QTimer>
 #include <QtCore/QUuid>
 
-#pragma comment (lib, "Setupapi.lib")
+#ifdef Q_CC_MSVC
+#  pragma comment (lib, "Setupapi.lib")
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -134,6 +138,7 @@ QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
 
 void QBatteryInfoPrivate::getBatteryStatus()
 {
+#if !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
     SYSTEM_BATTERY_STATE systemBatteryState;
     CallNtPowerInformation(SystemBatteryState,NULL,0,&systemBatteryState,sizeof(systemBatteryState));
 
@@ -270,6 +275,10 @@ void QBatteryInfoPrivate::getBatteryStatus()
         SetupDiDestroyDeviceInfoList(hdevInfo);
     }
     numberOfBatteries = batteryNumber;
+#else // !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
+    numberOfBatteries = 0;
+    Q_UNIMPLEMENTED();
+#endif
 }
 
 QT_END_NAMESPACE

@@ -57,9 +57,6 @@
 
 #include "qnetworkinfo.h"
 
-
-#include <qt_windows.h>
-
 QT_BEGIN_NAMESPACE
 
 class QNetworkInfoPrivate : public QObject
@@ -92,6 +89,8 @@ public:
     void emitNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode,int);
 
     static QNetworkInfoPrivate *instance();
+    static unsigned wifiInterfaceCount();
+
 Q_SIGNALS:
     void cellIdChanged(int netInterface, const QString &id);
     void currentCellDataTechnologyChanged(int netInterface, QNetworkInfo::CellDataTechnology tech);
