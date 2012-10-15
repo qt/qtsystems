@@ -41,12 +41,49 @@
 
 #include <QGuiApplication>
 #include <QQuickView>
+#include <QScreen>
+#include <QString>
+#include <QDebug>
 
 #define SYSINFO_EXAMPLE_MAIN(NAME) int main(int argc, char **argv) \
 {\
-    QGuiApplication app(argc,argv);\
+    QGuiApplication app(argc, argv);\
+    QScreen* screen = QGuiApplication::primaryScreen();\
+    bool screenGiven = false;\
+    foreach (QString arg, app.arguments()) {\
+        if (arg.startsWith("--screen=")) {\
+            screenGiven = true;\
+            QString screenSpec = arg.split("=").at(1);\
+            QList<QScreen *> screens = QGuiApplication::screens();\
+            bool isInt;\
+            int screenIdx = screenSpec.toInt(&isInt);\
+            if (isInt) {\
+                if (screenIdx < screens.count())\
+                    screen = screens[screenIdx];\
+                else {\
+                    qWarning("cannot select screen %d from a total of %d screens", screenIdx, screens.count());\
+                    screenGiven = false;\
+                }\
+            }\
+            else {\
+                foreach (QScreen* s, screens)\
+                    if (s->name().contains(screenSpec)) {\
+                        screen = s;\
+                        break;\
+                    }\
+            }\
+            qDebug() << "starting up on screen" << screen->name() << "with geometry" << screen->geometry();\
+        }\
+    }\
     QQuickView view;\
+    view.setResizeMode(QQuickView::SizeRootObjectToView);\
     view.setSource(QUrl::fromLocalFile(#NAME ".qml"));\
+    view.setScreen(screen);\
     view.show();\
+    if (screenGiven) {\
+        QRect geom = view.geometry();\
+        geom.moveCenter(screen->geometry().center());\
+        view.setPos(geom.topLeft());\
+    }\
     return app.exec();\
 }

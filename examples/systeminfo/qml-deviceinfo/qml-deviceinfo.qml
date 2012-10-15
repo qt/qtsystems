@@ -41,46 +41,115 @@
 
 import QtQuick 2.0
 import QtSystemInfo 5.0
+import QtQuick.Window 2.0
 
 Rectangle {
-    width: 480; height: 854
+    width: 320; height: 480
 
-    Column {
-        spacing: 10
-        Text {
-            text: "Manufacturer: " + devinfo.manufacturer()
+    Flickable {
+        id: flickable
+        anchors.margins: 10
+        anchors.leftMargin: 20
+        anchors.fill: parent
+        contentWidth: column.width; contentHeight: column.height
+        Column {
+            id: column
+            spacing: 10
+            Text {
+                text: "Device Info:"
+                x: -10
+                font.bold: true
+            }
+            Text {
+                text: "Manufacturer: " + devinfo.manufacturer()
+            }
+            Text {
+                text: "Product name: " + devinfo.productName()
+            }
+            Text {
+                text: "Model: " + devinfo.model()
+            }
+            Text {
+                text: "Unique device ID: " + devinfo.uniqueDeviceID()
+            }
+            Text {
+                text: "OS version: " + devinfo.version(DeviceInfo.Os)
+            }
+            Text {
+                text: "Firmware version: " + devinfo.version(DeviceInfo.Firmware)
+            }
+            Text {
+                text: "IMEI :" + devinfo.imei(0)
+            }
+            Text {
+                text: "Thermal state: " + devinfo.thermalState
+            }
+            Text {
+                text: "Screen Info:"
+                x: -10
+                font.bold: true
+            }
+            Text {
+                text: "backlight state: " + displayInfo.backlightState(0);
+            }
+            Text {
+                text: "brightness: " + displayInfo.brightness(0);
+            }
+            Text {
+                text: "contrast: " + displayInfo.contrast(0);
+            }
+            Text {
+                text: "colorDepth: " + displayInfo.colorDepth(0);
+            }
+            Text {
+                text: "pitch: " + displayInfo.dpiX(0) + " x " + displayInfo.dpiY(0) + " DPI; " +
+                      parseFloat(25.4 / displayInfo.dpiX(0)).toFixed(4) + " x " + parseFloat(25.4 / displayInfo.dpiY(0)).toFixed(4) + "mm"
+            }
+            Text {
+                text: "physical size: " + displayInfo.physicalWidth(0) + " x " + displayInfo.physicalHeight(0);
+            }
+            Text {
+                text: "resolution: " + Screen.width + " x " + Screen.height;
+            }
+            Text {
+                text: "orientation: " + Screen.orientation + " primary " + Screen.primaryOrientation;
+            }
         }
-        Text {
-            text: "Product name: " + devinfo.productName()
-        }
-        Text {
-            text: "Model: " + devinfo.model()
-        }
-        Text {
-            text: "Unique device ID: " + devinfo.uniqueDeviceID()
-        }
-        Text {
-            text: "OS version: " + devinfo.version(DeviceInfo.Os)
-        }
-        Text {
-            text: "Firmware version: " + devinfo.version(DeviceInfo.Firmware)
-        }
-        Text {
-            text: "IMEI :" + devinfo.imei(0)
-        }
-        Text {
-            text: "Thermal state: " + devinfo.thermalState
-        }
+    }
+    Rectangle {
+        id: scrollDecoratorV
+        color: "grey"
+        opacity: 0.5
+        width: 5
+        radius: width / 2
+        smooth: true
+        property real ratio: flickable.height / column.height
+        height: flickable.height * ratio
+        y: flickable.anchors.topMargin + flickable.contentY * ratio
+        anchors.right: parent.right
+        anchors.margins: 2
+        visible: flickable.height < column.height
+    }
+    Rectangle {
+        id: scrollDecoratorH
+        color: "grey"
+        opacity: 0.5
+        height: 5
+        radius: height / 2
+        smooth: true
+        property real ratio: flickable.width / column.width
+        width: flickable.width * ratio
+        x: flickable.anchors.topMargin + flickable.contentX * ratio
+        anchors.bottom: parent.bottom
+        anchors.margins: 2
+        visible: flickable.width < column.width
     }
 
     DeviceInfo {
         id: devinfo;
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            Qt.quit();
-        }
+    DisplayInfo {
+        id: displayInfo
     }
 }
