@@ -368,6 +368,9 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
     if (watchCurrentFlow && attribute.contains("current_now")) {
         if (!value.isEmpty()) {
             int currentFlow = value.toInt() / -1000;
+            if (chargingStates.value(battery) == QBatteryInfo::Discharging && currentFlow < 0)
+                currentFlow = -currentFlow;
+
             if (currentFlows.value(battery) != currentFlow) {
                 currentFlows[battery] = currentFlow;
                 emit currentFlowChanged(battery, currentFlow);
@@ -504,9 +507,10 @@ int QBatteryInfoPrivate::getCurrentFlow(int battery)
     bool ok = false;
     int flow = current.readAll().simplified().toInt(&ok);
     if (ok) {
-        if (state == QBatteryInfo::Charging || state == QBatteryInfo::Full
-                || QBatteryInfo::Discharging)
+        if (state == QBatteryInfo::Charging || state == QBatteryInfo::Full)
             return flow / -1000;
+        else if (state == QBatteryInfo::Discharging)
+            return flow > 0 ? flow / 1000 : flow / -1000;
     }
 
     return 0;
