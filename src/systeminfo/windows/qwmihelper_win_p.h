@@ -59,7 +59,7 @@
 #include <QObject>
 #include <QVariant>
 #include <QString>
-#include <Wbemidl.h>
+#include <wbemidl.h>
 
 #include <QStringList>
 
