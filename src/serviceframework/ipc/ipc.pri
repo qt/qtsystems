@@ -6,11 +6,11 @@ win32 {
 QT += core-private
 
 isEmpty(SFW_BACKEND) {
-    contains(DEFINES, QT_ADDON_JSONDB_LIB) {
-        SFW_BACKEND = unix
+    contains(QT_CONFIG,dbus) {
+        SFW_BACKEND = dbus
     } else {
-        !jsondb:!contains(config_test_jsondb, yes):contains(QT_CONFIG,dbus) {
-            SFW_BACKEND = dbus
+        linux {
+            SFW_BACKEND = unix
         } else {
             SFW_BACKEND = localsocket
         }
