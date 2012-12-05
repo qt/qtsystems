@@ -83,7 +83,7 @@
     if (screenGiven) {\
         QRect geom = view.geometry();\
         geom.moveCenter(screen->geometry().center());\
-        view.setPos(geom.topLeft());\
+        view.setPosition(geom.topLeft());\
     }\
     return app.exec();\
 }
