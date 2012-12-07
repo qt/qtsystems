@@ -129,7 +129,7 @@ In our case we only need to overwrite the virtual function createInstance.
 
 As you can see the createInstance function create the appropriate dialer object
 and returns it.
-The Q_EXPORT_PLUGIN2 macro provides the necessary implementation for a plugin.
+The Q_PLUGIN_METADATA macro provides the necessary implementation for a plugin.
 See \l{How to Create Qt Plugins} for more details.
 
 The last thing we need to provide in our services are the states, properties, signals and slots that we
