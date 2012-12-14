@@ -1,4 +1,4 @@
 TEMPLATE = app
-CONFIG += qt warn_on console depend_includepath testcase
+CONFIG += console testcase
 
 qtAddLibrary(QtTest)

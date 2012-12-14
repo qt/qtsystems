@@ -1,7 +1,7 @@
 # QML tests in this directory must not depend on an OpenGL context.
 
 TEMPLATE = app
-CONFIG += warn_on qmltestcase
+CONFIG += qmltestcase
 
 QT += serviceframework qml
 
