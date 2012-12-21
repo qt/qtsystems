@@ -7,4 +7,4 @@ CONFIG  += ordered
 
 SUBDIRS += tools
 
-!isEmpty(QT.quick.name): SUBDIRS += imports
+qtHaveModule(quick): SUBDIRS += imports

@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-!contains(QT_CONFIG, no-widgets) {
+qtHaveModule(widgets) {
     SUBDIRS += \
         battery-charge \
         publish-subscribe

@@ -31,7 +31,7 @@ unix {
         }
     }
 
-    contains(QT_CONFIG,jsondb) {
+    qtHaveModule(jsondb) {
         QT_FOR_PRIVATE += jsondb
 
         PRIVATE_HEADERS += jsondblayer_p.h

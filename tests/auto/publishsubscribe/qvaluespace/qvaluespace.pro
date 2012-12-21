@@ -6,7 +6,7 @@ QT += publishsubscribe
     DEFINES += QT_NO_GCONFLAYER
 }
 
-!contains(QT_CONFIG, jsondb) {
+!qtHaveModule(jsondb) {
     DEFINES += QT_NO_JSONDBLAYER
 } else {
     QT += jsondb

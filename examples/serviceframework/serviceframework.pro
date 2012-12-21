@@ -4,7 +4,7 @@ SUBDIRS       = \
                 remotedialerservice \
                 dialer
 
-!contains(QT_CONFIG, no-widgets) {
+qtHaveModule(widgets) {
     SUBDIRS  += \
                 servicebrowser
 }

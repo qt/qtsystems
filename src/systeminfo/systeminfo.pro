@@ -18,7 +18,7 @@ SOURCES += qdeviceinfo.cpp \
            qnetworkinfo.cpp \
            qdeviceprofile.cpp
 
-!isEmpty(QT.gui.name) {
+qtHaveModule(gui) {
     QT += gui
     PUBLIC_HEADERS += qdisplayinfo.h
     SOURCES += qdisplayinfo.cpp
@@ -97,7 +97,7 @@ linux-*: !simulator: {
         DEFINES += QT_NO_BLUEZ
     }
 
-    contains(QT_CONFIG, dbus): {
+    qtHaveModule(dbus) {
         config_ofono: {
             QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h
@@ -204,7 +204,7 @@ simulator {
             DEFINES += QT_NO_BLUEZ
         }
 
-        contains(QT_CONFIG, dbus): {
+        qtHaveModule(dbus) {
             config_ofono: {
             QT += dbus
             PRIVATE_HEADERS += qofonowrapper_p.h \

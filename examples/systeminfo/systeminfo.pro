@@ -5,6 +5,6 @@ SUBDIRS += \
     qml-storageinfo \
     qml-battery
 
+#qtHaveModule(widgets): SUBDIRS += \
 
-#!isEmpty(QT.widgets.name):SUBDIRS += \
 OTHER_FILES = stub.h

@@ -4,7 +4,7 @@ CONFIG += testcase
 QT = core sql serviceframework serviceframework-private testlib
 QT -= gui
 
-jsondb|contains(QT_CONFIG, jsondb) {
+jsondb|qtHaveModule(jsondb) {
     mtlib|config_mtlib {
         DEFINES += QT_ADDON_JSONDB_LIB
         QT += jsondb

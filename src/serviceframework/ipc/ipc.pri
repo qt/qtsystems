@@ -6,7 +6,7 @@ win32 {
 QT += core-private
 
 isEmpty(SFW_BACKEND) {
-    contains(QT_CONFIG,dbus) {
+    qtHaveModule(dbus) {
         SFW_BACKEND = dbus
     } else {
         linux {
