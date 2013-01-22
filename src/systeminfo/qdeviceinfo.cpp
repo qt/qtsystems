@@ -229,12 +229,12 @@ int QDeviceInfo::imeiCount() const
 }
 
 /*!
-    Returns the International Mobile Equipment Identity (IMEI) of the given \a interface on the device.
+    Returns the International Mobile Equipment Identity (IMEI) of the given \a interfaceNumber on the device.
     In case of error, or the information is not available, an empty string is returned.
 */
-QString QDeviceInfo::imei(int interface) const
+QString QDeviceInfo::imei(int interfaceNumber) const
 {
-    return d_ptr->imei(interface);
+    return d_ptr->imei(interfaceNumber);
 }
 
 /*!

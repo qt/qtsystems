@@ -1638,7 +1638,7 @@ void tst_QServiceManager_IPC::testProcessLaunch()
 void tst_QServiceManager_IPC::verifyAsyncLoading()
 {
 
-    QFETCH(QString, interface);
+    QFETCH(QString, serviceInterface);
     QFETCH(int, descriptor);
     QFETCH(bool, errors);
     QFETCH(int, simultaneous);
@@ -1650,7 +1650,7 @@ void tst_QServiceManager_IPC::verifyAsyncLoading()
 
     if (simultaneous > 0) {
         for (int i = 0; i < simultaneous; i++) {
-            replies[i] = mgr.loadInterfaceRequest(interface);
+            replies[i] = mgr.loadInterfaceRequest(serviceInterface);
         }
         reply = replies[0];
     } else if (descriptor > 0) {
@@ -1662,8 +1662,8 @@ void tst_QServiceManager_IPC::verifyAsyncLoading()
             }
         }
         reply = mgr.loadInterfaceRequest(d);
-    } else if (!interface.isEmpty()) {
-        reply = mgr.loadInterfaceRequest(interface);
+    } else if (!serviceInterface.isEmpty()) {
+        reply = mgr.loadInterfaceRequest(serviceInterface);
     } else {
         QFAIL("No descriptor nor interface speficied");
     }
@@ -1703,7 +1703,7 @@ void tst_QServiceManager_IPC::verifyAsyncLoading()
 
 void tst_QServiceManager_IPC::verifyAsyncLoading_data()
 {
-    QTest::addColumn<QString>("interface");
+    QTest::addColumn<QString>("serviceInterface");
     QTest::addColumn<int>("descriptor");
     QTest::addColumn<bool>("errors");
     QTest::addColumn<int>("simultaneous");

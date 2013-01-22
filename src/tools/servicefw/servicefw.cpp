@@ -170,9 +170,9 @@ void CommandProcessor::setdefault(const QStringList &args)
     }
 
 
-    const QString &interface = args[0];
+    const QString &serviceInterface = args[0];
     const QString &service = args[1];
-    bool res = serviceManager->setInterfaceDefault(service, interface);
+    bool res = serviceManager->setInterfaceDefault(service, serviceInterface);
     if(!res) {
         *stdoutStream << "Failed to set interface default"
                       << errorTable[serviceManager->error()];
@@ -312,8 +312,8 @@ void CommandProcessor::dbusservice(const QStringList &args)
     const QString &exec = QFileInfo(args[1]).absoluteFilePath();
 
     QStringList names;
-    foreach (const QServiceInterfaceDescriptor &interface, results.interfaces) {
-        names << interface.interfaceName();
+    foreach (const QServiceInterfaceDescriptor &serviceInterface, results.interfaces) {
+        names << serviceInterface.interfaceName();
     }
     names.removeDuplicates();
 
@@ -382,20 +382,20 @@ void CommandProcessor::showAllEntries()
 
 void CommandProcessor::showInterfaceInfo(const QServiceFilter &filter)
 {
-    QString interface = filter.interfaceName();
+    QString serviceInterface = filter.interfaceName();
     if (filter.majorVersion() >= 0 && filter.minorVersion() >= 0) {
-        interface += QString(" %1.%2").arg(filter.majorVersion()).arg(filter.minorVersion());
+        serviceInterface += QString(" %1.%2").arg(filter.majorVersion()).arg(filter.minorVersion());
         if (filter.versionMatchRule() == QServiceFilter::MinimumVersionMatch)
-            interface += '+';
+            serviceInterface += '+';
     }
 
     QList<QServiceInterfaceDescriptor> descriptors = serviceManager->findInterfaces(filter);
     if (descriptors.isEmpty()) {
-        *stdoutStream << "Interface " << interface << " not found.\n";
+        *stdoutStream << "Interface " << serviceInterface << " not found.\n";
         return;
     }
 
-    *stdoutStream << interface << " is implemented by:\n";
+    *stdoutStream << serviceInterface << " is implemented by:\n";
     foreach (const QServiceInterfaceDescriptor &desc, descriptors)
         *stdoutStream << '\t' << desc.serviceName() << '\n';
 }

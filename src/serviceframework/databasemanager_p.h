@@ -84,7 +84,7 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
 
         QServiceInterfaceDescriptor interfaceDefault(const QString &interfaceName, DbScope scope);
         bool setInterfaceDefault(const QString &serviceName, const QString &interfaceName, DbScope scope);
-        bool setInterfaceDefault(const QServiceInterfaceDescriptor &interface, DbScope scope);
+        bool setInterfaceDefault(const QServiceInterfaceDescriptor &serviceInterface, DbScope scope);
 
         DBError lastError(){ return m_lastError;}
 

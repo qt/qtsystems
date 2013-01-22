@@ -88,12 +88,12 @@ class Q_AUTOTEST_EXPORT ServiceDatabase : public QObject
 
         QList<QServiceInterfaceDescriptor> getInterfaces(const QServiceFilter &filter);
         QServiceInterfaceDescriptor getInterface(const QString &interfaceID);
-        QString getInterfaceID(const QServiceInterfaceDescriptor &interface);
+        QString getInterfaceID(const QServiceInterfaceDescriptor &serviceInterface);
         QStringList getServiceNames(const QString &interfaceName);
 
         QServiceInterfaceDescriptor interfaceDefault(const QString &interfaceName,
                                     QString *interfaceID = 0, bool inTransaction = false);
-        bool setInterfaceDefault(const QServiceInterfaceDescriptor &interface,
+        bool setInterfaceDefault(const QServiceInterfaceDescriptor &serviceInterface,
                                 const QString &externalInterfaceID = QString());
         QList<QPair<QString,QString> > externalDefaultsInfo();
         bool removeExternalDefaultServiceInterface(const QString &interfaceID);
@@ -118,7 +118,7 @@ Q_SIGNALS:
         bool checkConnection();
 
         bool executeQuery(QSqlQuery *query, const QString &statement, const QList<QVariant> &bindValues = QList<QVariant>());
-        QString getInterfaceID(QSqlQuery *query, const QServiceInterfaceDescriptor &interface);
+        QString getInterfaceID(QSqlQuery *query, const QServiceInterfaceDescriptor &serviceInterface);
         bool insertInterfaceData(QSqlQuery *query, const QServiceInterfaceDescriptor &anInterface, const QString &serviceID);
 
         bool beginTransaction(QSqlQuery *query, TransactionType);

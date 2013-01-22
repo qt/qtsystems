@@ -107,9 +107,9 @@ QServiceInterfaceDescriptor QDeclarativeService::interfaceDesc() const
     This property holds the interface name of the service that
     corresponds to QServiceInterfaceDescriptor::interfaceName().
 */
-void QDeclarativeService::setInterfaceName(const QString &interface)
+void QDeclarativeService::setInterfaceName(const QString &serviceInterface)
 {
-   m_interface = interface;
+   m_interface = serviceInterface;
    updateDescriptor();
 }
 
@@ -376,9 +376,9 @@ QString QDeclarativeServiceList::serviceName() const
     This property holds the interface name of the services that
     corresponds to setting QServiceFilter::setInterface().
 */
-void QDeclarativeServiceList::setInterfaceName(const QString &interface)
+void QDeclarativeServiceList::setInterfaceName(const QString &serviceInterface)
 {
-    m_interface = interface;
+    m_interface = serviceInterface;
     updateFilterResults();
     if (m_componentComplete)
         emit interfaceNameChanged();

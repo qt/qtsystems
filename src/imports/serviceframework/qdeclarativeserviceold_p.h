@@ -68,7 +68,7 @@ public:
     void setInterfaceDesc(const QServiceInterfaceDescriptor& desc);
     QServiceInterfaceDescriptor interfaceDesc() const;
 
-    void setInterfaceName(const QString& interface);
+    void setInterfaceName(const QString& serviceInterface);
     QString interfaceName() const;
     QString serviceName() const;
     void setServiceName(const QString &service);
@@ -147,7 +147,7 @@ public:
     void setServiceName(const QString& service);
     QString serviceName() const;
 
-    void setInterfaceName(const QString& interface);
+    void setInterfaceName(const QString& serviceInterface);
     QString interfaceName() const;
 
     void setMinorVersion(int minor);

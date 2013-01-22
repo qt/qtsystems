@@ -372,10 +372,10 @@ void ServiceMetadataTest::latestInterfaceVersion()
 
     ServiceMetaData parser(dir.absoluteFilePath(fileName));
     QCOMPARE(parser.extractMetadata(), true);
-    QServiceInterfaceDescriptor interface = parser.latestInterfaceVersion("com.nokia.service.contacts");
-    QCOMPARE(interface.majorVersion(), major);
-    QCOMPARE(interface.minorVersion(), minor);
-    QCOMPARE(interface.attribute(QServiceInterfaceDescriptor::InterfaceDescription).toString(),
+    QServiceInterfaceDescriptor serviceInterface = parser.latestInterfaceVersion("com.nokia.service.contacts");
+    QCOMPARE(serviceInterface.majorVersion(), major);
+    QCOMPARE(serviceInterface.minorVersion(), minor);
+    QCOMPARE(serviceInterface.attribute(QServiceInterfaceDescriptor::InterfaceDescription).toString(),
             QString("Contacts management service")); //make sure we're getting the right interface
 }
 

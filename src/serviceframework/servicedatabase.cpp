@@ -410,18 +410,18 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
 
     QList <QServiceInterfaceDescriptor> interfaces = service.interfaces;
     QString interfaceID;;
-    foreach (const QServiceInterfaceDescriptor &interface, interfaces) {
-        interfaceID = getInterfaceID(&query, interface);
+    foreach (const QServiceInterfaceDescriptor &serviceInterface, interfaces) {
+        interfaceID = getInterfaceID(&query, serviceInterface);
         if (m_lastError.code() == DBError::NoError) {
             QString errorText;
             errorText = QLatin1String("Cannot register service \"%1\". \"%1\" is already registered "
                         "and implements interface \"%2\", Version \"%3.%4.\"  \"%1\" must "
                         "first be deregistered for new registration to take place.");
             m_lastError.setError(DBError::IfaceImplAlreadyRegistered,
-                                errorText.arg(interface.serviceName())
-                                            .arg(interface.interfaceName())
-                                            .arg(interface.majorVersion())
-                                            .arg(interface.minorVersion()));
+                                errorText.arg(serviceInterface.serviceName())
+                                            .arg(serviceInterface.interfaceName())
+                                            .arg(serviceInterface.majorVersion())
+                                            .arg(serviceInterface.minorVersion()));
 
             rollbackTransaction(&query);
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
@@ -432,7 +432,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
         } else if (m_lastError.code() == DBError::NotFound){
             //No interface implementation already exists for the service
             //so add it
-            if (!insertInterfaceData(&query, interface, serviceID)) {
+            if (!insertInterfaceData(&query, serviceInterface, serviceID)) {
                 rollbackTransaction(&query);
                 return false;
             } else {
@@ -443,11 +443,11 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
             qWarning() << "ServiceDatabase::registerService():-"
                         << "Unable to confirm if implementation version"
-                        << (QString::number(interface.majorVersion()) + "."
-                           + QString::number(interface.minorVersion())).toLatin1()
-                        << "for interface" << interface.interfaceName()
+                        << (QString::number(serviceInterface.majorVersion()) + "."
+                           + QString::number(serviceInterface.minorVersion())).toLatin1()
+                        << "for interface" << serviceInterface.interfaceName()
                         << "is already registered for service "
-                        << interface.serviceName()
+                        << serviceInterface.serviceName()
                         << "\n" << m_lastError.text();
 #endif
             return false;
@@ -456,20 +456,20 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
 
     interfaces = service.latestInterfaces;
     QServiceInterfaceDescriptor defaultInterface;
-    foreach (const QServiceInterfaceDescriptor &interface, interfaces) {
-        defaultInterface = interfaceDefault(interface.interfaceName(), NULL, true);
+    foreach (const QServiceInterfaceDescriptor &serviceInterface, interfaces) {
+        defaultInterface = interfaceDefault(serviceInterface.interfaceName(), NULL, true);
         if (m_lastError.code() == DBError::NoError
                 || m_lastError.code() == DBError::ExternalIfaceIDFound) {
             continue; //default already exists so don't do anything
         } else if (m_lastError.code() == DBError::NotFound) {
             //default does not already exist so create one
-            interfaceID = getInterfaceID(&query, interface);
+            interfaceID = getInterfaceID(&query, serviceInterface);
             if (m_lastError.code() != DBError::NoError) {
                 rollbackTransaction(&query);
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
                 qWarning() << "ServiceDatabase::registerService():-"
                            << "Unable to retrieve interfaceID for "
-                              "interface" << interface.interfaceName()
+                              "interface" << serviceInterface.interfaceName()
                            << "\n" << m_lastError.text();
 #endif
                 return false;
@@ -477,7 +477,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
 
             statement = QLatin1String("INSERT INTO Defaults(InterfaceName, InterfaceID) VALUES(?,?)");
             bindValues.clear();
-            bindValues.append(interface.interfaceName());
+            bindValues.append(serviceInterface.interfaceName());
             bindValues.append(interfaceID);
             if (!executeQuery(&query, statement, bindValues)) {
                 rollbackTransaction(&query);
@@ -492,7 +492,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
             qWarning() << "ServiceDatabase::registerService()"
                         << "Problem: Unable to confirm if interface"
-                        << interface.interfaceName()
+                        << serviceInterface.interfaceName()
                         << "already has a default implementation";
 #endif
             return false;
@@ -517,7 +517,7 @@ bool ServiceDatabase::registerService(const ServiceMetaDataResults &service, con
     DBError::DatabaseNotOpen
     DBError::InvalidDatabaseConnection
 */
-QString ServiceDatabase::getInterfaceID(const QServiceInterfaceDescriptor &descriptor) {
+QString ServiceDatabase::getInterfaceID(const QServiceInterfaceDescriptor &serviceInterface) {
     QString interfaceID;
     if (!checkConnection()) {
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
@@ -530,7 +530,7 @@ QString ServiceDatabase::getInterfaceID(const QServiceInterfaceDescriptor &descr
     QSqlDatabase database = QSqlDatabase::database(m_connectionName);
     QSqlQuery query(database);
 
-    return getInterfaceID(&query, descriptor);
+    return getInterfaceID(&query, serviceInterface);
 }
 
 /*
@@ -597,7 +597,7 @@ QList<QPair<QString,QString> > ServiceDatabase::externalDefaultsInfo()
     transaction.  If called standalone, it's single query is implicitly
     wrapped in it's own transaction.
 */
-QString ServiceDatabase::getInterfaceID(QSqlQuery *query, const QServiceInterfaceDescriptor &interface)
+QString ServiceDatabase::getInterfaceID(QSqlQuery *query, const QServiceInterfaceDescriptor &serviceInterface)
 {
     QString statement = QLatin1String("SELECT Interface.ID "
                         "FROM Interface, Service "
@@ -606,10 +606,10 @@ QString ServiceDatabase::getInterfaceID(QSqlQuery *query, const QServiceInterfac
                         "AND Interface.Name = ? COLLATE NOCASE "
                         "AND Interface.VerMaj = ? AND Interface.VerMin = ?");
     QList<QVariant> bindValues;
-    bindValues.append(interface.serviceName());
-    bindValues.append(interface.interfaceName());
-    bindValues.append(interface.majorVersion());
-    bindValues.append(interface.minorVersion());
+    bindValues.append(serviceInterface.serviceName());
+    bindValues.append(serviceInterface.interfaceName());
+    bindValues.append(serviceInterface.majorVersion());
+    bindValues.append(serviceInterface.minorVersion());
 
     if (!executeQuery(query, statement, bindValues)) {
         return QString();
@@ -620,10 +620,10 @@ QString ServiceDatabase::getInterfaceID(QSqlQuery *query, const QServiceInterfac
                             "Service name: %1 "
                             "Interface name: %2 "
                             "Version: %3.%4"));
-        m_lastError.setError(DBError::NotFound, errorText.arg(interface.serviceName())
-                                                        .arg(interface.interfaceName())
-                                                        .arg(interface.majorVersion())
-                                                        .arg(interface.minorVersion()));
+        m_lastError.setError(DBError::NotFound, errorText.arg(serviceInterface.serviceName())
+                                                        .arg(serviceInterface.interfaceName())
+                                                        .arg(serviceInterface.majorVersion())
+                                                        .arg(serviceInterface.minorVersion()));
         return QString();
     }
 
@@ -644,7 +644,7 @@ QString ServiceDatabase::getInterfaceID(QSqlQuery *query, const QServiceInterfac
     time this function is called; and this function will not rollback/commit
     the transaction.
 */
-bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfaceDescriptor &interface, const QString &serviceID)
+bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfaceDescriptor &serviceInterface, const QString &serviceID)
 {
     QString statement = QLatin1String("INSERT INTO Interface(ID, ServiceID,Name,VerMaj, VerMin) "
                         "VALUES(?,?,?,?,?)");
@@ -653,9 +653,9 @@ bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfa
     QList<QVariant> bindValues;
     bindValues.append(interfaceID);
     bindValues.append(serviceID);
-    bindValues.append(interface.interfaceName());
-    bindValues.append(interface.majorVersion());
-    bindValues.append(interface.minorVersion());
+    bindValues.append(serviceInterface.interfaceName());
+    bindValues.append(serviceInterface.majorVersion());
+    bindValues.append(serviceInterface.minorVersion());
 
     if (!executeQuery(query, statement, bindValues)) {
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
@@ -666,11 +666,11 @@ bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfa
     }
 
     statement = QLatin1String("INSERT INTO InterfaceProperty(InterfaceID, Key, Value) VALUES(?,?,?)");
-    QHash<QServiceInterfaceDescriptor::Attribute, QVariant>::const_iterator iter = interface.d->attributes.constBegin();
+    QHash<QServiceInterfaceDescriptor::Attribute, QVariant>::const_iterator iter = serviceInterface.d->attributes.constBegin();
     bool isValidInterfaceProperty;
     QString capabilities;
     QString interfaceDescription;
-    while (iter != interface.d->attributes.constEnd()) {
+    while (iter != serviceInterface.d->attributes.constEnd()) {
         isValidInterfaceProperty = true;
 
         bindValues.clear();
@@ -678,7 +678,7 @@ bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfa
         switch (iter.key()) {
             case (QServiceInterfaceDescriptor::Capabilities):
                 bindValues.append(QLatin1String(INTERFACE_CAPABILITY_KEY));
-                capabilities = interface.attribute(QServiceInterfaceDescriptor::Capabilities).toStringList().join(QLatin1String(","));
+                capabilities = serviceInterface.attribute(QServiceInterfaceDescriptor::Capabilities).toStringList().join(QLatin1String(","));
                 if (capabilities.isNull())
                     capabilities = QLatin1String("");
                 bindValues.append(capabilities);
@@ -691,7 +691,7 @@ bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfa
                 break;
             case(QServiceInterfaceDescriptor::InterfaceDescription):
                 bindValues.append(QLatin1String(INTERFACE_DESCRIPTION_KEY));
-                interfaceDescription = interface.attribute(QServiceInterfaceDescriptor::InterfaceDescription).toString();
+                interfaceDescription = serviceInterface.attribute(QServiceInterfaceDescriptor::InterfaceDescription).toString();
                 if (interfaceDescription.isNull())
                     interfaceDescription = QLatin1String("");
                 bindValues.append(interfaceDescription);
@@ -714,8 +714,8 @@ bool ServiceDatabase::insertInterfaceData(QSqlQuery *query,const QServiceInterfa
     }
 
     // add custom attributes
-    QHash<QString, QString>::const_iterator customIter = interface.d->customAttributes.constBegin();
-    while (customIter!=interface.d->customAttributes.constEnd()) {
+    QHash<QString, QString>::const_iterator customIter = serviceInterface.d->customAttributes.constBegin();
+    while (customIter!=serviceInterface.d->customAttributes.constEnd()) {
         bindValues.clear();
         bindValues.append(interfaceID);
         // to avoid key clashes use separate c_ namespace ->is this sufficient?
@@ -894,8 +894,8 @@ QList<QServiceInterfaceDescriptor> ServiceDatabase::getInterfaces(const QService
         return interfaces;
     }
 
-    QServiceInterfaceDescriptor interface;
-    interface.d = new QServiceInterfaceDescriptorPrivate;
+    QServiceInterfaceDescriptor serviceInterface;
+    serviceInterface.d = new QServiceInterfaceDescriptorPrivate;
     QStringList capabilities;
     QString serviceID;
     QString interfaceID;
@@ -904,25 +904,25 @@ QList<QServiceInterfaceDescriptor> ServiceDatabase::getInterfaces(const QService
 
     while (query.next()){
         difference.clear();
-        interface.d->customAttributes.clear();
-        interface.d->attributes.clear();
-        interface.d->interfaceName = query.value(EBindIndex).toString();
-        interface.d->serviceName = query.value(EBindIndex1).toString();
-        interface.d->major = query.value(EBindIndex2).toInt();
-        interface.d->minor = query.value(EBindIndex3).toInt();
+        serviceInterface.d->customAttributes.clear();
+        serviceInterface.d->attributes.clear();
+        serviceInterface.d->interfaceName = query.value(EBindIndex).toString();
+        serviceInterface.d->serviceName = query.value(EBindIndex1).toString();
+        serviceInterface.d->major = query.value(EBindIndex2).toInt();
+        serviceInterface.d->minor = query.value(EBindIndex3).toInt();
 
         QString location = query.value(EBindIndex4).toString();
         if (location.startsWith(QLatin1String(SERVICE_IPC_PREFIX))) {
-            interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
-            interface.d->attributes[QServiceInterfaceDescriptor::Location]
+            serviceInterface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
+            serviceInterface.d->attributes[QServiceInterfaceDescriptor::Location]
                 = location.remove(0,QString(QLatin1String(SERVICE_IPC_PREFIX)).size());
         } else {
-            interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::Plugin;
-            interface.d->attributes[QServiceInterfaceDescriptor::Location] = location;
+            serviceInterface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::Plugin;
+            serviceInterface.d->attributes[QServiceInterfaceDescriptor::Location] = location;
         }
 
         serviceID = query.value(EBindIndex5).toString();
-        if (!populateServiceProperties(&interface, serviceID)) {
+        if (!populateServiceProperties(&serviceInterface, serviceID)) {
             //populateServiceProperties should already give a warning message
             //and set the last error
             interfaces.clear();
@@ -931,7 +931,7 @@ QList<QServiceInterfaceDescriptor> ServiceDatabase::getInterfaces(const QService
         }
 
         interfaceID = query.value(EBindIndex6).toString();
-        if (!populateInterfaceProperties(&interface, interfaceID)) {
+        if (!populateInterfaceProperties(&serviceInterface, interfaceID)) {
             //populateInterfaceProperties should already give a warning message
             //and set the last error
             interfaces.clear();
@@ -939,7 +939,7 @@ QList<QServiceInterfaceDescriptor> ServiceDatabase::getInterfaces(const QService
             return interfaces;
         }
 
-        const QSet<QString> ifaceCaps = interface.d->attributes.value(QServiceInterfaceDescriptor::Capabilities).toStringList().toSet();
+        const QSet<QString> ifaceCaps = serviceInterface.d->attributes.value(QServiceInterfaceDescriptor::Capabilities).toStringList().toSet();
         difference = ((filter.capabilityMatchRule() == QServiceFilter::MatchMinimum) ? (filterCaps-ifaceCaps) : (ifaceCaps-filterCaps));
         if (!difference.isEmpty())
             continue;
@@ -947,22 +947,22 @@ QList<QServiceInterfaceDescriptor> ServiceDatabase::getInterfaces(const QService
         //only return those interfaces that comply with set custom filters
         if (filter.customAttributes().size() > 0) {
             QSet<QString> keyDiff = filter.customAttributes().toSet();
-            keyDiff.subtract(interface.d->customAttributes.uniqueKeys().toSet());
+            keyDiff.subtract(serviceInterface.d->customAttributes.uniqueKeys().toSet());
             if (keyDiff.isEmpty()) { //target descriptor has same custom keys as filter
                 bool isMatch = true;
                 const QStringList keys = filter.customAttributes();
                 for (int i = 0; i<keys.count(); i++) {
-                    if (interface.d->customAttributes.value(keys[i]) !=
+                    if (serviceInterface.d->customAttributes.value(keys[i]) !=
                             filter.customAttribute(keys[i])) {
                         isMatch = false;
                         break;
                     }
                 }
                 if (isMatch)
-                    interfaces.append(interface);
+                    interfaces.append(serviceInterface);
             }
         } else { //no custom keys -> SQL statement ensures proper selection already
-            interfaces.append(interface);
+            interfaces.append(serviceInterface);
         }
     }
 
@@ -986,13 +986,13 @@ QList<QServiceInterfaceDescriptor> ServiceDatabase::getInterfaces(const QService
 */
 QServiceInterfaceDescriptor ServiceDatabase::getInterface(const QString &interfaceID)
 {
-    QServiceInterfaceDescriptor interface;
+    QServiceInterfaceDescriptor serviceInterface;
     if (!checkConnection()) {
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
         qWarning() << "ServiceDatabase::getInterface():-"
                     << "Problem:" << qPrintable(m_lastError.text());
 #endif
-        return interface;
+        return serviceInterface;
     }
 
     QSqlDatabase database = QSqlDatabase::database(m_connectionName);
@@ -1004,7 +1004,7 @@ QServiceInterfaceDescriptor ServiceDatabase::getInterface(const QString &interfa
                     << "Unable to begin transaction. "
                     << "Reason:" << qPrintable(m_lastError.text());
 #endif
-        return interface;
+        return serviceInterface;
     }
 
     QString selectComponent = QLatin1String("SELECT Interface.Name, "
@@ -1024,41 +1024,41 @@ QServiceInterfaceDescriptor ServiceDatabase::getInterface(const QString &interfa
         qWarning() << "ServiceDatabase::getInterfaces():-"
                     << "Problem:" << qPrintable(m_lastError.text());
 #endif
-        return interface;
+        return serviceInterface;
     }
 
     if (!query.next()) {
         rollbackTransaction(&query);
         QString errorText(QLatin1String("Interface implementation not found for Interface ID: %1"));
         m_lastError.setError(DBError::NotFound, errorText.arg(interfaceID));
-        return interface;
+        return serviceInterface;
     }
 
-    interface.d = new QServiceInterfaceDescriptorPrivate;
-    interface.d->interfaceName =query.value(EBindIndex).toString();
-    interface.d->serviceName = query.value(EBindIndex1).toString();
-    interface.d->major = query.value(EBindIndex2).toInt();
-    interface.d->minor = query.value(EBindIndex3).toInt();
+    serviceInterface.d = new QServiceInterfaceDescriptorPrivate;
+    serviceInterface.d->interfaceName =query.value(EBindIndex).toString();
+    serviceInterface.d->serviceName = query.value(EBindIndex1).toString();
+    serviceInterface.d->major = query.value(EBindIndex2).toInt();
+    serviceInterface.d->minor = query.value(EBindIndex3).toInt();
 
     QString location = query.value(EBindIndex4).toString();
     if (location.startsWith(QLatin1String(SERVICE_IPC_PREFIX))) {
-        interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
-        interface.d->attributes[QServiceInterfaceDescriptor::Location]
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::Location]
             = location.remove(0,QString(QLatin1String(SERVICE_IPC_PREFIX)).size());
     } else {
-        interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::Plugin;
-        interface.d->attributes[QServiceInterfaceDescriptor::Location] = location;
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::Plugin;
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::Location] = location;
     }
 
     QString serviceID = query.value(EBindIndex5).toString();
-    if (!populateServiceProperties(&interface, serviceID)) {
+    if (!populateServiceProperties(&serviceInterface, serviceID)) {
         //populateServiceProperties should already give a warning message
         //and set the last error
         rollbackTransaction(&query);
         return QServiceInterfaceDescriptor();
     }
 
-    if (!populateInterfaceProperties(&interface, interfaceID)) {
+    if (!populateInterfaceProperties(&serviceInterface, interfaceID)) {
         //populateInterfaceProperties should already give a warning message
         //and set the last error
         rollbackTransaction(&query);
@@ -1067,7 +1067,7 @@ QServiceInterfaceDescriptor ServiceDatabase::getInterface(const QString &interfa
 
     rollbackTransaction(&query);//read only operation so just rollback
     m_lastError.setError(DBError::NoError);
-    return interface;
+    return serviceInterface;
 }
 
 /*
@@ -1154,14 +1154,14 @@ QStringList ServiceDatabase::getServiceNames(const QString &interfaceName)
 QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &interfaceName, QString *defaultInterfaceID,
                                                                     bool inTransaction)
 {
-    QServiceInterfaceDescriptor interface;
+    QServiceInterfaceDescriptor serviceInterface;
     if (!checkConnection())
     {
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
         qWarning() << "ServiceDatabase::interfaceDefault():-"
                     << "Problem:" << qPrintable(m_lastError.text());
 #endif
-        return interface;
+        return serviceInterface;
     }
 
     QSqlDatabase database = QSqlDatabase::database(m_connectionName);
@@ -1173,7 +1173,7 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
                     << "Unable to begin transaction. "
                     << "Reason:" << qPrintable(m_lastError.text());
 #endif
-        return interface;
+        return serviceInterface;
     }
 
     QString statement(QLatin1String("SELECT InterfaceID FROM Defaults WHERE InterfaceName = ? COLLATE NOCASE"));
@@ -1186,7 +1186,7 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
         qWarning() << "ServiceDatabase::interfaceDefault():-"
                     << qPrintable(m_lastError.text());
 #endif
-        return interface;
+        return serviceInterface;
     }
 
     QString interfaceID;
@@ -1196,7 +1196,7 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
             rollbackTransaction(&query);
         QString errorText(QLatin1String("No default service found for interface: \"%1\""));
         m_lastError.setError(DBError::NotFound, errorText.arg(interfaceName));
-        return interface;
+        return serviceInterface;
     }
     else
         interfaceID = query.value(EBindIndex).toString();
@@ -1219,7 +1219,7 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
         qWarning() << "ServiceDatabase::interfaceDefault():-"
                     << qPrintable(m_lastError.text());
 #endif
-        return interface;
+        return serviceInterface;
     }
 
     if (!query.next()) {
@@ -1228,27 +1228,27 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
         if (defaultInterfaceID != NULL )
             *defaultInterfaceID = interfaceID;
         m_lastError.setError(DBError::ExternalIfaceIDFound);
-        return interface;
+        return serviceInterface;
     }
 
-    interface.d = new QServiceInterfaceDescriptorPrivate;
-    interface.d->interfaceName =query.value(EBindIndex).toString();
-    interface.d->serviceName = query.value(EBindIndex1).toString();
-    interface.d->major = query.value(EBindIndex2).toInt();
-    interface.d->minor = query.value(EBindIndex3).toInt();
+    serviceInterface.d = new QServiceInterfaceDescriptorPrivate;
+    serviceInterface.d->interfaceName =query.value(EBindIndex).toString();
+    serviceInterface.d->serviceName = query.value(EBindIndex1).toString();
+    serviceInterface.d->major = query.value(EBindIndex2).toInt();
+    serviceInterface.d->minor = query.value(EBindIndex3).toInt();
 
     QString location = query.value(EBindIndex4).toString();
     if (location.startsWith(QLatin1String(SERVICE_IPC_PREFIX))) {
-        interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
-        interface.d->attributes[QServiceInterfaceDescriptor::Location]
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::InterProcess;
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::Location]
             = location.remove(0,QString(QLatin1String(SERVICE_IPC_PREFIX)).size());
     } else {
-        interface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::Plugin;
-        interface.d->attributes[QServiceInterfaceDescriptor::Location] = location;
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::ServiceType] = QService::Plugin;
+        serviceInterface.d->attributes[QServiceInterfaceDescriptor::Location] = location;
     }
 
     QString serviceID = query.value(EBindIndex5).toString();
-    if (!populateServiceProperties(&interface, serviceID)) {
+    if (!populateServiceProperties(&serviceInterface, serviceID)) {
         //populateServiceProperties should already give a warning
         //and set the last error
         if (!inTransaction)
@@ -1256,7 +1256,7 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
         return QServiceInterfaceDescriptor();
     }
 
-    if (!populateInterfaceProperties(&interface, interfaceID)) {
+    if (!populateInterfaceProperties(&serviceInterface, interfaceID)) {
         //populateInterfaceProperties should already give a warning
         //and set the last error
         if (!inTransaction)
@@ -1267,7 +1267,7 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
     if (!inTransaction)
         rollbackTransaction(&query); //Read only operation so just rollback
     m_lastError.setError(DBError::NoError);
-    return interface;
+    return serviceInterface;
 }
 
 /*
@@ -1288,7 +1288,7 @@ QServiceInterfaceDescriptor ServiceDatabase::interfaceDefault(const QString &int
    DBError::NoWritePermissions
    DBError::InvalidDatabaseFile
 */
-bool ServiceDatabase::setInterfaceDefault(const QServiceInterfaceDescriptor &interface, const QString &externalInterfaceID)
+bool ServiceDatabase::setInterfaceDefault(const QServiceInterfaceDescriptor &serviceInterface, const QString &externalInterfaceID)
 {
     if (!checkConnection()) {
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
@@ -1321,10 +1321,10 @@ bool ServiceDatabase::setInterfaceDefault(const QServiceInterfaceDescriptor &int
                 "AND Interface.Name = ? COLLATE NOCASE "
                 "AND Interface.VerMaj = ? "
                 "AND Interface.VerMin = ? ");
-        bindValues.append(interface.serviceName());
-        bindValues.append(interface.interfaceName());
-        bindValues.append(interface.majorVersion());
-        bindValues.append(interface.minorVersion());
+        bindValues.append(serviceInterface.serviceName());
+        bindValues.append(serviceInterface.interfaceName());
+        bindValues.append(serviceInterface.majorVersion());
+        bindValues.append(serviceInterface.minorVersion());
 
         if (!executeQuery(&query, statement, bindValues)) {
             rollbackTransaction(&query);
@@ -1339,10 +1339,10 @@ bool ServiceDatabase::setInterfaceDefault(const QServiceInterfaceDescriptor &int
             QString errorText;
             errorText = QLatin1String("No implementation for interface: %1, Version: %2.%3 found "
                 "for service: %4");
-            m_lastError.setNotFoundError(errorText.arg(interface.interfaceName())
-                    .arg(interface.majorVersion())
-                    .arg(interface.minorVersion())
-                    .arg(interface.serviceName()));
+            m_lastError.setNotFoundError(errorText.arg(serviceInterface.interfaceName())
+                    .arg(serviceInterface.majorVersion())
+                    .arg(serviceInterface.minorVersion())
+                    .arg(serviceInterface.serviceName()));
 
             rollbackTransaction(&query);
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
@@ -1359,7 +1359,7 @@ bool ServiceDatabase::setInterfaceDefault(const QServiceInterfaceDescriptor &int
 
     statement = QLatin1String("SELECT InterfaceName FROM Defaults WHERE InterfaceName = ? COLLATE NOCASE");
     bindValues.clear();
-    bindValues.append(interface.interfaceName());
+    bindValues.append(serviceInterface.interfaceName());
     if (!executeQuery(&query, statement, bindValues)) {
         rollbackTransaction(&query);
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
@@ -1375,7 +1375,7 @@ bool ServiceDatabase::setInterfaceDefault(const QServiceInterfaceDescriptor &int
             "WHERE InterfaceName = ? COLLATE NOCASE");
         bindValues.clear();
         bindValues.append(interfaceID);
-        bindValues.append(interface.interfaceName());
+        bindValues.append(serviceInterface.interfaceName());
 
         if (!executeQuery(&query, statement, bindValues)) {
             rollbackTransaction(&query);
@@ -1388,7 +1388,7 @@ bool ServiceDatabase::setInterfaceDefault(const QServiceInterfaceDescriptor &int
     } else {
         statement = QLatin1String("INSERT INTO Defaults(InterfaceName,InterfaceID) VALUES(?,?)");
         bindValues.clear();
-        bindValues.append(interface.interfaceName());
+        bindValues.append(serviceInterface.interfaceName());
         bindValues.append(interfaceID);
 
         if (!executeQuery(&query, statement, bindValues)) {
@@ -2207,7 +2207,7 @@ bool ServiceDatabase::rollbackTransaction(QSqlQuery *query)
     DBError::NoError
     DBError::SqlError
 */
-bool ServiceDatabase::populateInterfaceProperties(QServiceInterfaceDescriptor *interface, const QString &interfaceID)
+bool ServiceDatabase::populateInterfaceProperties(QServiceInterfaceDescriptor *serviceInterface, const QString &interfaceID)
 {
     QSqlQuery query(QSqlDatabase::database(m_connectionName));
     QString statement(QLatin1String("SELECT Key, Value FROM InterfaceProperty WHERE InterfaceID = ?"));
@@ -2229,24 +2229,24 @@ bool ServiceDatabase::populateInterfaceProperties(QServiceInterfaceDescriptor *i
         if (attribute == QLatin1String(INTERFACE_CAPABILITY_KEY)) {
             const QStringList capabilities = query.value(EBindIndex1).toString().split(QLatin1String(","));
             if (capabilities.count() == 1 && capabilities[0].isEmpty()) {
-                interface->d->attributes[QServiceInterfaceDescriptor::Capabilities]
+                serviceInterface->d->attributes[QServiceInterfaceDescriptor::Capabilities]
                     = QStringList();
             } else {
-                interface->d->attributes[QServiceInterfaceDescriptor::Capabilities]
+                serviceInterface->d->attributes[QServiceInterfaceDescriptor::Capabilities]
                 = capabilities;
             }
         } else if (attribute == QLatin1String(INTERFACE_DESCRIPTION_KEY)) {
-            interface->d->attributes[QServiceInterfaceDescriptor::InterfaceDescription]
+            serviceInterface->d->attributes[QServiceInterfaceDescriptor::InterfaceDescription]
                = query.value(EBindIndex1).toString();
         } else if (attribute.startsWith(QLatin1String("c_"))) {
-            interface->d->customAttributes[attribute.mid(2)]
+            serviceInterface->d->customAttributes[attribute.mid(2)]
                = query.value(EBindIndex1).toString();
         }
     }
 
     if (!isFound) {
         QString errorText(QLatin1String("Database integrity corrupted, Properties for InterfaceID: %1 does not exist in the InterfaceProperty table for interface \"%2\""));
-        m_lastError.setError(DBError::SqlError, errorText.arg(interfaceID).arg(interface->interfaceName()));
+        m_lastError.setError(DBError::SqlError, errorText.arg(interfaceID).arg(serviceInterface->interfaceName()));
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
         qWarning() << "ServiceDatabase::populateInterfaceProperties():-"
                     << "Problem:" << qPrintable(m_lastError.text());
@@ -2270,7 +2270,7 @@ bool ServiceDatabase::populateInterfaceProperties(QServiceInterfaceDescriptor *i
     DBError::NoError
     DBError::SqlError
 */
-bool ServiceDatabase::populateServiceProperties(QServiceInterfaceDescriptor *interface, const QString &serviceID)
+bool ServiceDatabase::populateServiceProperties(QServiceInterfaceDescriptor *serviceInterface, const QString &serviceID)
 {
     QSqlQuery query(QSqlDatabase::database(m_connectionName));
     QString statement(QLatin1String("SELECT Key, Value FROM ServiceProperty WHERE ServiceID = ?"));
@@ -2290,18 +2290,18 @@ bool ServiceDatabase::populateServiceProperties(QServiceInterfaceDescriptor *int
         isFound = true;
         attribute = query.value(EBindIndex).toString();
         if (attribute == QLatin1String(SERVICE_DESCRIPTION_KEY)) {
-                interface->d->attributes[QServiceInterfaceDescriptor::ServiceDescription]
+                serviceInterface->d->attributes[QServiceInterfaceDescriptor::ServiceDescription]
                     = query.value(EBindIndex1).toString();
         }
         // fetch initialized and put it as a custom attribute
         if (attribute == QLatin1String(SERVICE_INITIALIZED_KEY)) {
-            interface->d->customAttributes[attribute] = query.value(EBindIndex1).toString();
+            serviceInterface->d->customAttributes[attribute] = query.value(EBindIndex1).toString();
         }
     }
 
     if (!isFound) {
         QString errorText(QLatin1String("Database integrity corrupted, Service Properties for ServiceID: \"%1\" does not exist in the ServiceProperty table for service \"%2\""));
-        m_lastError.setError(DBError::SqlError, errorText.arg(serviceID).arg(interface->serviceName()));
+        m_lastError.setError(DBError::SqlError, errorText.arg(serviceID).arg(serviceInterface->serviceName()));
 #ifdef QT_SFW_SERVICEDATABASE_DEBUG
         qWarning() << "ServiceDatabase::populateServiceProperties():-"
                     << "Problem:" << qPrintable(m_lastError.text());

@@ -372,8 +372,8 @@ void tst_QServiceManager::findServices()
 
     // Check that nothing is found neither with default search or interface-search
     QVERIFY(mgr.findServices().isEmpty());
-    foreach (const QString &interface, interfaceNames)
-        QVERIFY(mgr.findServices(interface).isEmpty());
+    foreach (const QString &serviceInterface, interfaceNames)
+        QVERIFY(mgr.findServices(serviceInterface).isEmpty());
     QCOMPARE(mgr.findInterfaces(wildcardFilter).count(), 0);
 
     // Add all services from the xmlBlocks list
@@ -385,8 +385,8 @@ void tst_QServiceManager::findServices()
     // Check that all services are found with default search
     QCOMPARE(mgr.findServices().toSet(), searchAllResult);
     // Check that all services are found based on interface search
-    foreach (const QString &interface, interfaceNames)
-        QCOMPARE(mgr.findServices(interface).toSet(), searchByInterfaceResult);
+    foreach (const QString &serviceInterface, interfaceNames)
+        QCOMPARE(mgr.findServices(serviceInterface).toSet(), searchByInterfaceResult);
 
     // Check that nothing is found with empty interface
     QCOMPARE(mgr.findServices("com.invalid.interface") , QStringList());
