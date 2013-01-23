@@ -5,7 +5,6 @@ SOURCES = main.cpp
 
 app.files = \
     $$files(*.qml) \
-    images
 
 target.path = $$[QT_INSTALL_EXAMPLES]/sysinfo/qml-battery
 app.path = $$[QT_INSTALL_EXAMPLES]/sysinfo/qml-battery

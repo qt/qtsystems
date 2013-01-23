@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -41,410 +41,140 @@
 
 import QtQuick 2.0
 import QtSystemInfo 5.0
-import QtQuick.Particles 2.0
+import QtQuick.Window 2.0
 
 Rectangle {
-    width: 360
-    height: 360
-    property alias batlevel: batinfo.battlevel;
-    property int speed: level2Speed(batlevel);
-    property bool hasBattery: (batinfo.batteryStatus != -1)
+    width: Screen.width
+    height: Screen.height
 
     MouseArea {
         anchors.fill: parent
-        onClicked: {
-            Qt.quit();
-        }
+        onClicked: { Qt.quit() }
     }
 
-    BatteryInfo {
-        id: batinfo;
-
-        property int battlevel: remainingCapacityPercent;
-        property string oldstate;
-
-        monitorChargerTypeChanges: true
-        monitorChargingStateChanges: true
-        monitorBatteryStatusChanges: true
-        monitorRemainingCapacityPercentChanges: true
-        monitorRemainingCapacityChanges: true
-        monitorRemainingChargingTimeChanges: true
-        monitorCurrentFlowChanges: true
-
-        onChargerTypeChanged:  {
-//! [battery2-info1]
-            if (batinfo.chargerType == -1) {
-                chargertype.text = "Unknown Charger"
-            }
-            if (batinfo.chargerType == 0) {
-                chargertype.text = "No Charger"
-            }
-            if (batinfo.chargerType == 1) {
-                chargertype.text = "Wall Charger"
-            }
-            if (batinfo.chargerType == 2) {
-                chargertype.text = "USB Charger"
-            }
-            if (batinfo.chargerType == 3) {
-                chargertype.text = "USB Charger"
-            }
-            if (batinfo.chargerType == 5) {
-                chargertype.text = "Variable Current Charger"
-            }
-        }
-
-        onChargingStateChanged: {
-            getPowerState();
-        }
-        onBatteryStatusChanged: {
-            if (batinfo.batteryStatus == -1) {
-                batStat.text = "Battery Unknown"
-            }
-            if (batinfo.batteryStatus == 0) {
-                batStat.text = "Battery Empty"
-            }
-            if (batinfo.batteryStatus == 1) {
-                batStat.text = "Battery Critical"
-            }
-            if (batinfo.batteryStatus == 3) {
-                batStat.text = "Battery Low"
-                img.width = 20; img.height = 20;
-            }
-            if (batinfo.batteryStatus == 4) {
-                batStat.text = "Battery Ok"
-            }
-            if (batinfo.batteryStatus == 5) {
-                batStat.text = "Battery Full"
-            }
-        }
-//! [battery2-doBatteryLevelChange]
-        onRemainingCapacityPercentChanged: doBatteryLevelChange(level)
-//! [battery2-doBatteryLevelChange]
-        onRemainingChargingTimeChanged: { chargeTime.text = "Time to full: "+ minutesToFull() +" minutes"; }
-
-        property alias batState : batinfo.chargingState
-
-        Component.onCompleted: getPowerState();
-    }
-
-    function minutesToFull() {
-        if (batinfo.remainingChargingTime > 0) {
-          return (batinfo.remainingChargingTime/60.00)
-        }
-        return 0;
-    }
-
-    function level2Speed(level) {
-        if (level > 90) {
-            return 1000;
-        } else if (level > 70) {
-            return 1500;
-        } else if (level > 60) {
-            return 2000;
-        } else if (level > 50) {
-            return 2500;
-        } else if (level > 40) {
-            return 3000;
-        } else if (level > 10) {
-            return 3500;
-        } else if (level < 11) {
-            return 4000;
-        }
-    }
-
-//! [battery2-info2]
-    function doBatteryLevelChange(level) {
-        leveltext.text = "Level: "+ level +"%"
-        floorParticles.burst(level);
-        batlevel = level;
-        batinfo.oldstate = img.state;
-        img.state = "levelchange"
-        //img.state = batinfo.oldstate;
-        getPowerState();
-    }
-//! [battery2-info2]
-
-    function getPowerState() {
-        if (batinfo.chargingState == 0) {
-            chargeState.text = "Charging State: Not Charging"
-            if (batinfo.chargerType == 0) {
-                img.state = "Battery"
-                batinfo.oldstate = img.state;
-            } else {
-                img.state = "WallPower"
-                batinfo.oldstate = img.state;
-            }
-        }
-        if (batinfo.chargingState == 1) {
-            chargeState.text = "Charging State: Charging"
-            img.state = "Charging"
-            batinfo.oldstate = img.state;
-        }
-    }
-
-    Text {
-        id: leveltext
+    Row {
         anchors.centerIn: parent
-//! [battery2-level]
-        text: "Level: "+batinfo.remainingCapacityPercent +"%"
-//! [battery2-level]
+        BatteryInfo {
+            id: batinfo
+
+            monitorChargerType: true
+            monitorCurrentFlow: true
+            monitorRemainingCapacity: true
+            monitorRemainingChargingTime: true
+            monitorVoltage: true
+            monitorChargingState: true
+            monitorBatteryStatus: true
+
+            onChargerTypeChanged: {
+                if (type == 1) {
+                    chargertype.text = "Wall Charger"
+                } else if (type == 2) {
+                    chargertype.text = "USB Charger"
+                } else if (type == 3) {
+                    chargertype.text = "Variable Current Charger"
+                } else {
+                    chargertype.text = "Unknown Charger"
+                }
+            }
+
+            onCurrentFlowChanged: {
+                /* battery parameter skipped */
+                currentflow.text = flow + " mA"
+            }
+
+            onRemainingCapacityChanged: {
+                /* battery parameter skipped */
+                remainingcapacity.text = capacity + getEnergyUnit()
+                updateBatteryLevel()
+            }
+
+            onRemainingChargingTimeChanged: {
+                /* battery parameter skipped */
+                remainingchargingtime.text = seconds + " s"
+            }
+
+            onVoltageChanged: {
+                /* battery parameter skipped */
+                voltagetext.text = voltage + " mV"
+            }
+
+            onChargingStateChanged: {
+                /* battery parameter skipped */
+                if (state == 1) {
+                    chargeState.text = "Not Charging"
+                } else if (state == 2) {
+                    chargeState.text = "Charging"
+                } else if (state == 3) {
+                chargeState.text = "Discharging"
+                } else {
+                    chargeState.text = "Unknown"
+                }
+            }
+
+            onBatteryStatusChanged: {
+                /* battery parameter skipped */
+                if (status == 1) {
+                    batStat.text = "Empty"
+                } else if (status == 2) {
+                    batStat.text = "Low"
+                } else if (status == 3) {
+                    batStat.text = "Ok"
+                } else if (status == 4) {
+                    batStat.text = "Full"
+                } else {
+                    batStat.text = "Unknown"
+                }
+            }
+
+            function getEnergyUnit() {
+                              if (energyUnit == 1) {
+                                  return " mAh"
+                              } else if (energyUnit == 2) {
+                                  return " mWh"
+                            } else {
+                                  return " ???"
+                            }
+            }
+
+            function updateBatteryLevel() {
+                var battery = 0
+                level.text = (100/batinfo.maximumCapacity(battery)*batinfo.remainingCapacity(battery)).toFixed(1) + "%"
+            }
+
+            Component.onCompleted: {
+                var battery = 0
+                onChargerTypeChanged(chargerType)
+                onCurrentFlowChanged(battery, currentFlow(battery))
+                onRemainingCapacityChanged(battery, remainingCapacity(battery))
+                onRemainingChargingTimeChanged(battery, remainingChargingTime(battery))
+                onVoltageChanged(battery, voltage(battery))
+                onChargingStateChanged(battery, chargingState(battery))
+                onBatteryStatusChanged(battery, batteryStatus(battery))
+                maximum.text = maximumCapacity(battery) + getEnergyUnit()
+            }
+        }
+
+          Column {
+              Text { text: "Battery level:" }
+              Text { text: "Current flow:" }
+              Text { text: "Maximum capacity:" }
+              Text { text: "Remaining capacity:" }
+              Text { text: "Battery state:" }
+              Text { text: "Remaining charging time:" }
+              Text { text: "Voltage:" }
+              Text { text: "Charge state:" }
+              Text { text: "Charger type:" }
+          }
+          Column {
+              Text { id: level }
+              Text { id: currentflow }
+              Text { id: maximum }
+              Text { id: remainingcapacity }
+              Text { id: batStat }
+              Text { id: remainingchargingtime }
+              Text { id: voltagetext }
+              Text { id: chargeState }
+              Text { id: chargertype }
+          }
     }
-    Text {
-        id: voltagetext
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: leveltext.bottom}
-        text: "Voltage: "+ batinfo.voltage +" mV"
-    }
-    Text {
-        id: nomCap
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: voltagetext.bottom}
-        text: "Nominal Capacity: "+ batinfo.nominalCapacity +" "+getEnergyUnit()
-    }
-    Text {
-        id: remCap
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: nomCap.bottom}
-        text: "Remaining Capacity: "+ batinfo.remainingCapacity +" "+getEnergyUnit()
-    }
-    Text {
-        id: chargeTime
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: remCap.bottom}
-        text: "Time to full: "+ minutesToFull() +" minutes";
-
-    }
-    Text {
-        id: curFLow
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: chargeTime.bottom}
-        text: "Current Energy: "+ batinfo.currentFlow +" mA"
-    }
-
-    function getEnergyUnit() {
-        if (batinfo.energyMeasurementUnit == -1) {
-            return "Unknown energy unit"
-        }
-        if (batinfo.energyMeasurementUnit == 0) {
-            return "mAh"
-        }
-        if (batinfo.energyMeasurementUnit == 1) {
-            return "mWh"
-        }
-    }
-
-    Text {
-        id: batStat
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: curFLow.bottom}
-        text: {
-            if (batinfo.batteryStatus == -1) {
-                batStat.text = "Battery Unknown"
-            }
-            if (batinfo.batteryStatus == 0) {
-                batStat.text = "Battery Empty"
-            }
-            if (batinfo.batteryStatus == 1) {
-                batStat.text = "Battery Critical"
-            }
-            if (batinfo.batteryStatus == 2) {
-                batStat.text = "Battery Very Low"
-            }
-            if (batinfo.batteryStatus == 3) {
-                batStat.text = "Battery Low"
-            }
-            if (batinfo.batteryStatus == 4) {
-                batStat.text = "Battery Ok"
-            }
-            if (batinfo.batteryStatus == 5) {
-                batStat.text = "Battery Full"
-            }
-        }
-    }
-
-    Text {
-        id: chargertype
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: batStat.bottom}
-        text: {
-            if (batinfo.chargerType == -1) {
-                chargertype.text = "Unknown Charger"
-            }
-            if (batinfo.chargerType == 0) {
-                chargertype.text = "No Charger"
-            }
-            if (batinfo.chargerType == 1) {
-                chargertype.text = "Wall Charger"
-            }
-            if (batinfo.chargerType == 2) {
-                chargertype.text = "USB Charger"
-            }
-            if (batinfo.chargerType == 3) {
-                chargertype.text = "USB 500 mA Charger"
-            }
-            if (batinfo.chargerType == 4) {
-                chargertype.text = "USB 100 mA Charger"
-            }
-            if (batinfo.chargerType == 5) {
-                chargertype.text = "Variable Current Charger"
-            }
-        }
-    }
-    Text {
-        id: chargeState
-        anchors{ horizontalCenter: leveltext.horizontalCenter; top: chargertype.bottom}
-        text: {
-            if (batinfo.chargingState == -1) {
-                chargeState.text = "Charging Unknown"
-            }
-            if (batinfo.chargingState == 0) {
-                chargeState.text = "Not Charging"
-            }
-            if (batinfsysteminfoo.chargingState == 1) {
-                chargeState.text = "Charging"
-            }
-        }
-    }
-/////////////////////////
-
-    Particles {
-        id: floorParticles
-        anchors { horizontalCenter: screen.horizontalCenter; }
-        y: screen.height
-        width: 1
-        height: 1
-        source: "images/blueStar.png"
-        lifeSpan: 1000
-        count: batlevel
-        angle: 270
-        angleDeviation: 45
-        velocity: 50
-        velocityDeviation: 60
-        ParticleMotionGravity {
-            yattractor: 1000
-            xattractor: 0
-            acceleration: 5
-        }
-    }
-
-    function particleState() {
-        if (img.state == "Battery") {
-            particles.burst(50,200);
-        }
-    }
-
-
-    Image {
-        id: img;
-        source: "images/blueStone.png"
-        smooth: true
-        width: batinfo.battlevel; height: batinfo.battlevel;
-        anchors {
-            horizontalCenter: screen.horizontalCenter;
-        }
-        y: screen.height - img.height;
-        Particles {
-            id: particles
-            width:1; height:1; anchors.centerIn: parent;
-            emissionRate: 0;
-            lifeSpan: 700; lifeSpanDeviation: 300;
-            angle: 0; angleDeviation: 360;
-            velocity: 100; velocityDeviation:30;
-            source:"images/blueStar.png";
-        }
-
-        states: [
-        State {
-            name: "WallPower"
-            when: deviceinfo.currentPowerState == 2
-            StateChangeScript { script: particles.burst(50); }
-            PropertyChanges {
-                target: img; opacity: 1; source : "images/blueStone.png";
-                anchors.horizontalCenter: undefined
-                y: 0;  x: (screen.width / 2) - (img.width / 2)
-            }
-            PropertyChanges { target: floorParticles; count:0 }
-
-        },
-        State {
-            name: "Charging"
-            when: deviceinfo.currentPowerState == 3
-            StateChangeScript { script: particles.burst(50); }
-            PropertyChanges { target: img; y:screen.height
-            }
-            PropertyChanges {
-                target: img; opacity: 1; source : "images/yellowStone.png";
-                anchors.horizontalCenter: parent.horizontalCenter;
-            }
-            PropertyChanges { target: floorParticles; count:0 }
-        },
-
-        State {
-            name: "Battery"
-            when: deviceinfo.currentPowerState == 1
-            StateChangeScript { script: particles.burst(50); }
-            PropertyChanges {
-                target: img; source : "images/redStone.png";
-                anchors.horizontalCenter: parent.horizontalCenter;
-            }
-            PropertyChanges { target: floorParticles; count: batlevel }
-        },
-
-//! [battery2-level2]
-        State {
-            name: "levelchange"
-//! [battery2-level2]
-            PropertyChanges {
-                target: yAnim
-                running: false;
-            }
-//! [battery2-level3]
-            PropertyChanges {
-                target: bubblebounceanim
-                from: screen.height
-                to: screen.height - (screen.height * (batlevel / 100 ))
-            }
-//! [battery2-level3]
-            PropertyChanges {
-                target: yAnim
-                running: true;
-            }
-        }
-        ]
-
-
-        transitions: [
-        Transition {
-            from: "*"
-            to: "WallPower"
-            NumberAnimation{ property: "y"; to: 0; duration: 750; easing.type: Easing.InOutQuad; }
-        },
-        Transition {
-            from: "WallPower"
-            to: "*"
-            NumberAnimation{ property: "y"; to: screen.height; duration: 2000; easing.type: Easing.InOutQuad; }
-        }
-        ]
-
-        SequentialAnimation on y {
-            id: yAnim
-            loops: Animation.Infinite
-            running: img.state != "WallPower"
-            NumberAnimation {
-                id: bubblebounceanim;
-                from: screen.height; to: screen.height - (screen.height * (batlevel / 100 ))
-                easing.type: Easing.OutBounce; duration: speed
-            }
-            ScriptAction { script: particleState() }
-            PauseAnimation { duration: 750 }
-        }
-
-        SequentialAnimation on x {
-            running: img.state == "WallPower"
-            loops: Animation.Infinite
-            id: xanim
-            NumberAnimation { target: img; property: "x"; to: screen.width - img.width; duration: 1500;
-                easing.type: Easing.InOutQuad;  }
-            NumberAnimation { target: img; property: "x"; to: 0; duration: 1500;
-                easing.type: Easing.InOutQuad;}
-        }
-    }
-
-
-
-
-
 }
