@@ -45,11 +45,11 @@
 
 #include <QtCore/qsettings.h>
 
-#include <Winsock2.h>
+#include <winsock2.h>
 #include <qt_windows.h>
-#include <Vfw.h>
+#include <vfw.h>
 #if !defined(Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
-#  include <Ws2bth.h>
+#  include <ws2bth.h>
 #  include <Bthsdpdef.h>
 #  include <BluetoothAPIs.h>
 #endif

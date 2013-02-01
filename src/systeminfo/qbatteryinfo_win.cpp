@@ -43,8 +43,8 @@
 
 #include <qt_windows.h>
 
-#include <PowrProf.h>
-#include <Setupapi.h>
+#include <powrprof.h>
+#include <setupapi.h>
 
 #if !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
 #  include <BatClass.h>
