@@ -70,10 +70,10 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, NETWORK_SYSFS_PATH, (QStringLiteral("/sys/class/net/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, NETWORK_SYSFS_PATH, (QLatin1String("/sys/class/net/")))
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, WLAN_MASK, (QStringList() << QString(QStringLiteral("wlan*"))))
-Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, ETHERNET_MASK, (QStringList() << QString(QStringLiteral("eth*")) << QString(QStringLiteral("usb*"))))
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, WLAN_MASK, (QStringList() << QLatin1String("wlan*")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, ETHERNET_MASK, (QStringList() << QLatin1String("eth*") << QLatin1String("usb*")))
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     : QObject(parent)

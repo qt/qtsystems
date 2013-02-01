@@ -52,13 +52,13 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, AC_ONLINE_SYSFS_PATH, (QStringLiteral("/sys/class/power_supply/AC/online")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, BATTERY_SYSFS_PATH, (QStringLiteral("/sys/class/power_supply/BAT%1/")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, POWER_SUPPLY_SYSFS_PATH, (QStringLiteral("/sys/class/power_supply/")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB_PRESENT_SYSFS_PATH, (QStringLiteral("/sys/class/power_supply/usb/present")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB_TYPE_SYSFS_PATH, (QStringLiteral("/sys/class/power_supply/usb/type")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB0_PRESENT_SYSFS_PATH, (QStringLiteral("/sys/class/power_supply/USB0/present")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB0_TYPE_SYSFS_PATH, (QStringLiteral("/sys/class/power_supply/USB0/type")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, AC_ONLINE_SYSFS_PATH, (QLatin1String("/sys/class/power_supply/AC/online")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BATTERY_SYSFS_PATH, (QLatin1String("/sys/class/power_supply/BAT%1/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, POWER_SUPPLY_SYSFS_PATH, (QLatin1String("/sys/class/power_supply/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB_PRESENT_SYSFS_PATH, (QLatin1String("/sys/class/power_supply/usb/present")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB_TYPE_SYSFS_PATH, (QLatin1String("/sys/class/power_supply/usb/type")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB0_PRESENT_SYSFS_PATH, (QLatin1String("/sys/class/power_supply/USB0/present")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB0_TYPE_SYSFS_PATH, (QLatin1String("/sys/class/power_supply/USB0/type")))
 
 QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     : QObject(parent)

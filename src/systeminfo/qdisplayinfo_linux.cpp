@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, BACKLIGHT_SYSFS_PATH, (QStringLiteral("/sys/class/backlight/")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, GRAPHICS_SYSFS_PATH, (QStringLiteral("/sys/class/graphics/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, BACKLIGHT_SYSFS_PATH, (QLatin1String("/sys/class/backlight/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, GRAPHICS_SYSFS_PATH, (QLatin1String("/sys/class/graphics/")))
 
 QDisplayInfoPrivate::QDisplayInfoPrivate(QDisplayInfo *parent)
     : q_ptr(parent)
