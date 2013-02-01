@@ -47,7 +47,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/quuid.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 namespace QValueSpace {
@@ -71,6 +70,5 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QValueSpace::LayerOptions)
 #define QVALUESPACE_JSONDB_LAYER QUuid(0xa167384c, 0x6acf, 0x2738, 0xc8, 0xd5, 0xa0, 0x88, 0xac, 0x6e, 0xc2, 0xd6)
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QVALUESPACE_H

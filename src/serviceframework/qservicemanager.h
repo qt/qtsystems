@@ -53,8 +53,6 @@
 #include <QStringList>
 #include <QDebug>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QServiceContext;
@@ -174,7 +172,5 @@ Q_OUTOFLINE_TEMPLATE T* QServiceManager::loadLocalTypedInterface(const QServiceI
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

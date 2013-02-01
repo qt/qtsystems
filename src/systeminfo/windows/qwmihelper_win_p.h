@@ -63,7 +63,6 @@
 
 #include <QStringList>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class Q_SYSTEMINFO_PRIVATE_EXPORT WMIHelper : public QObject
@@ -132,6 +131,6 @@ public:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
+
 #endif // !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
 #endif // WMIHELPER_H

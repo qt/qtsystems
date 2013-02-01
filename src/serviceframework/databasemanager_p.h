@@ -62,7 +62,6 @@
 #define Q_AUTOTEST_EXPORT
 #endif
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class DatabaseFileWatcher;
@@ -135,6 +134,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif

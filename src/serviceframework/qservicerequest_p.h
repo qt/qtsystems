@@ -60,8 +60,6 @@
 
 #include <QString>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QServiceRequest
@@ -103,8 +101,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 Q_DECLARE_METATYPE(QServiceRequest)
 

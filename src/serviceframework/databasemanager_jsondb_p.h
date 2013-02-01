@@ -77,7 +77,6 @@ class QJsonDbRequest;
 class QJsonDbWatcher;
 QT_END_NAMESPACE_JSONDB
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -124,6 +123,5 @@ class Q_AUTOTEST_EXPORT DatabaseManager : public QObject
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif

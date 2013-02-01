@@ -44,8 +44,6 @@
 
 #include "qserviceframeworkglobal.h"
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 //QTM_SYNC_HEADER_EXPORT QService
@@ -72,5 +70,4 @@ namespace QService
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
 #endif //Q_SERVICE_H

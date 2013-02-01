@@ -45,7 +45,6 @@
 #include <qsysteminfoglobal.h>
 #include <QtCore/qobject.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_SIMULATOR)
@@ -136,6 +135,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QBATTERYINFO_H

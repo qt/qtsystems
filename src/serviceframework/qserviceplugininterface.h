@@ -45,9 +45,7 @@
 #include "qserviceframeworkglobal.h"
 #include <QtPlugin>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
-
 
 class QServiceInterfaceDescriptor;
 
@@ -66,5 +64,4 @@ public:
 Q_DECLARE_INTERFACE(QServicePluginInterface, "com.nokia.qt.QServicePluginInterface/1.0")
 QT_END_NAMESPACE
 
-QT_END_HEADER
 #endif

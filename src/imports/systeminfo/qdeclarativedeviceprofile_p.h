@@ -55,7 +55,6 @@
 
 #include <qdeviceprofile.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeDeviceProfile : public QObject
@@ -96,6 +95,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QDECLARATIVEDEVICEPROFILE_P_H
