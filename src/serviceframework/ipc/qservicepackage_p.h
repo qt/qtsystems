@@ -117,7 +117,7 @@ public:
     QUuid instanceId;
     QServicePackage::ResponseType responseType;
 
-    virtual void clean()
+    void clean()
     {
         packageType = QServicePackage::ObjectCreation;
         messageId = QUuid();
