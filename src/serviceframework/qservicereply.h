@@ -91,8 +91,8 @@ class QServiceReply : public QServiceReplyBase
 {
     Q_OBJECT
     public:
-    QServiceReply(QObject *parent = 0)
-        : QServiceReplyBase(parent),
+    QServiceReply(QObject *p = 0)
+        : QServiceReplyBase(p),
           m_proxyObject(0)
     {
         // nothing to do
@@ -108,9 +108,9 @@ class QServiceReply : public QServiceReplyBase
         return m_proxyObject;
     }
 
-    void setProxyObject(QObject *proxyObject)
+    void setProxyObject(QObject *newProxyObject)
     {
-        m_proxyObject = proxyObject;
+        m_proxyObject = newProxyObject;
     }
 
 private:
