@@ -121,7 +121,7 @@ class JsonDbSyncCall: public QObject
         void handleError(QtJsonDb::QJsonDbRequest::ErrorCode id, QString code);
 
     private:
-        const QString &mQuery;
+        QString mQuery;
         const QJsonObject *mObject;
         const QString mPartition;
         QList<QJsonObject> *mResult;
