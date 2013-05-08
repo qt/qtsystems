@@ -71,9 +71,6 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 #if !defined(QT_NO_OFONO)
     , ofonoWrapper(0)
 #endif // QT_NO_OFONO
-#if !defined(QT_NO_LIBSYSINFO)
-    , sc(0)
-#endif // QT_NO_LIBSYSINFO
 {
 }
 
@@ -236,11 +233,7 @@ int QDeviceInfoPrivate::imeiCount()
 
 QString QDeviceInfoPrivate::imei(int interface)
 {
-#if !defined(QT_NO_LIBSYSINFO)
-     if (imeiBuffer.size() == 0)
-        imeiBuffer << getSysInfoValue("/certs/npc/esn/gsm");
-
-#elif !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
@@ -262,13 +255,9 @@ QString QDeviceInfoPrivate::imei(int interface)
 QString QDeviceInfoPrivate::manufacturer()
 {
     if (manufacturerBuffer.isEmpty()) {
-#if !defined(QT_NO_LIBSYSINFO)
-        manufacturerBuffer = getSysInfoValue("/component/manufacturer");
-#else
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/sys_vendor"));
         if (file.open(QIODevice::ReadOnly))
             manufacturerBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
-#endif
     }
 
     return manufacturerBuffer;
@@ -287,10 +276,6 @@ QString QDeviceInfoPrivate::model()
 
 QString QDeviceInfoPrivate::productName()
 {
-#if !defined(QT_NO_LIBSYSINFO)
-    if (productNameBuffer.isEmpty())
-       productNameBuffer = getSysInfoValue("/component/product");
-#else
     if (productNameBuffer.isEmpty()) {
         QProcess lsbRelease;
         lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
@@ -300,7 +285,6 @@ QString QDeviceInfoPrivate::productName()
             productNameBuffer = buffer.section(QChar::fromLatin1('\t'), 1, 1).simplified();
         }
     }
-#endif
 
     return productNameBuffer;
 }
@@ -466,39 +450,4 @@ QDeviceInfo::ThermalState QDeviceInfoPrivate::getThermalState()
     return state;
 }
 
-#if !defined(QT_NO_LIBSYSINFO)
-QString QDeviceInfoPrivate::getSysInfoValue(const char *component)
-{
-   QString value;
-   bool componentExist = false;
-   if (sysinfo_init(&sc) == 0) {
-      char **keys = 0;
-      if (sysinfo_get_keys(sc, &keys) == 0) {
-         size_t i;
-         for (i = 0; keys[i]; ++i) {
-            if (strcmp(keys[i], component) == 0) {
-               componentExist = true;
-               break;
-            }
-         }
-         for (int i = 0; keys[i]; ++i) free(keys[i]);
-         free(keys);
-      }
-      if (componentExist) {
-         uint8_t *data = 0;
-         unsigned long size = 0;
-         if (sysinfo_get_value(sc, component, &data, &size) == 0) {
-            for (unsigned long k = 0; k < size; ++k) {
-               char c = data[k];
-               if (c >= 32 && c <= 126)
-                  value.append(c);
-            }
-            free(data);
-         }
-      }
-   }
-   sysinfo_finish(sc);
-   return value;
-}
-#endif
 QT_END_NAMESPACE
