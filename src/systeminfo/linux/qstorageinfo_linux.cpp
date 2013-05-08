@@ -57,7 +57,7 @@
 #include <unistd.h>
 
 #if !defined(QT_NO_UDEV)
-#include <qudevwrapper_p.h>
+#include "qudevwrapper_p.h"
 #endif // QT_NO_UDEV
 
 #if !defined(QT_NO_UDISKS)

@@ -54,7 +54,7 @@
 
 #if !defined( Q_CC_MINGW)
 #ifndef Q_OS_WINCE
-#include "windows/qwmihelper_win_p.h"
+#include "qwmihelper_win_p.h"
 
 enum NDIS_MEDIUM {
     NdisMedium802_3 = 0,

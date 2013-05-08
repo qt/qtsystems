@@ -42,13 +42,13 @@
 #include "qdeviceinfo.h"
 
 #if defined(QT_SIMULATOR)
-#  include "qsysteminfo_simulator_p.h"
+#  include "simulator/qsysteminfo_simulator_p.h"
 #elif defined(Q_OS_LINUX)
-#  include "qdeviceinfo_linux_p.h"
+#  include "linux/qdeviceinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
-#  include "qdeviceinfo_win_p.h"
+#  include "windows/qdeviceinfo_win_p.h"
 #elif defined(Q_OS_MAC)
-#  include "qdeviceinfo_mac_p.h"
+#  include "mac/qdeviceinfo_mac_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QDeviceInfoPrivate

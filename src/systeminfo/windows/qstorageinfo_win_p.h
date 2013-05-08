@@ -39,71 +39,58 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if defined(Q_OS_LINUX)
-#include "linux/qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "windows/qscreensaver_win_p.h"
-#elif defined(Q_OS_MAC)
-#  include "mac/qscreensaver_mac_p.h"
-#else
+#ifndef QSTORAGEINFO_WIN_P_H
+#define QSTORAGEINFO_WIN_P_H
+
+#include "qstorageinfo.h"
+#include "qwmihelper_win_p.h"
+
 QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
+
+class QSocketNotifier;
+
+class QStorageInfoPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
-    QScreenSaverPrivate(QScreenSaver *) {}
+    QStorageInfoPrivate(QStorageInfo *parent);
+    ~QStorageInfoPrivate();
 
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
+    qlonglong availableDiskSpace(const QString &drive);
+    qlonglong totalDiskSpace(const QString &drive);
+    QString uriForDrive(const QString &drive);
+    QStringList allLogicalDrives();
+    QStorageInfo::DriveType driveType(const QString &drive);
+
+Q_SIGNALS:
+    void logicalDriveChanged(const QString &drive, bool added);
+
+protected:
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
+
+private:
+    QStorageInfo * const q_ptr;
+    Q_DECLARE_PUBLIC(QStorageInfo);
+
+    QStringList mountEntriesList;
+
+private Q_SLOTS:
+    void notificationArrived();
 };
-QT_END_NAMESPACE
-#endif
-
-QT_BEGIN_NAMESPACE
-
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information about the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
-{
-}
-
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
-{
-    delete d_ptr;
-}
-
-/*!
-    \property QScreenSaver::screenSaverEnabled
-    \brief The state of the screen saver.
-
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
-{
-    return d_ptr->screenSaverEnabled();
-}
-
-/*!
-    Sets the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
-}
 
 QT_END_NAMESPACE
+
+#endif // QSTORAGEINFO_WIN_P_H

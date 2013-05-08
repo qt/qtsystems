@@ -46,11 +46,11 @@
 #include <QtGui/qscreen.h>
 
 #if defined(Q_OS_LINUX)
-#  include "qdisplayinfo_linux_p.h"
+#  include "linux/qdisplayinfo_linux_p.h"
 //#elif defined(Q_OS_WIN)
 //#  include "qdisplayinfo_win_p.h"
 #elif defined(Q_OS_MAC)
-#  include "qdisplayinfo_mac_p.h"
+#  include "mac/qdisplayinfo_mac_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QDisplayInfoPrivate

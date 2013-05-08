@@ -1,10 +1,12 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 
-!without-publishsubscribe: SUBDIRS += publishsubscribe
-!without-serviceframework: SUBDIRS += serviceframework
-!without-systeminfo: SUBDIRS += systeminfo # systeminfo has dependencies to serviceframework, thus build it after sfw
+!android: !ios: !blackberry {
+    !without-publishsubscribe: SUBDIRS += publishsubscribe
+    !without-serviceframework: SUBDIRS += serviceframework
+    !without-systeminfo: SUBDIRS += systeminfo
 
-SUBDIRS += tools
+    SUBDIRS += tools
 
-qtHaveModule(quick): SUBDIRS += imports
+    qtHaveModule(quick): SUBDIRS += imports
+}

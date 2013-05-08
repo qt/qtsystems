@@ -42,13 +42,13 @@
 #include "qbatteryinfo.h"
 
 #if defined(QT_SIMULATOR)
-#  include "qsysteminfo_simulator_p.h"
+#  include "simulator/qsysteminfo_simulator_p.h"
 #elif defined(Q_OS_LINUX)
-#  include "qbatteryinfo_linux_p.h"
+#  include "linux/qbatteryinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
-#  include "qbatteryinfo_win_p.h"
+#  include "windows/qbatteryinfo_win_p.h"
 #elif defined(Q_OS_MAC)
-#  include "qbatteryinfo_mac_p.h"
+#  include "mac/qbatteryinfo_mac_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QBatteryInfoPrivate

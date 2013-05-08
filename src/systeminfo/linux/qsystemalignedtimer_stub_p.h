@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtSystems module of the Qt Toolkit.
+** This file is part of the Qt Mobility Components.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,71 +39,50 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+#ifndef QSYSTEMALIGNEDTIMER_STUB_P_H
+#define QSYSTEMALIGNEDTIMER_STUB_P_H
 
-#if defined(Q_OS_LINUX)
-#include "linux/qscreensaver_linux_p.h"
-#elif defined(Q_OS_WIN)
-#  include "windows/qscreensaver_win_p.h"
-#elif defined(Q_OS_MAC)
-#  include "mac/qscreensaver_mac_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
+#include "qsystemalignedtimer.h"
+
+QT_BEGIN_HEADER
+QTM_BEGIN_NAMESPACE
+
+class QSystemAlignedTimerPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
-    QScreenSaverPrivate(QScreenSaver *) {}
+    explicit QSystemAlignedTimerPrivate(QObject *parent = 0);
+    ~QSystemAlignedTimerPrivate();
 
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
+public:
+    void wokeUp();
+
+    int minimumInterval() const;
+    void setMinimumInterval(int seconds);
+
+    int maximumInterval() const;
+    void setMaximumInterval(int seconds);
+
+    bool isSingleShot() const;
+    void setSingleShot(bool singleShot);
+
+    static void singleShot(int minimumTime, int maximumTime, QObject *receiver, const char *member);
+    QSystemAlignedTimer::AlignedTimerError lastError() const;
+    bool isActive() const;
+    QSystemAlignedTimer::AlignedTimerError m_lastError;
+
+Q_SIGNALS:
+    void timeout();
+    void error(QSystemAlignedTimer::AlignedTimerError error);
+
+public Q_SLOTS:
+    void start(int minimumTime, int maximumTime);
+    void start();
+    void stop();
 };
-QT_END_NAMESPACE
-#endif
 
-QT_BEGIN_NAMESPACE
+QTM_END_NAMESPACE
+QT_END_HEADER
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information about the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
-{
-}
-
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
-{
-    delete d_ptr;
-}
-
-/*!
-    \property QScreenSaver::screenSaverEnabled
-    \brief The state of the screen saver.
-
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
-{
-    return d_ptr->screenSaverEnabled();
-}
-
-/*!
-    Sets the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
-}
-
-QT_END_NAMESPACE
+#endif // QSYSTEMALIGNEDTIMER_STUB_P_H

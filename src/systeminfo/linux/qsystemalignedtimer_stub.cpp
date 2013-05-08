@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtSystems module of the Qt Toolkit.
+** This file is part of the Qt Mobility Components.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,9 +39,86 @@
 **
 ****************************************************************************/
 
-#include <sysinfo.h>
+#include "qsystemalignedtimer.h"
+#include "qsystemalignedtimer_stub_p.h"
 
-int main()
+QTM_BEGIN_NAMESPACE
+
+QSystemAlignedTimerPrivate::QSystemAlignedTimerPrivate(QObject *parent)
+    : QObject(parent)
 {
-    return 0;
 }
+
+QSystemAlignedTimerPrivate::~QSystemAlignedTimerPrivate()
+{
+}
+
+void QSystemAlignedTimerPrivate::wokeUp()
+{
+}
+
+int QSystemAlignedTimerPrivate::minimumInterval() const
+{
+    return -1;
+}
+
+void QSystemAlignedTimerPrivate::setMinimumInterval(int seconds)
+{
+    Q_UNUSED(seconds);
+}
+
+int QSystemAlignedTimerPrivate::maximumInterval() const
+{
+    return -1;
+}
+
+void QSystemAlignedTimerPrivate::setMaximumInterval(int seconds)
+{
+    Q_UNUSED(seconds);
+}
+
+void QSystemAlignedTimerPrivate::setSingleShot(bool singleShot)
+{
+    Q_UNUSED(singleShot);
+}
+
+bool QSystemAlignedTimerPrivate::isSingleShot() const
+{
+    return false;
+}
+
+void QSystemAlignedTimerPrivate::singleShot(int minimumTime, int maximumTime, QObject *receiver, const char *member)
+{
+    Q_UNUSED(minimumTime);
+    Q_UNUSED(maximumTime);
+    Q_UNUSED(receiver);
+    Q_UNUSED(member);
+}
+
+QSystemAlignedTimer::AlignedTimerError QSystemAlignedTimerPrivate::lastError() const
+{
+    return QSystemAlignedTimer::AlignedTimerNotSupported;
+}
+
+void QSystemAlignedTimerPrivate::start(int minimumTime, int maximumTime)
+{
+    Q_UNUSED(minimumTime);
+    Q_UNUSED(maximumTime);
+}
+
+void QSystemAlignedTimerPrivate::start()
+{
+}
+
+void QSystemAlignedTimerPrivate::stop()
+{
+}
+
+bool QSystemAlignedTimerPrivate::isActive () const
+{
+    return false;
+}
+
+#include "moc_qsystemalignedtimer_stub_p.cpp"
+
+QTM_END_NAMESPACE

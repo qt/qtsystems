@@ -44,11 +44,11 @@
 #include <QtCore/qstringlist.h>
 
 #if defined(Q_OS_LINUX)
-#  include "qstorageinfo_linux_p.h"
+#  include "linux/qstorageinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
-#  include "qstorageinfo_win_p.h"
+#  include "windows/qstorageinfo_win_p.h"
 #elif defined(Q_OS_MAC)
-#  include "qstorageinfo_mac_p.h"
+#  include "mac/qstorageinfo_mac_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QStorageInfoPrivate

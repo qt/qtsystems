@@ -42,13 +42,13 @@
 #include "qnetworkinfo.h"
 
 #if defined(QT_SIMULATOR)
-#  include "qsysteminfo_simulator_p.h"
+#  include "simulator/qsysteminfo_simulator_p.h"
 #elif defined(Q_OS_LINUX)
-#  include "qnetworkinfo_linux_p.h"
+#  include "linux/qnetworkinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
-#  include "qnetworkinfo_win_p.h"
+#  include "windows/qnetworkinfo_win_p.h"
 #elif defined(Q_OS_MAC)
-#  include "qnetworkinfo_mac_p.h"
+#  include "mac/qnetworkinfo_mac_p.h"
 #else
 QT_BEGIN_NAMESPACE
 class QNetworkInfoPrivate

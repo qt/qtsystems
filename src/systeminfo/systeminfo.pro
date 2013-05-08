@@ -2,7 +2,7 @@ TARGET = QtSystemInfo
 QPRO_PWD = $PWD
 
 QT = core network
-
+DEFINES += QT_NO_LIBSYSINFO
 PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qdeviceinfo.h \
                  qstorageinfo.h \
@@ -37,19 +37,19 @@ win32: !simulator: {
         LIBS += -luser32 -lgdi32 -lpowrprof -lbthprops -lws2_32 -lmsvfw32 -lavicap32 -luuid
     }
 
-    PRIVATE_HEADERS += qscreensaver_win_p.h \
-                       qdeviceinfo_win_p.h \
-                       qstorageinfo_win_p.h \
-                       qbatteryinfo_win_p.h \
-                       qnetworkinfo_win_p.h \
+    PRIVATE_HEADERS += windows/qscreensaver_win_p.h \
+                       windows/qdeviceinfo_win_p.h \
+                       windows/qstorageinfo_win_p.h \
+                       windows/qbatteryinfo_win_p.h \
+                       windows/qnetworkinfo_win_p.h \
                        windows/qwmihelper_win_p.h \
-                       qsysteminfoglobal_p.h
+                       windows/qsysteminfoglobal_p.h
 
-    SOURCES += qscreensaver_win.cpp \
-               qdeviceinfo_win.cpp \
-               qstorageinfo_win.cpp \
-               qbatteryinfo_win.cpp \
-               qnetworkinfo_win.cpp \
+    SOURCES += windows/qscreensaver_win.cpp \
+               windows/qdeviceinfo_win.cpp \
+               windows/qstorageinfo_win.cpp \
+               windows/qbatteryinfo_win.cpp \
+               windows/qnetworkinfo_win.cpp \
                windows/qwmihelper_win.cpp
 
        LIBS += \
@@ -68,20 +68,20 @@ win32: !simulator: {
 }
 
 linux-*: !simulator: {
-    PRIVATE_HEADERS += qdeviceinfo_linux_p.h \
-                       qdisplayinfo_linux_p.h \
-                       qstorageinfo_linux_p.h \
-                       qbatteryinfo_linux_p.h \
-                       qnetworkinfo_linux_p.h \
-                       qscreensaver_linux_p.h \
-                       qdeviceprofile_linux_p.h
+    PRIVATE_HEADERS += linux/qdeviceinfo_linux_p.h \
+                       linux/qdisplayinfo_linux_p.h \
+                       linux/qstorageinfo_linux_p.h \
+                       linux/qbatteryinfo_linux_p.h \
+                       linux/qnetworkinfo_linux_p.h \
+                       linux/qscreensaver_linux_p.h \
+                       linux/qdeviceprofile_linux_p.h
 
-    SOURCES += qdeviceinfo_linux.cpp \
-               qdisplayinfo_linux.cpp \
-               qstorageinfo_linux.cpp \
-               qbatteryinfo_linux.cpp \
-               qnetworkinfo_linux.cpp \
-               qscreensaver_linux.cpp
+    SOURCES += linux/qdeviceinfo_linux.cpp \
+               linux/qdisplayinfo_linux.cpp \
+               linux/qstorageinfo_linux.cpp \
+               linux/qbatteryinfo_linux.cpp \
+               linux/qnetworkinfo_linux.cpp \
+               linux/qscreensaver_linux.cpp
 
     x11|config_x11 {
         CONFIG += link_pkgconfig
@@ -100,8 +100,8 @@ linux-*: !simulator: {
     qtHaveModule(dbus) {
         config_ofono: {
             QT += dbus
-            PRIVATE_HEADERS += qofonowrapper_p.h
-            SOURCES += qofonowrapper.cpp
+            PRIVATE_HEADERS += linux/qofonowrapper_p.h
+            SOURCES += linux/qofonowrapper.cpp
         } else {
             DEFINES += QT_NO_OFONO
         }
@@ -119,37 +119,29 @@ linux-*: !simulator: {
         CONFIG += link_pkgconfig
         PKGCONFIG += udev
         LIBS += -ludev
-        PRIVATE_HEADERS += qudevwrapper_p.h
-        SOURCES += qudevwrapper.cpp
+        PRIVATE_HEADERS += linux/qudevwrapper_p.h
+        SOURCES += linux/qudevwrapper.cpp
     } else {
         DEFINES += QT_NO_UDEV
-    }
-
-    config_libsysinfo {
-        CONFIG += link_pkgconfig
-        PKGCONFIG += sysinfo
-        LIBS += -lsysinfo
-    } else: {
-        DEFINES += QT_NO_LIBSYSINFO
     }
 }
 
 macx:!simulator {
 #CONFIG -= x86_64
 QT += core-private
-         OBJECTIVE_SOURCES += qbatteryinfo_mac.mm \
-                  qdeviceinfo_mac.mm \
-                  qdisplayinfo_mac.mm \
-                  qnetworkinfo_mac.mm \
-                  qscreensaver_mac.mm \
-                  qstorageinfo_mac.mm
+         OBJECTIVE_SOURCES += mac/qbatteryinfo_mac.mm \
+                  mac/qdeviceinfo_mac.mm \
+                  mac/qdisplayinfo_mac.mm \
+                  mac/qnetworkinfo_mac.mm \
+                  mac/qscreensaver_mac.mm \
+                  mac/qstorageinfo_mac.mm
 
-         PRIVATE_HEADERS += qbatteryinfo_mac_p.h \
-                  qdeviceinfo_mac_p.h \
-                  qdisplayinfo_mac_p.h \
-                  qnetworkinfo_mac_p.h \
-                  qscreensaver_mac_p.h \
-                  qstorageinfo_mac_p.h
+         PRIVATE_HEADERS += mac/qbatteryinfo_mac_p.h \
+                  mac/qdeviceinfo_mac_p.h \
+                  mac/qdisplayinfo_mac_p.h \
+                  mac/qnetworkinfo_mac_p.h \
+                  mac/qscreensaver_mac_p.h \
+                  mac/qstorageinfo_mac_p.h
 
          LIBS += -framework SystemConfiguration \
                 -framework Foundation \
@@ -168,27 +160,27 @@ QT += core-private
 simulator {
     QT_PRIVATE += simulator
     DEFINES += QT_SIMULATOR
-    PRIVATE_HEADERS += qsysteminfodata_simulator_p.h \
-                       qsysteminfobackend_simulator_p.h \
-                       qsysteminfoconnection_simulator_p.h \
-                       qsysteminfo_simulator_p.h
+    PRIVATE_HEADERS += simulator/qsysteminfodata_simulator_p.h \
+                       simulator/qsysteminfobackend_simulator_p.h \
+                       simulator/qsysteminfoconnection_simulator_p.h \
+                       simulator/qsysteminfo_simulator_p.h
 
 
-    SOURCES += qsysteminfodata_simulator.cpp \
-               qsysteminfobackend_simulator.cpp \
-               qsysteminfoconnection_simulator.cpp \
-               qsysteminfo_simulator.cpp
+    SOURCES += simulator/qsysteminfodata_simulator.cpp \
+               simulator/qsysteminfobackend_simulator.cpp \
+               simulator/qsysteminfoconnection_simulator.cpp \
+               simulator/qsysteminfo_simulator.cpp
 
 
     linux-*: {
-        PRIVATE_HEADERS += qdisplayinfo_linux_p.h \
-                           qscreensaver_linux_p.h \
-                           qdeviceprofile_linux_p.h \
-                           qstorageinfo_linux_p.h
+        PRIVATE_HEADERS += linux/qdisplayinfo_linux_p.h \
+                           linux/qscreensaver_linux_p.h \
+                           linux/qdeviceprofile_linux_p.h \
+                           linux/qstorageinfo_linux_p.h
 
-        SOURCES += qdisplayinfo_linux.cpp \
-                   qscreensaver_linux.cpp \
-                   qstorageinfo_linux.cpp
+        SOURCES += linux/qdisplayinfo_linux.cpp \
+                   linux/qscreensaver_linux.cpp \
+                   linux/qstorageinfo_linux.cpp
 
         x11|config_x11 {
             CONFIG += link_pkgconfig
@@ -207,11 +199,11 @@ simulator {
         qtHaveModule(dbus) {
             config_ofono: {
             QT += dbus
-            PRIVATE_HEADERS += qofonowrapper_p.h \
-                               qnetworkinfo_linux_p.h
+            PRIVATE_HEADERS += linux/qofonowrapper_p.h \
+                               linux/qnetworkinfo_linux_p.h
 
-            SOURCES += qofonowrapper.cpp \
-                       qnetworkinfo_linux.cpp
+            SOURCES += linux/qofonowrapper.cpp \
+                       linux/qnetworkinfo_linux.cpp
             } else {
                 DEFINES += QT_NO_OFONO
             }
@@ -228,8 +220,8 @@ simulator {
             CONFIG += link_pkgconfig
             PKGCONFIG += udev
             LIBS += -ludev
-            PRIVATE_HEADERS += qudevwrapper_p.h
-            SOURCES += qudevwrapper.cpp
+            PRIVATE_HEADERS += linux/qudevwrapper_p.h
+            SOURCES += linux/qudevwrapper.cpp
         } else {
             DEFINES += QT_NO_UDEV
         }
@@ -263,5 +255,3 @@ config_bluez {
     }
 }
 
-# Enable doc submodule doc builds
-include (../../doc/config/systeminfo/qtsysteminfo_doc.pri)

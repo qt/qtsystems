@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtSystems module of the Qt Toolkit.
+** This file is part of the Qt Mobility Components.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,58 +39,68 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QSYSTEMALIGNEDTIMER_MEEGO_P_H
+#define QSYSTEMALIGNEDTIMER_MEEGO_P_H
 
-#ifndef QSTORAGEINFO_WIN_P_H
-#define QSTORAGEINFO_WIN_P_H
+#include "qsystemalignedtimer.h"
 
-#include "qstorageinfo.h"
-#include "windows/qwmihelper_win_p.h"
+#include <QSocketNotifier>
 
-QT_BEGIN_NAMESPACE
+extern "C" {
+#include <iphbd/libiphb.h>
+}
 
-class QSocketNotifier;
+QT_BEGIN_HEADER
+QTM_BEGIN_NAMESPACE
 
-class QStorageInfoPrivate : public QObject
+class QSystemAlignedTimerPrivate : public QObject
 {
     Q_OBJECT
 
 public:
-    QStorageInfoPrivate(QStorageInfo *parent);
-    ~QStorageInfoPrivate();
+    explicit QSystemAlignedTimerPrivate(QObject *parent = 0);
+    ~QSystemAlignedTimerPrivate();
 
-    qlonglong availableDiskSpace(const QString &drive);
-    qlonglong totalDiskSpace(const QString &drive);
-    QString uriForDrive(const QString &drive);
-    QStringList allLogicalDrives();
-    QStorageInfo::DriveType driveType(const QString &drive);
+public:
+    void wokeUp();
+
+    int minimumInterval() const;
+    void setMinimumInterval(int seconds);
+
+    int maximumInterval() const;
+    void setMaximumInterval(int seconds);
+
+    bool isSingleShot() const;
+    void setSingleShot(bool singleShot);
+
+    static void singleShot(int minimumTime, int maximumTime, QObject *receiver, const char *member);
+    QSystemAlignedTimer::AlignedTimerError lastError() const;
+
+    bool isActive() const;
+    QSystemAlignedTimer::AlignedTimerError m_lastError;
 
 Q_SIGNALS:
-    void logicalDriveChanged(const QString &drive, bool added);
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
+    void timeout();
+    void error(QSystemAlignedTimer::AlignedTimerError error);
 
 private:
-    QStorageInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QStorageInfo);
+    int m_minimumInterval;
+    int m_maximumInterval;
+    bool m_running;
+    bool m_singleShot;
+    iphb_t m_iphbdHandler;
+    QSocketNotifier *m_notifier;
 
-    QStringList mountEntriesList;
+public Q_SLOTS:
+    void start(int minimumTime, int maximumTime);
+    void start();
+    void stop();
 
 private Q_SLOTS:
-    void notificationArrived();
+    void heartbeatReceived(int sock);
 };
 
-QT_END_NAMESPACE
+QTM_END_NAMESPACE
+QT_END_HEADER
 
-#endif // QSTORAGEINFO_WIN_P_H
+#endif // QSYSTEMALIGNEDTIMER_MEEGO_P_H
