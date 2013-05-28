@@ -3,13 +3,14 @@ import QtQuick.tooling 1.1
 // This file describes the plugin-supplied types contained in the library.
 // It is used for QML tooling purposes only.
 //
-// This file was auto-generated with the command 'qmlplugindump QtServiceFramework 5.0'.
+// This file was auto-generated with the command 'qmlplugindump -notrelocatable QtServiceFramework 5.0'.
 
 Module {
     Component {
         name: "QDeclarativeService"
         prototype: "QObject"
-        exports: ["Service 5.0"]
+        exports: ["QtServiceFramework/Service 5.0"]
+        exportMetaObjectRevisions: [0]
         Property { name: "interfaceName"; type: "string" }
         Property { name: "serviceName"; type: "string" }
         Property { name: "majorVersion"; type: "int" }
@@ -25,7 +26,8 @@ Module {
     Component {
         name: "QDeclarativeServiceDescriptor"
         prototype: "QObject"
-        exports: ["ServiceDescriptor 5.0"]
+        exports: ["QtServiceFramework/ServiceDescriptor 5.0"]
+        exportMetaObjectRevisions: [0]
         Property { name: "serviceName"; type: "string"; isReadonly: true }
         Property { name: "interfaceName"; type: "string"; isReadonly: true }
         Property { name: "majorVersion"; type: "int"; isReadonly: true }
@@ -35,7 +37,8 @@ Module {
     Component {
         name: "QDeclarativeServiceFilter"
         prototype: "QObject"
-        exports: ["ServiceFilter 5.0"]
+        exports: ["QtServiceFramework/ServiceFilter 5.0"]
+        exportMetaObjectRevisions: [0]
         Property { name: "serviceName"; type: "string" }
         Property { name: "interfaceName"; type: "string" }
         Property { name: "majorVersion"; type: "int" }
@@ -100,7 +103,8 @@ Module {
     Component {
         name: "QDeclarativeServiceList"
         prototype: "QObject"
-        exports: ["ServiceList 5.0"]
+        exports: ["QtServiceFramework/ServiceList 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "MatchRule"
             values: {
@@ -124,7 +128,8 @@ Module {
     Component {
         name: "QDeclarativeServiceLoader"
         prototype: "QObject"
-        exports: ["ServiceLoader 5.0"]
+        exports: ["QtServiceFramework/ServiceLoader 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "Status"
             values: {

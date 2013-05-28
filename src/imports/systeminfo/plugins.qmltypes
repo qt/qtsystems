@@ -3,13 +3,14 @@ import QtQuick.tooling 1.1
 // This file describes the plugin-supplied types contained in the library.
 // It is used for QML tooling purposes only.
 //
-// This file was auto-generated with the command 'qmlplugindump QtSystemInfo 5.0'.
+// This file was auto-generated with the command 'qmlplugindump -notrelocatable QtSystemInfo 5.0'.
 
 Module {
     Component {
         name: "QDeclarativeBatteryInfo"
         prototype: "QObject"
-        exports: ["BatteryInfo 5.0"]
+        exports: ["QtSystemInfo/BatteryInfo 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "ChargerType"
             values: {
@@ -135,7 +136,8 @@ Module {
     Component {
         name: "QDeclarativeDeviceInfo"
         prototype: "QObject"
-        exports: ["DeviceInfo 5.0"]
+        exports: ["QtSystemInfo/DeviceInfo 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "Feature"
             values: {
@@ -219,7 +221,8 @@ Module {
     Component {
         name: "QDeclarativeDeviceProfile"
         prototype: "QObject"
-        exports: ["DeviceProfile 5.0"]
+        exports: ["QtSystemInfo/DeviceProfile 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "ProfileType"
             values: {
@@ -239,7 +242,8 @@ Module {
     Component {
         name: "QDeclarativeDisplayInfo"
         prototype: "QObject"
-        exports: ["DisplayInfo 5.0"]
+        exports: ["QtSystemInfo/DisplayInfo 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "BacklightState"
             values: {
@@ -298,7 +302,8 @@ Module {
     Component {
         name: "QDeclarativeNetworkInfo"
         prototype: "QObject"
-        exports: ["NetworkInfo 5.0"]
+        exports: ["QtSystemInfo/NetworkInfo 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "CellDataTechnology"
             values: {
@@ -469,7 +474,8 @@ Module {
     Component {
         name: "QDeclarativeStorageInfo"
         prototype: "QObject"
-        exports: ["StorageInfo 5.0"]
+        exports: ["QtSystemInfo/StorageInfo 5.0"]
+        exportMetaObjectRevisions: [0]
         Enum {
             name: "DriveType"
             values: {
@@ -512,7 +518,8 @@ Module {
     Component {
         name: "QScreenSaver"
         prototype: "QObject"
-        exports: ["ScreenSaver 5.0"]
+        exports: ["QtSystemInfo/ScreenSaver 5.0"]
+        exportMetaObjectRevisions: [0]
         Property { name: "screenSaverEnabled"; type: "bool" }
     }
 }
