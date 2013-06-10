@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_DESKTOP_PATH, (QStringLiteral("HKEY_CURRENT_USER\\Control Panel\\Desktop")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_SCREENSAVER_KEY, (QStringLiteral("SCRNSAVE.EXE")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_DESKTOP_PATH, (QLatin1String("HKEY_CURRENT_USER\\Control Panel\\Desktop")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_SCREENSAVER_KEY, (QLatin1String("SCRNSAVE.EXE")))
 
 QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     : q_ptr(parent)

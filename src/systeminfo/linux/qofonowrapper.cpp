@@ -51,12 +51,12 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_SERVICE, (QStringLiteral("org.ofono")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MANAGER_INTERFACE, (QStringLiteral("org.ofono.Manager")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MANAGER_PATH, (QStringLiteral("/")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MODEM_INTERFACE, (QStringLiteral("org.ofono.Modem")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_NETWORK_REGISTRATION_INTERFACE, (QStringLiteral("org.ofono.NetworkRegistration")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_SIM_MANAGER_INTERFACE, (QStringLiteral("org.ofono.SimManager")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_SERVICE, (QLatin1String("org.ofono")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MANAGER_INTERFACE, (QLatin1String("org.ofono.Manager")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MANAGER_PATH, (QLatin1String("/")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_MODEM_INTERFACE, (QLatin1String("org.ofono.Modem")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_NETWORK_REGISTRATION_INTERFACE, (QLatin1String("org.ofono.NetworkRegistration")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, OFONO_SIM_MANAGER_INTERFACE, (QLatin1String("org.ofono.SimManager")))
 
 struct QOfonoProperty
 {

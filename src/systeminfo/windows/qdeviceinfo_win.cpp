@@ -56,11 +56,11 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_BIOS_PATH, (QStringLiteral("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_CURRENT_VERSION_PATH, (QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_MANUFACTURER_KEY, (QStringLiteral("SystemManufacturer")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTNAME_KEY, (QStringLiteral("SystemProductName")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTID_KEY, (QStringLiteral("ProductId")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_BIOS_PATH, (QLatin1String("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_CURRENT_VERSION_PATH, (QLatin1String("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_MANUFACTURER_KEY, (QLatin1String("SystemManufacturer")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTNAME_KEY, (QLatin1String("SystemProductName")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTID_KEY, (QLatin1String("ProductId")))
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     : q_ptr(parent)
