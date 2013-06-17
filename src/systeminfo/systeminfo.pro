@@ -84,7 +84,7 @@ linux-*: !simulator: {
     }
 
     qtHaveModule(dbus) {
-        config_ofono: {
+        contains(CONFIG,ofono): {
             QT += dbus
             PRIVATE_HEADERS += linux/qofonowrapper_p.h
             SOURCES += linux/qofonowrapper.cpp

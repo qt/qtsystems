@@ -44,7 +44,9 @@
 
     Qt SystemInfo for Linux can use a number of technololgies based on dbus.
     These can be configured at build time through the CONFIG of qmake.
+
      * CONFIG+=upower will build the UPower dbus backend.
+     * CONFIG+=ofono will build the Ofono dbus backend.
 
     \section1 C++ Classes
     \annotatedlist systeminfo
