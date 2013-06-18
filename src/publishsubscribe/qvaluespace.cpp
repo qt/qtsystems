@@ -323,21 +323,6 @@ void QAbstractValueSpaceLayer::emitInterestChanged(QValueSpacePublisher *publish
 */
 
 /*!
-    \macro QVALUESPACE_JSONDB_LAYER
-    \relates QValueSpace
-
-    The UUID of the JsonDb layer as a QUuid.  The actual UUID value is
-    {a167384c-6acf-2738-c8d5-a088ac6ec2d6}.
-
-    This value can be passed to the constructor of QValueSpacePublisher or QValueSpaceSubscriber to
-    force the constructed object to only access the JsonDb layer.
-
-    You can test if the JsonDb layer is available by checking if the list returned by
-    QValueSpace::availableLayers() contains this value. The JsonDb layer is only available on Linux
-    platforms.
-*/
-
-/*!
     Returns a list of QUuids of all of the available layers, sorted in the priority order.
 */
 QList<QUuid> QValueSpace::availableLayers()

@@ -41,7 +41,6 @@
 
 #include "qvaluespacemanager_p.h"
 #include "gconflayer_p.h"
-#include "jsondblayer_p.h"
 #include "registrylayer_win_p.h"
 
 #include <QtCore/qmutex.h>
@@ -65,9 +64,6 @@ QValueSpaceManager *QValueSpaceManager::instance()
 #if defined(Q_OS_LINUX)
 #if !defined(QT_NO_GCONFLAYER)
             ptr->layers.append(GConfLayer::instance());
-#endif
-#if !defined(QT_NO_JSONDBLAYER)
-            ptr->layers.append(JsonDbLayer::instance());
 #endif
 #elif defined(Q_OS_WIN)
             ptr->layers.append(NonVolatileRegistryLayer::instance());

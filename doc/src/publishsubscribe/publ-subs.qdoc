@@ -107,18 +107,12 @@
                 \br
                 The Volatile Registry layer has a lower priority.
         \row
-            \li {1, 2} Linux
+            \li Linux
             \li \l{GConf Layer}
             \li The GConf Layer provides a permanent Value Space backing store using GConf. This
                 layer is only available on systems where the GConf is available.
                 \br
                 The GConf Layer has a higher priority.
-        \row
-            \li JsonDb Layer
-            \li The JsonDb Layer provides a permanent Value Space backing store using QtJsonDb. This
-                layer is only available on systems where the QtJsonDb is available.
-                \br
-                The JsonDb Layer has a lower priority.
     \endtable
 
     \section1 Detailed Layer Descriptions

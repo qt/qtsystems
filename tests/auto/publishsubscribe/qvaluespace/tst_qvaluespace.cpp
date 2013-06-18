@@ -71,9 +71,6 @@ void tst_QValueSpace::tst_availableLayers()
 #if !defined(QT_NO_GCONFLAYER)
     QVERIFY(layers.contains(QVALUESPACE_GCONF_LAYER));
 #endif
-#if !defined(QT_NO_JSONDBLAYER)
-    QVERIFY(layers.contains(QVALUESPACE_JSONDB_LAYER));
-#endif
 #elif defined(Q_OS_WIN)
     QVERIFY(layers.contains(QVALUESPACE_VOLATILEREGISTRY_LAYER));
     QVERIFY(layers.contains(QVALUESPACE_NONVOLATILEREGISTRY_LAYER));
@@ -114,9 +111,6 @@ void tst_QValueSpace::tst_PublishSubscribe()
 {
     if (QValueSpace::availableLayers().size() == 0)
         QSKIP("No value space layer available, thus skip all the test cases.");
-
-    if (QValueSpace::availableLayers().contains(QVALUESPACE_JSONDB_LAYER))
-        QSKIP("Unit tests for JSON DB layer are currently unsupported!.");
 
     QFETCH(QString, path);
     QFETCH(QString, name);

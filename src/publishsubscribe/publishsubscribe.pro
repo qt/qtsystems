@@ -30,17 +30,8 @@ unix {
             DEFINES += QT_NO_GCONFLAYER
         }
     }
-
-    qtHaveModule(jsondb) {
-        QT_FOR_PRIVATE += jsondb
-
-        PRIVATE_HEADERS += jsondblayer_p.h
-        SOURCES += jsondblayer.cpp
-    } else {
-        DEFINES += QT_NO_JSONDBLAYER
-    }
 } else {
-    DEFINES += QT_NO_GCONFLAYER QT_NO_JSONDBLAYER
+    DEFINES += QT_NO_GCONFLAYER
 }
 
 win32: {
