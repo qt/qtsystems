@@ -49,11 +49,7 @@
 #include "qservicerequest_p.h"
 #include "qservicedebuglog_p.h"
 
-#ifdef QT_ADDON_JSONDB_LIB
-    #include "databasemanager_jsondb_p.h"
-#else
-    #include "databasemanager_p.h"
-#endif
+#include "databasemanager_p.h"
 
 #include <QObject>
 #include <QMetaMethod>

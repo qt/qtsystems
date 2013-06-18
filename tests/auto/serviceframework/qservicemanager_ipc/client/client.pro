@@ -10,13 +10,7 @@ win32-msvc*:QMAKE_LFLAGS += /STACK:4194304
 
 CONFIG -= app_bundle
 
-jsondb|qtHaveModule(jsondb): {
-    mtlib|config_mtlib {
-        DEFINES += QT_JSONDB
-    }
-}
-
-!contains(DEFINES, QT_JSONDB):qtHaveModule(dbus): {
+qtHaveModule(dbus): {
     QT += dbus
     DEFINES+=SFW_USE_DBUS_BACKEND
 }

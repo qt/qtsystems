@@ -13,13 +13,7 @@ debug_and_release {
 }
 DESTDIR = ../client$$INFIX  #service must be in same dir as client binary
 
-jsondb|qtHaveModule(jsondb) {
-    mtlib|config_mtlib {
-        DEFINES += QT_JSONDB
-    }
-}
-
-!contains(DEFINES, QT_JSONDB):qtHaveModule(dbus) {
+qtHaveModule(dbus) {
     QT += dbus
     DEFINES+=SFW_USE_DBUS_BACKEND
 }

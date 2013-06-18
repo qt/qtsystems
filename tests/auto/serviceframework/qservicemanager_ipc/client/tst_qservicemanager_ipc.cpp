@@ -1592,47 +1592,6 @@ void tst_QServiceManager_IPC::testServiceSecurity()
 
 void tst_QServiceManager_IPC::testProcessLaunch()
 {
-#ifdef QT_JSONDB
-    QServiceManager m;
-
-    QVariantMap map;
-    map.insert(QStringLiteral("interfaceName"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequest"));
-    map.insert(QStringLiteral("serviceName"), QStringLiteral("com.nokia.mt.processmanager"));
-    map.insert(QStringLiteral("major"), 1);
-    map.insert(QStringLiteral("minor"), 0);
-    map.insert(QStringLiteral("Location"), QStringLiteral("com.nokia.mt.processmanager.ServiceRequestSocket"));
-    map.insert(QStringLiteral("ServiceType"), QService::InterProcess);
-    QServiceInterfaceDescriptor desc(map);
-
-    QObject *s = m.loadInterface(desc);
-
-    QVERIFY(s != 0);
-
-    QString name = QStringLiteral("anything");
-    QSignalSpy serviceSpy(s, SIGNAL(failed(QString, QString)));
-
-    QMetaObject::invokeMethod(s, "startService", Q_ARG(QString, name));
-
-    QTRY_COMPARE(serviceSpy.count(), 1);
-
-
-    qDebug() << "******* doing auto start, and fail";
-
-    QObject *o = m.loadInterface(QStringLiteral("com.nokia.qt.interface.does.not.exist"));
-
-    // should fail, but verify nothing blocks and we get here
-    QVERIFY2(o == 0, "We got a valid object from a service that doesn't exist");
-
-
-    qDebug() << "******* doing auto start, and WORK";
-
-    o = m.loadInterface(QStringLiteral("com.nokkia.qt.tests.autostarted"));
-
-    QVERIFY2(o != 0,"We must get a valid interface back");
-
-    delete o;
-    delete s;
-#endif
 }
 
 void tst_QServiceManager_IPC::verifyAsyncLoading()

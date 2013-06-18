@@ -4,13 +4,6 @@ CONFIG += testcase
 QT = core sql serviceframework serviceframework-private testlib
 QT -= gui
 
-jsondb|qtHaveModule(jsondb) {
-    mtlib|config_mtlib {
-        DEFINES += QT_ADDON_JSONDB_LIB
-        QT += jsondb
-    }
-}
-
 # Input 
 HEADERS += sampleservice/sampleserviceplugin.h \
            ../qsfwtestutil.h

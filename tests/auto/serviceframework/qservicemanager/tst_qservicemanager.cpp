@@ -277,10 +277,6 @@ void tst_QServiceManager::initTestCase()
 {
     qRegisterMetaType<QService::Scope>("QService::Scope");
 
-#if defined(QT_ADDON_JSONDB_LIB)
-    QSfwTestUtil::saveDatabases_jsondb();
-#endif // QT_ADDON_JSONDB_LIB
-
     QSfwTestUtil::setupTempUserDb();
     QSfwTestUtil::setupTempSystemDb();
 
@@ -310,9 +306,6 @@ void tst_QServiceManager::initTestCase()
 
 void tst_QServiceManager::init()
 {
-#if defined(QT_ADDON_JSONDB_LIB)
-    QSfwTestUtil::clearDatabases_jsondb();
-#endif // QT_ADDON_JSONDB_LIB
     QSfwTestUtil::removeTempUserDb();
     QSfwTestUtil::removeTempSystemDb();
     QSettings settings("com.nokia.qt.serviceframework.tests", "SampleServicePlugin");
@@ -323,9 +316,6 @@ void tst_QServiceManager::cleanupTestCase()
 {
     QSfwTestUtil::removeTempUserDb();
     QSfwTestUtil::removeTempSystemDb();
-#if defined(QT_ADDON_JSONDB_LIB)
-    QSfwTestUtil::restoreDatabases_jsondb();
-#endif // QT_ADDON_JSONDB_LIB
     //process deferred delete events
     //QServiceManager::loadInterface makes use of deleteLater() when
     //cleaning up service objects and their respective QPluginLoader
@@ -435,9 +425,6 @@ void tst_QServiceManager::findServices_data()
 
 void tst_QServiceManager::findServices_scope()
 {
-#if defined(QT_ADDON_JSONDB_LIB)
-    QSKIP("There is no difference between user and system scope with jsondb");
-#endif // QT_ADDON_JSONDB_LIB
     QFETCH(QService::Scope, scope_add);
     QFETCH(QService::Scope, scope_find);
     QFETCH(bool, expectFound);
@@ -709,10 +696,6 @@ void tst_QServiceManager::findInterfaces_filter_data()
 
 void tst_QServiceManager::findInterfaces_scope()
 {
-#if defined(QT_ADDON_JSONDB_LIB)
-    QSKIP("There is no difference between user and system scope with jsondb");
-#endif // QT_ADDON_JSONDB_LIB
-
     QFETCH(QService::Scope, scope_add);
     QFETCH(QService::Scope, scope_find);
     QFETCH(bool, expectFound);
@@ -1222,12 +1205,6 @@ void tst_QServiceManager::setInterfaceDefault_descriptor_data()
     QTest::addColumn<QService::Scope>("scope_find");
     QTest::addColumn<bool>("expectFound");
 
-#if defined(QT_ADDON_JSONDB_LIB)
-    // implementation hard-codes user-scope for everything, do not test any system scope-stuff
-    // because returned service interface descriptor is always in user-scope
-    QTest::newRow("user scope")
-                << QService::UserScope << QService::UserScope << true;
-#else
     QTest::newRow("user scope")
             << QService::UserScope << QService::UserScope << true;
     QTest::newRow("system scope")
@@ -1237,7 +1214,6 @@ void tst_QServiceManager::setInterfaceDefault_descriptor_data()
             << QService::UserScope << QService::SystemScope << false;
     QTest::newRow("system scope - add, user scope - find")
             << QService::SystemScope << QService::UserScope << true;
-#endif //QT_JSONDB
 }
 
 void tst_QServiceManager::interfaceDefault()
@@ -1338,12 +1314,6 @@ void tst_QServiceManager::serviceAdded_data()
 
     QByteArray file1Data = file1.readAll();
 
-#if defined(QT_ADDON_JSONDB_LIB)
-    QTest::newRow("SampleService, user scope") << file1Data << "SampleService"
-            << QService::SystemScope << QService::SystemScope << true;
-    QTest::newRow("TestService, user scope") << file2.readAll() << "TestService"
-            << QService::SystemScope << QService::SystemScope << true;
-#else
     QTest::newRow("SampleService, user scope") << file1Data << "SampleService"
             << QService::UserScope << QService::UserScope << true;
     QTest::newRow("TestService, user scope") << file2.readAll() << "TestService"
@@ -1355,7 +1325,6 @@ void tst_QServiceManager::serviceAdded_data()
             << QService::UserScope << QService::SystemScope << false;
     QTest::newRow("modify as system, listen in user") << file1Data << "SampleService"
             << QService::SystemScope << QService::UserScope << true;
-#endif /* Q_ADDON_JSONDB_LIB */
 }
 
 void tst_QServiceManager::serviceRemoved()
