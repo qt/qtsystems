@@ -73,8 +73,7 @@ linux-*: !simulator: {
                        linux/qstorageinfo_linux_p.h \
                        linux/qbatteryinfo_linux_p.h \
                        linux/qnetworkinfo_linux_p.h \
-                       linux/qscreensaver_linux_p.h \
-                       linux/qdeviceprofile_linux_p.h
+                       linux/qscreensaver_linux_p.h
 
     SOURCES += linux/qdeviceinfo_linux.cpp \
                linux/qdisplayinfo_linux.cpp \

@@ -42,7 +42,7 @@
 #ifndef QSTORAGEINFO_H
 #define QSTORAGEINFO_H
 
-#include <qsysteminfoglobal.h>
+#include <QtSystemInfo/qsysteminfoglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstringlist.h>
 

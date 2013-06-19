@@ -42,7 +42,7 @@
 #ifndef QDEVICEINFO_H
 #define QDEVICEINFO_H
 
-#include <qsysteminfoglobal.h>
+#include <QtSystemInfo/qsysteminfoglobal.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
