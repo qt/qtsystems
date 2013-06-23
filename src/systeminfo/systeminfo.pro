@@ -63,13 +63,11 @@ win32: !simulator: {
 linux-*: !simulator: {
     PRIVATE_HEADERS += linux/qdeviceinfo_linux_p.h \
                        linux/qstorageinfo_linux_p.h \
-                       linux/qbatteryinfo_linux_p.h \
                        linux/qnetworkinfo_linux_p.h \
                        linux/qscreensaver_linux_p.h
 
     SOURCES += linux/qdeviceinfo_linux.cpp \
                linux/qstorageinfo_linux.cpp \
-               linux/qbatteryinfo_linux.cpp \
                linux/qnetworkinfo_linux.cpp \
                linux/qscreensaver_linux.cpp
 
@@ -101,8 +99,23 @@ linux-*: !simulator: {
         } else: {
             DEFINES += QT_NO_UDISKS
         }
+        contains(CONFIG,upower): {
+            QT += dbus
+            SOURCES += linux/qdevicekitservice_linux.cpp \
+                       linux/qbatteryinfo_upower.cpp
+            HEADERS += linux/qdevicekitservice_linux_p.h \
+                       linux/qbatteryinfo_upower_p.h
+        } else {
+            HEADERS += linux/qbatteryinfo_linux_p.h
+            SOURCES += linux/qbatteryinfo_linux.cpp
+
+            DEFINES += QT_NO_UPOWER
+        }
+
     } else {
-        DEFINES += QT_NO_OFONO QT_NO_UDISKS
+        DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_UPOWER
+        HEADERS += linux/qbatteryinfo_linux_p.h
+        SOURCES += linux/qbatteryinfo_linux.cpp
     }
 
     config_udev {
