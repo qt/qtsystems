@@ -59,7 +59,6 @@
 #include <qbatteryinfo.h>
 #include <qstorageinfo.h>
 #include <qscreensaver.h>
-#include <qdeviceprofile.h>
 
 #include <QHash>
 #include <QVector>
@@ -161,20 +160,12 @@ struct QScreenSaverData
     bool screenSaverEnabled;
 };
 
-struct QDeviceProfileData
-{
-    int messageRingtoneVolume;
-    int voiceRingtoneVolume;
-    QDeviceProfile::ProfileType profileType;
-    bool isVibrationActivated;
-};
 
 Q_DECLARE_METATYPE(QNetworkInfoData)
 Q_DECLARE_METATYPE(QDeviceInfoData)
 Q_DECLARE_METATYPE(QBatteryInfoData)
 Q_DECLARE_METATYPE(QStorageInfoData)
 Q_DECLARE_METATYPE(QScreenSaverData)
-Q_DECLARE_METATYPE(QDeviceProfileData)
 
 void qt_registerSystemInfoTypes();
 
@@ -204,8 +195,6 @@ QDataStream &operator<<(QDataStream &out, const QStorageInfoData::DriveInfo &s);
 QDataStream &operator>>(QDataStream &in, QStorageInfoData::DriveInfo &s);
 QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s);
 QDataStream &operator>>(QDataStream &in, QScreenSaverData &s);
-QDataStream &operator<<(QDataStream &out, const QDeviceProfileData &s);
-QDataStream &operator>>(QDataStream &in, QDeviceProfileData &s);
 
 QT_END_NAMESPACE
 

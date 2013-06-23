@@ -57,7 +57,6 @@ void qt_registerSystemInfoTypes()
     qRegisterMetaTypeStreamOperators<QStorageInfoData>("QStorageInfoData");
     qRegisterMetaTypeStreamOperators<QStorageInfoData::DriveInfo>("QStorageInfoData::DriveInfo");
     qRegisterMetaTypeStreamOperators<QScreenSaverData>("QScreenSaverData");
-    qRegisterMetaTypeStreamOperators<QDeviceProfileData>("QDeviceProfileData");
 }
 
 QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BasicNetworkInfo &s)
@@ -300,28 +299,6 @@ QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s)
 QDataStream &operator>>(QDataStream &in, QScreenSaverData &s)
 {
     in >> s.screenSaverEnabled;
-    return in;
-}
-
-QDataStream &operator<<(QDataStream &out, const QDeviceProfileData &s)
-{
-    out << static_cast<qint32>(s.messageRingtoneVolume)
-        << static_cast<qint32>(s.voiceRingtoneVolume)
-        << static_cast<qint32>(s.profileType);
-    out << s.isVibrationActivated;
-
-    return out;
-}
-
-QDataStream &operator>>(QDataStream &in, QDeviceProfileData &s)
-{
-    qint32 messageRingtoneVolume, voiceRingtoneVolume, profileType;
-    in >> messageRingtoneVolume >> voiceRingtoneVolume >> profileType;
-    s.messageRingtoneVolume = messageRingtoneVolume;
-    s.voiceRingtoneVolume = voiceRingtoneVolume;
-    s.profileType = static_cast<QDeviceProfile::ProfileType>(profileType);
-    in >> s.isVibrationActivated;
-
     return in;
 }
 

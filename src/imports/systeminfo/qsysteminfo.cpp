@@ -44,7 +44,6 @@
 
 #include "qdeclarativebatteryinfo_p.h"
 #include "qdeclarativedeviceinfo_p.h"
-#include "qdeclarativedeviceprofile_p.h"
 #include "qdeclarativenetworkinfo_p.h"
 #include <qscreensaver.h>
 #include "qdeclarativestorageinfo_p.h"
@@ -65,7 +64,6 @@ public:
         int minor = 0;
         qmlRegisterType<QDeclarativeBatteryInfo>(uri, major, minor, "BatteryInfo");
         qmlRegisterType<QDeclarativeDeviceInfo>(uri, major, minor, "DeviceInfo");
-        qmlRegisterType<QDeclarativeDeviceProfile>(uri, major, minor, "DeviceProfile");
         qmlRegisterType<QDeclarativeNetworkInfo>(uri, major, minor, "NetworkInfo");
         qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");
         qmlRegisterType<QDeclarativeStorageInfo>(uri, major, minor, "StorageInfo");

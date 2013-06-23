@@ -7,15 +7,13 @@ PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qstorageinfo.h \
                  qscreensaver.h \
                  qbatteryinfo.h \
-                 qnetworkinfo.h \
-                 qdeviceprofile.h
+                 qnetworkinfo.h
 
 SOURCES += qdeviceinfo.cpp \
            qstorageinfo.cpp \
            qscreensaver.cpp \
            qbatteryinfo.cpp \
-           qnetworkinfo.cpp \
-           qdeviceprofile.cpp
+           qnetworkinfo.cpp
 
 win32: !simulator: {
     contains(CONFIG, release) {
@@ -176,7 +174,6 @@ simulator {
     linux-*: {
         PRIVATE_HEADERS += \
                            linux/qscreensaver_linux_p.h \
-                           linux/qdeviceprofile_linux_p.h \
                            linux/qstorageinfo_linux_p.h
 
         SOURCES += \
