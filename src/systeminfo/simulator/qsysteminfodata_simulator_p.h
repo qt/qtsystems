@@ -57,7 +57,6 @@
 #include <qnetworkinfo.h>
 #include <qdeviceinfo.h>
 #include <qbatteryinfo.h>
-#include <qdisplayinfo.h>
 #include <qstorageinfo.h>
 #include <qscreensaver.h>
 #include <qdeviceprofile.h>
@@ -145,13 +144,6 @@ struct QDeviceInfoData
     QMap<QDeviceInfo::Version, QString> versionList;
 };
 
-struct QDisplayInfoData
-{
-    int brightness;
-    int contrast;
-    QDisplayInfo::BacklightState backlightStatus;
-};
-
 struct QStorageInfoData
 {
     struct DriveInfo
@@ -180,7 +172,6 @@ struct QDeviceProfileData
 Q_DECLARE_METATYPE(QNetworkInfoData)
 Q_DECLARE_METATYPE(QDeviceInfoData)
 Q_DECLARE_METATYPE(QBatteryInfoData)
-Q_DECLARE_METATYPE(QDisplayInfoData)
 Q_DECLARE_METATYPE(QStorageInfoData)
 Q_DECLARE_METATYPE(QScreenSaverData)
 Q_DECLARE_METATYPE(QDeviceProfileData)
@@ -207,8 +198,6 @@ QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Version s);
 QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s);
 QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
 QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
-QDataStream &operator<<(QDataStream &out, const QDisplayInfoData &s);
-QDataStream &operator>>(QDataStream &in, QDisplayInfoData &s);
 QDataStream &operator<<(QDataStream &out, const QStorageInfoData &s);
 QDataStream &operator>>(QDataStream &in, QStorageInfoData &s);
 QDataStream &operator<<(QDataStream &out, const QStorageInfoData::DriveInfo &s);

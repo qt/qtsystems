@@ -90,25 +90,6 @@ Rectangle {
                 font.bold: true
             }
             Text {
-                text: "backlight state: " + displayInfo.backlightState(0);
-            }
-            Text {
-                text: "brightness: " + displayInfo.brightness(0);
-            }
-            Text {
-                text: "contrast: " + displayInfo.contrast(0);
-            }
-            Text {
-                text: "colorDepth: " + displayInfo.colorDepth(0);
-            }
-            Text {
-                text: "pitch: " + displayInfo.dpiX(0) + " x " + displayInfo.dpiY(0) + " DPI; " +
-                      parseFloat(25.4 / displayInfo.dpiX(0)).toFixed(4) + " x " + parseFloat(25.4 / displayInfo.dpiY(0)).toFixed(4) + "mm"
-            }
-            Text {
-                text: "physical size: " + displayInfo.physicalWidth(0) + " x " + displayInfo.physicalHeight(0);
-            }
-            Text {
                 text: "resolution: " + Screen.width + " x " + Screen.height;
             }
             Text {
@@ -147,9 +128,5 @@ Rectangle {
 
     DeviceInfo {
         id: devinfo;
-    }
-
-    DisplayInfo {
-        id: displayInfo
     }
 }

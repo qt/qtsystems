@@ -54,7 +54,6 @@ void qt_registerSystemInfoTypes()
     qRegisterMetaTypeStreamOperators<QNetworkInfoData::BluetoothInfo>("QNetworkInfoData::BluetoothInfo");
     qRegisterMetaTypeStreamOperators<QDeviceInfoData>("QDeviceInfoData");
     qRegisterMetaTypeStreamOperators<QBatteryInfoData>("QBatteryInfoData");
-    qRegisterMetaTypeStreamOperators<QDisplayInfoData>("QDisplayInfoData");
     qRegisterMetaTypeStreamOperators<QStorageInfoData>("QStorageInfoData");
     qRegisterMetaTypeStreamOperators<QStorageInfoData::DriveInfo>("QStorageInfoData::DriveInfo");
     qRegisterMetaTypeStreamOperators<QScreenSaverData>("QScreenSaverData");
@@ -256,28 +255,6 @@ QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s)
     s.remainingCapacity = remainingCapacity;
     s.remainingChargingTime = remainingChargingTime;
     s.voltage = voltage;
-
-    return in;
-}
-
-QDataStream &operator<<(QDataStream &out, const QDisplayInfoData &s)
-{
-    out << static_cast<qint32>(s.brightness) << static_cast<qint32>(s.contrast);
-    out << static_cast<qint32>(s.backlightStatus);
-
-    return out;
-}
-
-QDataStream &operator>>(QDataStream &in, QDisplayInfoData &s)
-{
-    qint32 brightness, contrast;
-    in >> brightness >> contrast;
-
-    s.brightness = brightness;
-    s.contrast = contrast;
-    qint32 backlightStatus;
-    in >> backlightStatus;
-    s.backlightStatus = static_cast<QDisplayInfo::BacklightState>(backlightStatus);
 
     return in;
 }

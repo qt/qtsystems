@@ -17,12 +17,6 @@ SOURCES += qdeviceinfo.cpp \
            qnetworkinfo.cpp \
            qdeviceprofile.cpp
 
-qtHaveModule(gui) {
-    QT += gui
-    PUBLIC_HEADERS += qdisplayinfo.h
-    SOURCES += qdisplayinfo.cpp
-}
-
 win32: !simulator: {
     contains(CONFIG, release) {
        CONFIG -= console
@@ -68,14 +62,12 @@ win32: !simulator: {
 
 linux-*: !simulator: {
     PRIVATE_HEADERS += linux/qdeviceinfo_linux_p.h \
-                       linux/qdisplayinfo_linux_p.h \
                        linux/qstorageinfo_linux_p.h \
                        linux/qbatteryinfo_linux_p.h \
                        linux/qnetworkinfo_linux_p.h \
                        linux/qscreensaver_linux_p.h
 
     SOURCES += linux/qdeviceinfo_linux.cpp \
-               linux/qdisplayinfo_linux.cpp \
                linux/qstorageinfo_linux.cpp \
                linux/qbatteryinfo_linux.cpp \
                linux/qnetworkinfo_linux.cpp \
@@ -129,14 +121,12 @@ macx:!simulator {
 QT += core-private
          OBJECTIVE_SOURCES += mac/qbatteryinfo_mac.mm \
                   mac/qdeviceinfo_mac.mm \
-                  mac/qdisplayinfo_mac.mm \
                   mac/qnetworkinfo_mac.mm \
                   mac/qscreensaver_mac.mm \
                   mac/qstorageinfo_mac.mm
 
          PRIVATE_HEADERS += mac/qbatteryinfo_mac_p.h \
                   mac/qdeviceinfo_mac_p.h \
-                  mac/qdisplayinfo_mac_p.h \
                   mac/qnetworkinfo_mac_p.h \
                   mac/qscreensaver_mac_p.h \
                   mac/qstorageinfo_mac_p.h
@@ -171,12 +161,12 @@ simulator {
 
 
     linux-*: {
-        PRIVATE_HEADERS += linux/qdisplayinfo_linux_p.h \
+        PRIVATE_HEADERS += \
                            linux/qscreensaver_linux_p.h \
                            linux/qdeviceprofile_linux_p.h \
                            linux/qstorageinfo_linux_p.h
 
-        SOURCES += linux/qdisplayinfo_linux.cpp \
+        SOURCES += \
                    linux/qscreensaver_linux.cpp \
                    linux/qstorageinfo_linux.cpp
 

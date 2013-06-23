@@ -41,7 +41,7 @@
 
 #include <QValueSpaceSubscriber>
 #include <QServiceInterfaceDescriptor>
-#include <QDisplayInfo>
+#include <QStorageInfo>
 
 int main(int argc, char **argv)
 {
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
     QServiceInterfaceDescriptor serviceInterfaceDescriptor;
 
-    QDisplayInfo displayInfo;
+    QStorageInfo storageInfo;
 
     return 0;
 }
