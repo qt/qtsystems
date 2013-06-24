@@ -2,7 +2,6 @@ TARGET = QtSystemInfo
 QPRO_PWD = $PWD
 
 QT = core network
-DEFINES += QT_NO_LIBSYSINFO
 PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qdeviceinfo.h \
                  qstorageinfo.h \
@@ -225,13 +224,6 @@ simulator {
             DEFINES += QT_NO_UDEV
         }
 
-        config_libsysinfo {
-            CONFIG += link_pkgconfig
-            PKGCONFIG += sysinfo
-            LIBS += -lsysinfo
-        } else: {
-            DEFINES += QT_NO_LIBSYSINFO
-        }
     }
 }
 
