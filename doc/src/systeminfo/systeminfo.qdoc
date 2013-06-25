@@ -45,8 +45,10 @@
     Qt SystemInfo for Linux can use a number of technololgies based on dbus.
     These can be configured at build time through the CONFIG of qmake.
 
-     * CONFIG+=upower will build the UPower dbus backend.
-     * CONFIG+=ofono will build the Ofono dbus backend.
+     * CONFIG+=upower (linux) will build the UPower dbus backend.
+     * CONFIG+=ofono (linux) will build the Ofono dbus backend.
+     * CONFIG+=nox11option (linux) Turns off the use of x11 in QScreenSaver (and screen blanking
+     disabling and enabling will not work)
 
     \section1 C++ Classes
     \annotatedlist systeminfo

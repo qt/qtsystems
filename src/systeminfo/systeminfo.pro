@@ -69,7 +69,7 @@ linux-*: !simulator: {
                linux/qnetworkinfo_linux.cpp \
                linux/qscreensaver_linux.cpp
 
-    x11|config_x11 {
+    x11|config_x11: !contains(CONFIG,nox11option) {
         CONFIG += link_pkgconfig
         PKGCONFIG += x11
     } else: {
