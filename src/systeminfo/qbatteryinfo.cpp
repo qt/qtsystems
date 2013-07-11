@@ -86,6 +86,8 @@ QT_BEGIN_NAMESPACE
 
     Note that on some platforms, listening to the signals could lead to a heavy CPU usage. Therefore,
     you are strongly suggested to disconnect the signals when no longer needed in your application.
+
+    Battery index starts at 0, which indicates the first battery.
 */
 
 /*!
@@ -234,6 +236,9 @@ int QBatteryInfo::maximumCapacity(int battery) const
 /*!
     Returns the remaining level of the given \a battery, measured in QBatteryInfo::EnergyUnit. If
     the battery is not found, or the information is not available, -1 is returned.
+
+    To calculate capacity in percentage,
+    (remainingCapacity(0) / maximumCapacity(0)) * 100
 */
 int QBatteryInfo::remainingCapacity(int battery) const
 {

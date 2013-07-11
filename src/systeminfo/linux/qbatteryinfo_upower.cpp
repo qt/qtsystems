@@ -94,7 +94,7 @@ int QBatteryInfoPrivate::currentFlow(int battery)
 {
     if (batteryMap.count() >= battery)
         return (batteryMap.value(battery).value(QStringLiteral("EnergyRate")).toDouble()
-                / (batteryMap.value(battery).value(QStringLiteral("Voltage")).toInt()) * 1000);
+                / (batteryMap.value(battery).value(QStringLiteral("Voltage")).toDouble()) * 1000);
     else
         return 0;
 }
@@ -102,7 +102,7 @@ int QBatteryInfoPrivate::currentFlow(int battery)
 int QBatteryInfoPrivate::maximumCapacity(int battery)
 {
     if (batteryMap.count() >= battery)
-        return batteryMap.value(battery).value(QStringLiteral("EnergyFull")).toInt() * 1000;
+        return batteryMap.value(battery).value(QStringLiteral("EnergyFull")).toDouble() * 1000;
     else
         return 0;
 }
@@ -110,7 +110,7 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
 int QBatteryInfoPrivate::remainingCapacity(int battery)
 {
     if (batteryMap.count() >= battery)
-        return batteryMap.value(battery).value(QStringLiteral("Energy")).toInt() * 1000;
+        return batteryMap.value(battery).value(QStringLiteral("Energy")).toDouble() * 1000;
     else
         return 0;
 }
@@ -126,7 +126,7 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
 int QBatteryInfoPrivate::voltage(int battery)
 {
     if (batteryMap.count() >= battery)
-        return (batteryMap.value(battery).value(QStringLiteral("Voltage")).toInt() * 1000);
+        return (batteryMap.value(battery).value(QStringLiteral("Voltage")).toDouble() * 1000);
     else
         return 0;
 }
@@ -334,15 +334,12 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::getCurrentChargingState(int sta
         curChargeState = QBatteryInfo::UnknownChargingState;
         break;
     };
-    qDebug() << Q_FUNC_INFO << state << curChargeState;
 
     return curChargeState;
 }
 
 void QBatteryInfoPrivate::getBatteryStats()
 {
-    qDebug() << Q_FUNC_INFO;
-
     int batteryNumber = 0;
     batteryMap.clear();
     QUPowerInterface *power;
@@ -366,7 +363,7 @@ void QBatteryInfoPrivate::getBatteryStats()
         }
         if (battery->type() == 2) { //battery power
 
-            batteryMap.insert(++batteryNumber,battery->getProperties());
+            batteryMap.insert(batteryNumber++,battery->getProperties());
 
             connect(battery,SIGNAL(changed()),this,SLOT(upowerDeviceChanged()));
             connect(battery,SIGNAL(propertyChanged(QString,QVariant)),
