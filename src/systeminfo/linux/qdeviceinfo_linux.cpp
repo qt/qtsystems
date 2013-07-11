@@ -67,6 +67,7 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     , q_ptr(parent)
 #endif // QT_SIMULATOR
     , watchThermalState(false)
+    , imeiBuffer(QStringList())
     , timer(0)
 #if !defined(QT_NO_OFONO)
     , ofonoWrapper(0)
@@ -228,23 +229,24 @@ int QDeviceInfoPrivate::imeiCount()
     return imeiBuffer.size();
 }
 
-QString QDeviceInfoPrivate::imei(int interface)
+QString QDeviceInfoPrivate::imei(int interfaceNumber)
 {
 #if !defined(QT_NO_OFONO)
+    imeiBuffer.clear();
     if (QOfonoWrapper::isOfonoAvailable()) {
         if (!ofonoWrapper)
             ofonoWrapper = new QOfonoWrapper(this);
         QStringList modems = ofonoWrapper->allModems();
         foreach (const QString &modem, modems) {
            if (!modem.isEmpty())
-              imeiBuffer[interface] = ofonoWrapper->imei(modem);
+               imeiBuffer += ofonoWrapper->imei(modem);
         }
     }
 #else
-    Q_UNUSED(interface)
+    Q_UNUSED(interfaceNumber)
 #endif
-    if (interface >= 0 && interface < imeiBuffer.size())
-       return imeiBuffer[interface];
+    if (interfaceNumber >= 0 && interfaceNumber < imeiBuffer.size())
+       return imeiBuffer[interfaceNumber];
     else
        return QString();
 }
