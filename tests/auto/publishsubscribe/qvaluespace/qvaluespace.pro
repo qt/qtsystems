@@ -1,6 +1,5 @@
-include(../../auto.pri)
 
-QT += publishsubscribe
+QT += publishsubscribe testlib
 
 !config_gconf {
     DEFINES += QT_NO_GCONFLAYER

@@ -1,8 +1,8 @@
 TEMPLATE = subdirs
 
-!without-sericeframework: SUBDIRS += serviceframework
+#!without-sericeframework: SUBDIRS += serviceframework
 
-!without-publishsubscribe: SUBDIRS += publishsubscribe
+#!without-publishsubscribe: SUBDIRS += publishsubscribe
 !without-systeminfo: SUBDIRS += systeminfo
 
 

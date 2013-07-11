@@ -1,6 +1,5 @@
-include(../../auto.pri)
 
-QT += systeminfo
+QT += systeminfo testlib
 
 SOURCES += tst_qscreensaver.cpp
 

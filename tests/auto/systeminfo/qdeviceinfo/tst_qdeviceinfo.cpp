@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QtTest/qtest.h>
 #include "qdeviceinfo.h"
 
 QT_USE_NAMESPACE
@@ -165,5 +165,5 @@ void tst_QDeviceInfo::tst_thermalState()
             state == QDeviceInfo::ErrorThermal);
 }
 
-QTEST_MAIN(tst_QDeviceInfo)
+QTEST_APPLESS_MAIN(tst_QDeviceInfo)
 #include "tst_qdeviceinfo.moc"
