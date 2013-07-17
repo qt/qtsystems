@@ -27,7 +27,7 @@
 
 /*!
     \example publish-subscribe
-    \page publish-subscribe.html
+    \ingroup publishsubscribe-examples
     \title Publish and Subscribe Example
 
     The Publish and Subscribe example shows how to use the Qt Publish and Subscribe API to

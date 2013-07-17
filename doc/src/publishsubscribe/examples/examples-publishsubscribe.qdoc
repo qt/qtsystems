@@ -37,25 +37,3 @@
     \generatelist related
 */
 
-/*!
-    \example battery-charge
-    \title Accessing Publish and Subscribe from QML
-
-    \brief This examples shows how to access published context values from within QML.
-
-    The example consists of two programs.  The first, battery-publisher, is
-    a standard Qt Widgets application that is used to emulate a battery for the
-    sole purpose of demonstrating the second program.
-
-    \ingroup publishsubscribe-examples
-*/
-
-/*!
-    \example publish-subscribe
-    \title Publish and Subscribe Example
-
-    \brief Demonstrates how to publish and retrieve values from the Publish
-    and Subscribe system.
-
-    \ingroup publishsubscribe-examples
-*/

@@ -27,7 +27,7 @@
 
 /*!
     \example battery-charge
-    \page battery-charge.html
+    \ingroup publishsubscribe-examples
     \title Accessing Publish and Subscribe from QML
 
     This examples shows how to access published context values from within QML.  The example
