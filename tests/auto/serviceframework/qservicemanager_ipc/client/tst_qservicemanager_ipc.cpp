@@ -182,6 +182,7 @@ class tst_QServiceManager_IPC: public QObject
 {
     Q_OBJECT
 public:
+    tst_QServiceManager_IPC();
 
 protected slots:
     void ipcError(QService::UnrecoverableIPCError error);
@@ -262,8 +263,35 @@ private:
     bool ipcfailure;
 };
 
+tst_QServiceManager_IPC::tst_QServiceManager_IPC()
+    : serviceUnique(0)
+    , serviceUniqueOther(0)
+    , serviceShared(0)
+    , serviceSharedOther(0)
+    , miscTest(0)
+    , manager(0)
+    , verbose(false)
+    , ipcfailure(false)
+{
+}
+
+#ifdef Q_OS_WIN
+static const char serviceBinaryC[] = "qt_sfw_example_ipc_unittest.exe";
+#else
+static const char serviceBinaryC[] = "qt_sfw_example_ipc_unittest";
+#endif
+
 void tst_QServiceManager_IPC::initTestCase()
 {
+    const QString serviceBinary = QFINDTESTDATA(serviceBinaryC);
+    QVERIFY(!serviceBinary.isEmpty());
+    const QFileInfo serviceBinaryInfo(serviceBinary);
+    QVERIFY(serviceBinaryInfo.isExecutable());
+    const QString serviceBinaryAbsPath = serviceBinaryInfo.absoluteFilePath();
+
+    const QString path = QFINDTESTDATA("xmldata/ipcexampleservice.xml");
+    QVERIFY(!path.isEmpty());
+
     //verbose = true;
     ipcfailure = false;
     verbose = false;
@@ -301,9 +329,7 @@ void tst_QServiceManager_IPC::initTestCase()
 
     QServiceManager* manager = new QServiceManager(this);
 
-    const QString path = QFINDTESTDATA("xmldata/ipcexampleservice.xml");
-
-    bool r = manager->addService(path);
+    const bool r = manager->addService(path);
     if (!r)
         qWarning() << "Cannot register IPCExampleService" << path;
 
@@ -319,11 +345,10 @@ void tst_QServiceManager_IPC::initTestCase()
         QTextStream out(&data);
         out << "[D-BUS Service]\n"
             << "Name=com.nokia.qtmobility.sfw.IPCExampleService" << '\n'
-            << "Exec=" << QFileInfo(QFINDTESTDATA("qt_sfw_example_ipc_unittest")).absoluteFilePath() << '\n';
+            << "Exec=" << serviceBinaryAbsPath << '\n';
         data.close();
     }
     QVERIFY(data.exists());
-    qDebug() << "DDDDD" << file << QFileInfo(QFINDTESTDATA("qt_sfw_example_ipc_unittest")).absoluteFilePath();
 #endif // SFW_USE_DBUS_BACKEND
 
 #ifdef Q_OS_UNIX
@@ -341,7 +366,9 @@ void tst_QServiceManager_IPC::initTestCase()
     foreach (d, list) {
         if (d.majorVersion() == 3 && d.minorVersion() == 5) {
             serviceUnique = manager->loadInterface(d);
+            QVERIFY(serviceUnique);
             serviceUniqueOther = manager->loadInterface(d);
+            QVERIFY(serviceUniqueOther);
             connect(serviceUnique, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                     this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
             connect(serviceUniqueOther, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
@@ -350,15 +377,18 @@ void tst_QServiceManager_IPC::initTestCase()
         }
         if (d.majorVersion() == 3 && d.minorVersion() == 4) {
             serviceShared = manager->loadInterface(d);
+            QVERIFY(serviceShared);
             serviceSharedOther = manager->loadInterface(d);
             connect(serviceShared, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                     this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
+            QVERIFY(serviceSharedOther);
             connect(serviceSharedOther, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                     this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
 
         }
         if (d.majorVersion() == 3 && d.minorVersion() == 8) {
             miscTest = manager->loadInterface(d);
+            QVERIFY(miscTest);
             connect(miscTest, SIGNAL(errorUnrecoverableIPCFault(QService::UnrecoverableIPCError)),
                     this, SLOT(ipcErrorNonTest(QService::UnrecoverableIPCError)));
         }
