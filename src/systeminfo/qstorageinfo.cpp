@@ -164,7 +164,7 @@ extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 */
 void QStorageInfo::connectNotify(const QMetaMethod &signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
     QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
     connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
 #else
@@ -177,7 +177,7 @@ void QStorageInfo::connectNotify(const QMetaMethod &signal)
 */
 void QStorageInfo::disconnectNotify(const QMetaMethod &signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (isSignalConnected(signal))
         return;

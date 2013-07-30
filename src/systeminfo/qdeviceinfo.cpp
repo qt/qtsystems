@@ -288,30 +288,30 @@ extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 /*!
     \internal
 */
-void QDeviceInfo::connectNotify(const QMetaMethod &signal)
+void QDeviceInfo::connectNotify(const QMetaMethod &signalSig)
 {
-#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
-    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-    connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR) || defined(Q_OS_MAC)
+    QMetaMethod sourceSignal = proxyToSourceSignal(signalSig, reinterpret_cast<QObject *>(d_ptr));
+    connect(reinterpret_cast<QObject *>(d_ptr), sourceSignal, this, signalSig, Qt::UniqueConnection);
 #else
-    Q_UNUSED(signal)
+    Q_UNUSED(signalSig)
 #endif
 }
 
 /*!
     \internal
 */
-void QDeviceInfo::disconnectNotify(const QMetaMethod &signal)
+void QDeviceInfo::disconnectNotify(const QMetaMethod &signalSig)
 {
-#if defined(Q_OS_LINUX) || defined(QT_SIMULATOR)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR) || defined(Q_OS_MAC)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
-    if (isSignalConnected(signal))
+    if (isSignalConnected(signalSig))
         return;
 
-    QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
-    disconnect(d_ptr, sourceSignal, this, signal);
+    QMetaMethod sourceSignal = proxyToSourceSignal(signalSig, reinterpret_cast<QObject *>(d_ptr));
+    disconnect(reinterpret_cast<QObject *>(d_ptr), sourceSignal, this, signalSig);
 #else
-    Q_UNUSED(signal)
+    Q_UNUSED(signalSig)
 #endif
 }
 
