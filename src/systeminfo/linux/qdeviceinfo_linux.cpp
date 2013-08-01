@@ -59,6 +59,8 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <QUuid>
+
 QT_BEGIN_NAMESPACE
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
@@ -72,6 +74,7 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 #if !defined(QT_NO_OFONO)
     , ofonoWrapper(0)
 #endif // QT_NO_OFONO
+    ,uniqueDeviceIDBuffer(QString())
 {
 }
 
@@ -299,6 +302,14 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
         }
     }
     if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("machine-id")));
+        if (file.open(QIODevice::ReadOnly)) {
+            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
+            if (id.length() == 40)
+                uniqueDeviceIDBuffer = id;
+        }
+    }
+    if (uniqueDeviceIDBuffer.isEmpty()) {
         QFile file(QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("unique-id")));
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
@@ -306,7 +317,19 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
                 uniqueDeviceIDBuffer = id;
         }
     }
-
+    //last ditch effort
+    if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QStringLiteral("/var/lib/dbus/machine-id"));
+        if (file.open(QIODevice::ReadOnly)) {
+            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
+            if (id.length() == 32) {
+                uniqueDeviceIDBuffer = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+            }
+        }
+    }
+    QUuid uid(uniqueDeviceIDBuffer); //make sure this can be made into a valid QUUid
+    if (uid.isNull())
+        uniqueDeviceIDBuffer = "";
     return uniqueDeviceIDBuffer;
 }
 
