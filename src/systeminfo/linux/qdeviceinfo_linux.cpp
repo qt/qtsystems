@@ -70,11 +70,11 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
 #endif // QT_SIMULATOR
     , watchThermalState(false)
     , imeiBuffer(QStringList())
+    , uniqueDeviceIDBuffer(QString())
     , timer(0)
-#if !defined(QT_NO_OFONO)
-    , ofonoWrapper(0)
-#endif // QT_NO_OFONO
-    ,uniqueDeviceIDBuffer(QString())
+    #if !defined(QT_NO_OFONO)
+        , ofonoWrapper(0)
+    #endif // QT_NO_OFONO
 {
 }
 
@@ -145,7 +145,8 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
         return false;
 
     case QDeviceInfo::VibrationFeature:
-        // TODO: find the kernel interface for this
+        if (QDir(QStringLiteral("/sys/bus/platform/devices/")).entryList(QStringList() << QStringLiteral("*vib*")).size() > 0)
+            return true;
         return false;
 
     case QDeviceInfo::WlanFeature:
@@ -166,6 +167,8 @@ bool QDeviceInfoPrivate::hasFeature(QDeviceInfo::Feature feature)
 
     case QDeviceInfo::PositioningFeature:
         // TODO: find the kernel interface for this
+        if (QDir(QStringLiteral("/sys/class/misc/")).entryList(QStringList() << QStringLiteral("*nmea*")).size() > 0)
+            return true;
         return false;
 
     case QDeviceInfo::VideoOutFeature: {
@@ -257,9 +260,31 @@ QString QDeviceInfoPrivate::imei(int interfaceNumber)
 QString QDeviceInfoPrivate::manufacturer()
 {
     if (manufacturerBuffer.isEmpty()) {
+        // for dmi enabled kernels
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/sys_vendor"));
         if (file.open(QIODevice::ReadOnly))
             manufacturerBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
+    }
+    if (manufacturerBuffer.isEmpty()) {
+        QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
+        foreach (const QString &file, releaseFies) {
+            if (!manufacturerBuffer.isEmpty())
+                continue;
+            QFile release(QStringLiteral("/etc/") + file);
+            if (release.open(QIODevice::ReadOnly))  {
+                QTextStream stream(&release);
+                QString line;
+                do {
+                    line = stream.readLine();
+                    //                 this seems to be mer specific
+                    if (line.startsWith(QStringLiteral("BUILD"))) {
+                      manufacturerBuffer = line.split(QStringLiteral(":")).at(1).simplified().split(QStringLiteral("-")).at(0);
+                      break;
+                    }
+                } while (!line.isNull());
+                release.close();
+            }
+        }
     }
 
     return manufacturerBuffer;
@@ -268,16 +293,52 @@ QString QDeviceInfoPrivate::manufacturer()
 QString QDeviceInfoPrivate::model()
 {
     if (modelBuffer.isEmpty()) {
+        // for dmi enabled kernels
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_name"));
         if (file.open(QIODevice::ReadOnly))
             modelBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
     }
-
+    if (modelBuffer.isEmpty()) {
+        QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
+        foreach (const QString &file, releaseFies) {
+            if (!modelBuffer.isEmpty())
+                continue;
+            QFile release(QStringLiteral("/etc/") + file);
+            if (release.open(QIODevice::ReadOnly))  {
+                QTextStream stream(&release);
+                QString line;
+                do {
+                    line = stream.readLine();
+                    //                 this seems to be mer specific
+                    if (line.startsWith(QStringLiteral("BUILD"))) {
+                      modelBuffer = line.split(QStringLiteral(":")).at(1).split(QStringLiteral("-")).at(3);
+                      break;
+                    }
+                } while (!line.isNull());
+                release.close();
+            }
+        }
+    }
     return modelBuffer;
 }
 
 QString QDeviceInfoPrivate::productName()
 {
+    if (productNameBuffer.isEmpty()) {
+        QFile release(QStringLiteral("/etc/os-release"));
+        if (release.open(QIODevice::ReadOnly))  {
+            QTextStream stream(&release);
+            QString line;
+            do {
+                line = stream.readLine();
+                if (line.startsWith(QStringLiteral("PRETTY_NAME"))) {
+                    productNameBuffer = line.split(QStringLiteral("=")).at(1).simplified().remove("\"");
+                    break;
+                }
+            } while (!line.isNull());
+            release.close();
+        }
+    }
     if (productNameBuffer.isEmpty()) {
         QProcess lsbRelease;
         lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
@@ -294,6 +355,7 @@ QString QDeviceInfoPrivate::productName()
 QString QDeviceInfoPrivate::uniqueDeviceID()
 {
     if (uniqueDeviceIDBuffer.isEmpty()) {
+        // for dmi enabled kernels
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_uuid"));
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
@@ -302,19 +364,22 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
         }
     }
     if (uniqueDeviceIDBuffer.isEmpty()) {
-        QFile file(QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("machine-id")));
+
+        QFile file(QStringLiteral("/etc/machine-id"));
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
-            if (id.length() == 40)
-                uniqueDeviceIDBuffer = id;
+            if (id.length() == 32)
+                uniqueDeviceIDBuffer = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+            file.close();
         }
     }
     if (uniqueDeviceIDBuffer.isEmpty()) {
-        QFile file(QStandardPaths::locate(QStandardPaths::ConfigLocation, QStringLiteral("unique-id")));
+        QFile file(QStringLiteral("/etc/unique-id"));
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
-            if (id.length() == 40)
-                uniqueDeviceIDBuffer = id;
+            if (id.length() == 32)
+                uniqueDeviceIDBuffer = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+            file.close();
         }
     }
     //last ditch effort
@@ -324,12 +389,13 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
             if (id.length() == 32) {
                 uniqueDeviceIDBuffer = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+                file.close();
             }
         }
     }
     QUuid uid(uniqueDeviceIDBuffer); //make sure this can be made into a valid QUUid
     if (uid.isNull())
-        uniqueDeviceIDBuffer = "";
+        uniqueDeviceIDBuffer = QString();
     return uniqueDeviceIDBuffer;
 }
 
@@ -337,6 +403,27 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 {
     switch (type) {
     case QDeviceInfo::Os:
+
+        if (versionBuffer[0].isEmpty()) {
+            QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
+            foreach (const QString &file, releaseFies) {
+                if (!versionBuffer[0].isEmpty())
+                    continue;
+                QFile release(QStringLiteral("/etc/") + file);
+                if (release.open(QIODevice::ReadOnly))  {
+                    QTextStream stream(&release);
+                    QString line;
+                    do {
+                        line = stream.readLine();
+                        if (line.left(8) == QStringLiteral("VERSION=")) {
+                          versionBuffer[0] = line.split(QStringLiteral("=")).at(1).simplified();
+                          break;
+                        }
+                    } while (!line.isNull());
+                    release.close();
+                }
+            }
+        }
         if (versionBuffer[0].isEmpty() && QFile::exists(QStringLiteral("/usr/bin/lsb_release"))) {
             QProcess lsbRelease;
             lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
@@ -346,27 +433,16 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
                 versionBuffer[0] = buffer.section(QChar::fromLatin1('\t'), 1, 1).simplified();
             }
         }
-        if (versionBuffer[0].isEmpty()) {
-            QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
-            foreach (const QString &file, releaseFies) {
-                QFile release(QStringLiteral("/etc/") + file);
-                if (release.open(QIODevice::ReadOnly)) {
-                    QString all(QString::fromLocal8Bit(release.readAll().constData()));
-                    QRegExp regExp(QStringLiteral("\\d+(\\.\\d+)*"));
-                    if (-1 != regExp.indexIn(all)) {
-                        versionBuffer[0] = regExp.cap(0);
-                        break;
-                    }
-                }
-            }
-        }
+
         return versionBuffer[0];
 
     case QDeviceInfo::Firmware:
         if (versionBuffer[1].isEmpty()) {
             QFile file(QStringLiteral("/proc/sys/kernel/osrelease"));
-            if (file.open(QIODevice::ReadOnly))
+            if (file.open(QIODevice::ReadOnly)) {
                 versionBuffer[1] = QString::fromLocal8Bit(file.readAll().simplified().data());
+                file.close();
+            }
         }
         return versionBuffer[1];
     }
@@ -379,7 +455,7 @@ extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 void QDeviceInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
     if (timer == 0) {
-        timer = new QTimer;
+        timer = new QTimer(this);
         timer->setInterval(2000);
         connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
     }
