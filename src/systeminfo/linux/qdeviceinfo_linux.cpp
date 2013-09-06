@@ -72,6 +72,8 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     , imeiBuffer(QStringList())
     , uniqueDeviceIDBuffer(QString())
     , timer(0)
+    , boardNameString(QString())
+    , osName(QString())
     #if !defined(QT_NO_OFONO)
         , ofonoWrapper(0)
     #endif // QT_NO_OFONO
@@ -286,7 +288,9 @@ QString QDeviceInfoPrivate::manufacturer()
             }
         }
     }
-
+    if (manufacturerBuffer.isEmpty()) {
+        manufacturerBuffer = findInRelease(QStringLiteral("BUILD"));
+    }
     return manufacturerBuffer;
 }
 
@@ -325,20 +329,9 @@ QString QDeviceInfoPrivate::model()
 QString QDeviceInfoPrivate::productName()
 {
     if (productNameBuffer.isEmpty()) {
-        QFile release(QStringLiteral("/etc/os-release"));
-        if (release.open(QIODevice::ReadOnly))  {
-            QTextStream stream(&release);
-            QString line;
-            do {
-                line = stream.readLine();
-                if (line.startsWith(QStringLiteral("PRETTY_NAME"))) {
-                    productNameBuffer = line.split(QStringLiteral("=")).at(1).simplified().remove("\"");
-                    break;
-                }
-            } while (!line.isNull());
-            release.close();
-        }
+        productNameBuffer = findInRelease(QStringLiteral("PRETTY_NAME")).remove("\"");
     }
+
     if (productNameBuffer.isEmpty()) {
         QProcess lsbRelease;
         lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
@@ -405,25 +398,9 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
     case QDeviceInfo::Os:
 
         if (versionBuffer[0].isEmpty()) {
-            QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
-            foreach (const QString &file, releaseFies) {
-                if (!versionBuffer[0].isEmpty())
-                    continue;
-                QFile release(QStringLiteral("/etc/") + file);
-                if (release.open(QIODevice::ReadOnly))  {
-                    QTextStream stream(&release);
-                    QString line;
-                    do {
-                        line = stream.readLine();
-                        if (line.left(8) == QStringLiteral("VERSION=")) {
-                          versionBuffer[0] = line.split(QStringLiteral("=")).at(1).simplified();
-                          break;
-                        }
-                    } while (!line.isNull());
-                    release.close();
-                }
-            }
+            versionBuffer[0] = findInRelease(QStringLiteral("VERSION_ID"));
         }
+
         if (versionBuffer[0].isEmpty() && QFile::exists(QStringLiteral("/usr/bin/lsb_release"))) {
             QProcess lsbRelease;
             lsbRelease.start(QStringLiteral("/usr/bin/lsb_release"),
@@ -448,6 +425,56 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
     }
 
     return QString();
+}
+
+QString QDeviceInfoPrivate::operatingSystemName()
+{
+    if (osName.isEmpty()) {
+        osName = findInRelease(QStringLiteral("NAME="));
+    }
+
+    return osName;
+}
+
+QString QDeviceInfoPrivate::boardName()
+{
+    if (boardNameString.isEmpty()) {
+        QFile boardfile(QStringLiteral("/etc/boardname"));
+        if (boardfile.open(QIODevice::ReadOnly))
+            boardNameString = QString::fromLocal8Bit(boardfile.readAll().simplified().data());
+    }
+
+    if (boardNameString.isEmpty()) {
+        // for dmi enabled kernels
+        QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/board_name"));
+        if (file.open(QIODevice::ReadOnly))
+            boardNameString = QString::fromLocal8Bit(file.readAll().simplified().data());
+    }
+    return boardNameString;
+}
+
+QString QDeviceInfoPrivate::findInRelease(const QString &searchTerm)
+{
+    QString result;
+    QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
+    foreach (const QString &file, releaseFies) {
+        if (!result.isEmpty())
+            continue;
+        QFile release(QStringLiteral("/etc/") + file);
+        if (release.open(QIODevice::ReadOnly))  {
+            QTextStream stream(&release);
+            QString line;
+            do {
+                line = stream.readLine();
+                if (line.left(searchTerm.size()) == searchTerm) {
+                  result = line.split(QStringLiteral("=")).at(1).simplified();
+                  break;
+                }
+            } while (!line.isNull());
+            release.close();
+        }
+    }
+    return result;
 }
 
 extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);

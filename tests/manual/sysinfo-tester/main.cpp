@@ -203,6 +203,9 @@ static void test_deviceinfo(void)
   X(deviceinfo.version(QDeviceInfo::Os));
   X(deviceinfo.version(QDeviceInfo::Firmware));
 
+  X(deviceinfo.boardName());
+  X(deviceinfo.operatingSystemName());
+
   X(deviceinfo.thermalState());
 }
 

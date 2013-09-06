@@ -83,6 +83,8 @@ public:
     QString productName();
     QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
+    QString operatingSystemName();
+    QString boardName();
 
 Q_SIGNALS:
     void thermalStateChanged(QDeviceInfo::ThermalState state);
@@ -109,13 +111,15 @@ private:
     QString uniqueDeviceIDBuffer;
     QString versionBuffer[2];
     QTimer *timer;
+    QString boardNameString;
+    QString osName;
 
     QDeviceInfo::ThermalState getThermalState();
 
 #if !defined(QT_NO_OFONO)
     QOfonoWrapper *ofonoWrapper;
 #endif // QT_NO_OFONO
-
+    QString findInRelease(const QString &searchTerm);
 };
 
 QT_END_NAMESPACE

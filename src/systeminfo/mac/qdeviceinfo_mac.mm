@@ -45,6 +45,7 @@
 #include <QSettings>
 #include <QCryptographicHash>
 #include <QtCore/private/qcore_mac_p.h>
+#include <QSysInfo>
 
 #include <CoreLocation/CLLocation.h>
 #include <CoreLocation/CLLocationManager.h>
@@ -341,7 +342,11 @@ QString QDeviceInfoPrivate::productName()
       }
       if (model.count() > 3)
           model = model.left(model.count() - 3);
-      return  model;
+      bool ok;
+      model.right(1).toInt(&ok);
+      if (ok)
+          model.chop(1);
+      return model;
 }
 
 QString QDeviceInfoPrivate::uniqueDeviceID()
@@ -386,6 +391,27 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
         break;
     };
     return QString();
+}
+
+QString QDeviceInfoPrivate::operatingSystemName()
+{
+    const QString ver = version(QDeviceInfo::Os);
+
+    if (ver.left(4) == QStringLiteral("10.6"))
+        return QStringLiteral("Snow Leopard");
+    if (ver.left(4) == QStringLiteral("10.7"))
+        return QStringLiteral("Lion");
+    if (ver.left(4) == QStringLiteral("10.8"))
+        return QStringLiteral("Mountain Lion");
+    if (ver.left(4) == QStringLiteral("10.9"))
+        return QStringLiteral("Mavericks");
+    return ver;
+}
+
+QString QDeviceInfoPrivate::boardName()
+{
+    // I suspect boardname and product are the same for macs.
+    return model();
 }
 
     QT_END_NAMESPACE

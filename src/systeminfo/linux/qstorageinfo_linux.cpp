@@ -55,6 +55,8 @@
 #include <sys/stat.h>
 #include <sys/statfs.h>
 #include <unistd.h>
+#include <paths.h>
+#include <mntent.h>
 
 #if !defined(QT_NO_UDEV)
 #include "qudevwrapper_p.h"
@@ -88,25 +90,41 @@ QStorageInfoPrivate::~QStorageInfoPrivate()
 
 qlonglong QStorageInfoPrivate::availableDiskSpace(const QString &drive)
 {
+#ifdef __USE_LARGEFILE64
+    struct statfs64 statistics;
+    if (statfs64(drive.toLatin1(), &statistics) == 0) {
+        qlonglong blockSize = statistics.f_bsize;
+        qlonglong availBlocks = statistics.f_bavail;
+        return availBlocks * blockSize;
+    }
+#else
     struct statfs statistics;
     if (statfs(drive.toLatin1(), &statistics) == 0) {
         qlonglong blockSize = statistics.f_bsize;
         qlonglong availBlocks = statistics.f_bavail;
         return availBlocks * blockSize;
     }
-
+#endif
     return -1;
 }
 
 qlonglong QStorageInfoPrivate::totalDiskSpace(const QString &drive)
 {
+#ifdef __USE_LARGEFILE64
+    struct statfs64 statistics;
+    if (statfs64(drive.toLatin1(), &statistics) == 0) {
+        qlonglong blockSize = statistics.f_bsize;
+        qlonglong totalBlocks = statistics.f_blocks;
+        return totalBlocks * blockSize;
+    }
+#else
     struct statfs statistics;
     if (statfs(drive.toLatin1(), &statistics) == 0) {
         qlonglong blockSize = statistics.f_bsize;
         qlonglong totalBlocks = statistics.f_blocks;
         return totalBlocks * blockSize;
     }
-
+#endif
     return -1;
 }
 

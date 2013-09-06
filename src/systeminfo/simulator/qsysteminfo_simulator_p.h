@@ -127,6 +127,8 @@ public:
     QString productName();
     QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
+    QString operatingSystemName();
+    QString boardName();
 
 Q_SIGNALS:
     void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);

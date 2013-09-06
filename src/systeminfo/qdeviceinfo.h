@@ -123,6 +123,8 @@ public:
     Q_INVOKABLE QString productName() const;
     Q_INVOKABLE QString uniqueDeviceID() const;
     Q_INVOKABLE QString version(QDeviceInfo::Version type) const;
+    Q_INVOKABLE QString operatingSystemName() const;
+    Q_INVOKABLE QString boardName() const;
 
 Q_SIGNALS:
     void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);

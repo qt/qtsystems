@@ -57,10 +57,14 @@
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_BIOS_PATH, (QLatin1String("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\BIOS")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_BIOS_PATH2, (QLatin1String("HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\SystemInformation")))
+
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_CURRENT_VERSION_PATH, (QLatin1String("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_MANUFACTURER_KEY, (QLatin1String("SystemManufacturer")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTNAME_KEY, (QLatin1String("SystemProductName")))
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_PRODUCTID_KEY, (QLatin1String("ProductId")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_OSNAME_KEY, (QLatin1String("ProductName")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, REGISTRY_BIOSVERSION_KEY, (QLatin1String("BIOSVersion")))
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     : q_ptr(parent)
@@ -194,12 +198,16 @@ QString QDeviceInfoPrivate::manufacturer()
         QSettings manufacturerSetting(*REGISTRY_BIOS_PATH(), QSettings::NativeFormat);
         systemManufacturerName = manufacturerSetting.value(*REGISTRY_MANUFACTURER_KEY()).toString();
     }
+    if (systemManufacturerName.isEmpty()) {
+        QSettings manufacturerSetting2(*REGISTRY_BIOS_PATH2(), QSettings::NativeFormat);
+        systemManufacturerName = manufacturerSetting2.value(*REGISTRY_MANUFACTURER_KEY()).toString();
+    }
     return systemManufacturerName;
 }
 
 QString QDeviceInfoPrivate::model()
 {
-    return QString();
+    return productName();
 }
 
 QString QDeviceInfoPrivate::productName()
@@ -207,6 +215,10 @@ QString QDeviceInfoPrivate::productName()
     if (systemProductName.isEmpty()) {
         QSettings productNameSetting(*REGISTRY_BIOS_PATH(), QSettings::NativeFormat);
         systemProductName = productNameSetting.value(*REGISTRY_PRODUCTNAME_KEY()).toString();
+    }
+    if (systemProductName.isEmpty()) {
+        QSettings productNameSetting2(*REGISTRY_BIOS_PATH2(), QSettings::NativeFormat);
+        systemProductName = productNameSetting2.value(*REGISTRY_PRODUCTNAME_KEY()).toString();
     }
     return systemProductName;
 }
@@ -236,9 +248,25 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
         return osVersion;
 
     case QDeviceInfo::Firmware:
-        break;
+        {
+            QSettings biosVersionSetting(*REGISTRY_BIOS_PATH2(), QSettings::NativeFormat);
+            return biosVersionSetting.value(*REGISTRY_BIOSVERSION_KEY()).toString();
+        }
     }
     return QString();
+}
+
+QString QDeviceInfoPrivate::operatingSystemName()
+{
+    QSettings deviceIDSetting(*REGISTRY_CURRENT_VERSION_PATH(), QSettings::NativeFormat);
+    QString ver = deviceIDSetting.value(*REGISTRY_OSNAME_KEY()).toString();
+
+    return ver;
+}
+
+QString QDeviceInfoPrivate::boardName()
+{
+    return productName();
 }
 
 QT_END_NAMESPACE

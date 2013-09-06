@@ -298,6 +298,16 @@ QString QDeviceInfoSimulator::version(QDeviceInfo::Version type)
     return QString();
 }
 
+QString QDeviceInfoSimulator::operatingSystemName()
+{
+    return QString();
+}
+
+QString QDeviceInfoPrivate::boardName()
+{
+    return QString();
+}
+
 void QDeviceInfoSimulator::connectNotify(const QMetaMethod &signal)
 {
     static const QMetaMethod activatedLocksChangedSignal = QMetaMethod::fromSignal(&QDeviceInfoSimulator::activatedLocksChanged);

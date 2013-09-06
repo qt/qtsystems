@@ -79,6 +79,8 @@ public:
     QString productName();
     QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
+    QString operatingSystemName();
+    QString boardName();
 
 Q_SIGNALS:
 //    void thermalStateChanged(QDeviceInfo::ThermalState state);

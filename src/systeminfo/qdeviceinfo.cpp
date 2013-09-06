@@ -67,6 +67,8 @@ public:
     QString productName() { return QString(); }
     QString uniqueDeviceID() { return QString(); }
     QString version(QDeviceInfo::Version) { return QString(); }
+    QString operatingSystemName() { return QString(); }
+    QString boardName() { return QString(); }
 };
 QT_END_NAMESPACE
 #endif
@@ -281,6 +283,22 @@ QString QDeviceInfo::uniqueDeviceID() const
 QString QDeviceInfo::version(QDeviceInfo::Version type) const
 {
     return d_ptr->version(type);
+}
+
+/*!
+    Returns the name for the operating system for the device, or an empty string if an error or not available.
+*/
+QString QDeviceInfo::operatingSystemName() const
+{
+    return d_ptr->operatingSystemName();
+}
+
+/*!
+    Returns the board name for the device, or an empty string if an error or not available.
+*/
+QString QDeviceInfo::boardName() const
+{
+    return d_ptr->boardName();
 }
 
 extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);

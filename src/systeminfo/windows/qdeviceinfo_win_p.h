@@ -73,6 +73,8 @@ public:
     QString productName();
     QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
+    QString operatingSystemName();
+    QString boardName();
 
 private:
     QDeviceInfo * const q_ptr;
