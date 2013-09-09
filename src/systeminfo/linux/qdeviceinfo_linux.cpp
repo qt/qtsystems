@@ -61,6 +61,15 @@
 #include <sys/stat.h>
 #include <QUuid>
 
+#if !defined(QT_NO_DBUS)
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusAbstractInterface>
+#include <QtDBus/QDBusError>
+#include <QtDBus/QDBusMessage>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
@@ -74,9 +83,11 @@ QDeviceInfoPrivate::QDeviceInfoPrivate(QDeviceInfo *parent)
     , timer(0)
     , boardNameString(QString())
     , osName(QString())
-    #if !defined(QT_NO_OFONO)
+#if !defined(QT_NO_OFONO)
         , ofonoWrapper(0)
-    #endif // QT_NO_OFONO
+#endif // QT_NO_OFONO
+    ,connectedBtPower(0)
+    ,btPowered(0)
 {
 }
 
@@ -329,7 +340,7 @@ QString QDeviceInfoPrivate::model()
 QString QDeviceInfoPrivate::productName()
 {
     if (productNameBuffer.isEmpty()) {
-        productNameBuffer = findInRelease(QStringLiteral("PRETTY_NAME")).remove("\"");
+        productNameBuffer = findInRelease(QStringLiteral("PRETTY_NAME")).remove(QStringLiteral("\""));
     }
 
     if (productNameBuffer.isEmpty()) {
@@ -477,6 +488,77 @@ QString QDeviceInfoPrivate::findInRelease(const QString &searchTerm)
     return result;
 }
 
+#if !defined(QT_NO_DBUS)
+void QDeviceInfoPrivate::bluezPropertyChanged(const QString &str, QDBusVariant v)
+{
+
+    if (str == QStringLiteral("Powered")) {
+        if (btPowered != v.variant().toBool()) {
+            btPowered = !btPowered;
+            Q_EMIT bluetoothStateChanged(btPowered);
+        }
+    } else if (str == QStringLiteral("Adapters")) {
+        bool oldPoweredState = btPowered;
+        if (oldPoweredState != currentBluetoothPowerState())
+            Q_EMIT bluetoothStateChanged(btPowered);
+    }
+}
+
+void QDeviceInfoPrivate::connectBtPowered()
+{
+    if (connectedBtPower) {
+        QDBusInterface *connectionInterface;
+        connectionInterface = new QDBusInterface(QStringLiteral("org.bluez"), QStringLiteral("/"),
+                                                 QStringLiteral("org.bluez.Manager"),
+                                                 QDBusConnection::systemBus(), this);
+        if (connectionInterface->isValid()) {
+            QDBusReply <QDBusObjectPath> reply = connectionInterface->call(QStringLiteral("DefaultAdapter"));
+            if (reply.isValid() && !reply.value().path().isEmpty()) {
+                if (!QDBusConnection::systemBus().connect(QStringLiteral("org.bluez"), reply.value().path(),
+                                                          QStringLiteral("org.bluez.Adapter"),
+                                                          QStringLiteral("PropertyChanged"),
+                                                          this,
+                                                          SLOT(bluezPropertyChanged(QString,QDBusVariant)))) {
+                }
+            }
+        }
+        connectedBtPower = true;
+    }
+}
+#endif
+
+bool QDeviceInfoPrivate::currentBluetoothPowerState()
+{
+    bool powered = false;
+#ifndef QT_NO_DBUS
+    QDBusInterface *connectionInterface = new QDBusInterface(QStringLiteral("org.bluez"),
+                                                             QStringLiteral("/"),
+                                                             QStringLiteral("org.bluez.Manager"),
+                                                             QDBusConnection::systemBus(), this);
+    if (connectionInterface->isValid()) {
+        QDBusReply<QDBusObjectPath> reply = connectionInterface->call(QStringLiteral("DefaultAdapter"));
+        if (reply.isValid() && !reply.value().path().isEmpty()) {
+            QDBusInterface *adapterInterface = new QDBusInterface(QStringLiteral("org.bluez"),
+                                                                  reply.value().path(),
+                                                                  QStringLiteral("org.bluez.Adapter"),
+                                                                  QDBusConnection::systemBus(), this);
+            if (adapterInterface->isValid()) {
+                QDBusReply<QVariantMap> reply =  adapterInterface->call(QStringLiteral("GetProperties"));
+                QVariantMap map = reply.value();
+                QString property = QStringLiteral("Powered");
+                if (map.contains(property))
+                    powered =  map.value(property).toBool();
+            } else {
+                powered = false;
+            }
+        } else {
+            powered = false;
+        }
+    }
+#endif
+    return btPowered = powered;
+}
+
 extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 
 void QDeviceInfoPrivate::connectNotify(const QMetaMethod &signal)
@@ -494,6 +576,13 @@ void QDeviceInfoPrivate::connectNotify(const QMetaMethod &signal)
     if (signal == thermalStateChangedSignal) {
         watchThermalState = true;
         currentThermalState = getThermalState();
+    }
+
+    static const QMetaMethod bluetoothStateChanged = QMetaMethod::fromSignal(&QDeviceInfoPrivate::bluetoothStateChanged);
+    if (signal == bluetoothStateChanged) {
+#if !defined(QT_NO_DBUS)
+        connectBtPowered();
+#endif
     }
 }
 

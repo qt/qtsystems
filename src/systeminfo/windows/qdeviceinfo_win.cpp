@@ -269,4 +269,10 @@ QString QDeviceInfoPrivate::boardName()
     return productName();
 }
 
+bool QDeviceInfoPrivate::currentBluetoothPowerState()
+{
+    // windows still has fragmented bt API's
+    return false;
+}
+
 QT_END_NAMESPACE

@@ -67,6 +67,7 @@ class Q_SYSTEMINFO_EXPORT QDeviceInfo : public QObject
     Q_PROPERTY(LockTypeFlags activatedLocks READ activatedLocks NOTIFY activatedLocksChanged)
     Q_PROPERTY(LockTypeFlags enabledLocks READ enabledLocks NOTIFY enabledLocksChanged)
     Q_PROPERTY(ThermalState thermalState READ thermalState NOTIFY thermalStateChanged)
+    Q_PROPERTY(bool currentBluetoothPowerState READ currentBluetoothPowerState NOTIFY bluetoothStateChanged)
 
 public:
     enum Feature {
@@ -126,10 +127,13 @@ public:
     Q_INVOKABLE QString operatingSystemName() const;
     Q_INVOKABLE QString boardName() const;
 
+    bool currentBluetoothPowerState();
+
 Q_SIGNALS:
     void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
     void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
     void thermalStateChanged(QDeviceInfo::ThermalState state);
+    void bluetoothStateChanged(bool on);
 
 protected:
     void connectNotify(const QMetaMethod &signal);

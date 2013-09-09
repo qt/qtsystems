@@ -68,6 +68,7 @@ public:
     QString uniqueDeviceID() { return QString(); }
     QString version(QDeviceInfo::Version) { return QString(); }
     QString operatingSystemName() { return QString(); }
+    bool currentBluetoothPowerState() { return false; }
     QString boardName() { return QString(); }
 };
 QT_END_NAMESPACE
@@ -283,6 +284,14 @@ QString QDeviceInfo::uniqueDeviceID() const
 QString QDeviceInfo::version(QDeviceInfo::Version type) const
 {
     return d_ptr->version(type);
+}
+
+/*!
+    Returns the current bluetooth power state.
+*/
+bool QDeviceInfo::currentBluetoothPowerState()
+{
+    return d_ptr->currentBluetoothPowerState();
 }
 
 /*!

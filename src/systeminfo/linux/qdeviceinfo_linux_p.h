@@ -56,6 +56,9 @@
 #include <qdeviceinfo.h>
 
 #include <QStringList>
+#ifndef QT_NO_DBUS
+#include <QtDBus/QDBusVariant>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -86,8 +89,11 @@ public:
     QString operatingSystemName();
     QString boardName();
 
+    bool currentBluetoothPowerState();
+
 Q_SIGNALS:
     void thermalStateChanged(QDeviceInfo::ThermalState state);
+    void bluetoothStateChanged(bool on);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
@@ -95,7 +101,10 @@ protected:
 
 private Q_SLOTS:
     void onTimeout();
-
+#ifndef QT_NO_DBUS
+    void connectBtPowered();
+    void bluezPropertyChanged(const QString&, QDBusVariant);
+#endif
 private:
 #if !defined(QT_SIMULATOR)
     QDeviceInfo * const q_ptr;
@@ -120,6 +129,9 @@ private:
     QOfonoWrapper *ofonoWrapper;
 #endif // QT_NO_OFONO
     QString findInRelease(const QString &searchTerm);
+
+    bool connectedBtPower;
+    bool btPowered;
 };
 
 QT_END_NAMESPACE

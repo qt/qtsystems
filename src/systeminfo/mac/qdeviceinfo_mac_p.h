@@ -56,10 +56,16 @@
 #include <qdeviceinfo.h>
 
 #include <QStringList>
+#include <QThread>
+#include <QMutex>
+#include <IOKit/IOKitLib.h>
+#include <QMetaMethod>
 
 QT_BEGIN_NAMESPACE
 
 class QTimer;
+
+class QBluetoothListenerThread;
 
 class QDeviceInfoPrivate : public QObject
 {
@@ -67,6 +73,7 @@ class QDeviceInfoPrivate : public QObject
 
 public:
     QDeviceInfoPrivate(QDeviceInfo *parent = 0);
+    ~QDeviceInfoPrivate();
 
     bool hasFeature(QDeviceInfo::Feature feature);
     int imeiCount();
@@ -80,21 +87,55 @@ public:
     QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
     QString operatingSystemName();
+    bool currentBluetoothPowerState();
     QString boardName();
 
 Q_SIGNALS:
-//    void thermalStateChanged(QDeviceInfo::ThermalState state);
+    void bluetoothStateChanged(bool);
 
 private:
 #if !defined(QT_SIMULATOR)
     QDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceInfo)
 #endif
-
+    QBluetoothListenerThread *btThread;
+    bool btThreadOk;
 //    bool watchThermalState;
 //    QDeviceInfo::ThermalState currentThermalState;
-
 //    QDeviceInfo::ThermalState getThermalState();
+protected:
+    void connectNotify(const QMetaMethod &signal);
+    void disconnectNotify(const QMetaMethod &signal);
+
+};
+
+
+class QBluetoothListenerThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    QBluetoothListenerThread(QObject *parent = 0);
+    ~QBluetoothListenerThread();
+    bool keepRunning;
+    QThread t;
+    void setupConnectNotify();
+
+public Q_SLOTS:
+    void emitBtPower(bool);
+    void stop();
+    void run();
+
+Q_SIGNALS:
+    void bluetoothPower(bool);
+
+protected:
+    IONotificationPortRef port;
+    CFRunLoopRef rl;
+    CFRunLoopSourceRef rls;
+
+private:
+    QMutex mutex;
 };
 
 QT_END_NAMESPACE

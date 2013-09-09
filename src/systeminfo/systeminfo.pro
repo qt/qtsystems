@@ -84,8 +84,8 @@ linux-*: !simulator: {
     }
 
     qtHaveModule(dbus) {
+        QT += dbus
         contains(CONFIG,ofono): {
-            QT += dbus
             PRIVATE_HEADERS += linux/qofonowrapper_p.h
             SOURCES += linux/qofonowrapper.cpp
         } else {
@@ -98,7 +98,6 @@ linux-*: !simulator: {
             DEFINES += QT_NO_UDISKS
         }
         contains(CONFIG,upower): {
-            QT += dbus
             SOURCES += linux/qdevicekitservice_linux.cpp \
                        linux/qbatteryinfo_upower.cpp
             HEADERS += linux/qdevicekitservice_linux_p.h \

@@ -74,8 +74,8 @@ public:
     QString uniqueDeviceID();
     QString version(QDeviceInfo::Version type);
     QString operatingSystemName();
+    bool currentBluetoothPowerState();
     QString boardName();
-
 private:
     QDeviceInfo * const q_ptr;
     Q_DECLARE_PUBLIC(QDeviceInfo);

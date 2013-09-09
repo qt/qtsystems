@@ -4,4 +4,4 @@ TEMPLATE = subdirs
 !without-serviceframework: SUBDIRS += serviceframework
 !without-systeminfo: SUBDIRS += systeminfo
 
-SUBDIRS += cmake
+#SUBDIRS += cmake
