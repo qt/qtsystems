@@ -303,7 +303,7 @@ QString QDeviceInfoSimulator::operatingSystemName()
     return QString();
 }
 
-QString QDeviceInfoPrivate::boardName()
+QString QDeviceInfoSimulator::boardName()
 {
     return QString();
 }
@@ -346,6 +346,11 @@ void QDeviceInfoSimulator::disconnectNotify(const QMetaMethod &signal)
         QMetaMethod sourceSignal = proxyToSourceSignal(signal, deviceInfoSimulatorBackend);
         disconnect(deviceInfoSimulatorBackend, sourceSignal, this, signal);
     }
+}
+
+bool QDeviceInfoSimulator::currentBluetoothPowerState()
+{
+    return false;
 }
 
 // QNetworkInfoSimulator

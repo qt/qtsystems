@@ -129,6 +129,7 @@ public:
     QString version(QDeviceInfo::Version type);
     QString operatingSystemName();
     QString boardName();
+    bool currentBluetoothPowerState();
 
 Q_SIGNALS:
     void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
