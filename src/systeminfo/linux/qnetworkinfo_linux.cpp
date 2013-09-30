@@ -869,8 +869,7 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
                 if ((carrier.read(&state, 1) == 1) &&
-                        (state == '1') &&
-                        (networkSignalStrength(QNetworkInfo::WlanMode, interface) > -1)) {
+                        (state == '1')) {
                     return QNetworkInfo::HomeNetwork;
                 }
             }
