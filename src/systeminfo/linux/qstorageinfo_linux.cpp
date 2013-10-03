@@ -253,8 +253,18 @@ QStorageInfo::DriveType QStorageInfoPrivate::driveType(const QString &drive)
             if (!fsName.isEmpty()) {
                 if (fsName.length() > 3) {
                     // only take the parent of the device
-                    if (fsName.at(fsName.size() -1).isDigit() && fsName.at(fsName.size() - 2) == QChar(QLatin1Char('p')))
-                        fsName.chop(2);
+                    QString fsNameCopy(fsName);
+
+                    // Remove all trailing digits
+                    while (fsNameCopy.at(fsNameCopy.size() - 1).isDigit())
+                        fsNameCopy.chop(1);
+
+                    // If we removed some digits previously
+                    if (fsNameCopy.size() < fsName.size() && fsNameCopy.at(fsNameCopy.size() - 1) == QChar(QLatin1Char('p'))) {
+                        fsNameCopy.chop(1);
+                        fsName = fsNameCopy;
+                    }
+
                     if (fsName.startsWith(QString(QStringLiteral("mmc")))) {
                         // "removable" attribute is set only for removable media, and we may have internal mmc cards
                         fsName = QString(QStringLiteral("/sys/block/")) + fsName + QString(QStringLiteral("/device/uevent"));
