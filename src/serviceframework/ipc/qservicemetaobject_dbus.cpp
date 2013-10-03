@@ -448,6 +448,9 @@ int QServiceMetaObjectDBus::qt_metacall(QMetaObject::Call c, int id, void **a)
                 typeNames[i] = customType->typeName();
                 params[i] = customType->constData();
                 hasCustomType = true;
+            } else {
+                typeNames[i] = t.constData();
+                params[i] = a[i+1];
             }
         }
 
