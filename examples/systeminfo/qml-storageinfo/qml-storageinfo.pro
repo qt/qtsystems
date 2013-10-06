@@ -10,3 +10,6 @@ app.files = \
 target.path = $$[QT_INSTALL_EXAMPLES]/sysinfo/qml-storageinfo
 app.path = $$[QT_INSTALL_EXAMPLES]/sysinfo/qml-storageinfo
 INSTALLS += target app
+
+RESOURCES += \
+    qml-storageinfo.qrc

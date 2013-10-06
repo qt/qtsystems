@@ -9,3 +9,6 @@ app.files = \
 target.path = $$[QT_INSTALL_EXAMPLES]/sysinfo/qml-battery
 app.path = $$[QT_INSTALL_EXAMPLES]/sysinfo/qml-battery
 INSTALLS += target app
+
+RESOURCES += \
+    qml-battery.qrc

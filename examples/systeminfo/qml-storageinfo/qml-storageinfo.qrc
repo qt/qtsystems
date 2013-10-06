@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml-storage.qml</file>
+    </qresource>
+</RCC>
