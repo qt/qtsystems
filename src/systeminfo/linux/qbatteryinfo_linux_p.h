@@ -71,28 +71,40 @@ class QBatteryInfoPrivate : public QObject
 
 public:
     QBatteryInfoPrivate(QBatteryInfo *parent);
+    QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *parent);
     ~QBatteryInfoPrivate();
 
     int batteryCount();
+    int batteryIndex() const;
     int currentFlow(int battery);
+    int currentFlow();
     int maximumCapacity(int battery);
+    int maximumCapacity();
     int remainingCapacity(int battery);
+    int remainingCapacity();
     int remainingChargingTime(int battery);
+    int remainingChargingTime();
     int voltage(int battery);
+    int voltage();
     QBatteryInfo::ChargerType chargerType();
     QBatteryInfo::ChargingState chargingState(int battery);
+    QBatteryInfo::ChargingState chargingState();
     QBatteryInfo::EnergyUnit energyUnit();
     QBatteryInfo::BatteryStatus batteryStatus(int battery);
+    QBatteryInfo::BatteryStatus batteryStatus();
+
+    void setBatteryIndex(int batteryIndex);
 
 Q_SIGNALS:
     void batteryCountChanged(int count);
+    int batteryIndexChanged(int batteryIndex);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
-    void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
-    void currentFlowChanged(int battery, int flow);
-    void remainingCapacityChanged(int battery, int capacity);
-    void remainingChargingTimeChanged(int battery, int seconds);
-    void voltageChanged(int battery, int voltage);
-    void batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus);
+    void chargingStateChanged(QBatteryInfo::ChargingState state);
+    void currentFlowChanged(int flow);
+    void remainingCapacityChanged(int capacity);
+    void remainingChargingTimeChanged(int seconds);
+    void voltageChanged(int voltage);
+    void batteryStatusChanged(QBatteryInfo::BatteryStatus);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
@@ -119,6 +131,7 @@ private:
     bool watchVoltage;
     bool watchBatteryStatus;
     int batteryCounts;
+    int index;
     QMap<int, int> currentFlows; // <battery ID, current value> pair
     QMap<int, int> voltages;
     QMap<int, int> remainingCapacities;

@@ -52,6 +52,7 @@ private slots:
     void tst_capacity();
     void tst_flow();
     void tst_invalid();
+    void tst_setBatteryIndex();
 };
 
 void tst_QBatteryInfo::tst_capacity()
@@ -60,8 +61,9 @@ void tst_QBatteryInfo::tst_capacity()
 
     int count = batteryInfo.batteryCount();
     for (int i = 0; i < count; ++i) {
-        int max = batteryInfo.maximumCapacity(i);
-        int remaining = batteryInfo.remainingCapacity(i);
+        batteryInfo.setBatteryIndex(i);
+        int max = batteryInfo.maximumCapacity();
+        int remaining = batteryInfo.remainingCapacity();
 
         QVERIFY(max == -1 || remaining == -1 || remaining <= max);
     }
@@ -73,26 +75,27 @@ void tst_QBatteryInfo::tst_flow()
 
     int count = batteryInfo.batteryCount();
     for (int i = 0; i < count; ++i) {
-        QBatteryInfo::ChargingState chargingState = batteryInfo.chargingState(i);
+        batteryInfo.setBatteryIndex(i);
+        QBatteryInfo::ChargingState chargingState = batteryInfo.chargingState();
         switch (chargingState) {
         case QBatteryInfo::Charging:
-            QVERIFY(batteryInfo.currentFlow(i) < 0);
-            QVERIFY(batteryInfo.remainingChargingTime(i) >= 0);
+            QVERIFY(batteryInfo.currentFlow() < 0);
+            QVERIFY(batteryInfo.remainingChargingTime() >= 0);
             break;
         case QBatteryInfo::Full:
-            QVERIFY(batteryInfo.remainingChargingTime(i) == 0);
+            QVERIFY(batteryInfo.remainingChargingTime() == 0);
             break;
         case QBatteryInfo::NotCharging:
-            QVERIFY(batteryInfo.currentFlow(i) >= 0);
-            QVERIFY(batteryInfo.remainingChargingTime(i) == 0);
+            QVERIFY(batteryInfo.currentFlow() >= 0);
+            QVERIFY(batteryInfo.remainingChargingTime() == 0);
             break;
         case QBatteryInfo::Discharging:
-            QVERIFY(batteryInfo.currentFlow(i) > 0);
-            QVERIFY(batteryInfo.remainingChargingTime(i) == 0);
+            QVERIFY(batteryInfo.currentFlow() > 0);
+            QVERIFY(batteryInfo.remainingChargingTime() == 0);
             break;
         case QBatteryInfo::UnknownChargingState:
-            QVERIFY(batteryInfo.currentFlow(i) == 0);
-            QVERIFY(batteryInfo.remainingChargingTime(i) == -1);
+            QVERIFY(batteryInfo.currentFlow() == 0);
+            QVERIFY(batteryInfo.remainingChargingTime() == -1);
             break;
         }
     }
@@ -102,22 +105,40 @@ void tst_QBatteryInfo::tst_invalid()
 {
     QBatteryInfo batteryInfo;
 
-    QVERIFY(batteryInfo.currentFlow(-1) == 0);
-    QVERIFY(batteryInfo.maximumCapacity(-1) == -1);
-    QVERIFY(batteryInfo.remainingCapacity(-1) == -1);
-    QVERIFY(batteryInfo.remainingChargingTime(-1) == -1);
-    QVERIFY(batteryInfo.voltage(-1) == -1);
-    QVERIFY(batteryInfo.chargingState(-1) == QBatteryInfo::UnknownChargingState);
-    QVERIFY(batteryInfo.batteryStatus(-1) == QBatteryInfo::BatteryStatusUnknown);
+    batteryInfo.setBatteryIndex(-1);
+    QVERIFY(batteryInfo.currentFlow() == 0);
+    QVERIFY(batteryInfo.maximumCapacity() == -1);
+    QVERIFY(batteryInfo.remainingCapacity() == -1);
+    QVERIFY(batteryInfo.remainingChargingTime() == -1);
+    QVERIFY(batteryInfo.voltage() == -1);
+    QVERIFY(batteryInfo.chargingState() == QBatteryInfo::UnknownChargingState);
+    QVERIFY(batteryInfo.batteryStatus() == QBatteryInfo::BatteryStatusUnknown);
 
     int count = batteryInfo.batteryCount();
-    QVERIFY(batteryInfo.currentFlow(count) == 0);
-    QVERIFY(batteryInfo.maximumCapacity(count) == -1);
-    QVERIFY(batteryInfo.remainingCapacity(count) == -1);
-    QVERIFY(batteryInfo.remainingChargingTime(count) == -1);
-    QVERIFY(batteryInfo.voltage(count) == -1);
-    QVERIFY(batteryInfo.chargingState(count) == QBatteryInfo::UnknownChargingState);
-    QVERIFY(batteryInfo.batteryStatus(count) == QBatteryInfo::BatteryStatusUnknown);
+    batteryInfo.setBatteryIndex(count);
+    QVERIFY(batteryInfo.currentFlow() == 0);
+    QVERIFY(batteryInfo.maximumCapacity() == -1);
+    QVERIFY(batteryInfo.remainingCapacity() == -1);
+    QVERIFY(batteryInfo.remainingChargingTime() == -1);
+    QVERIFY(batteryInfo.voltage() == -1);
+    QVERIFY(batteryInfo.chargingState() == QBatteryInfo::UnknownChargingState);
+    QVERIFY(batteryInfo.batteryStatus() == QBatteryInfo::BatteryStatusUnknown);
+}
+
+void tst_QBatteryInfo::tst_setBatteryIndex()
+{
+    QBatteryInfo batteryInfo;
+
+    QCOMPARE(batteryInfo.batteryIndex(), 0);
+
+    batteryInfo.setBatteryIndex(1);
+    QCOMPARE(batteryInfo.batteryIndex(), 1);
+
+    batteryInfo.setBatteryIndex(1000);
+    QCOMPARE(batteryInfo.batteryIndex(), 1000);
+
+    batteryInfo.setBatteryIndex(-1);
+    QCOMPARE(batteryInfo.batteryIndex(), -1);
 }
 
 QTEST_MAIN(tst_QBatteryInfo)

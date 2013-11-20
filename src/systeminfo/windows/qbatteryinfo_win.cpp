@@ -65,6 +65,22 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     , q_ptr(parent)
     , timeToFull(0)
     , numberOfBatteries(0)
+    , index(0)
+{
+    initialize();
+}
+
+QBatteryInfoPrivate::QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , timeToFull(0)
+    , numberOfBatteries(0)
+    , index(batteryIndex)
+{
+    initialize();
+}
+
+void QBatteryInfoPrivate::initialize()
 {
     QTimer *timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),this,SLOT(getBatteryStatus()));
@@ -81,9 +97,27 @@ int QBatteryInfoPrivate::batteryCount()
     return numberOfBatteries;
 }
 
+int QBatteryInfoPrivate::batteryIndex() const
+{
+    return index;
+}
+
+void QBatteryInfoPrivate::setBatteryIndex(int batteryIndex)
+{
+    if (index != batteryIndex) {
+        index = batteryIndex;
+        Q_EMIT batteryIndexChanged(index);
+    }
+}
+
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
     return currentFlows[battery];
+}
+
+int QBatteryInfoPrivate::currentFlow()
+{
+    return currentFlow(index);
 }
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
@@ -91,9 +125,19 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
     return maximumCapacities[battery];
 }
 
+int QBatteryInfoPrivate::maximumCapacity()
+{
+    return maximumCapacity(index);
+}
+
 int QBatteryInfoPrivate::remainingCapacity(int battery)
 {
     return remainingCapacities[battery];
+}
+
+int QBatteryInfoPrivate::remainingCapacity()
+{
+    return remainingCapacity(index);
 }
 
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
@@ -105,15 +149,25 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
    int cTime = systemBatteryState.EstimatedTime;
     if (cTime != timeToFull) {
         timeToFull = cTime;
-        emit remainingChargingTimeChanged(1,timeToFull);
+        emit remainingChargingTimeChanged(timeToFull);
     }
 
     return timeToFull;
 }
 
+int QBatteryInfoPrivate::remainingChargingTime()
+{
+    return remainingChargingTime(index);
+}
+
 int QBatteryInfoPrivate::voltage(int battery)
 {
     return voltages[battery];
+}
+
+int QBatteryInfoPrivate::voltage()
+{
+    return voltage(index);
 }
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
@@ -126,6 +180,11 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState(int battery)
     return chargingStates[battery];
 }
 
+QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
+{
+    return chargingState(index);
+}
+
 QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
 {
     return QBatteryInfo::UnitmWh;
@@ -134,6 +193,11 @@ QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
 QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
 {
     return batteryStatuses[battery];
+}
+
+QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+{
+    return batteryStatus(index);
 }
 
 void QBatteryInfoPrivate::getBatteryStatus()
@@ -145,7 +209,7 @@ void QBatteryInfoPrivate::getBatteryStatus()
     int cTime = systemBatteryState.EstimatedTime;
     if (cTime != timeToFull) {
         timeToFull = cTime;
-        emit remainingChargingTimeChanged(1,timeToFull);
+        emit remainingChargingTimeChanged(timeToFull);
     }
 
     int batteryNumber = 0;
@@ -222,20 +286,24 @@ void QBatteryInfoPrivate::getBatteryStatus()
 
                                                     if (chargingStates[batteryNumber] != chargingState) {
                                                         chargingStates.insert(batteryNumber, chargingState);
-                                                        emit chargingStateChanged(batteryNumber,chargingState);
+                                                        if (batteryNumber == index)
+                                                            emit chargingStateChanged(chargingState);
                                                     }
 
                                                     if (voltages[batteryNumber] !=  batteryStatus.Voltage) {
                                                         voltages.insert(batteryNumber, batteryStatus.Voltage);
-                                                        Q_EMIT voltageChanged(batteryNumber, batteryStatus.Voltage);
+                                                        if (batteryNumber == index)
+                                                            Q_EMIT voltageChanged(batteryStatus.Voltage);
                                                     }
                                                     if (currentFlows[batteryNumber] != batteryStatus.Rate) {
                                                         currentFlows.insert(batteryNumber,batteryStatus.Rate);
-                                                        Q_EMIT currentFlowChanged(batteryNumber, batteryStatus.Rate);
+                                                        if (batteryNumber == index)
+                                                            Q_EMIT currentFlowChanged(batteryStatus.Rate);
                                                     }
                                                     if (remainingCapacities[batteryNumber] != batteryStatus.Capacity) {
                                                         remainingCapacities.insert(batteryNumber, batteryStatus.Capacity);
-                                                        Q_EMIT remainingCapacityChanged(batteryNumber, batteryStatus.Capacity);
+                                                        if (batteryNumber == index)
+                                                            Q_EMIT remainingCapacityChanged(batteryStatus.Capacity);
                                                     }
                                                     ///
                                                     int level = batteryInfo.FullChargedCapacity / batteryStatus.Capacity;
@@ -253,7 +321,8 @@ void QBatteryInfoPrivate::getBatteryStatus()
 
                                                     if (batteryStatuses[batteryNumber] != batStatus) {
                                                         batteryStatuses.insert(batteryNumber,batStatus);
-                                                        Q_EMIT batteryStatusChanged(batteryNumber, batStatus);
+                                                        if (batteryNumber == index)
+                                                            Q_EMIT batteryStatusChanged(batStatus);
                                                     }
                                                 }
                                             }

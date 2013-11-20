@@ -55,6 +55,7 @@ QNetworkInfoSimulatorBackend *QNetworkInfoSimulatorBackend::globalSimulatorBacke
 QBatteryInfoSimulatorBackend::QBatteryInfoSimulatorBackend(QObject *parent)
     : QObject(parent)
 {
+    data.index = 0;
     data.currentFlow = 0;
     data.maximumCapacity = -1;
     data.remainingCapacity = -1;
@@ -86,6 +87,11 @@ QBatteryInfoSimulatorBackend *QBatteryInfoSimulatorBackend::getSimulatorBackend(
 int QBatteryInfoSimulatorBackend::getBatteryCount()
 {
     return 1;
+}
+
+int QBatteryInfoSimulatorBackend::getBatteryIndex() const
+{
+    return data.index;
 }
 
 int QBatteryInfoSimulatorBackend::getCurrentFlow(int battery)
@@ -149,11 +155,19 @@ QBatteryInfo::BatteryStatus QBatteryInfoSimulatorBackend::getBatteryStatus(int b
     return QBatteryInfo::BatteryStatusUnknown;
 }
 
+void QBatteryInfoSimulatorBackend::setBatteryIndex(int batteryIndex)
+{
+    if (data.index != batteryIndex) {
+        data.index = batteryIndex;
+        emit batteryIndexChanged(data.index);
+    }
+}
+
 void QBatteryInfoSimulatorBackend::setCurrentFlow(int flow)
 {
     if (data.currentFlow != flow) {
         data.currentFlow = flow;
-        emit currentFlowChanged(0, flow);
+        emit currentFlowChanged(flow);
     }
 }
 
@@ -167,7 +181,7 @@ void QBatteryInfoSimulatorBackend::setRemainingCapacity(int capacity)
 {
     if (data.remainingCapacity != capacity) {
         data.remainingCapacity = capacity;
-        emit remainingCapacityChanged(0, capacity);
+        emit remainingCapacityChanged(capacity);
     }
 }
 
@@ -175,7 +189,7 @@ void QBatteryInfoSimulatorBackend::setVoltage(int vol)
 {
     if (data.voltage != vol) {
         data.voltage = vol;
-        emit voltageChanged(0, vol);
+        emit voltageChanged(vol);
     }
 }
 
@@ -183,7 +197,7 @@ void QBatteryInfoSimulatorBackend::setRemainingChargingTime(int time)
 {
     if (data.remainingChargingTime != time) {
         data.remainingChargingTime = time;
-        emit remainingChargingTimeChanged(0, time);
+        emit remainingChargingTimeChanged(time);
     }
 }
 
@@ -191,7 +205,7 @@ void QBatteryInfoSimulatorBackend::setChargingState(QBatteryInfo::ChargingState 
 {
     if (data.chargingState != state) {
         data.chargingState = state;
-        emit chargingStateChanged(0, state);
+        emit chargingStateChanged(state);
     }
 }
 
@@ -213,7 +227,7 @@ void QBatteryInfoSimulatorBackend::setBatteryStatus(QBatteryInfo::BatteryStatus 
 {
     if (data.batteryStatus != status) {
         data.batteryStatus = status;
-        emit batteryStatusChanged(0, status);
+        emit batteryStatusChanged(status);
     }
 }
 

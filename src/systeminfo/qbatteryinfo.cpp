@@ -197,6 +197,20 @@ QBatteryInfo::QBatteryInfo(QObject *parent)
 }
 
 /*!
+    Constructs a QBatteryInfo object with the given \a index and \a parent.
+*/
+QBatteryInfo::QBatteryInfo(int batteryIndex, QObject *parent)
+    : QObject(parent)
+#if !defined(QT_SIMULATOR)
+    , d_ptr(new QBatteryInfoPrivate(batteryIndex, this))
+#else
+    , d_ptr(new QBatteryInfoSimulator(this))
+#endif // QT_SIMULATOR
+
+{
+}
+
+/*!
     Destroys the object
 */
 QBatteryInfo::~QBatteryInfo()
@@ -215,22 +229,42 @@ int QBatteryInfo::batteryCount() const
 }
 
 /*!
+ * \brief Get the current battery index
+ * \return The current battery index
+ */
+int QBatteryInfo::batteryIndex() const
+{
+    return d_ptr->batteryIndex();
+}
+
+/*!
+ * \brief Set the battery index of this instance
+ * \param batteryIndex The new battery index
+ *
+ * Set the battery index of this instance to batteryIndex
+ */
+void QBatteryInfo::setBatteryIndex(int batteryIndex)
+{
+    d_ptr->setBatteryIndex(batteryIndex);
+}
+
+/*!
     Returns the current flow of the given \a battery, measured in milliamperes (mA). A positive
     returned value means discharging, and a negative value means charging. In case of error, or
     the information if not available, 0 is returned.
 */
-int QBatteryInfo::currentFlow(int battery) const
+int QBatteryInfo::currentFlow() const
 {
-    return d_ptr->currentFlow(battery);
+    return d_ptr->currentFlow();
 }
 
 /*!
     Returns the maximum capacity of the given \a battery, measured in QBatteryInfo::EnergyUnit.
     If the battery is not found, or the information is not available, -1 is returned.
 */
-int QBatteryInfo::maximumCapacity(int battery) const
+int QBatteryInfo::maximumCapacity() const
 {
-    return d_ptr->maximumCapacity(battery);
+    return d_ptr->maximumCapacity();
 }
 
 /*!
@@ -240,9 +274,9 @@ int QBatteryInfo::maximumCapacity(int battery) const
     To calculate capacity in percentage,
     (remainingCapacity(0) / maximumCapacity(0)) * 100
 */
-int QBatteryInfo::remainingCapacity(int battery) const
+int QBatteryInfo::remainingCapacity() const
 {
-    return d_ptr->remainingCapacity(battery);
+    return d_ptr->remainingCapacity();
 }
 
 /*!
@@ -250,18 +284,18 @@ int QBatteryInfo::remainingCapacity(int battery) const
     is full or not charging, 0 is returned. If the battery is not found or the information is not
     available, -1 is returned.
 */
-int QBatteryInfo::remainingChargingTime(int battery) const
+int QBatteryInfo::remainingChargingTime() const
 {
-    return d_ptr->remainingChargingTime(battery);
+    return d_ptr->remainingChargingTime();
 }
 
 /*!
     Returns the voltage of the given \a battery, measured in millivolts (mV). If the battery is not
     found, or the information is not available, -1 is returned.
 */
-int QBatteryInfo::voltage(int battery) const
+int QBatteryInfo::voltage() const
 {
-    return d_ptr->voltage(battery);
+    return d_ptr->voltage();
 }
 
 /*!
@@ -278,9 +312,9 @@ QBatteryInfo::ChargerType QBatteryInfo::chargerType() const
 /*!
     Returns the charging state of the given \a battery.
 */
-QBatteryInfo::ChargingState QBatteryInfo::chargingState(int battery) const
+QBatteryInfo::ChargingState QBatteryInfo::chargingState() const
 {
-    return d_ptr->chargingState(battery);
+    return d_ptr->chargingState();
 }
 
 /*!
@@ -297,9 +331,9 @@ QBatteryInfo::EnergyUnit QBatteryInfo::energyUnit() const
 /*!
     Returns the battery status of the given \a battery.
 */
-QBatteryInfo::BatteryStatus QBatteryInfo::batteryStatus(int battery) const
+QBatteryInfo::BatteryStatus QBatteryInfo::batteryStatus() const
 {
-    return d_ptr->batteryStatus(battery);
+    return d_ptr->batteryStatus();
 }
 
 /*!

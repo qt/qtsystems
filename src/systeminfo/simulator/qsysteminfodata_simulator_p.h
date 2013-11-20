@@ -115,6 +115,7 @@ struct QNetworkInfoData
 
 struct QBatteryInfoData
 {
+    int index;
     int currentFlow;
     int maximumCapacity;
     int remainingCapacity;

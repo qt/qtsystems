@@ -72,6 +72,29 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     , watchVoltage(false)
     , watchBatteryStatus(false)
     , batteryCounts(-1)
+    , index(0)
+    , currentChargerType(QBatteryInfo::UnknownCharger)
+#if !defined(QT_NO_UDEV)
+    , uDevWrapper(0)
+#else
+    , timer(0)
+#endif // QT_NO_UDEV
+{
+}
+
+QBatteryInfoPrivate::QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , watchBatteryCount(false)
+    , watchChargerType(false)
+    , watchChargingState(false)
+    , watchCurrentFlow(false)
+    , watchRemainingCapacity(false)
+    , watchRemainingChargingTime(false)
+    , watchVoltage(false)
+    , watchBatteryStatus(false)
+    , batteryCounts(-1)
+    , index(batteryIndex)
     , currentChargerType(QBatteryInfo::UnknownCharger)
 #if !defined(QT_NO_UDEV)
     , uDevWrapper(0)
@@ -96,12 +119,30 @@ int QBatteryInfoPrivate::batteryCount()
     return batteryCounts;
 }
 
+int QBatteryInfoPrivate::batteryIndex() const
+{
+    return index;
+}
+
+void QBatteryInfoPrivate::setBatteryIndex(int batteryIndex)
+{
+    if (index != batteryIndex) {
+        index = batteryIndex;
+        emit batteryIndexChanged(index);
+    }
+}
+
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
     if (!watchCurrentFlow)
         return getCurrentFlow(battery);
 
     return currentFlows.value(battery);
+}
+
+int QBatteryInfoPrivate::currentFlow()
+{
+    return currentFlow(index);
 }
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
@@ -123,12 +164,22 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
     return maximumCapacities[battery];
 }
 
+int QBatteryInfoPrivate::maximumCapacity()
+{
+    return maximumCapacity(index);
+}
+
 int QBatteryInfoPrivate::remainingCapacity(int battery)
 {
     if (!watchRemainingCapacity)
         return getRemainingCapacity(battery);
 
     return remainingCapacities.value(battery);
+}
+
+int QBatteryInfoPrivate::remainingCapacity()
+{
+    return remainingCapacity(index);
 }
 
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
@@ -139,12 +190,22 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
     return remainingChargingTimes.value(battery);
 }
 
+int QBatteryInfoPrivate::remainingChargingTime()
+{
+    return remainingChargingTime(index);
+}
+
 int QBatteryInfoPrivate::voltage(int battery)
 {
     if (!watchVoltage)
         return getVoltage(battery);
 
     return voltages.value(battery);
+}
+
+int QBatteryInfoPrivate::voltage()
+{
+    return voltage(index);
 }
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
@@ -163,6 +224,11 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState(int battery)
     return chargingStates.value(battery);
 }
 
+QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
+{
+    return chargingState(index);
+}
+
 QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
 {
     return QBatteryInfo::UnitmAh;
@@ -174,6 +240,11 @@ QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
         return getBatteryStatus(battery);
 
     return batteryStatuses.value(battery);
+}
+
+QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+{
+    return batteryStatus(index);
 }
 
 void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
@@ -331,7 +402,8 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
             state = QBatteryInfo::Full;
         if (chargingStates.value(battery) != state) {
             chargingStates[battery] = state;
-            emit chargingStateChanged(battery, state);
+            if (battery == index)
+                emit chargingStateChanged(state);
         }
     }
 
@@ -340,7 +412,8 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
             int remainingCapacity = value.toInt() / 1000;
             if (remainingCapacities.value(battery) != remainingCapacity) {
                 remainingCapacities[battery] = remainingCapacity;
-                emit remainingCapacityChanged(battery, remainingCapacity);
+                if (battery == index)
+                    emit remainingCapacityChanged(remainingCapacity);
             }
         }
     }
@@ -350,7 +423,8 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
             int remainingChargingTime = value.toInt();
             if (remainingChargingTimes.value(battery) != remainingChargingTime) {
                 remainingChargingTimes[battery] = remainingChargingTime;
-                emit remainingChargingTimeChanged(battery, remainingChargingTime);
+                if (battery == index)
+                    emit remainingChargingTimeChanged(remainingChargingTime);
             }
         }
     }
@@ -360,7 +434,8 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
             int voltage = value.toInt() / 1000;
             if (voltages.value(battery) != voltage) {
                 voltages[battery] = voltage;
-                emit voltageChanged(battery, voltage);
+                if (battery == index)
+                    emit voltageChanged(voltage);
             }
         }
     }
@@ -373,7 +448,8 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
 
             if (currentFlows.value(battery) != currentFlow) {
                 currentFlows[battery] = currentFlow;
-                emit currentFlowChanged(battery, currentFlow);
+                if (battery == index)
+                    emit currentFlowChanged(currentFlow);
             }
         }
     }
@@ -390,7 +466,8 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
             batteryStatus = QBatteryInfo::BatteryFull;
         if (batteryStatuses.value(battery) != batteryStatus) {
             batteryStatuses[battery] = batteryStatus;
-            emit batteryStatusChanged(battery, batteryStatus);
+            if (battery == index)
+                emit batteryStatusChanged(batteryStatus);
         }
     }
 }
@@ -433,7 +510,8 @@ void QBatteryInfoPrivate::onTimeout()
             value = getCurrentFlow(i);
             if (currentFlows.value(i) != value) {
                 currentFlows[i] = value;
-                emit currentFlowChanged(i, value);
+                if (i == index)
+                    emit currentFlowChanged(value);
             }
         }
 
@@ -441,7 +519,8 @@ void QBatteryInfoPrivate::onTimeout()
             value = getVoltage(i);
             if (voltages.value(i) != value) {
                 voltages[i] = value;
-                emit voltageChanged(i, value);
+                if (i == index)
+                    emit voltageChanged(value);
             }
         }
 
@@ -449,7 +528,8 @@ void QBatteryInfoPrivate::onTimeout()
             value = getRemainingCapacity(i);
             if (remainingCapacities.value(i) != value) {
                 remainingCapacities[i] = value;
-                emit remainingCapacityChanged(i, value);
+                if (i == index)
+                    emit remainingCapacityChanged(value);
             }
         }
 
@@ -457,7 +537,8 @@ void QBatteryInfoPrivate::onTimeout()
             value = getRemainingChargingTime(i);
             if (remainingChargingTimes.value(i) != value) {
                 remainingChargingTimes[i] = value;
-                emit remainingChargingTimeChanged(i, value);
+                if (i == index)
+                    emit remainingChargingTimeChanged(value);
             }
         }
 
@@ -473,7 +554,8 @@ void QBatteryInfoPrivate::onTimeout()
             QBatteryInfo::ChargingState state = getChargingState(i);
             if (chargingStates.value(i) != state) {
                 chargingStates[i] = state;
-                emit chargingStateChanged(i, state);
+                if (i == index)
+                    emit chargingStateChanged(state);
             }
         }
 
@@ -481,7 +563,8 @@ void QBatteryInfoPrivate::onTimeout()
             QBatteryInfo::BatteryStatus batteryStatus = getBatteryStatus(i);
             if (batteryStatuses.value(i) != batteryStatus) {
                 batteryStatuses[i] = batteryStatus;
-                emit batteryStatusChanged(i, batteryStatus);
+                if (i == index)
+                    emit batteryStatusChanged(batteryStatus);
             }
         }
     }

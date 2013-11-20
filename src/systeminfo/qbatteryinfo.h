@@ -63,8 +63,16 @@ class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
     Q_ENUMS(BatteryStatus)
 
     Q_PROPERTY(int batteryCount READ batteryCount NOTIFY batteryCountChanged)
+    Q_PROPERTY(int batteryIndex READ batteryIndex WRITE setBatteryIndex NOTIFY batteryIndexChanged)
+    Q_PROPERTY(int currentFlow READ currentFlow NOTIFY currentFlowChanged)
+    Q_PROPERTY(int maximumCapacity READ maximumCapacity)
+    Q_PROPERTY(int remainingCapacity READ remainingCapacity NOTIFY remainingCapacityChanged)
+    Q_PROPERTY(int remainingChargingTime READ remainingChargingTime NOTIFY remainingChargingTimeChanged)
+    Q_PROPERTY(int voltage READ voltage NOTIFY voltageChanged)
+    Q_PROPERTY(int chargingState READ chargingState NOTIFY chargingStateChanged)
     Q_PROPERTY(ChargerType chargerType READ chargerType NOTIFY chargerTypeChanged)
     Q_PROPERTY(EnergyUnit energyUnit READ energyUnit)
+    Q_PROPERTY(int batteryStatus READ batteryStatus NOTIFY batteryStatusChanged)
 
 public:
     enum ChargerType {
@@ -97,28 +105,33 @@ public:
     };
 
     QBatteryInfo(QObject *parent = 0);
+    QBatteryInfo(int batteryIndex, QObject *parent = 0);
     virtual ~QBatteryInfo();
 
     int batteryCount() const;
-    int currentFlow(int battery) const;
-    int maximumCapacity(int battery) const;
-    int remainingCapacity(int battery) const;
-    int remainingChargingTime(int battery) const;
-    int voltage(int battery) const;
-    QBatteryInfo::ChargingState chargingState(int battery) const;
+    int batteryIndex() const;
+    int currentFlow() const;
+    int maximumCapacity() const;
+    int remainingCapacity() const;
+    int remainingChargingTime() const;
+    int voltage() const;
+    QBatteryInfo::ChargingState chargingState() const;
     QBatteryInfo::ChargerType chargerType() const;
     QBatteryInfo::EnergyUnit energyUnit() const;
-    QBatteryInfo::BatteryStatus batteryStatus(int battery) const;
+    QBatteryInfo::BatteryStatus batteryStatus() const;
+
+    void setBatteryIndex(int batteryIndex);
 
 Q_SIGNALS:
+    void batteryIndexChanged(int batteryIndex);
     void batteryCountChanged(int count);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
-    void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
-    void currentFlowChanged(int battery, int flow);
-    void remainingCapacityChanged(int battery, int capacity);
-    void remainingChargingTimeChanged(int battery, int seconds);
-    void voltageChanged(int battery, int voltage);
-    void batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus);
+    void chargingStateChanged(QBatteryInfo::ChargingState state);
+    void currentFlowChanged(int flow);
+    void remainingCapacityChanged(int capacity);
+    void remainingChargingTimeChanged(int seconds);
+    void voltageChanged(int voltage);
+    void batteryStatusChanged(QBatteryInfo::BatteryStatus);
 
 protected:
     void connectNotify(const QMetaMethod &signal);

@@ -57,6 +57,16 @@ QBatteryInfoSimulator::QBatteryInfoSimulator(QBatteryInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
     , batteryInfoSimulatorBackend(QBatteryInfoSimulatorBackend::getSimulatorBackend())
+    , index(0)
+{
+    SystemInfoConnection::ensureSimulatorConnection();
+}
+
+QBatteryInfoSimulator::QBatteryInfoSimulator(int batteryIndex, QBatteryInfo *parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , batteryInfoSimulatorBackend(QBatteryInfoSimulatorBackend::getSimulatorBackend())
+    , index(batteryIndex)
 {
     SystemInfoConnection::ensureSimulatorConnection();
 }
@@ -73,12 +83,31 @@ int QBatteryInfoSimulator::batteryCount()
     return -1;
 }
 
+int QBatteryInfoSimulator::batteryIndex() const
+{
+    if (batteryInfoSimulatorBackend)
+        return batteryInfoSimulatorBackend->getBatteryIndex();
+
+    return -1;
+}
+
+void QBatteryInfoSimulator::setBatteryIndex(int batteryIndex)
+{
+    if (batteryInfoSimulatorBackend)
+        batteryInfoSimulatorBackend->setBatteryIndex(batteryIndex);
+}
+
 int QBatteryInfoSimulator::currentFlow(int battery)
 {
     if (batteryInfoSimulatorBackend)
         return batteryInfoSimulatorBackend->getCurrentFlow(battery);
 
     return 0;
+}
+
+int QBatteryInfoSimulator::currentFlow()
+{
+    return currentFlow(batteryInfoSimulatorBackend->getBatteryIndex());
 }
 
 int QBatteryInfoSimulator::maximumCapacity(int battery)
@@ -89,12 +118,22 @@ int QBatteryInfoSimulator::maximumCapacity(int battery)
     return -1;
 }
 
+int QBatteryInfoSimulator::maximumCapacity()
+{
+    return maximumCapacity(batteryInfoSimulatorBackend->getBatteryIndex());
+}
+
 int QBatteryInfoSimulator::remainingCapacity(int battery)
 {
     if (batteryInfoSimulatorBackend)
         return batteryInfoSimulatorBackend->getRemainingCapacity(battery);
 
     return -1;
+}
+
+int QBatteryInfoSimulator::remainingCapacity()
+{
+    return remainingCapacity(batteryInfoSimulatorBackend->getBatteryIndex());
 }
 
 int QBatteryInfoSimulator::remainingChargingTime(int battery)
@@ -105,12 +144,22 @@ int QBatteryInfoSimulator::remainingChargingTime(int battery)
     return -1;
 }
 
+int QBatteryInfoSimulator::remainingChargingTime(int battery)
+{
+    return remainingChargingTime(batteryInfoSimulatorBackend->getBatteryIndex());
+}
+
 int QBatteryInfoSimulator::voltage(int battery)
 {
     if (batteryInfoSimulatorBackend)
         return batteryInfoSimulatorBackend->getVoltage(battery);
 
     return -1;
+}
+
+int QBatteryInfoSimulator::voltage()
+{
+    return voltage(batteryInfoSimulatorBackend->getBatteryIndex());
 }
 
 QBatteryInfo::ChargerType QBatteryInfoSimulator::chargerType()
@@ -129,6 +178,11 @@ QBatteryInfo::ChargingState QBatteryInfoSimulator::chargingState(int battery)
     return QBatteryInfo::UnknownChargingState;
 }
 
+QBatteryInfo::ChargingState QBatteryInfoSimulator::chargingState()
+{
+    return chargingState(batteryInfoSimulatorBackend->getBatteryIndex());
+}
+
 QBatteryInfo::EnergyUnit QBatteryInfoSimulator::energyUnit()
 {
     if (batteryInfoSimulatorBackend)
@@ -143,6 +197,11 @@ QBatteryInfo::BatteryStatus QBatteryInfoSimulator::batteryStatus(int battery)
         return batteryInfoSimulatorBackend->getBatteryStatus(battery);
 
     return QBatteryInfo::BatteryStatusUnknown;
+}
+
+QBatteryInfo::BatteryStatus QBatteryInfoSimulator::batteryStatus()
+{
+    return batteryStatus(batteryInfoSimulatorBackend->getBatteryIndex());
 }
 
 extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);

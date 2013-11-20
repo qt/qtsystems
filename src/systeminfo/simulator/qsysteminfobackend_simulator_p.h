@@ -73,6 +73,7 @@ public:
     static QBatteryInfoSimulatorBackend *getSimulatorBackend();
 
     int getBatteryCount();
+    int getBatteryIndex() const;
     int getCurrentFlow(int battery);
     int getMaximumCapacity(int battery);
     int getRemainingCapacity(int battery);
@@ -83,6 +84,7 @@ public:
     QBatteryInfo::EnergyUnit getEnergyUnit();
     QBatteryInfo::BatteryStatus getBatteryStatus(int battery);
 
+    void setBatteryIndex(int batteryIndex);
     void setCurrentFlow(int flow);
     void setMaximumCapacity(int capacity);
     void setRemainingCapacity(int capacity);
@@ -95,13 +97,14 @@ public:
 
 Q_SIGNALS:
     void batteryCountChanged(int count);
-    void currentFlowChanged(int battery, int flow);
-    void remainingCapacityChanged(int battery, int capacity);
-    void remainingChargingTimeChanged(int battery, int seconds);
-    void voltageChanged(int battery, int voltage);
-    void chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
+    void batteryIndexChanged(int batteryIndex);
+    void currentFlowChanged(int flow);
+    void remainingCapacityChanged(int capacity);
+    void remainingChargingTimeChanged(int seconds);
+    void voltageChanged(int voltage);
+    void chargingStateChanged(QBatteryInfo::ChargingState state);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
-    void batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus status);
+    void batteryStatusChanged(QBatteryInfo::BatteryStatus status);
 
 private:
     static QBatteryInfoSimulatorBackend *globalSimulatorBackend;

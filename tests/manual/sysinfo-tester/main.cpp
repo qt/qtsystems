@@ -339,14 +339,15 @@ static void test_networkinfo(void)
 static void test_batteryinfo(void)
 {
     QBatteryInfo batInfo;
+    X(batInfo.batteryIndex())
     X(batInfo.chargerType());
-    X(batInfo.chargingState(0) );
-    X(batInfo.maximumCapacity(0));
-    X(batInfo.remainingCapacity(0));
-    X(batInfo.voltage(0));
-    X(batInfo.remainingChargingTime(0));
-    X(batInfo.currentFlow(0));
-    X(batInfo.batteryStatus(0));
+    X(batInfo.chargingState() );
+    X(batInfo.maximumCapacity());
+    X(batInfo.remainingCapacity());
+    X(batInfo.voltage());
+    X(batInfo.remainingChargingTime());
+    X(batInfo.currentFlow());
+    X(batInfo.batteryStatus());
     X(batInfo.energyUnit());
     X(batInfo.batteryCount());
 }

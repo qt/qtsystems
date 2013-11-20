@@ -81,6 +81,27 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     , timeToFull(-1)
     , remainingEnergy(-1)
     , numberOfBatteries(0)
+    , index(0)
+{
+    initialize();
+}
+
+QBatteryInfoPrivate::QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *parent)
+    : QObject(parent)
+    , q_ptr(parent)
+    , currentBatLevel(0)
+    , currentVoltage(-1)
+    , dischargeRate(0)
+    , capacity(-1)
+    , timeToFull(-1)
+    , remainingEnergy(-1)
+    , numberOfBatteries(0)
+    , index(batteryIndex)
+{
+    initialize();
+}
+
+void QBatteryInfoPrivate::initialize()
 {
     getBatteryInfo();
     NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
@@ -104,11 +125,29 @@ int QBatteryInfoPrivate::batteryCount()
     return numberOfBatteries;
 }
 
+int QBatteryInfoPrivate::batteryIndex() const
+{
+    return index;
+}
+
+void QBatteryInfoPrivate::setBatteryIndex(int batteryIndex)
+{
+    if (index != batteryIndex) {
+        index = batteryIndex;
+        Q_EMIT batteryIndexChanged(index);
+    }
+}
+
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
     if (battery < 0)
         battery = 0;
     return currentFlows.value(battery);
+}
+
+int QBatteryInfoPrivate::currentFlow()
+{
+    return currentFlow(index);
 }
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
@@ -118,11 +157,21 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
     return maximumCapacities.value(battery);
 }
 
+int QBatteryInfoPrivate::maximumCapacity()
+{
+    return maximumCapacity(index);
+}
+
 int QBatteryInfoPrivate::remainingCapacity(int battery)
 {
     if (battery < 0)
         battery = 0;
     return remainingCapacities.value(battery);
+}
+
+int QBatteryInfoPrivate::remainingCapacity()
+{
+    return remainingCapacity(index);
 }
 
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
@@ -132,11 +181,21 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
     return remainingChargingTimes.value(battery);
 }
 
+int QBatteryInfoPrivate::remainingChargingTime()
+{
+    return remainingChargingTime(index);
+}
+
 int QBatteryInfoPrivate::voltage(int battery)
 {
     if (battery < 0)
         battery = 0;
     return voltages.value(battery);
+}
+
+int QBatteryInfoPrivate::voltage()
+{
+    return voltage(index);
 }
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
@@ -151,6 +210,11 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState(int battery)
     return chargingStates.value(battery);
 }
 
+QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
+{
+    return chargingState(index);
+}
+
 QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
 {
     return QBatteryInfo::UnitmAh;
@@ -161,6 +225,11 @@ QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
     if (battery < 0)
         battery = 0;
     return batteryStatuses.value(battery);
+}
+
+QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+{
+    return batteryStatus(index);
 }
 
 void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
@@ -248,7 +317,8 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::currentChargingState()
 
         if ( chargingStates.value(i) != state) {
             chargingStates[i] = state;
-            Q_EMIT chargingStateChanged(i,state);
+            if (i == index)
+                Q_EMIT chargingStateChanged(state);
         }
     }
     CFRelease(powerSourcesInfo);
@@ -316,35 +386,40 @@ void QBatteryInfoPrivate::getBatteryInfo()
         }
         if (batteryStatuses.value(i) != stat) {
             batteryStatuses[i] = stat;
-            Q_EMIT batteryStatusChanged(i,stat);
+            if (i == index)
+                Q_EMIT batteryStatusChanged(stat);
         }
 
         cVoltage = [[(NSDictionary*)batDoctionary objectForKey:@kIOPSVoltageKey] intValue];
 
         if (cVoltage != voltages.value(i) && cVoltage != 0) {
             voltages[i] = cVoltage;
-            Q_EMIT(voltageChanged(i, cVoltage));
+            if (i == index)
+                Q_EMIT(voltageChanged( cVoltage));
         }
 
         cEnergy = [[(NSDictionary*)batDoctionary objectForKey:@kIOPSCurrentKey] doubleValue];
 
         if (cEnergy != currentFlows.value(i) && cEnergy != 0) {
             currentFlows[i] = cEnergy;
-            Q_EMIT currentFlowChanged(i,cEnergy);
+            if (i == index)
+                Q_EMIT currentFlowChanged(cEnergy);
         }
 
         cTime = [[(NSDictionary*)batDoctionary objectForKey:@kIOPSTimeToFullChargeKey] intValue];
 
         if (cTime != remainingChargingTimes.value(i)) {
             remainingChargingTimes[i] = cTime * 60;
-            Q_EMIT remainingChargingTimeChanged(i,remainingChargingTimes[i]);
+            if (i == index)
+                Q_EMIT remainingChargingTimeChanged(remainingChargingTimes[i]);
         }
 
         rEnergy = [[(NSDictionary*)batDoctionary objectForKey:@"CurrentCapacity"] intValue];
 
         if (rEnergy != remainingCapacities.value(i) && rEnergy != 0) {
             remainingCapacities[i] = rEnergy;
-            Q_EMIT remainingCapacityChanged(i,remainingCapacities[i]);
+            if (i == index)
+                Q_EMIT remainingCapacityChanged(remainingCapacities[i]);
         }
         int max = rEnergy / ((qreal)(curCapacityPercent) / 100);
         maximumCapacities[i] = max;
