@@ -55,9 +55,24 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     : QObject(parent),
       cType(QBatteryInfo::UnknownCharger),
       cState(QBatteryInfo::UnknownChargingState),
-      q_ptr(parent)
+      q_ptr(parent),
+      index(0)
 {
+    initialize();
+}
 
+QBatteryInfoPrivate::QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *parent)
+    : QObject(parent),
+      cType(QBatteryInfo::UnknownCharger),
+      cState(QBatteryInfo::UnknownChargingState),
+      q_ptr(parent),
+      index(batteryIndex)
+{
+    initialize();
+}
+
+void QBatteryInfoPrivate::initialize()
+{
     watcher = new QDBusServiceWatcher(QStringLiteral("org.freedesktop.UPower"),QDBusConnection::systemBus(),
                                       QDBusServiceWatcher::WatchForRegistration |
                                       QDBusServiceWatcher::WatchForUnregistration, this);
@@ -90,6 +105,19 @@ int QBatteryInfoPrivate::batteryCount()
     return batteryMap.count();
 }
 
+int QBatteryInfoPrivate::batteryIndex() const
+{
+    return index;
+}
+
+void QBatteryInfoPrivate::setBatteryIndex(int batteryIndex)
+{
+    if (index != batteryIndex) {
+        index = batteryIndex;
+        emit batteryIndexChanged(index);
+    }
+}
+
 int QBatteryInfoPrivate::currentFlow(int battery)
 {
     if (batteryMap.count() >= battery)
@@ -97,6 +125,11 @@ int QBatteryInfoPrivate::currentFlow(int battery)
                 / (batteryMap.value(battery).value(QStringLiteral("Voltage")).toDouble()) * 1000);
     else
         return 0;
+}
+
+int QBatteryInfoPrivate::currentFlow()
+{
+    return currentFlow(index);
 }
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
@@ -107,12 +140,22 @@ int QBatteryInfoPrivate::maximumCapacity(int battery)
         return 0;
 }
 
+int QBatteryInfoPrivate::maximumCapacity()
+{
+    return maximumCapacity(index);
+}
+
 int QBatteryInfoPrivate::remainingCapacity(int battery)
 {
     if (batteryMap.count() >= battery)
         return batteryMap.value(battery).value(QStringLiteral("Energy")).toDouble() * 1000;
     else
         return 0;
+}
+
+int QBatteryInfoPrivate::remainingCapacity()
+{
+    return remainingCapacity(index);
 }
 
 int QBatteryInfoPrivate::remainingChargingTime(int battery)
@@ -123,12 +166,22 @@ int QBatteryInfoPrivate::remainingChargingTime(int battery)
         return 0;
 }
 
+int QBatteryInfoPrivate::remainingChargingTime()
+{
+    return remainingChargingTime(index);
+}
+
 int QBatteryInfoPrivate::voltage(int battery)
 {
     if (batteryMap.count() >= battery)
         return (batteryMap.value(battery).value(QStringLiteral("Voltage")).toDouble() * 1000);
     else
         return 0;
+}
+
+int QBatteryInfoPrivate::voltage()
+{
+    return voltage(index);
 }
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::chargerType()
@@ -140,6 +193,11 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState(int battery)
 {
     Q_UNUSED(battery)
     return cState;
+}
+
+QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
+{
+    return chargingState(index);
 }
 
 QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
@@ -162,6 +220,11 @@ QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
             stat = QBatteryInfo::BatteryFull;
     }
     return stat;
+}
+
+QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+{
+    return batteryStatus(index);
 }
 
 void QBatteryInfoPrivate::upowerChanged()
@@ -240,10 +303,12 @@ void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, cons
     batteryMap.insert(foundBattery,foundMap);
 
     if (prop == QLatin1String("Energy")) {
-        Q_EMIT remainingCapacityChanged(foundBattery, v.toDouble() * 1000);
+        if (foundBattery == index)
+            Q_EMIT remainingCapacityChanged(v.toDouble() * 1000);
 
     } else if (prop == QLatin1String("EnergyRate")) {
-        Q_EMIT currentFlowChanged(foundBattery, v.toDouble() / (uPowerDevice->voltage() * 1000));
+        if (foundBattery == index)
+            Q_EMIT currentFlowChanged(v.toDouble() / (uPowerDevice->voltage() * 1000));
 
     } else if (prop == QLatin1String("Percentage")) {
         int level = v.toInt();
@@ -261,11 +326,13 @@ void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, cons
             stat = QBatteryInfo::BatteryFull;
 
         //   if (batteryMap.value(foundBattery).value(QStringLiteral("Percentage")).toInt() != stat) {
-        Q_EMIT batteryStatusChanged(foundBattery, stat);
+        if (foundBattery == index)
+            Q_EMIT batteryStatusChanged(stat);
         //   }
 
     } else if (prop == QLatin1String("Voltage")) {
-        Q_EMIT voltageChanged(foundBattery,v.toDouble() * 1000 );
+        if (foundBattery == index)
+            Q_EMIT voltageChanged(v.toDouble() * 1000 );
 
     } else if (prop == QLatin1String("State")) {
 
@@ -273,14 +340,15 @@ void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, cons
 
         if (curChargeState != cState) {
             cState = curChargeState;
-            Q_EMIT chargingStateChanged(foundBattery,curChargeState);
+            if (foundBattery == index)
+                Q_EMIT chargingStateChanged(curChargeState);
         }
 
         } else if (prop == QLatin1String("Capacity")) {
         qDebug() << "Your battery just got less capacity";
     } else if (prop == QLatin1String("TimeToFull")) {
-
-        Q_EMIT remainingChargingTimeChanged(foundBattery,v.toInt());
+        if (foundBattery == index)
+            Q_EMIT remainingChargingTimeChanged(v.toInt());
 
     } else if (prop == QLatin1String("Type")) {
         if (uPowerDevice->isOnline()) {
