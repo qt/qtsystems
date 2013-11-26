@@ -70,7 +70,7 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     , watchRemainingCapacity(false)
     , watchRemainingChargingTime(false)
     , watchVoltage(false)
-    , watchBatteryStatus(false)
+    , watchLevelStatus(false)
     , batteryCounts(-1)
     , index(0)
     , currentChargerType(QBatteryInfo::UnknownCharger)
@@ -92,7 +92,7 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *parent)
     , watchRemainingCapacity(false)
     , watchRemainingChargingTime(false)
     , watchVoltage(false)
-    , watchBatteryStatus(false)
+    , watchLevelStatus(false)
     , batteryCounts(-1)
     , index(batteryIndex)
     , currentChargerType(QBatteryInfo::UnknownCharger)
@@ -229,22 +229,22 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
     return chargingState(index);
 }
 
-QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus(int battery)
 {
-    return QBatteryInfo::UnitmAh;
+    if (!watchLevelStatus)
+        return getLevelStatus(battery);
+
+    return levelStatuss.value(battery);
 }
 
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus()
 {
-    if (!watchBatteryStatus)
-        return getBatteryStatus(battery);
-
-    return batteryStatuses.value(battery);
+    return levelStatus(index);
 }
 
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+QBatteryInfo::Health QBatteryInfoPrivate::health()
 {
-    return batteryStatus(index);
+    return QBatteryInfo::UnknownHealth;
 }
 
 void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
@@ -256,7 +256,7 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
     static const QMetaMethod remainingCapacityChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingCapacityChanged);
     static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingChargingTimeChanged);
     static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::voltageChanged);
-    static const QMetaMethod batteryStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryStatusChanged);
+    static const QMetaMethod levelStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::levelStatusChanged);
 
 #if !defined(QT_NO_UDEV)
     if (!uDevWrapper)
@@ -264,7 +264,7 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
     if (!watchChargerType && signal == chargerTypeChangedSignal) {
         connect(uDevWrapper, SIGNAL(chargerTypeChanged(QByteArray,bool)), this, SLOT(onChargerTypeChanged(QByteArray,bool)));
     } else if (!watchCurrentFlow && !watchVoltage && !watchChargingState && !watchRemainingCapacity
-               && !watchRemainingChargingTime && !watchBatteryCount && !watchBatteryStatus) {
+               && !watchRemainingChargingTime && !watchBatteryCount && !watchLevelStatus) {
         connect(uDevWrapper, SIGNAL(batteryDataChanged(int,QByteArray,QByteArray)), this, SLOT(onBatteryDataChanged(int,QByteArray,QByteArray)));
     }
 #else
@@ -309,11 +309,11 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
         int count = batteryCount();
         for (int i = 0; i < count; ++i)
             chargingStates[i] = getChargingState(i);
-    } else if (signal == batteryStatusChangedSignal) {
-        watchBatteryStatus = true;
+    } else if (signal == levelStatusChangedSignal) {
+        watchLevelStatus = true;
         int count = batteryCount();
         for (int i = 0; i < count; i++)
-            batteryStatuses[i] = getBatteryStatus(i);
+            levelStatuss[i] = getLevelStatus(i);
     }
 }
 
@@ -326,7 +326,7 @@ void QBatteryInfoPrivate::disconnectNotify(const QMetaMethod &signal)
     static const QMetaMethod remainingCapacityChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingCapacityChanged);
     static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingChargingTimeChanged);
     static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::voltageChanged);
-    static const QMetaMethod batteryStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryStatusChanged);
+    static const QMetaMethod levelStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::levelStatusChanged);
     if (signal == batteryCountChangedSignal) {
         watchBatteryCount = false;
         batteryCounts = -1;
@@ -348,9 +348,9 @@ void QBatteryInfoPrivate::disconnectNotify(const QMetaMethod &signal)
     } else if (signal == chargingStateChangedSignal) {
         watchChargingState = false;
         chargingStates.clear();
-    } else if (signal == batteryStatusChangedSignal) {
-        watchBatteryStatus = false;
-        batteryStatuses.clear();
+    } else if (signal == levelStatusChangedSignal) {
+        watchLevelStatus = false;
+        levelStatuss.clear();
     }
 
 #if !defined(QT_NO_UDEV)
@@ -358,7 +358,7 @@ void QBatteryInfoPrivate::disconnectNotify(const QMetaMethod &signal)
         disconnect(uDevWrapper, SIGNAL(chargerTypeChanged(QByteArray,bool)),
                    this, SLOT(onChargerTypeChanged(QByteArray,bool)));
     } else if (uDevWrapper && !watchCurrentFlow && !watchVoltage && !watchChargingState && !watchRemainingCapacity
-               && !watchRemainingChargingTime && !watchBatteryCount && !watchBatteryStatus) {
+               && !watchRemainingChargingTime && !watchBatteryCount && !watchLevelStatus) {
         disconnect(uDevWrapper, SIGNAL(batteryDataChanged(int,QByteArray,QByteArray)),
                    this, SLOT(onBatteryDataChanged(int,QByteArray,QByteArray)));
     }
@@ -366,7 +366,7 @@ void QBatteryInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 
     if (!watchBatteryCount && !watchChargerType && !watchChargingState
             && !watchCurrentFlow && !watchRemainingCapacity
-            && !watchRemainingChargingTime && !watchVoltage && !watchBatteryStatus) {
+            && !watchRemainingChargingTime && !watchVoltage && !watchLevelStatus) {
 #if !defined(QT_NO_UDEV)
         if (uDevWrapper) {
             delete uDevWrapper;
@@ -395,11 +395,11 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
         if (qstrcmp(value, "Charging") == 0)
             state = QBatteryInfo::Charging;
         else if (qstrcmp(value, "Not charging") == 0)
-            state = QBatteryInfo::NotCharging;
+            state = QBatteryInfo::IdleChargingState;
         else if (qstrcmp(value, "Discharging") == 0)
             state = QBatteryInfo::Discharging;
         else if (qstrcmp(value, "Full") == 0)
-            state = QBatteryInfo::Full;
+            state = QBatteryInfo::IdleChargingState;
         if (chargingStates.value(battery) != state) {
             chargingStates[battery] = state;
             if (battery == index)
@@ -454,20 +454,20 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
         }
     }
 
-    if (watchBatteryStatus && attribute.contains("capacity_level")) {
-        QBatteryInfo::BatteryStatus batteryStatus = QBatteryInfo::BatteryStatusUnknown;
+    if (watchLevelStatus && attribute.contains("capacity_level")) {
+        QBatteryInfo::LevelStatus levelStatus = QBatteryInfo::LevelUnknown;
         if (qstrcmp(value, "Critical") == 0)
-            batteryStatus = QBatteryInfo::BatteryEmpty;
+            levelStatus = QBatteryInfo::LevelEmpty;
         else if (qstrcmp(value, "Low") == 0)
-            batteryStatus = QBatteryInfo::BatteryLow;
+            levelStatus = QBatteryInfo::LevelLow;
         else if (qstrcmp(value, "Normal") == 0)
-            batteryStatus = QBatteryInfo::BatteryOk;
+            levelStatus = QBatteryInfo::LevelOk;
         else if (qstrcmp(value, "Full") == 0)
-            batteryStatus = QBatteryInfo::BatteryFull;
-        if (batteryStatuses.value(battery) != batteryStatus) {
-            batteryStatuses[battery] = batteryStatus;
+            levelStatus = QBatteryInfo::LevelFull;
+        if (levelStatuss.value(battery) != levelStatus) {
+            levelStatuss[battery] = levelStatus;
             if (battery == index)
-                emit batteryStatusChanged(batteryStatus);
+                emit levelStatusChanged(levelStatus);
         }
     }
 }
@@ -559,12 +559,12 @@ void QBatteryInfoPrivate::onTimeout()
             }
         }
 
-        if (watchBatteryStatus) {
-            QBatteryInfo::BatteryStatus batteryStatus = getBatteryStatus(i);
-            if (batteryStatuses.value(i) != batteryStatus) {
-                batteryStatuses[i] = batteryStatus;
+        if (watchLevelStatus) {
+            QBatteryInfo::LevelStatus levelStatus = getLevelStatus(i);
+            if (levelStatuss.value(i) != levelStatus) {
+                levelStatuss[i] = levelStatus;
                 if (i == index)
-                    emit batteryStatusChanged(batteryStatus);
+                    emit levelStatusChanged(levelStatus);
             }
         }
     }
@@ -590,10 +590,14 @@ int QBatteryInfoPrivate::getCurrentFlow(int battery)
     bool ok = false;
     int flow = current.readAll().simplified().toInt(&ok);
     if (ok) {
-        if (state == QBatteryInfo::Charging || state == QBatteryInfo::Full)
-            return flow / -1000;
-        else if (state == QBatteryInfo::Discharging)
-            return flow > 0 ? flow / 1000 : flow / -1000;
+        // We want discharging current to be positive and charging current to be negative.
+        if (state == QBatteryInfo::Charging) {
+          // In case some drivers make charging current negative already and others are opposite
+          return flow < 0 ? flow / 1000 : flow / -1000;
+        } else if (state == QBatteryInfo::Discharging) {
+          // In case some drivers make discharging current positive already and others are opposite
+          return flow > 0 ? flow / 1000 : flow / -1000;
+        }
     }
 
     return 0;
@@ -617,8 +621,7 @@ int QBatteryInfoPrivate::getRemainingChargingTime(int battery)
     QBatteryInfo::ChargingState state = chargingState(battery);
     if (state == QBatteryInfo::UnknownChargingState)
         return -1;
-    else if (state == QBatteryInfo::NotCharging || state == QBatteryInfo::Discharging
-             || state == QBatteryInfo::Full)
+    else if (state == QBatteryInfo::IdleChargingState || state == QBatteryInfo::Discharging)
         return 0;
 
     int remaining = 0;
@@ -700,32 +703,32 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::getChargingState(int battery)
     if (status == "Charging")
         return QBatteryInfo::Charging;
     else if (status == "Not charging")
-        return QBatteryInfo::NotCharging;
+        return QBatteryInfo::IdleChargingState;
     else if (status == "Discharging")
         return QBatteryInfo::Discharging;
     else if (status == "Full")
-        return QBatteryInfo::Full;
+        return QBatteryInfo::IdleChargingState;
 
     return QBatteryInfo::UnknownChargingState;
 }
 
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::getBatteryStatus(int battery)
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::getLevelStatus(int battery)
 {
-    QFile batteryStatusFile(BATTERY_SYSFS_PATH()->arg(battery) + QStringLiteral("capacity_level"));
-    if (!batteryStatusFile.open(QIODevice::ReadOnly))
-        return QBatteryInfo::BatteryStatusUnknown;
+    QFile levelStatusFile(BATTERY_SYSFS_PATH()->arg(battery) + QStringLiteral("capacity_level"));
+    if (!levelStatusFile.open(QIODevice::ReadOnly))
+        return QBatteryInfo::LevelUnknown;
 
-    QByteArray batteryStatus = batteryStatusFile.readAll().simplified();
-    if (qstrcmp(batteryStatus, "Critical") == 0)
-        return QBatteryInfo::BatteryEmpty;
-    else if (qstrcmp(batteryStatus, "Low") == 0)
-        return QBatteryInfo::BatteryLow;
-    else if (qstrcmp(batteryStatus, "Normal") == 0)
-        return QBatteryInfo::BatteryOk;
-    else if (qstrcmp(batteryStatus, "Full") == 0)
-        return QBatteryInfo::BatteryFull;
+    QByteArray levelStatus = levelStatusFile.readAll().simplified();
+    if (qstrcmp(levelStatus, "Critical") == 0)
+        return QBatteryInfo::LevelEmpty;
+    else if (qstrcmp(levelStatus, "Low") == 0)
+        return QBatteryInfo::LevelLow;
+    else if (qstrcmp(levelStatus, "Normal") == 0)
+        return QBatteryInfo::LevelOk;
+    else if (qstrcmp(levelStatus, "Full") == 0)
+        return QBatteryInfo::LevelFull;
 
-    return QBatteryInfo::BatteryStatusUnknown;
+    return QBatteryInfo::LevelUnknown;
 }
 
 QT_END_NAMESPACE

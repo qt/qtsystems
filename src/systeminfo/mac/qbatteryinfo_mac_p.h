@@ -84,11 +84,11 @@ public:
     QBatteryInfo::ChargerType chargerType();
     QBatteryInfo::ChargingState chargingState(int battery);
     QBatteryInfo::ChargingState chargingState();
-    QBatteryInfo::EnergyUnit energyUnit();
-    QBatteryInfo::BatteryStatus batteryStatus(int battery);
-    QBatteryInfo::BatteryStatus batteryStatus();
+    QBatteryInfo::LevelStatus levelStatus(int battery);
+    QBatteryInfo::LevelStatus levelStatus();
     void getBatteryInfo();
     QBatteryInfo::ChargingState currentChargingState();
+    QBatteryInfo::Health health();
 
     void setBatteryIndex(int batteryIndex);
 
@@ -101,7 +101,8 @@ Q_SIGNALS:
     void remainingCapacityChanged(int capacity);
     void remainingChargingTimeChanged(int seconds);
     void voltageChanged(int voltage);
-    void batteryStatusChanged(QBatteryInfo::BatteryStatus);
+    void levelStatusChanged(QBatteryInfo::LevelStatus levelStatus);
+    void healthChanged(QBatteryInfo::Health health);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
@@ -114,10 +115,10 @@ private:
 
     int batteryLevelCache;
     QBatteryInfo::ChargingState currentChargingStateCache;
-    QBatteryInfo::BatteryStatus batteryStatusCache;
+    QBatteryInfo::LevelStatus levelStatusCache;
 
 
-    QBatteryInfo::BatteryStatus currentBatStatus;
+    QBatteryInfo::LevelStatus currentLevelStatus;
     QBatteryInfo::ChargingState curChargeState;
     QBatteryInfo::ChargerType curChargeType;
 
@@ -139,7 +140,7 @@ private:
     QMap<int, int> maximumCapacities;
     QMap<int, QBatteryInfo::ChargingState> chargingStates;
     QBatteryInfo::ChargerType currentChargerType;
-    QMap<int, QBatteryInfo::BatteryStatus> batteryStatuses;
+    QMap<int, QBatteryInfo::LevelStatus> levelStatuss;
 
     void initialize();
 };

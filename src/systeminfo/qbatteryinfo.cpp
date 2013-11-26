@@ -59,17 +59,22 @@ class QBatteryInfoPrivate
 {
 public:
     QBatteryInfoPrivate(QBatteryInfo *) {}
+    QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *): index(batteryIndex) {}
 
     int batteryCount() { return -1; }
-    int currentFlow(int) { return 0; }
-    int maximumCapacity(int) { return -1; }
-    int remainingCapacity(int) { return -1; }
-    int remainingChargingTime(int) { return -1; }
-    int voltage(int) { return -1; }
+    int batteryIndex() { return index; }
+    void setBatteryIndex(int batteryIndex) { index = batteryIndex; }
+    int currentFlow() { return 0; }
+    int maximumCapacity() { return -1; }
+    int remainingCapacity() { return -1; }
+    int remainingChargingTime() { return -1; }
+    int voltage() { return -1; }
     QBatteryInfo::ChargerType chargerType() { return QBatteryInfo::UnknownCharger; }
-    QBatteryInfo::ChargingState chargingState(int) { return QBatteryInfo::UnknownChargingState; }
-    QBatteryInfo::EnergyUnit energyUnit() { return QBatteryInfo::UnitUnknown; }
-    QBatteryInfo::BatteryStatus batteryStatus(int) { return QBatteryInfo::BatteryStatusUnknown; }
+    QBatteryInfo::ChargingState chargingState() { return QBatteryInfo::UnknownChargingState; }
+    QBatteryInfo::LevelStatus levelStatus() { return QBatteryInfo::LevelUnknown; }
+    QBatteryInfo::Health health() { return QBatteryInfo::UnknownHealth; }
+private:
+    int index;
 };
 QT_END_NAMESPACE
 #endif
@@ -112,15 +117,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QBatteryInfo::EnergyUnit
-    This enum describes the energy unit used by the system.
-
-    \value UnitUnknown            Energy unit unknown.
-    \value UnitmAh                Energy described in milliamp-hour (mAh)
-    \value UnitmWh                Energy described in milliwatt-hour (mWh)
-*/
-
-/*!
     \enum QBatteryInfo::BatteryStatus
     This enum describes the status of the battery.
 
@@ -160,7 +156,7 @@ QT_BEGIN_NAMESPACE
     \fn void QBatteryInfo::remainingCapacityChanged(int battery, int capacity);
 
     This signal is emitted when the remaining capacity of the \a battery has changed to \a capacity,
-    which is measured in QBatteryInfo::EnergyUnit.
+    which is measured in mAh.
 */
 
 /*!
@@ -259,7 +255,7 @@ int QBatteryInfo::currentFlow() const
 }
 
 /*!
-    Returns the maximum capacity of the given \a battery, measured in QBatteryInfo::EnergyUnit.
+    Returns the maximum capacity of the given \a battery, measured in mAh.
     If the battery is not found, or the information is not available, -1 is returned.
 */
 int QBatteryInfo::maximumCapacity() const
@@ -268,7 +264,7 @@ int QBatteryInfo::maximumCapacity() const
 }
 
 /*!
-    Returns the remaining level of the given \a battery, measured in QBatteryInfo::EnergyUnit. If
+    Returns the remaining level of the given \a battery, measured in mAh. If
     the battery is not found, or the information is not available, -1 is returned.
 
     To calculate capacity in percentage,
@@ -318,22 +314,19 @@ QBatteryInfo::ChargingState QBatteryInfo::chargingState() const
 }
 
 /*!
-    \property QBatteryInfo::energyUnit
-    \brief The used energy unit.
-
-    Returns the energy unit that the system uses.
+    Returns the level state of the given \a battery.
 */
-QBatteryInfo::EnergyUnit QBatteryInfo::energyUnit() const
+QBatteryInfo::LevelStatus QBatteryInfo::levelStatus() const
 {
-    return d_ptr->energyUnit();
+    return d_ptr->levelStatus();
 }
 
 /*!
-    Returns the battery status of the given \a battery.
+  Returns the health of the battery
 */
-QBatteryInfo::BatteryStatus QBatteryInfo::batteryStatus() const
+QBatteryInfo::Health QBatteryInfo::health() const
 {
-    return d_ptr->batteryStatus();
+    return d_ptr->health();
 }
 
 /*!

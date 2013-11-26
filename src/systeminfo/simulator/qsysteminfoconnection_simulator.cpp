@@ -114,7 +114,7 @@ void SystemInfoConnection::setBatteryInfoData(const QBatteryInfoData &data)
     batteryInfoBackend->setRemainingChargingTime(data.remainingChargingTime);
     batteryInfoBackend->setChargerType(data.chargerType);
     batteryInfoBackend->setChargingState(data.chargingState);
-    batteryInfoBackend->setBatteryStatus(data.batteryStatus);
+    batteryInfoBackend->setLevelStatus(data.levelStatus);
 }
 
 void SystemInfoConnection::setDeviceInfoData(const QDeviceInfoData &data)

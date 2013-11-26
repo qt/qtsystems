@@ -185,19 +185,19 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
     return chargingState(index);
 }
 
-QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus(int battery)
 {
-    return QBatteryInfo::UnitmWh;
+    return levelStatuss[battery];
 }
 
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus()
 {
-    return batteryStatuses[battery];
+    return levelStatus(index);
 }
 
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+QBatteryInfo::Health QBatteryInfoPrivate::health()
 {
-    return batteryStatus(index);
+    return QBatteryInfo::UnknownHealth;
 }
 
 void QBatteryInfoPrivate::getBatteryStatus()
@@ -254,7 +254,7 @@ void QBatteryInfoPrivate::getBatteryStatus()
                                                         &batteryQueryInfo, sizeof(batteryQueryInfo),
                                                         &batteryInfo, sizeof(batteryInfo), &dwOut, NULL)) {
 
-                                        maximumCapacities.insert(batteryNumber, batteryInfo.FullChargedCapacity);
+                                        maximumCapacities.insert(batteryNumber, -1);
 
                                         if (batteryInfo.Capabilities & BATTERY_SYSTEM_BATTERY) {
                                             if (!(batteryInfo.Capabilities & BATTERY_IS_SHORT_TERM)) {
@@ -300,6 +300,15 @@ void QBatteryInfoPrivate::getBatteryStatus()
                                                         if (batteryNumber == index)
                                                             Q_EMIT currentFlowChanged(batteryStatus.Rate);
                                                     }
+                                                    if (batteryStatus.Voltage == BATTERY_UNKNOWN_VOLTAGE) {
+                                                        // If we don't have the voltage then we can't convert from mWh to mAh
+                                                        batteryStatus.Capacity = -1;
+                                                        maximumCapacities.insert(batteryNumber, -1);
+                                                    } else {
+                                                        // Convert from mWh to mAh
+                                                        batteryStatus.Capacity = batteryStatus.Capacity / batteryStatus.Voltage;
+                                                        maximumCapacities.insert(batteryNumber, batteryInfo.FullChargedCapacity / batteryStatus.Voltage);
+                                                    }
                                                     if (remainingCapacities[batteryNumber] != batteryStatus.Capacity) {
                                                         remainingCapacities.insert(batteryNumber, batteryStatus.Capacity);
                                                         if (batteryNumber == index)
@@ -307,22 +316,22 @@ void QBatteryInfoPrivate::getBatteryStatus()
                                                     }
                                                     ///
                                                     int level = batteryInfo.FullChargedCapacity / batteryStatus.Capacity;
-                                                    QBatteryInfo::BatteryStatus batStatus = QBatteryInfo::BatteryStatusUnknown;
+                                                    QBatteryInfo::LevelStatus batStatus = QBatteryInfo::LevelUnknown;
 
                                                     if (batteryStatus.PowerState & BATTERY_CRITICAL) {
-                                                        batStatus =QBatteryInfo::BatteryEmpty ;
+                                                        batStatus =QBatteryInfo::LevelEmpty ;
                                                     } else if (level < 67) {
-                                                        batStatus = QBatteryInfo::BatteryLow;
+                                                        batStatus = QBatteryInfo::LevelLow;
                                                     } else if (level > 66) {
-                                                       batStatus = QBatteryInfo::BatteryOk;
+                                                       batStatus = QBatteryInfo::LevelOk;
                                                     } else if (level == 100) {
-                                                        batStatus = QBatteryInfo::BatteryFull;
+                                                        batStatus = QBatteryInfo::LevelFull;
                                                     }
 
-                                                    if (batteryStatuses[batteryNumber] != batStatus) {
-                                                        batteryStatuses.insert(batteryNumber,batStatus);
+                                                    if (levelStatuss[batteryNumber] != batStatus) {
+                                                        levelStatuss.insert(batteryNumber,batStatus);
                                                         if (batteryNumber == index)
-                                                            Q_EMIT batteryStatusChanged(batStatus);
+                                                            Q_EMIT levelStatusChanged(batStatus);
                                                     }
                                                 }
                                             }

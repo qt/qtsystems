@@ -215,21 +215,21 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
     return chargingState(index);
 }
 
-QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
-{
-    return QBatteryInfo::UnitmAh;
-}
-
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus(int battery)
 {
     if (battery < 0)
         battery = 0;
-    return batteryStatuses.value(battery);
+    return levelStatuss.value(battery);
 }
 
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus()
 {
-    return batteryStatus(index);
+    return levelStatus(index);
+}
+
+QBatteryInfo::Health QBatteryInfoPrivate::health()
+{
+    return QBatteryInfo::UnknownHealth;
 }
 
 void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
@@ -237,7 +237,7 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
    // static const QMetaMethod batteryCountChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryCountChanged);
     static const QMetaMethod chargingStateChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargingStateChanged);
     static const QMetaMethod currentFlowChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::currentFlowChanged);
-    static const QMetaMethod batteryStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryStatusChanged);
+    static const QMetaMethod levelStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::levelStatusChanged);
 //    static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargerTypeChanged);
 //    static const QMetaMethod remainingCapacityChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingCapacityChanged);
 //    static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingChargingTimeChanged);
@@ -245,7 +245,7 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
 
     if (signal == chargingStateChangedSignal
                || signal == currentFlowChangedSignal
-               || signal == batteryStatusChangedSignal) {
+               || signal == levelStatusChangedSignal) {
 
            NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
 
@@ -306,7 +306,7 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::currentChargingState()
                 cType = QBatteryInfo::WallCharger;
             } else {
                 cType = QBatteryInfo::UnknownCharger;
-                state = QBatteryInfo::NotCharging;
+                state = QBatteryInfo::IdleChargingState;
             }
         }
 
@@ -373,21 +373,21 @@ void QBatteryInfoPrivate::getBatteryInfo()
         psValue = CFDictionaryGetValue(battery, CFSTR(kIOPSMaxCapacityKey));
         CFNumberGetValue((CFNumberRef)psValue, kCFNumberSInt32Type, &maxCapacity);
 
-        QBatteryInfo::BatteryStatus stat = QBatteryInfo::BatteryStatusUnknown;
+        QBatteryInfo::LevelStatus stat = QBatteryInfo::LevelUnknown;
 
         if (curCapacityPercent < 2) {
-            stat = QBatteryInfo::BatteryEmpty;
+            stat = QBatteryInfo::LevelEmpty;
         } else if (curCapacityPercent < 11) {
-             stat =  QBatteryInfo::BatteryLow;
+             stat =  QBatteryInfo::LevelLow;
         } else if (curCapacityPercent > 10 && curCapacityPercent < 100) {
-             stat = QBatteryInfo::BatteryOk;
+             stat = QBatteryInfo::LevelOk;
         } else if (curCapacityPercent == 100) {
-             stat = QBatteryInfo::BatteryFull;
+             stat = QBatteryInfo::LevelFull;
         }
-        if (batteryStatuses.value(i) != stat) {
-            batteryStatuses[i] = stat;
+        if (levelStatuss.value(i) != stat) {
+            levelStatuss[i] = stat;
             if (i == index)
-                Q_EMIT batteryStatusChanged(stat);
+                Q_EMIT levelStatusChanged(stat);
         }
 
         cVoltage = [[(NSDictionary*)batDoctionary objectForKey:@kIOPSVoltageKey] intValue];
@@ -431,7 +431,7 @@ void QBatteryInfoPrivate::getBatteryInfo()
         remainingChargingTimes[0] = -1;
         voltages[0] = -1;
         chargingStates[0] = QBatteryInfo::UnknownChargingState;
-        batteryStatuses[0] = QBatteryInfo::BatteryStatusUnknown;
+        levelStatuss[0] = QBatteryInfo::LevelUnknown;
     }
     if (batDoctionary != NULL)
         CFRelease(batDoctionary);

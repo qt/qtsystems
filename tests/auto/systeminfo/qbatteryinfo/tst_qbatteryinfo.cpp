@@ -82,10 +82,7 @@ void tst_QBatteryInfo::tst_flow()
             QVERIFY(batteryInfo.currentFlow() < 0);
             QVERIFY(batteryInfo.remainingChargingTime() >= 0);
             break;
-        case QBatteryInfo::Full:
-            QVERIFY(batteryInfo.remainingChargingTime() == 0);
-            break;
-        case QBatteryInfo::NotCharging:
+        case QBatteryInfo::IdleChargingState:
             QVERIFY(batteryInfo.currentFlow() >= 0);
             QVERIFY(batteryInfo.remainingChargingTime() == 0);
             break;
@@ -112,7 +109,7 @@ void tst_QBatteryInfo::tst_invalid()
     QVERIFY(batteryInfo.remainingChargingTime() == -1);
     QVERIFY(batteryInfo.voltage() == -1);
     QVERIFY(batteryInfo.chargingState() == QBatteryInfo::UnknownChargingState);
-    QVERIFY(batteryInfo.batteryStatus() == QBatteryInfo::BatteryStatusUnknown);
+    QVERIFY(batteryInfo.levelStatus() == QBatteryInfo::LevelUnknown);
 
     int count = batteryInfo.batteryCount();
     batteryInfo.setBatteryIndex(count);
@@ -122,7 +119,7 @@ void tst_QBatteryInfo::tst_invalid()
     QVERIFY(batteryInfo.remainingChargingTime() == -1);
     QVERIFY(batteryInfo.voltage() == -1);
     QVERIFY(batteryInfo.chargingState() == QBatteryInfo::UnknownChargingState);
-    QVERIFY(batteryInfo.batteryStatus() == QBatteryInfo::BatteryStatusUnknown);
+    QVERIFY(batteryInfo.levelStatus() == QBatteryInfo::LevelUnknown);
 }
 
 void tst_QBatteryInfo::tst_setBatteryIndex()

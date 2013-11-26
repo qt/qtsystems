@@ -124,8 +124,8 @@ struct QBatteryInfoData
 
     QBatteryInfo::ChargingState chargingState;
     QBatteryInfo::ChargerType chargerType;
-    QBatteryInfo::EnergyUnit energyMeasurementUnit;
-    QBatteryInfo::BatteryStatus batteryStatus;
+    QBatteryInfo::LevelStatus levelStatus;
+    QBatteryInfo::Health health;
 };
 
 struct QDeviceInfoData

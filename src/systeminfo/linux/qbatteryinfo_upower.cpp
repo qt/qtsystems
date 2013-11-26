@@ -200,31 +200,31 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
     return chargingState(index);
 }
 
-QBatteryInfo::EnergyUnit QBatteryInfoPrivate::energyUnit()
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus(int battery)
 {
-    return QBatteryInfo::UnitmAh;
-}
-
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus(int battery)
-{
-    QBatteryInfo::BatteryStatus stat = QBatteryInfo::BatteryStatusUnknown;
+    QBatteryInfo::LevelStatus stat = QBatteryInfo::LevelUnknown;
     if (batteryMap.count() >= battery) {
         int level = batteryMap.value(battery).value(QStringLiteral("Percentage")).toInt();
         if (level < 2)
-            stat = QBatteryInfo::BatteryEmpty;
+            stat = QBatteryInfo::LevelEmpty;
         else if (level > 1 && level < 11)
-            stat = QBatteryInfo::BatteryLow;
+            stat = QBatteryInfo::LevelLow;
         else if (level > 10 && level < 99)
-            stat = QBatteryInfo::BatteryOk;
+            stat = QBatteryInfo::LevelOk;
         else if (level == 100)
-            stat = QBatteryInfo::BatteryFull;
+            stat = QBatteryInfo::LevelFull;
     }
     return stat;
 }
 
-QBatteryInfo::BatteryStatus QBatteryInfoPrivate::batteryStatus()
+QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus()
 {
-    return batteryStatus(index);
+    return levelStatus(index);
+}
+
+QBatteryInfo::Health QBatteryInfoPrivate::health()
+{
+    return QBatteryInfo::UnknownHealth;
 }
 
 void QBatteryInfoPrivate::upowerChanged()
@@ -252,7 +252,7 @@ void QBatteryInfoPrivate::upowerChanged()
 //                    pState = QBatteryInfo::Discharging;
 //                    break;
 //                case 4:
-//                    pState = QBatteryInfo::Full;
+//                    pState = QBatteryInfo::IdleChargingState;
 //                    break;
 //                default:
 //                    pState = QBatteryInfo::UnknownChargingState;
@@ -260,7 +260,7 @@ void QBatteryInfoPrivate::upowerChanged()
 //            }
 //        }
 //        if (!power.onBattery() && pState == QBatteryInfo::UnknownChargingState)
-//            pState = QBatteryInfo::NotCharging;
+//            pState = QBatteryInfo::IdleChargingState;
 //        if (curPowerState != pState) {
 //            curPowerState = pState;
 //            Q_EMIT powerStateChanged(pState);
@@ -314,20 +314,20 @@ void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, cons
         int level = v.toInt();
         //  Q_EMIT remainingCapacityChanged(foundBattery, level);
 
-        QBatteryInfo::BatteryStatus stat = QBatteryInfo::BatteryStatusUnknown;
+        QBatteryInfo::LevelStatus stat = QBatteryInfo::LevelUnknown;
 
         if (level < 2)
-            stat = QBatteryInfo::BatteryEmpty;
+            stat = QBatteryInfo::LevelEmpty;
         else if (level > 1 && level < 11)
-            stat = QBatteryInfo::BatteryLow;
+            stat = QBatteryInfo::LevelLow;
         else if (level > 10 && level < 99)
-            stat = QBatteryInfo::BatteryOk;
+            stat = QBatteryInfo::LevelOk;
         else if (level == 100)
-            stat = QBatteryInfo::BatteryFull;
+            stat = QBatteryInfo::LevelFull;
 
         //   if (batteryMap.value(foundBattery).value(QStringLiteral("Percentage")).toInt() != stat) {
         if (foundBattery == index)
-            Q_EMIT batteryStatusChanged(stat);
+            Q_EMIT levelStatusChanged(stat);
         //   }
 
     } else if (prop == QLatin1String("Voltage")) {
@@ -393,7 +393,7 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::getCurrentChargingState(int sta
         curChargeState = QBatteryInfo::Discharging;
         break;
     case 4: //fully charged
-        curChargeState = QBatteryInfo::NotCharging;
+        curChargeState = QBatteryInfo::IdleChargingState;
         break;
     case 5: //pending charge
     case 6: //pending discharge

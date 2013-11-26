@@ -143,22 +143,28 @@ static const symbol_t NetworkMode_lut[] =
   {0,0}
 };
 
-static const symbol_t BatteryStatus_lut[] =
+static const symbol_t Health_lut[] =
 {
-    SYM(QBatteryInfo::BatteryStatusUnknown),
-    SYM(QBatteryInfo::BatteryEmpty),
-    SYM(QBatteryInfo::BatteryLow),
-    SYM(QBatteryInfo::BatteryOk),
-    SYM(QBatteryInfo::BatteryFull),
+    SYM(QBatteryInfo::UnknownHealth),
+    SYM(QBatteryInfo::OkHealth),
+    SYM(QBatteryInfo::BadHealth),
+};
+
+static const symbol_t LevelStatus_lut[] =
+{
+    SYM(QBatteryInfo::LevelUnknown),
+    SYM(QBatteryInfo::LevelEmpty),
+    SYM(QBatteryInfo::LevelLow),
+    SYM(QBatteryInfo::LevelOk),
+    SYM(QBatteryInfo::LevelFull),
 };
 
 static const symbol_t ChargingState_lut[] =
 {
     SYM(QBatteryInfo::UnknownChargingState),
-    SYM(QBatteryInfo::NotCharging),
     SYM(QBatteryInfo::Charging),
-    SYM(QBatteryInfo::Discharging),
-    SYM(QBatteryInfo::Full),
+    SYM(QBatteryInfo::IdleChargingState),
+    SYM(QBatteryInfo::Discharging)
 };
 
 static const symbol_t ChargerType_lut[] =
@@ -339,7 +345,7 @@ static void test_networkinfo(void)
 static void test_batteryinfo(void)
 {
     QBatteryInfo batInfo;
-    X(batInfo.batteryIndex())
+    X(batInfo.batteryIndex());
     X(batInfo.chargerType());
     X(batInfo.chargingState() );
     X(batInfo.maximumCapacity());
@@ -347,9 +353,9 @@ static void test_batteryinfo(void)
     X(batInfo.voltage());
     X(batInfo.remainingChargingTime());
     X(batInfo.currentFlow());
-    X(batInfo.batteryStatus());
-    X(batInfo.energyUnit());
+    X(batInfo.levelStatus());
     X(batInfo.batteryCount());
+    X(batInfo.health());
 }
 
 

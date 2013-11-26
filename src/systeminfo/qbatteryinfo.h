@@ -59,8 +59,8 @@ class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
 
     Q_ENUMS(ChargerType)
     Q_ENUMS(ChargingState)
-    Q_ENUMS(EnergyUnit)
-    Q_ENUMS(BatteryStatus)
+    Q_ENUMS(LevelStatus)
+    Q_ENUMS(Health)
 
     Q_PROPERTY(int batteryCount READ batteryCount NOTIFY batteryCountChanged)
     Q_PROPERTY(int batteryIndex READ batteryIndex WRITE setBatteryIndex NOTIFY batteryIndexChanged)
@@ -69,10 +69,10 @@ class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
     Q_PROPERTY(int remainingCapacity READ remainingCapacity NOTIFY remainingCapacityChanged)
     Q_PROPERTY(int remainingChargingTime READ remainingChargingTime NOTIFY remainingChargingTimeChanged)
     Q_PROPERTY(int voltage READ voltage NOTIFY voltageChanged)
-    Q_PROPERTY(int chargingState READ chargingState NOTIFY chargingStateChanged)
+    Q_PROPERTY(ChargingState chargingState READ chargingState NOTIFY chargingStateChanged)
     Q_PROPERTY(ChargerType chargerType READ chargerType NOTIFY chargerTypeChanged)
-    Q_PROPERTY(EnergyUnit energyUnit READ energyUnit)
-    Q_PROPERTY(int batteryStatus READ batteryStatus NOTIFY batteryStatusChanged)
+    Q_PROPERTY(LevelStatus levelStatus READ levelStatus NOTIFY levelStatusChanged)
+    Q_PROPERTY(Health health READ health NOTIFY healthChanged)
 
 public:
     enum ChargerType {
@@ -84,24 +84,23 @@ public:
 
     enum ChargingState {
         UnknownChargingState = 0,
-        NotCharging,
         Charging,
-        Discharging,
-        Full
+        IdleChargingState,
+        Discharging
     };
 
-    enum EnergyUnit {
-        UnitUnknown = 0,
-        UnitmAh,
-        UnitmWh
+    enum LevelStatus {
+        LevelUnknown = 0,
+        LevelEmpty,
+        LevelLow,
+        LevelOk,
+        LevelFull
     };
 
-    enum BatteryStatus {
-        BatteryStatusUnknown = 0,
-        BatteryEmpty,
-        BatteryLow,
-        BatteryOk,
-        BatteryFull
+    enum Health {
+        UnknownHealth = 0,
+        OkHealth,
+        BadHealth
     };
 
     QBatteryInfo(QObject *parent = 0);
@@ -117,8 +116,8 @@ public:
     int voltage() const;
     QBatteryInfo::ChargingState chargingState() const;
     QBatteryInfo::ChargerType chargerType() const;
-    QBatteryInfo::EnergyUnit energyUnit() const;
-    QBatteryInfo::BatteryStatus batteryStatus() const;
+    QBatteryInfo::LevelStatus levelStatus() const;
+    QBatteryInfo::Health health() const;
 
     void setBatteryIndex(int batteryIndex);
 
@@ -131,7 +130,8 @@ Q_SIGNALS:
     void remainingCapacityChanged(int capacity);
     void remainingChargingTimeChanged(int seconds);
     void voltageChanged(int voltage);
-    void batteryStatusChanged(QBatteryInfo::BatteryStatus);
+    void levelStatusChanged(QBatteryInfo::LevelStatus levelStatus);
+    void healthChanged(QBatteryInfo::Health health);
 
 protected:
     void connectNotify(const QMetaMethod &signal);

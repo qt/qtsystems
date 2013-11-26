@@ -63,8 +63,7 @@ QBatteryInfoSimulatorBackend::QBatteryInfoSimulatorBackend(QObject *parent)
     data.voltage = -1;
     data.chargingState = QBatteryInfo::UnknownChargingState;
     data.chargerType = QBatteryInfo::UnknownCharger;
-    data.energyMeasurementUnit = QBatteryInfo::UnitUnknown;
-    data.batteryStatus = QBatteryInfo::BatteryStatusUnknown;
+    data.levelStatus = QBatteryInfo::LevelUnknown;
 }
 
 QBatteryInfoSimulatorBackend::~QBatteryInfoSimulatorBackend()
@@ -142,17 +141,20 @@ QBatteryInfo::ChargerType QBatteryInfoSimulatorBackend::getChargerType()
     return data.chargerType;
 }
 
-QBatteryInfo::EnergyUnit QBatteryInfoSimulatorBackend::getEnergyUnit()
-{
-    return data.energyMeasurementUnit;
-}
-
-QBatteryInfo::BatteryStatus QBatteryInfoSimulatorBackend::getBatteryStatus(int battery)
+QBatteryInfo::LevelStatus QBatteryInfoSimulatorBackend::getLevelStatus(int battery)
 {
     if (battery == 0)
-        return data.batteryStatus;
+        return data.levelStatus;
 
-    return QBatteryInfo::BatteryStatusUnknown;
+    return QBatteryInfo::LevelUnknown;
+}
+
+QBatteryInfo::Health QBatteryInfoSimulatorBackend::getHealth(int battery)
+{
+    if (battery == 0)
+        return data.health;
+
+    return QBatteryInfo::UnknownHealth;
 }
 
 void QBatteryInfoSimulatorBackend::setBatteryIndex(int batteryIndex)
@@ -217,20 +219,21 @@ void QBatteryInfoSimulatorBackend::setChargerType(QBatteryInfo::ChargerType type
     }
 }
 
-void QBatteryInfoSimulatorBackend::setEnergyUnit(QBatteryInfo::EnergyUnit unit)
+void QBatteryInfoSimulatorBackend::setLevelStatus(QBatteryInfo::LevelStatus levelStatus)
 {
-    if (data.energyMeasurementUnit != unit)
-        data.energyMeasurementUnit = unit;
-}
-
-void QBatteryInfoSimulatorBackend::setBatteryStatus(QBatteryInfo::BatteryStatus status)
-{
-    if (data.batteryStatus != status) {
-        data.batteryStatus = status;
-        emit batteryStatusChanged(status);
+    if (data.levelStatus != levelStatus) {
+        data.levelStatus = levelStatus;
+        emit levelStatusChanged(levelStatus);
     }
 }
 
+void QBatteryInfoSimulatorBackend::setHealth(QBatteryInfo::Health health)
+{
+    if (data.health != health) {
+        data.health = health;
+        emit healthChanged(health);
+    }
+}
 
 // QDeviceInfoSimulatorBackend
 
