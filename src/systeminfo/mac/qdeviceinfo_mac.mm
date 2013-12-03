@@ -50,8 +50,7 @@
 #include <CoreLocation/CLLocation.h>
 #include <CoreLocation/CLLocationManager.h>
 #include <ScreenSaver/ScreenSaverDefaults.h>
-#include <CoreWLAN/CWInterface.h>
-#include <CoreWLAN/CWGlobals.h>
+#include <CoreWLAN/CoreWLAN.h>
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CFNotificationCenter.h>
 #include <IOBluetooth/IOBluetooth.h>

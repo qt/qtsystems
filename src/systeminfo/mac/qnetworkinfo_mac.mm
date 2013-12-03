@@ -48,8 +48,7 @@
 #include <QtCore/qmetaobject.h>
 
 
-#include <CoreWLAN/CWInterface.h>
-#include <CoreWLAN/CWGlobals.h>
+#include <CoreWLAN/CoreWLAN.h>
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <IOBluetooth/IOBluetooth.h>
 
