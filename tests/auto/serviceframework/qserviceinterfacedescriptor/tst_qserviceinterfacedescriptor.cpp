@@ -345,7 +345,7 @@ void tst_QServiceInterfaceDescriptor::testDebugStream()
     qInstallMessageHandler(customMsgHandler);
     qDebug() << valid2 << invalid;
     QCOMPARE(type, QtDebugMsg);
-    QCOMPARE(msg,QString::fromLatin1("QServiceInterfaceDescriptor(service=\"name2\", interface=\"interface2 5.6\") QServiceInterfaceDescriptor(invalid) "));
+    QCOMPARE(msg,QString::fromLatin1("QServiceInterfaceDescriptor(service=\"name2\", interface=\"interface2 5.6\") QServiceInterfaceDescriptor(invalid)"));
     qInstallMessageHandler(0);
 }
 #endif
