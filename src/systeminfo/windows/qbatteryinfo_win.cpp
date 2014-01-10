@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -53,6 +54,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/QTimer>
 #include <QtCore/QUuid>
+#include <QtCore/qnumeric.h>
 
 #ifdef Q_CC_MSVC
 #  pragma comment (lib, "Setupapi.lib")
@@ -102,12 +104,105 @@ int QBatteryInfoPrivate::batteryIndex() const
     return index;
 }
 
+bool QBatteryInfoPrivate::isValid()
+{
+    // valid if the index < total count.
+    return (index >= 0) && (index < batteryCount());
+}
+
 void QBatteryInfoPrivate::setBatteryIndex(int batteryIndex)
 {
     if (index != batteryIndex) {
+        bool validBefore = isValid();
+        int oldIndex = index;
         index = batteryIndex;
-        Q_EMIT batteryIndexChanged(index);
+        bool validNow = isValid();
+        if (validBefore != validNow)
+            Q_EMIT validChanged(validNow);
+
+        if (validNow) {
+            if (validBefore) {
+                // valid now, valid before so we have to check individual values
+
+                // ignore chargerType - it won't change based on battery index
+                //emit chargerTypeChanged(newChargerType);
+
+                QBatteryInfo::ChargingState newChargingState = chargingState();
+                if (newChargingState != chargingState(oldIndex))
+                    emit chargingStateChanged(newChargingState);
+
+                int newValue = level();
+                if (newValue != level(oldIndex))
+                    emit levelChanged(newValue);
+
+                newValue = currentFlow();
+                if (newValue != currentFlow(oldIndex))
+                    emit currentFlowChanged(newValue);
+
+                newValue = cycleCount();
+                if (newValue != cycleCount(oldIndex))
+                    emit cycleCountChanged(newValue);
+
+                newValue = remainingCapacity();
+                if (newValue != remainingCapacity(oldIndex))
+                    emit remainingCapacityChanged(newValue);
+
+                newValue = remainingChargingTime();
+                if (newValue != remainingChargingTime(oldIndex))
+                    emit remainingChargingTimeChanged(newValue);
+
+                newValue = voltage();
+                if (newValue != voltage(oldIndex))
+                    emit voltageChanged(newValue);
+
+                QBatteryInfo::LevelStatus newLevelStatus = levelStatus();
+                if (newLevelStatus != levelStatus(oldIndex))
+                    emit levelStatusChanged(newLevelStatus);
+
+                QBatteryInfo::Health newHealth = health();
+                if (newHealth != health(oldIndex))
+                    emit healthChanged(newHealth);
+
+                float newTemperature = temperature();
+                if (!qFuzzyCompare(newTemperature, temperature(oldIndex)))
+                    emit temperatureChanged(newTemperature);
+            } else {
+                // it wasn't valid before so everything is changed
+
+                // ignore chargerType - it won't change based on battery index
+                //emit chargerTypeChanged(newChargerType);
+
+                emit chargingStateChanged(chargingState());
+                emit levelChanged(level());
+                emit currentFlowChanged(currentFlow());
+                emit cycleCountChanged(cycleCount());
+                emit remainingCapacityChanged(remainingCapacity());
+                emit remainingChargingTimeChanged(remainingChargingTime());
+                emit voltageChanged(voltage());
+                emit levelStatusChanged(levelStatus());
+                emit healthChanged(health());
+                emit temperatureChanged(temperature());
+            }
+        }
+
+        emit batteryIndexChanged(index);
     }
+}
+
+int QBatteryInfoPrivate::level(int battery)
+{
+    int maxCapacity = maximumCapacity(battery);
+    int remCapacity = remainingCapacity(battery);
+
+    if (maxCapacity == 0)
+        return -1;
+
+    return remCapacity * 100 / maxCapacity;
+}
+
+int QBatteryInfoPrivate::level()
+{
+    return level(index);
 }
 
 int QBatteryInfoPrivate::currentFlow(int battery)
@@ -118,6 +213,18 @@ int QBatteryInfoPrivate::currentFlow(int battery)
 int QBatteryInfoPrivate::currentFlow()
 {
     return currentFlow(index);
+}
+
+int QBatteryInfoPrivate::cycleCount(int battery)
+{
+    Q_UNUSED(battery)
+
+    return -1;
+}
+
+int QBatteryInfoPrivate::cycleCount()
+{
+    return cycleCount(index);
 }
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
@@ -195,9 +302,28 @@ QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus()
     return levelStatus(index);
 }
 
+QBatteryInfo::Health QBatteryInfoPrivate::health(int battery)
+{
+    Q_UNUSED(battery)
+
+    return QBatteryInfo::HealthUnknown;
+}
+
 QBatteryInfo::Health QBatteryInfoPrivate::health()
 {
-    return QBatteryInfo::UnknownHealth;
+    return health(index);
+}
+
+float QBatteryInfoPrivate::temperature(int battery)
+{
+    Q_UNUSED(battery)
+
+    return qQNaN();
+}
+
+float QBatteryInfoPrivate::temperature()
+{
+    return temperature(index);
 }
 
 void QBatteryInfoPrivate::getBatteryStatus()
@@ -352,7 +478,12 @@ void QBatteryInfoPrivate::getBatteryStatus()
         }
         SetupDiDestroyDeviceInfoList(hdevInfo);
     }
+    bool validBefore = isValid();
     numberOfBatteries = batteryNumber;
+    bool validNow = isValid();
+    if (validBefore != validNow)
+        Q_EMIT validChanged(validNow);
+
 #else // !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
     numberOfBatteries = 0;
     Q_UNIMPLEMENTED();

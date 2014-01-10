@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -41,6 +42,8 @@
 
 #include "qbatteryinfo.h"
 
+#include <QtCore/qnumeric.h>
+
 #if defined(QT_SIMULATOR)
 #  include "simulator/qsysteminfo_simulator_p.h"
 #elif defined(Q_OS_LINUX)
@@ -63,8 +66,10 @@ public:
 
     int batteryCount() { return -1; }
     int batteryIndex() { return index; }
+    bool isValid() { return false; }
     void setBatteryIndex(int batteryIndex) { index = batteryIndex; }
     int currentFlow() { return 0; }
+    int cycleCount() { return -1; }
     int maximumCapacity() { return -1; }
     int remainingCapacity() { return -1; }
     int remainingChargingTime() { return -1; }
@@ -72,7 +77,8 @@ public:
     QBatteryInfo::ChargerType chargerType() { return QBatteryInfo::UnknownCharger; }
     QBatteryInfo::ChargingState chargingState() { return QBatteryInfo::UnknownChargingState; }
     QBatteryInfo::LevelStatus levelStatus() { return QBatteryInfo::LevelUnknown; }
-    QBatteryInfo::Health health() { return QBatteryInfo::UnknownHealth; }
+    QBatteryInfo::Health health() { return QBatteryInfo::HealthUnknown; }
+    float temperature() { return qQNaN(); }
 private:
     int index;
 };
@@ -245,6 +251,15 @@ void QBatteryInfo::setBatteryIndex(int batteryIndex)
 }
 
 /*!
+ * Represents the validity of this instance. If false only batteryIndex() will return a valid
+ * value. All other methods will return default/invalid values.
+ */
+bool QBatteryInfo::isValid() const
+{
+    return d_ptr->isValid();
+}
+
+/*!
     Returns the current flow of the given \a battery, measured in milliamperes (mA). A positive
     returned value means discharging, and a negative value means charging. In case of error, or
     the information if not available, 0 is returned.
@@ -252,6 +267,24 @@ void QBatteryInfo::setBatteryIndex(int batteryIndex)
 int QBatteryInfo::currentFlow() const
 {
     return d_ptr->currentFlow();
+}
+
+/*!
+ * Returns the current battery level as a percentage. In case of error or the information
+ * is not available, -1 is returned.
+ */
+int QBatteryInfo::level() const
+{
+    return d_ptr->level();
+}
+
+/*!
+ * Returns the current cycle count of the battery. In case of error or the information
+ * is not available, -1 is returned.
+ */
+int QBatteryInfo::cycleCount() const
+{
+    return d_ptr->cycleCount();
 }
 
 /*!
@@ -327,6 +360,15 @@ QBatteryInfo::LevelStatus QBatteryInfo::levelStatus() const
 QBatteryInfo::Health QBatteryInfo::health() const
 {
     return d_ptr->health();
+}
+
+/*!
+ * Returns the current battery temperature in Celcius. In case of error or the information
+ * is not available, NaN is returned.
+ */
+float QBatteryInfo::temperature() const
+{
+    return d_ptr->temperature();
 }
 
 /*!

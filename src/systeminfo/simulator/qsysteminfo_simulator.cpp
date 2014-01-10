@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -91,10 +92,24 @@ int QBatteryInfoSimulator::batteryIndex() const
     return -1;
 }
 
+bool QBatteryInfoSimulator::isValid()
+{
+    // valid if the index < total count.
+    return (batteryIndex() >= 0) && (batteryIndex() < batteryCount());
+}
+
 void QBatteryInfoSimulator::setBatteryIndex(int batteryIndex)
 {
     if (batteryInfoSimulatorBackend)
         batteryInfoSimulatorBackend->setBatteryIndex(batteryIndex);
+}
+
+int QBatteryInfoSimulator::level()
+{
+    if (batteryInfoSimulatorBackend)
+        return batteryInfoSimulatorBackend->getLevel(batteryInfoSimulatorBackend->getBatteryIndex());
+
+    return -1;
 }
 
 int QBatteryInfoSimulator::currentFlow(int battery)
@@ -108,6 +123,14 @@ int QBatteryInfoSimulator::currentFlow(int battery)
 int QBatteryInfoSimulator::currentFlow()
 {
     return currentFlow(batteryInfoSimulatorBackend->getBatteryIndex());
+}
+
+int QBatteryInfoSimulator::cycleCount()
+{
+    if (batteryInfoSimulatorBackend)
+        return batteryInfoSimulatorBackend->getCycleCount(batteryInfoSimulatorBackend->getBatteryIndex());
+
+    return -1;
 }
 
 int QBatteryInfoSimulator::maximumCapacity(int battery)
@@ -199,9 +222,17 @@ QBatteryInfo::LevelStatus QBatteryInfoSimulator::levelStatus()
 QBatteryInfo::Health QBatteryInfoSimulator::health()
 {
     if (batteryInfoSimulatorBackend)
-        return batteryInfoSimulatorBackend->getHealth(battery);
+        return batteryInfoSimulatorBackend->getHealth(batteryInfoSimulatorBackend->getBatteryIndex());
 
-    return QBatteryInfo::UnknownHealth;
+    return QBatteryInfo::HealthUnknown;
+}
+
+float QBatteryInfoSimulator::temperature()
+{
+    if (batteryInfoSimulatorBackend)
+        return batteryInfoSimulatorBackend->getTemperature(batteryInfoSimulatorBackend->getBatteryIndex());
+
+    return -1.0f;
 }
 
 extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);

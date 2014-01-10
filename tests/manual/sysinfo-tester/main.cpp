@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -145,9 +146,9 @@ static const symbol_t NetworkMode_lut[] =
 
 static const symbol_t Health_lut[] =
 {
-    SYM(QBatteryInfo::UnknownHealth),
-    SYM(QBatteryInfo::OkHealth),
-    SYM(QBatteryInfo::BadHealth),
+    SYM(QBatteryInfo::HealthUnknown),
+    SYM(QBatteryInfo::HealthOk),
+    SYM(QBatteryInfo::HealthBad),
 };
 
 static const symbol_t LevelStatus_lut[] =

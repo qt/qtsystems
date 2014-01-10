@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -74,7 +75,9 @@ public:
 
     int getBatteryCount();
     int getBatteryIndex() const;
+    int getLevel(int battery);
     int getCurrentFlow(int battery);
+    int getCycleCount(int battery);
     int getMaximumCapacity(int battery);
     int getRemainingCapacity(int battery);
     int getRemainingChargingTime(int battery);
@@ -83,9 +86,11 @@ public:
     QBatteryInfo::ChargerType getChargerType();
     QBatteryInfo::LevelStatus getLevelStatus(int battery);
     QBatteryInfo::Health getHealth(int battery);
+    float getTemperature(int battery);
 
     void setBatteryIndex(int batteryIndex);
     void setCurrentFlow(int flow);
+    void setCycleCount(int cycleCount);
     void setMaximumCapacity(int capacity);
     void setRemainingCapacity(int capacity);
     void setRemainingChargingTime(int time);
@@ -94,17 +99,22 @@ public:
     void setChargerType(QBatteryInfo::ChargerType type);
     void setLevelStatus(QBatteryInfo::LevelStatus levelStatus);
     void setHealth(QBatteryInfo::Health health);
+    void setTemperature(float temperature);
 
 Q_SIGNALS:
     void batteryCountChanged(int count);
     void batteryIndexChanged(int batteryIndex);
+    void levelChanged(int level);
     void currentFlowChanged(int flow);
+    void cycleCountChanged(int cycleCount);
     void remainingCapacityChanged(int capacity);
     void remainingChargingTimeChanged(int seconds);
     void voltageChanged(int voltage);
     void chargingStateChanged(QBatteryInfo::ChargingState state);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
     void levelStatusChanged(QBatteryInfo::LevelStatus levelStatus);
+    void healthChanged(QBatteryInfo::Health health);
+    void temperatureChanged(float temperature);
 
 private:
     static QBatteryInfoSimulatorBackend *globalSimulatorBackend;

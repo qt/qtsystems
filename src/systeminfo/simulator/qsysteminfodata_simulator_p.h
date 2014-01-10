@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -117,6 +118,7 @@ struct QBatteryInfoData
 {
     int index;
     int currentFlow;
+    int cycleCount;
     int maximumCapacity;
     int remainingCapacity;
     int remainingChargingTime;
@@ -126,6 +128,7 @@ struct QBatteryInfoData
     QBatteryInfo::ChargerType chargerType;
     QBatteryInfo::LevelStatus levelStatus;
     QBatteryInfo::Health health;
+    float temperature;
 };
 
 struct QDeviceInfoData

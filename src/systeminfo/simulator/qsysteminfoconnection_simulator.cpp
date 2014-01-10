@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -110,11 +111,14 @@ void SystemInfoConnection::setBatteryInfoData(const QBatteryInfoData &data)
     batteryInfoBackend->setEnergyUnit(data.energyMeasurementUnit);
     batteryInfoBackend->setRemainingCapacity(data.remainingCapacity);
     batteryInfoBackend->setCurrentFlow(data.currentFlow);
+    batteryInfoBackend->setCycleCount(data.cycleCount);
     batteryInfoBackend->setVoltage(data.voltage);
     batteryInfoBackend->setRemainingChargingTime(data.remainingChargingTime);
     batteryInfoBackend->setChargerType(data.chargerType);
     batteryInfoBackend->setChargingState(data.chargingState);
     batteryInfoBackend->setLevelStatus(data.levelStatus);
+    batteryInfoBackend->setHealth(data.health);
+    batteryInfoBackend->setTemperature(data.temperature);
 }
 
 void SystemInfoConnection::setDeviceInfoData(const QDeviceInfoData &data)

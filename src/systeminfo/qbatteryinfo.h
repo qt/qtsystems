@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -64,7 +65,10 @@ class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
 
     Q_PROPERTY(int batteryCount READ batteryCount NOTIFY batteryCountChanged)
     Q_PROPERTY(int batteryIndex READ batteryIndex WRITE setBatteryIndex NOTIFY batteryIndexChanged)
+    Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
+    Q_PROPERTY(int level READ level NOTIFY levelChanged)
     Q_PROPERTY(int currentFlow READ currentFlow NOTIFY currentFlowChanged)
+    Q_PROPERTY(int cycleCount READ cycleCount NOTIFY cycleCountChanged)
     Q_PROPERTY(int maximumCapacity READ maximumCapacity)
     Q_PROPERTY(int remainingCapacity READ remainingCapacity NOTIFY remainingCapacityChanged)
     Q_PROPERTY(int remainingChargingTime READ remainingChargingTime NOTIFY remainingChargingTimeChanged)
@@ -73,6 +77,7 @@ class Q_SYSTEMINFO_EXPORT QBatteryInfo : public QObject
     Q_PROPERTY(ChargerType chargerType READ chargerType NOTIFY chargerTypeChanged)
     Q_PROPERTY(LevelStatus levelStatus READ levelStatus NOTIFY levelStatusChanged)
     Q_PROPERTY(Health health READ health NOTIFY healthChanged)
+    Q_PROPERTY(float temperature READ temperature NOTIFY temperatureChanged)
 
 public:
     enum ChargerType {
@@ -98,9 +103,9 @@ public:
     };
 
     enum Health {
-        UnknownHealth = 0,
-        OkHealth,
-        BadHealth
+        HealthUnknown = 0,
+        HealthOk,
+        HealthBad
     };
 
     QBatteryInfo(QObject *parent = 0);
@@ -109,7 +114,10 @@ public:
 
     int batteryCount() const;
     int batteryIndex() const;
+    bool isValid() const;
+    int level() const;
     int currentFlow() const;
+    int cycleCount() const;
     int maximumCapacity() const;
     int remainingCapacity() const;
     int remainingChargingTime() const;
@@ -118,20 +126,25 @@ public:
     QBatteryInfo::ChargerType chargerType() const;
     QBatteryInfo::LevelStatus levelStatus() const;
     QBatteryInfo::Health health() const;
+    float temperature() const;
 
     void setBatteryIndex(int batteryIndex);
 
 Q_SIGNALS:
     void batteryIndexChanged(int batteryIndex);
+    void validChanged(bool isValid);
     void batteryCountChanged(int count);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
     void chargingStateChanged(QBatteryInfo::ChargingState state);
+    void levelChanged(int level);
     void currentFlowChanged(int flow);
+    void cycleCountChanged(int cycleCount);
     void remainingCapacityChanged(int capacity);
     void remainingChargingTimeChanged(int seconds);
     void voltageChanged(int voltage);
     void levelStatusChanged(QBatteryInfo::LevelStatus levelStatus);
     void healthChanged(QBatteryInfo::Health health);
+    void temperatureChanged(float temperature);
 
 protected:
     void connectNotify(const QMetaMethod &signal);

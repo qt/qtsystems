@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -70,8 +71,13 @@ public:
 
     int batteryCount();
     int batteryIndex() const;
+    bool isValid();
+    int level(int battery);
+    int level();
     int currentFlow(int battery);
     int currentFlow();
+    int cycleCount(int battery);
+    int cycleCount();
     int maximumCapacity(int battery);
     int maximumCapacity();
     int remainingCapacity(int battery);
@@ -88,21 +94,28 @@ public:
     QBatteryInfo::LevelStatus levelStatus();
     void getBatteryInfo();
     QBatteryInfo::ChargingState currentChargingState();
+    QBatteryInfo::Health health(int battery);
     QBatteryInfo::Health health();
+    float temperature(int battery);
+    float temperature();
 
     void setBatteryIndex(int batteryIndex);
 
 Q_SIGNALS:
     void batteryCountChanged(int count);
     void batteryIndexChanged(int batteryIndex);
+    void validChanged(bool isValid);
     void chargerTypeChanged(QBatteryInfo::ChargerType type);
     void chargingStateChanged(QBatteryInfo::ChargingState state);
+    void levelChanged(int level);
     void currentFlowChanged(int flow);
+    void cycleCountChanged(int cycleCount);
     void remainingCapacityChanged(int capacity);
     void remainingChargingTimeChanged(int seconds);
     void voltageChanged(int voltage);
     void levelStatusChanged(QBatteryInfo::LevelStatus levelStatus);
     void healthChanged(QBatteryInfo::Health health);
+    void temperatureChanged(float temperature);
 
 protected:
     void connectNotify(const QMetaMethod &signal);

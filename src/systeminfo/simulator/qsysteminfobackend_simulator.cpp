@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -57,6 +58,7 @@ QBatteryInfoSimulatorBackend::QBatteryInfoSimulatorBackend(QObject *parent)
 {
     data.index = 0;
     data.currentFlow = 0;
+    data.cycleCount = -1;
     data.maximumCapacity = -1;
     data.remainingCapacity = -1;
     data.remainingChargingTime = -1;
@@ -93,10 +95,33 @@ int QBatteryInfoSimulatorBackend::getBatteryIndex() const
     return data.index;
 }
 
+int QBatteryInfoSimulatorBackend::getLevel(int battery)
+{
+    if (battery == 0) {
+        int maxCapacity = getMaximumCapacity(battery);
+        int remCapacity = getRemainingCemainingCapacity(battery);
+
+        if (maxCapacity == 0)
+            return -1;
+
+        return remCapacity * 100 / maxCapacity;
+    }
+
+    return -1;
+}
+
 int QBatteryInfoSimulatorBackend::getCurrentFlow(int battery)
 {
     if (battery == 0)
         return data.currentFlow;
+    return -1;
+}
+
+int QBatteryInfoSimulatorBackend::getCycleCount(int battery)
+{
+    if (battery == 0)
+        return data.cycleCount;
+
     return -1;
 }
 
@@ -154,7 +179,15 @@ QBatteryInfo::Health QBatteryInfoSimulatorBackend::getHealth(int battery)
     if (battery == 0)
         return data.health;
 
-    return QBatteryInfo::UnknownHealth;
+    return QBatteryInfo::HealthUnknown;
+}
+
+float QBatteryInfoSimulatorBackend::getTemperature(int battery)
+{
+    if (battery == 0)
+        return data.temperature;
+
+    return -1.0f;
 }
 
 void QBatteryInfoSimulatorBackend::setBatteryIndex(int batteryIndex)
@@ -173,17 +206,36 @@ void QBatteryInfoSimulatorBackend::setCurrentFlow(int flow)
     }
 }
 
+void QBatteryInfoSimulatorBackend::setCycleCount(int cycleCount)
+{
+    if (data.cycleCount != cycleCount) {
+        data.cycleCount = cycleCount;
+        emit cycleCountChanged(cycleCount);
+    }
+}
+
 void QBatteryInfoSimulatorBackend::setMaximumCapacity(int capacity)
 {
-    if (data.maximumCapacity != capacity)
+    if (data.maximumCapacity != capacity) {
+        int levelBefore = getLevel(0);
         data.maximumCapacity = capacity;
+        int levelNow = getLevel(0);
+        if (levelBefore != levelNow) {
+            emit levelChanged(levelNow);
+        }
+    }
 }
 
 void QBatteryInfoSimulatorBackend::setRemainingCapacity(int capacity)
 {
     if (data.remainingCapacity != capacity) {
+        int levelBefore = getLevel(0);
         data.remainingCapacity = capacity;
         emit remainingCapacityChanged(capacity);
+        int levelNow = getLevel(0);
+        if (levelBefore != levelNow) {
+            emit levelChanged(levelNow);
+        }
     }
 }
 
@@ -232,6 +284,14 @@ void QBatteryInfoSimulatorBackend::setHealth(QBatteryInfo::Health health)
     if (data.health != health) {
         data.health = health;
         emit healthChanged(health);
+    }
+}
+
+void QBatteryInfoSimulatorBackend::setTemperature(float temperature)
+{
+    if (!qFuzzyCompare(data.temperature, temperature)) {
+        data.temperature = temperature;
+        emit temperatureChanged(temperature);
     }
 }
 

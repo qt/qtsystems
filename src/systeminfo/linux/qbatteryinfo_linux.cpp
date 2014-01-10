@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -45,6 +46,7 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qtimer.h>
+#include <QtCore/qnumeric.h>
 
 #if !defined(QT_NO_UDEV)
 #include "qudevwrapper_p.h"
@@ -63,6 +65,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(const QString, USB0_TYPE_SYSFS_PATH, (QLatin1String("/
 QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
+    , watchIsValid(false)
+    , forceWatchBatteryCount(false)
     , watchBatteryCount(false)
     , watchChargerType(false)
     , watchChargingState(false)
@@ -85,6 +89,8 @@ QBatteryInfoPrivate::QBatteryInfoPrivate(QBatteryInfo *parent)
 QBatteryInfoPrivate::QBatteryInfoPrivate(int batteryIndex, QBatteryInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
+    , watchIsValid(false)
+    , forceWatchBatteryCount(false)
     , watchBatteryCount(false)
     , watchChargerType(false)
     , watchChargingState(false)
@@ -124,12 +130,105 @@ int QBatteryInfoPrivate::batteryIndex() const
     return index;
 }
 
+bool QBatteryInfoPrivate::isValid()
+{
+    // valid if the index < total count.
+    return (index >= 0) && (index < batteryCount());
+}
+
 void QBatteryInfoPrivate::setBatteryIndex(int batteryIndex)
 {
     if (index != batteryIndex) {
+        bool validBefore = isValid();
+        int oldIndex = index;
         index = batteryIndex;
+        bool validNow = isValid();
+        if (validBefore != validNow)
+            Q_EMIT validChanged(validNow);
+
+        if (validNow) {
+            if (validBefore) {
+                // valid now, valid before so we have to check individual values
+
+                // ignore chargerType - it won't change based on battery index
+                //emit chargerTypeChanged(newChargerType);
+
+                QBatteryInfo::ChargingState newChargingState = chargingState();
+                if (newChargingState != chargingState(oldIndex))
+                    emit chargingStateChanged(newChargingState);
+
+                int newValue = level();
+                if (newValue != level(oldIndex))
+                    emit levelChanged(newValue);
+
+                newValue = currentFlow();
+                if (newValue != currentFlow(oldIndex))
+                    emit currentFlowChanged(newValue);
+
+                newValue = cycleCount();
+                if (newValue != cycleCount(oldIndex))
+                    emit cycleCountChanged(newValue);
+
+                newValue = remainingCapacity();
+                if (newValue != remainingCapacity(oldIndex))
+                    emit remainingCapacityChanged(newValue);
+
+                newValue = remainingChargingTime();
+                if (newValue != remainingChargingTime(oldIndex))
+                    emit remainingChargingTimeChanged(newValue);
+
+                newValue = voltage();
+                if (newValue != voltage(oldIndex))
+                    emit voltageChanged(newValue);
+
+                QBatteryInfo::LevelStatus newLevelStatus = levelStatus();
+                if (newLevelStatus != levelStatus(oldIndex))
+                    emit levelStatusChanged(newLevelStatus);
+
+                QBatteryInfo::Health newHealth = health();
+                if (newHealth != health(oldIndex))
+                    emit healthChanged(newHealth);
+
+                float newTemperature = temperature();
+                if (!qFuzzyCompare(newTemperature, temperature(oldIndex)))
+                    emit temperatureChanged(newTemperature);
+            } else {
+                // it wasn't valid before so everything is changed
+
+                // ignore chargerType - it won't change based on battery index
+                //emit chargerTypeChanged(newChargerType);
+
+                emit chargingStateChanged(chargingState());
+                emit levelChanged(level());
+                emit currentFlowChanged(currentFlow());
+                emit cycleCountChanged(cycleCount());
+                emit remainingCapacityChanged(remainingCapacity());
+                emit remainingChargingTimeChanged(remainingChargingTime());
+                emit voltageChanged(voltage());
+                emit levelStatusChanged(levelStatus());
+                emit healthChanged(health());
+                emit temperatureChanged(temperature());
+            }
+        }
+
         emit batteryIndexChanged(index);
     }
+}
+
+int QBatteryInfoPrivate::level(int battery)
+{
+    int maxCapacity = maximumCapacity(battery);
+    int remCapacity = remainingCapacity(battery);
+
+    if (maxCapacity == 0)
+        return -1;
+
+    return remCapacity * 100 / maxCapacity;
+}
+
+int QBatteryInfoPrivate::level()
+{
+    return level(index);
 }
 
 int QBatteryInfoPrivate::currentFlow(int battery)
@@ -143,6 +242,18 @@ int QBatteryInfoPrivate::currentFlow(int battery)
 int QBatteryInfoPrivate::currentFlow()
 {
     return currentFlow(index);
+}
+
+int QBatteryInfoPrivate::cycleCount(int battery)
+{
+    Q_UNUSED(battery)
+
+    return -1;
+}
+
+int QBatteryInfoPrivate::cycleCount()
+{
+    return cycleCount(index);
 }
 
 int QBatteryInfoPrivate::maximumCapacity(int battery)
@@ -242,14 +353,34 @@ QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus()
     return levelStatus(index);
 }
 
+QBatteryInfo::Health QBatteryInfoPrivate::health(int battery)
+{
+    Q_UNUSED(battery)
+
+    return QBatteryInfo::HealthUnknown;
+}
+
 QBatteryInfo::Health QBatteryInfoPrivate::health()
 {
-    return QBatteryInfo::UnknownHealth;
+    return health(index);
+}
+
+float QBatteryInfoPrivate::temperature(int battery)
+{
+    Q_UNUSED(battery)
+
+    return qQNaN();
+}
+
+float QBatteryInfoPrivate::temperature()
+{
+    return temperature(index);
 }
 
 void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
 {
     static const QMetaMethod batteryCountChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryCountChanged);
+    static const QMetaMethod validChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::validChanged);
     static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargerTypeChanged);
     static const QMetaMethod chargingStateChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargingStateChanged);
     static const QMetaMethod currentFlowChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::currentFlowChanged);
@@ -263,7 +394,7 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
         uDevWrapper = new QUDevWrapper(this);
     if (!watchChargerType && signal == chargerTypeChangedSignal) {
         connect(uDevWrapper, SIGNAL(chargerTypeChanged(QByteArray,bool)), this, SLOT(onChargerTypeChanged(QByteArray,bool)));
-    } else if (!watchCurrentFlow && !watchVoltage && !watchChargingState && !watchRemainingCapacity
+    } else if (!watchIsValid && !watchCurrentFlow && !watchVoltage && !watchChargingState && !watchRemainingCapacity
                && !watchRemainingChargingTime && !watchBatteryCount && !watchLevelStatus) {
         connect(uDevWrapper, SIGNAL(batteryDataChanged(int,QByteArray,QByteArray)), this, SLOT(onBatteryDataChanged(int,QByteArray,QByteArray)));
     }
@@ -278,8 +409,18 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
        timer->start();
 #endif // QT_NO_UDEV
 
-    if (signal == batteryCountChangedSignal) {
+    if (signal == validChangedSignal) {
+        if (!watchIsValid && !watchBatteryCount)
+            forceWatchBatteryCount = true;
+
+        watchIsValid = true;
+
+        // we have to watch battery count if someone is watching validChanged.
         watchBatteryCount = true;
+        batteryCounts = getBatteryCount();
+    } else if (signal == batteryCountChangedSignal) {
+        watchBatteryCount = true;
+        forceWatchBatteryCount = false;
         batteryCounts = getBatteryCount();
     } else if (signal == currentFlowChangedSignal) {
         watchCurrentFlow = true;
@@ -320,6 +461,7 @@ void QBatteryInfoPrivate::connectNotify(const QMetaMethod &signal)
 void QBatteryInfoPrivate::disconnectNotify(const QMetaMethod &signal)
 {
     static const QMetaMethod batteryCountChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::batteryCountChanged);
+    static const QMetaMethod validChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::validChanged);
     static const QMetaMethod chargerTypeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargerTypeChanged);
     static const QMetaMethod chargingStateChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::chargingStateChanged);
     static const QMetaMethod currentFlowChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::currentFlowChanged);
@@ -327,9 +469,20 @@ void QBatteryInfoPrivate::disconnectNotify(const QMetaMethod &signal)
     static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::remainingChargingTimeChanged);
     static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::voltageChanged);
     static const QMetaMethod levelStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoPrivate::levelStatusChanged);
-    if (signal == batteryCountChangedSignal) {
-        watchBatteryCount = false;
-        batteryCounts = -1;
+
+    if (signal == validChangedSignal) {
+        watchIsValid = false;
+        if (forceWatchBatteryCount) {
+            watchBatteryCount = false;
+            batteryCounts = -1;
+        }
+    } else if (signal == batteryCountChangedSignal) {
+        if (!watchIsValid) {
+            watchBatteryCount = false;
+            batteryCounts = -1;
+        } else {
+            forceWatchBatteryCount = true;
+        }
     } else if (signal == currentFlowChangedSignal) {
         watchCurrentFlow = false;
         currentFlows.clear();
@@ -385,7 +538,16 @@ void QBatteryInfoPrivate::onBatteryDataChanged(int battery, const QByteArray &at
     if (watchBatteryCount) {
         int count = getBatteryCount();
         if (batteryCounts != count) {
+            bool validBefore = isValid();
             batteryCounts = count;
+            bool validNow = isValid();
+            if (validBefore != validNow)
+                Q_EMIT validChanged(validNow);
+
+            // We do not have to worry about firing all changed signals here.
+            // Each individual value will receive an onBatteryDataChanged() call
+            // and will fire a signal at that time.
+
             emit batteryCountChanged(count);
         }
     }
@@ -500,7 +662,16 @@ void QBatteryInfoPrivate::onTimeout()
     if (watchBatteryCount) {
         value = getBatteryCount();
         if (batteryCounts != value) {
+            bool validBefore = isValid();
             batteryCounts = value;
+            bool validNow = isValid();
+            if (validBefore != validNow)
+                Q_EMIT validChanged(validNow);
+
+            // We do not have to worry about firing all changed signals here.
+            // Each individual value will (possibly) be updated below
+            // and will fire a signal at that time if it has changed.
+
             emit batteryCountChanged(value);
         }
     }
