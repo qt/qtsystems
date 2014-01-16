@@ -92,13 +92,13 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QBatteryInfo
     \inmodule QtSystemInfo
-    \brief The QBatteryInfo class provides various information about the battery.
+    \brief The QBatteryInfo class provides various information about the batteries.
     \ingroup systeminfo
 
     Note that on some platforms, listening to the signals could lead to a heavy CPU usage. Therefore,
     you are strongly suggested to disconnect the signals when no longer needed in your application.
 
-    Battery index starts at 0, which indicates the first battery.
+    Battery index starts at \c 0, which indicates the first battery.
 */
 
 /*!
@@ -113,79 +113,37 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QBatteryInfo::ChargingState
-    This enum describes the charging state:
+    This enum describes the charging state.
 
     \value UnknownChargingState  The charging state is unknown or charging error occured.
-    \value NotCharging           The battery is not charging, i.e. too low charger power.
     \value Charging              The battery is charging.
+    \value IdleChargingState     The battery is idle (neither Charging nor Discharging)
     \value Discharging           The battery is discharging.
-    \value Full                  The battery is fully charged.
 */
 
 /*!
-    \enum QBatteryInfo::BatteryStatus
-    This enum describes the status of the battery.
+    \enum QBatteryInfo::LevelStatus
+    This enum describes the level status of the battery.
 
-    \value BatteryStatusUnknown      Battery level undetermined.
-    \value BatteryEmpty              Battery is considered be empty and device needs to shut down.
-    \value BatteryLow                Battery level is low and warnings need to be issued to the user.
-    \value BatteryOk                 Battery level is Ok. It is above "Low" but not "Full".
-    \value BatteryFull               Battery is fully charged.
+    \value LevelUnknown              Battery level undetermined.
+    \value LevelEmpty                Battery is considered be empty and device needs to shut down.
+    \value LevelLow                  Battery level is low and warnings need to be issued to the user.
+    \value LevelOk                   Battery level is Ok. It is above "Low" but not "Full".
+    \value LevelFull                 Battery is fully charged.
 */
 
 /*!
-    \fn void QBatteryInfo::batteryCountChanged(int count);
+    \enum QBatteryInfo::Health
+    This enum describes the health of the battery.
 
-    This signal is emitted when the number of batteries available has changed to \a count.
+    \value HealthUnknown    Battery health undetermined
+    \value HealthOk         Battery health is OK
+    \value HealthBad        Battery health is bad
 */
 
 /*!
-    \fn void QBatteryInfo::chargerTypeChanged(QBatteryInfo::ChargerType type);
-
-    This signal is emitted when the charger has changed to \a type.
-*/
-
-/*!
-    \fn void QBatteryInfo::chargingStateChanged(int battery, QBatteryInfo::ChargingState state);
-
-    This signal is emitted when the charging state of the \a battery has changed to \a state.
-*/
-
-/*!
-    \fn void QBatteryInfo::currentFlowChanged(int battery, int flow);
-
-    This signal is emitted when the current flow of the \a battery has changed to \a flow, measured
-    in milliamperes (mA).
-*/
-
-/*!
-    \fn void QBatteryInfo::remainingCapacityChanged(int battery, int capacity);
-
-    This signal is emitted when the remaining capacity of the \a battery has changed to \a capacity,
-    which is measured in mAh.
-*/
-
-/*!
-    \fn void QBatteryInfo::remainingChargingTimeChanged(int battery, int seconds);
-
-    This signal is emitted when the remaining charging time of the \a battery has changed to \a seconds.
-*/
-
-/*!
-    \fn void QBatteryInfo::voltageChanged(int battery, int voltage);
-
-    This signal is emitted when the current voltage of the \a battery has changed to \a voltage,
-    measured in millivolts (mV).
-*/
-
-/*!
-    \fn void QBatteryInfo::batteryStatusChanged(int battery, QBatteryInfo::BatteryStatus status);
-
-    This signal is emitted when the battery status of the \a battery has changed to \a status.
-*/
-
-/*!
-    Constructs a QBatteryInfo object with the given \a parent.
+    Constructs a \l QBatteryInfo object with the given \a parent. The \l batteryIndex()
+    will default to \c 0.
 */
 QBatteryInfo::QBatteryInfo(QObject *parent)
     : QObject(parent)
@@ -199,7 +157,7 @@ QBatteryInfo::QBatteryInfo(QObject *parent)
 }
 
 /*!
-    Constructs a QBatteryInfo object with the given \a index and \a parent.
+    Constructs a \l QBatteryInfo object with the given \a batteryIndex and \a parent.
 */
 QBatteryInfo::QBatteryInfo(int batteryIndex, QObject *parent)
     : QObject(parent)
@@ -221,9 +179,9 @@ QBatteryInfo::~QBatteryInfo()
 
 /*!
     \property QBatteryInfo::batteryCount
-    \brief The number of the batteries available.
+    \brief The number of batteries available.
 
-    Returns the number of batteries available, or -1 on error or the information is not available.
+    In case of an error or if the information is not available \c -1 is returned.
 */
 int QBatteryInfo::batteryCount() const
 {
@@ -231,38 +189,41 @@ int QBatteryInfo::batteryCount() const
 }
 
 /*!
- * \brief Get the current battery index
- * \return The current battery index
- */
+  \property QBatteryInfo::batteryIndex
+  \brief The current battery index
+
+  The first battery is represented by \c 0.
+*/
 int QBatteryInfo::batteryIndex() const
 {
     return d_ptr->batteryIndex();
 }
 
-/*!
- * \brief Set the battery index of this instance
- * \param batteryIndex The new battery index
- *
- * Set the battery index of this instance to batteryIndex
- */
 void QBatteryInfo::setBatteryIndex(int batteryIndex)
 {
     d_ptr->setBatteryIndex(batteryIndex);
 }
 
 /*!
- * Represents the validity of this instance. If false only batteryIndex() will return a valid
- * value. All other methods will return default/invalid values.
- */
+  \property QBatteryInfo::valid
+  \brief The validity of this instance
+
+  If this property returns \c false \l batteryIndex() is the only other method that will return
+  a valid value. All other methods will return default or invalid values and should not be relied
+  upon for displaying to the user or for comparisons.
+*/
 bool QBatteryInfo::isValid() const
 {
     return d_ptr->isValid();
 }
 
 /*!
-    Returns the current flow of the given \a battery, measured in milliamperes (mA). A positive
-    returned value means discharging, and a negative value means charging. In case of error, or
-    the information if not available, 0 is returned.
+  \property QBatteryInfo::currentFlow
+  \brief The current flow of the battery
+
+  This value is measured in milliamperes (mA). A positive returned value means the battery is
+  discharging, while a negative value means the battery is charging. In case of an error or if the
+  information is not available \c 0 is returned.
 */
 int QBatteryInfo::currentFlow() const
 {
@@ -270,17 +231,23 @@ int QBatteryInfo::currentFlow() const
 }
 
 /*!
- * Returns the current battery level as a percentage. In case of error or the information
- * is not available, -1 is returned.
- */
+  \property QBatteryInfo::level
+  \brief The level of the battery as a percentage
+
+  In case of an error or if the information is not available \c -1 is returned.
+
+  \sa maximumCapacity(), remainingCapacity(), levelStatus()
+*/
 int QBatteryInfo::level() const
 {
     return d_ptr->level();
 }
 
 /*!
- * Returns the current cycle count of the battery. In case of error or the information
- * is not available, -1 is returned.
+  \property QBatteryInfo::cycleCount
+  \brief The cycle count of the battery
+
+  In case of an error or if the information is not available \c -1 is returned.
  */
 int QBatteryInfo::cycleCount() const
 {
@@ -288,8 +255,13 @@ int QBatteryInfo::cycleCount() const
 }
 
 /*!
-    Returns the maximum capacity of the given \a battery, measured in mAh.
-    If the battery is not found, or the information is not available, -1 is returned.
+  \property QBatteryInfo::maximumCapacity
+  \brief The maximum capacity of the battery
+
+  This value is measured in mAh. In case of an error or if the information is not available \c -1
+  is returned.
+
+  \sa remainingCapacity(), level(), levelStatus()
 */
 int QBatteryInfo::maximumCapacity() const
 {
@@ -297,11 +269,13 @@ int QBatteryInfo::maximumCapacity() const
 }
 
 /*!
-    Returns the remaining level of the given \a battery, measured in mAh. If
-    the battery is not found, or the information is not available, -1 is returned.
+  \property QBatteryInfo::remainingCapacity
+  \brief The remaining capacity of the battery
 
-    To calculate capacity in percentage,
-    (remainingCapacity(0) / maximumCapacity(0)) * 100
+  This value is measured in mAh. In case of an error or if the information is not available \c -1
+  is returned.
+
+  \sa maximumCapacity(), level(), levelStatus()
 */
 int QBatteryInfo::remainingCapacity() const
 {
@@ -309,9 +283,11 @@ int QBatteryInfo::remainingCapacity() const
 }
 
 /*!
-    Returns the remaining charging time needed for \a battery, measured in seconds. If the battery
-    is full or not charging, 0 is returned. If the battery is not found or the information is not
-    available, -1 is returned.
+  \property QBatteryInfo::remainingChargingTime
+  \brief The remaining charging time needed for the battery
+
+  This value is measured in seconds. If the battery is full or not charging \c 0 is returned. In
+  case of an error or if the information is not available \c -1 is returned.
 */
 int QBatteryInfo::remainingChargingTime() const
 {
@@ -319,8 +295,11 @@ int QBatteryInfo::remainingChargingTime() const
 }
 
 /*!
-    Returns the voltage of the given \a battery, measured in millivolts (mV). If the battery is not
-    found, or the information is not available, -1 is returned.
+  \property QBatteryInfo::voltage
+  \brief The voltage of the battery
+
+  This value is measured in millivolts (mV). In case of an error or if the information is not
+  available \c -1 is returned.
 */
 int QBatteryInfo::voltage() const
 {
@@ -328,10 +307,8 @@ int QBatteryInfo::voltage() const
 }
 
 /*!
-    \property QBatteryInfo::chargerType
-    \brief The type of the charger.
-
-    Returns the type of the charger currently used.
+  \property QBatteryInfo::chargerType
+  \brief The type of the charger
 */
 QBatteryInfo::ChargerType QBatteryInfo::chargerType() const
 {
@@ -339,7 +316,8 @@ QBatteryInfo::ChargerType QBatteryInfo::chargerType() const
 }
 
 /*!
-    Returns the charging state of the given \a battery.
+  \property QBatteryInfo::chargingState
+  \brief The charging state of the battery
 */
 QBatteryInfo::ChargingState QBatteryInfo::chargingState() const
 {
@@ -347,7 +325,12 @@ QBatteryInfo::ChargingState QBatteryInfo::chargingState() const
 }
 
 /*!
-    Returns the level state of the given \a battery.
+  \property QBatteryInfo::levelStatus
+  \brief The level status of the battery
+
+  This represents an Empty/Low/Full style representation of the \l level().
+
+  \sa maximumCapacity(), remainingCapacity(), level()
 */
 QBatteryInfo::LevelStatus QBatteryInfo::levelStatus() const
 {
@@ -355,7 +338,8 @@ QBatteryInfo::LevelStatus QBatteryInfo::levelStatus() const
 }
 
 /*!
-  Returns the health of the battery
+  \property QBatteryInfo::health
+  \brief The health of the battery
 */
 QBatteryInfo::Health QBatteryInfo::health() const
 {
@@ -363,8 +347,13 @@ QBatteryInfo::Health QBatteryInfo::health() const
 }
 
 /*!
- * Returns the current battery temperature in Celcius. In case of error or the information
- * is not available, NaN is returned.
+  \property QBatteryInfo::temperature
+  \brief The temperature of the battery
+
+  This value is measured in Celsius. In case of an error or if the information is not available,
+  \c NaN is returned.
+
+  \sa qQNaN()
  */
 float QBatteryInfo::temperature() const
 {
