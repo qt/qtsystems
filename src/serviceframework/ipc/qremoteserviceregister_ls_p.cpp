@@ -240,7 +240,7 @@ private:
 
 QRemoteServiceRegisterLocalSocketPrivate::QRemoteServiceRegisterLocalSocketPrivate(QObject* parent)
     : QRemoteServiceRegisterPrivate(parent)
-{    
+{
 }
 
 void QRemoteServiceRegisterLocalSocketPrivate::publishServices( const QString& ident)

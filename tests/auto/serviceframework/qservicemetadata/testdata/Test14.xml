@@ -7,7 +7,7 @@
     <interface>
         <name>com.nokia.qt.tests.IDownloader</name>
         <version>-1.0</version>
-        <description>Interface that provides download support</description> 
+        <description>Interface that provides download support</description>
     </interface>
 </service>
 </SFW>

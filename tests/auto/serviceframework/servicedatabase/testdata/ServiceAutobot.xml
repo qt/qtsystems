@@ -10,14 +10,14 @@
         <description>Transformation interface</description>
         <customproperty key="bot">manual</customproperty>
         <customproperty key="weapon">laser</customproperty>
-    </interface>    
+    </interface>
     <interface>
         <name>com.cybertron.transform</name>
         <version>2.0</version>
         <capabilities></capabilities>
         <description>Transformation interface</description>
         <customproperty key="bot">manual</customproperty>
-    </interface>    
+    </interface>
     <interface>
         <name>com.cybertron.transform</name>
         <version>2.7</version>
@@ -25,14 +25,14 @@
         <description>Transformation interface</description>
         <customproperty key="bot">automatic</customproperty>
         <customproperty key="extension">multidrive</customproperty>
-    </interface>    
+    </interface>
     <interface>
         <name>com.cybertron.transform</name>
         <version>2.5</version>
         <capabilities></capabilities>
         <description>Transformation interface</description>
         <customproperty key="bot">automatic</customproperty>
-    </interface>    
+    </interface>
     <interface>
         <name>com.cybertron.transform</name>
         <version>1.9</version>
@@ -40,5 +40,5 @@
         <description>Transformation interface</description>
         <customproperty key="bot">automatic</customproperty>
         <customproperty key="weapon"></customproperty>
-    </interface>    
+    </interface>
 </service>

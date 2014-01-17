@@ -6,7 +6,7 @@ CONFIG += parallel_test
 QT += serviceframework serviceframework-private testlib
 QT -= gui
 
-# Input 
+# Input
 SOURCES += tst_servicemetadata.cpp
 
 

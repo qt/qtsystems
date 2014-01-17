@@ -2,11 +2,11 @@
 <service>
   <name>ServiceA</name>
   <filepath>C:/TestData/testservice.dll</filepath>
-  <description>Test service description</description> 
+  <description>Test service description</description>
   <interface>
     <name></name>
     <version>1.456</version>
-    <description>Interface that provides download support</description> 
+    <description>Interface that provides download support</description>
   </interface>
 </service>
 

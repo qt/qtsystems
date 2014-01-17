@@ -167,7 +167,7 @@ void tst_QRemoteServiceRegister::cleanupTestCase()
 
 void tst_QRemoteServiceRegister::checkCreateEntryWithEmptyServiceName()
 {
-    QRemoteServiceRegister::Entry emptyservicename = 
+    QRemoteServiceRegister::Entry emptyservicename =
                 serviceRegister->createEntry<QRemoteServiceRegisterService>(
                 "", "", "");
     QVERIFY(emptyservicename.serviceName() == "");
@@ -252,7 +252,7 @@ QObject *tst_QRemoteServiceRegister::connectToService(const QString &serviceName
     QServiceManager manager;
 
     QList<QServiceInterfaceDescriptor> list = manager.findInterfaces(serviceName);
-    if (list.isEmpty()) {        
+    if (list.isEmpty()) {
         qWarning() << "Couldn't find service" << serviceName << manager.findServices("qt_sfw_example_rsr_unittest");
         return 0;
     }

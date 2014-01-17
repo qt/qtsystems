@@ -6,6 +6,6 @@ HEADERS += qdeclarativeservice_p.h \
 
 SOURCES += qdeclarativeservice.cpp \
            qdeclarativeserviceold.cpp \
-           serviceframework.cpp 
+           serviceframework.cpp
 
 load(qml_plugin)

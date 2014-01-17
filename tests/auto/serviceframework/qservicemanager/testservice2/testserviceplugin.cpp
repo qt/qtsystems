@@ -47,7 +47,7 @@
 
     \brief Test Service Qt plugin Component
 
-    Service Framework loads this Qt plugin and uses it to instantiate the 
+    Service Framework loads this Qt plugin and uses it to instantiate the
     Test Service service provider component.
 */
 

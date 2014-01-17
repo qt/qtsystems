@@ -5,6 +5,6 @@
     <version>1.0.456</version>
     <capabilities>ReadUserData,WriteUserData</capabilities>
     <filepath>.\testserviceplugin.dll</filepath>
-    <description>Test service description</description> 
+    <description>Test service description</description>
 </service>
 </SFW>

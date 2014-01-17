@@ -4,7 +4,7 @@ CONFIG += testcase
 QT = core sql serviceframework serviceframework-private testlib
 QT -= gui
 
-# Input 
+# Input
 HEADERS += sampleservice/sampleserviceplugin.h \
            ../qsfwtestutil.h
 SOURCES += tst_qservicemanager.cpp \

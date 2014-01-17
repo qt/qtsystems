@@ -8,11 +8,11 @@
         <version>4.0</version>
         <capabilities></capabilities>
         <description>Releases electromagnetic energy buildup every 108 minutes</description>
-    </interface>    
+    </interface>
     <interface>
         <name>com.dharma.wheel</name>
         <version>1.0</version>
         <capabilities></capabilities>
         <description>Relocates the island</description>
-    </interface>    
+    </interface>
 </service>

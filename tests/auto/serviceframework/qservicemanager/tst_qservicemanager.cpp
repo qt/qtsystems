@@ -82,7 +82,7 @@ static DescriptorAttributes defaultDescriptorAttributes()
 static const DescriptorAttributes DEFAULT_DESCRIPTOR_PROPERTIES = defaultDescriptorAttributes();
 
 // Helper function for debugging. Useful e.g. for checking what is difference between
-// two descriptors (in addition to attributes printed below, the 
+// two descriptors (in addition to attributes printed below, the
 // QServiceInterfaceDescriptor::== operator also compares
 // attributes.
 /*static void printDescriptor (const QServiceInterfaceDescriptor &desc) {
@@ -929,7 +929,7 @@ void tst_QServiceManager::loadLocalTypedInterface()
     }
 
     //test for a bug where two service instances from same plugin
-    //caused a crash when the first instance was deleted and 
+    //caused a crash when the first instance was deleted and
     //the second instance called
     QVERIFY(serviceObjects.count() == 2);
     delete serviceObjects.takeFirst();
@@ -1234,7 +1234,7 @@ void tst_QServiceManager::serviceAdded()
     buffer.setData(xml);
     QServiceManager mgr_modify(scope_modify);
     QServiceManager mgr_listen(scope_listen);
-    
+
     // ensure mgr.connectNotify() is called
     ServicesListener *listener = new ServicesListener;
     connect(&mgr_listen, SIGNAL(serviceAdded(QString,QService::Scope)),
@@ -1261,7 +1261,7 @@ void tst_QServiceManager::serviceAdded()
 
     QSignalSpy spyRemove(&mgr_listen, SIGNAL(serviceRemoved(QString,QService::Scope)));
     QVERIFY(mgr_modify.removeService(serviceName));
-    
+
     if (!expectSignal) {
         QTest::qWait(2000);
         QCOMPARE(spyRemove.count(), 0);
@@ -1300,7 +1300,7 @@ void tst_QServiceManager::serviceAdded()
 }
 
 void tst_QServiceManager::serviceAdded_data()
-{   
+{
     QTest::addColumn<QByteArray>("xml");
     QTest::addColumn<QString>("serviceName");
     QTest::addColumn<QService::Scope>("scope_modify");

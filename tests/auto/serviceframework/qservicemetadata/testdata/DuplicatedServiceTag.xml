@@ -50,5 +50,5 @@
         <capabilities>ReadUserData,WriteUserData</capabilities>
         <description>Mail management service</description>
     </interface>
- 
+
 </service>

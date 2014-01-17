@@ -3,11 +3,11 @@
 <service>
     <name>TestService</name>
     <filepath>C:/TestData/testservice.dll</filepath>
-    <description>Test service description</description> 
+    <description>Test service description</description>
     <interface>
         <name>com.nokia.qt.tests.IDownloader</name>
         <version>1.0b</version>
-        <description>Interface that provides download support</description> 
+        <description>Interface that provides download support</description>
     </interface>
 </service>
 </SFW>

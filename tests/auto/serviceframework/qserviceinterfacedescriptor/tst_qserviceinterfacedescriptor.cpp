@@ -53,7 +53,7 @@ QT_USE_NAMESPACE
 class tst_QServiceInterfaceDescriptor: public QObject
 {
     Q_OBJECT
-    
+
 private slots:
     void initTestCase();
     void cleanupTestCase();
@@ -223,7 +223,7 @@ void tst_QServiceInterfaceDescriptor::testStreamOperators()
     QVERIFY(empty == validref);
     QVERIFY(!(empty!=validref));
     QVERIFY(validref != valid);
-    
+
     //stream valid into invalid
     QServiceInterfaceDescriptor invalid2;
     QVERIFY(!invalid2.isValid());

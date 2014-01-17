@@ -19,7 +19,7 @@
         <name>com.nokia.qt.tests.ISysInfo</name>
         <capabilities>ReadUserData</capabilities>
         <version>2.3</version>
-        <description>Interface that provides system information support</description> 
-    </interface>  
+        <description>Interface that provides system information support</description>
+    </interface>
 </service>
 </SFW>

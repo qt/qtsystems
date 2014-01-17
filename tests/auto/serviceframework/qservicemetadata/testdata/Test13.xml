@@ -6,12 +6,12 @@
     <interface>
         <name>com.nokia.qt.tests.IDownloader</name>
         <version>1.4</version>
-        <description>Interface that provides download support</description> 
+        <description>Interface that provides download support</description>
     </interface>
     <interface>
         <name>com.nokia.qt.tests.IDownloader</name>
         <version>1.4</version>
-        <description>Interface that provides another download support</description> 
+        <description>Interface that provides another download support</description>
     </interface>
 </service>
 </SFW>

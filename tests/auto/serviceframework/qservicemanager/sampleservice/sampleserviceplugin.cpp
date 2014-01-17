@@ -96,7 +96,7 @@ void DerivedSampleServicePluginClass::testSlotOne()
 }
 
 
-QServiceInterfaceDescriptor SampleServicePluginClass::descriptor() const 
-{ 
+QServiceInterfaceDescriptor SampleServicePluginClass::descriptor() const
+{
     return m_descriptor;
 }

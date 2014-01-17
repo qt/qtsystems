@@ -19,13 +19,13 @@
         <name>com.nokia.qt.tests.ISysInfo</name>
         <capabilities>ReadUserData</capabilities>
         <version>2.3</version>
-        <description>Interface that provides system information support</description> 
-    </interface>  
+        <description>Interface that provides system information support</description>
+    </interface>
     <interface>
-        <name>com.nokia.qt.tests.ISendMessage</name> 
+        <name>com.nokia.qt.tests.ISendMessage</name>
         <capabilities>ReadUserData,WriteUserData</capabilities>
         <version>3.0</version>
-        <description>Interface that provides message sending support</description> 
+        <description>Interface that provides message sending support</description>
     </interface>
     <interface>
         <name>com.nokia.qt.tests.IReceiveMessage</name>

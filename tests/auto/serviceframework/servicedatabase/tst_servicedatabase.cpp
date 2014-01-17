@@ -91,7 +91,7 @@ private:
                             const QHash<QString,QString> customProps,
                             QString filePath="",
                             QString serviceDescription="",
-                            QString interfaceDescription=""); 
+                            QString interfaceDescription="");
 
     QStringList getInterfaceIDs(const QString &serviceName);
     QStringList getServiceIDs(const QString &serviceName);
@@ -563,7 +563,7 @@ void ServiceDatabaseUnitTest::searchByCapability()
                 QStringList() , customs, "C:/Cybertron/unicron.dll", "Decepticon Elimination Services", "Transformation interface"));
     QVERIFY(compareDescriptor(interfaces[2], "com.cybertron.transform", "Decepticon", 2, 5,
                 (QStringList()<<"hunt" << "spy"), customs, "C:/Cybertron/unicron.dll", "Decepticon Elimination Services", "Transformation interface"));
-    
+
     caps.clear();
     caps << "hunt";
     filter.setCapabilities(QServiceFilter::MatchMinimum, caps);
@@ -597,7 +597,7 @@ void ServiceDatabaseUnitTest::searchByCapability()
                 QStringList(), customs, "C:/Cybertron/unicron.dll", "Decepticon Elimination Services", "Transformation interface"));
     QVERIFY(compareDescriptor(interfaces[3], "com.cybertron.transform", "Decepticon", 2, 5,
                 (QStringList()<<"hunt" << "spy"), customs, "C:/Cybertron/unicron.dll", "Decepticon Elimination Services", "Transformation interface"));
-    
+
 
     filter.setCapabilities(QServiceFilter::MatchLoadable, caps);
     interfaces = database.getInterfaces(filter);
@@ -650,7 +650,7 @@ void ServiceDatabaseUnitTest::searchByCustomAttribute()
     QCOMPARE(filter.customAttribute("bot"), QString("automatic"));
     interfaces = database.getInterfaces(filter);
     QCOMPARE(interfaces.count(),1);
-    
+
     customs.clear();
     customs["bot"] = "automatic";
     customs["extension"] = "multidrive";
@@ -979,7 +979,7 @@ bool ServiceDatabaseUnitTest::compareDescriptor(QServiceInterfaceDescriptor inte
     }
 
     if (interface.d->customAttributes.size() != customProps.size()) {
-        qWarning() << "Number of Interface custom attributes don't match. expected: " 
+        qWarning() << "Number of Interface custom attributes don't match. expected: "
             <<customProps.size() << "actual: " << interface.d->customAttributes.size();
             ;
         qWarning() << "expected:" << customProps << "actual:" << interface.d->customAttributes;
@@ -989,7 +989,7 @@ bool ServiceDatabaseUnitTest::compareDescriptor(QServiceInterfaceDescriptor inte
     QHash<QString, QString>::const_iterator i;
     for (i = customProps.constBegin(); i!=customProps.constEnd(); i++) {
         if (interface.customAttribute(i.key()) != i.value()) {
-            qWarning() << "Interface custom property mismatch: expected =" << i.key() <<"("<<i.value()<<")" 
+            qWarning() << "Interface custom property mismatch: expected =" << i.key() <<"("<<i.value()<<")"
                         << " actual =" << i.key() << "(" << interface.customAttribute(i.key()) << ")";
             return false;
         }
@@ -1234,7 +1234,7 @@ void ServiceDatabaseUnitTest::unregister()
     QServiceFilter filter;
 
     // == check that the service to delete is already in the database ==
-    //try a search for descriptors by service name 
+    //try a search for descriptors by service name
     filter.setServiceName("omni");
     QList<QServiceInterfaceDescriptor> interfaces;
     interfaces = database.getInterfaces(filter);

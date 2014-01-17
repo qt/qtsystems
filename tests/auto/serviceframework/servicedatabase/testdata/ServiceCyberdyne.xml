@@ -8,7 +8,7 @@
         <version>2.1</version>
         <capabilities>NetworkServices</capabilities>
         <description>Remote communications interface for the T-800</description>
-    </interface>    
+    </interface>
     <interface>
         <name>com.Cyberdyne.terminator</name>
         <version>2.0</version>
@@ -32,6 +32,6 @@
         <version>1.2</version>
         <capabilities>NetworkServices</capabilities>
         <description>Remote communications interface for the T-800</description>
-    </interface>    
+    </interface>
 </service>
 

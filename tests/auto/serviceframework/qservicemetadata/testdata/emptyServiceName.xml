@@ -2,12 +2,12 @@
 <service>
   <name></name>
   <filepath>C:/TestData/testservice.dll</filepath>
-  <description>Test service description</description> 
+  <description>Test service description</description>
   <interface>
     <name>com.nokia.qt.tests.IDownloader</name>
     <version>1.456</version>
-    <description>Interface that provides download support</description> 
+    <description>Interface that provides download support</description>
   </interface>
-  <description>Test service description</description> 
+  <description>Test service description</description>
 </service>
 

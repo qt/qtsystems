@@ -40,12 +40,12 @@
 ****************************************************************************/
 #include <QObject>
 
-class QRemoteServiceRegisterService : public QObject 
+class QRemoteServiceRegisterService : public QObject
 {
     Q_OBJECT
 
 public:
-    QRemoteServiceRegisterService(QObject* parent = 0) 
+    QRemoteServiceRegisterService(QObject* parent = 0)
         : QObject(parent)
     {
     }

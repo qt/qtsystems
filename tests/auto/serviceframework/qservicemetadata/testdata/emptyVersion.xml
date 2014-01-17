@@ -2,11 +2,11 @@
 <service>
   <name>ServiceA</name>
   <filepath>C:/TestData/testservice.dll</filepath>
-  <description>Test service description</description> 
+  <description>Test service description</description>
   <interface>
     <name>com.nokia.qt.tests.IDownloader</name>
     <version></version>
-    <description>Interface that provides download support</description> 
+    <description>Interface that provides download support</description>
   </interface>
 </service>
 

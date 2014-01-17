@@ -2,7 +2,7 @@
 <service>
     <name>TestService</name>
     <filepath>.\testserviceplugin.dll</filepath>
-    <description>Test service description</description> 
+    <description>Test service description</description>
     <interface>
         <description>Test Module</description>
         <version>1.456</version>
