@@ -99,7 +99,7 @@ int QBatteryInfoSimulatorBackend::getLevel(int battery)
 {
     if (battery == 0) {
         int maxCapacity = getMaximumCapacity(battery);
-        int remCapacity = getRemainingCemainingCapacity(battery);
+        int remCapacity = getRemainingCapacity(battery);
 
         if (maxCapacity == 0)
             return -1;

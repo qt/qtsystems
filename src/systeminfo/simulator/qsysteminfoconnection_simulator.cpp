@@ -108,7 +108,6 @@ void SystemInfoConnection::setBatteryInfoData(const QBatteryInfoData &data)
     QBatteryInfoSimulatorBackend *batteryInfoBackend = QBatteryInfoSimulatorBackend::getSimulatorBackend();
 
     batteryInfoBackend->setMaximumCapacity(data.maximumCapacity);
-    batteryInfoBackend->setEnergyUnit(data.energyMeasurementUnit);
     batteryInfoBackend->setRemainingCapacity(data.remainingCapacity);
     batteryInfoBackend->setCurrentFlow(data.currentFlow);
     batteryInfoBackend->setCycleCount(data.cycleCount);

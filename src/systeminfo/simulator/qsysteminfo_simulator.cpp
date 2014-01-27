@@ -58,7 +58,6 @@ QBatteryInfoSimulator::QBatteryInfoSimulator(QBatteryInfo *parent)
     : QObject(parent)
     , q_ptr(parent)
     , batteryInfoSimulatorBackend(QBatteryInfoSimulatorBackend::getSimulatorBackend())
-    , index(0)
 {
     SystemInfoConnection::ensureSimulatorConnection();
 }
@@ -67,9 +66,9 @@ QBatteryInfoSimulator::QBatteryInfoSimulator(int batteryIndex, QBatteryInfo *par
     : QObject(parent)
     , q_ptr(parent)
     , batteryInfoSimulatorBackend(QBatteryInfoSimulatorBackend::getSimulatorBackend())
-    , index(batteryIndex)
 {
     SystemInfoConnection::ensureSimulatorConnection();
+    setBatteryIndex(batteryIndex);
 }
 
 QBatteryInfoSimulator::~QBatteryInfoSimulator()
@@ -167,7 +166,7 @@ int QBatteryInfoSimulator::remainingChargingTime(int battery)
     return -1;
 }
 
-int QBatteryInfoSimulator::remainingChargingTime(int battery)
+int QBatteryInfoSimulator::remainingChargingTime()
 {
     return remainingChargingTime(batteryInfoSimulatorBackend->getBatteryIndex());
 }

@@ -228,7 +228,7 @@ QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s)
 QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s)
 {
     out << static_cast<qint32>(s.chargingState) << static_cast<qint32>(s.chargerType)
-        << static_cast<qint32>(s.energyMeasurementUnit) << static_cast<qint32>(s.levelStatus);;
+        << static_cast<qint32>(s.levelStatus) << static_cast<qint32>(s.levelStatus);;
 
     out << static_cast<qint32>(s.currentFlow) << static_cast<qint32>(s.maximumCapacity)
         << static_cast<qint32>(s.remainingCapacity) << static_cast<qint32>(s.remainingChargingTime)
@@ -239,12 +239,11 @@ QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s)
 
 QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s)
 {
-    qint32 chargingState, chargerType, energyMeasurementUnit, batteryStatus;
-    in >> chargingState >> chargerType >> energyMeasurementUnit >> batteryStatus;
+    qint32 chargingState, chargerType, batteryStatus;
+    in >> chargingState >> chargerType >> batteryStatus;
 
     s.chargingState = static_cast<QBatteryInfo::ChargingState>(chargingState);
     s.chargerType = static_cast<QBatteryInfo::ChargerType>(chargerType);
-    s.energyMeasurementUnit = static_cast<QBatteryInfo::EnergyUnit>(energyMeasurementUnit);
     s.levelStatus = static_cast<QBatteryInfo::LevelStatus>(batteryStatus);
 
     qint32 currentFlow, maximumCapacity, remainingCapacity, remainingChargingTime, voltage;
