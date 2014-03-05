@@ -409,6 +409,11 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
     case QDeviceInfo::Os:
 
         if (versionBuffer[0].isEmpty()) {
+            versionBuffer[0] = findInRelease(QStringLiteral("VERSION_ID"),
+                                             QStringLiteral("os-release"));
+        }
+
+        if (versionBuffer[0].isEmpty()) {
             versionBuffer[0] = findInRelease(QStringLiteral("VERSION_ID"));
         }
 
