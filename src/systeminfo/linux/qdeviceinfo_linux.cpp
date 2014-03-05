@@ -425,6 +425,12 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
         return versionBuffer[0];
 
     case QDeviceInfo::Firmware:
+        // Try to read hardware adaptation version first.
+        if (versionBuffer[1].isEmpty()) {
+            versionBuffer[1] = findInRelease(QStringLiteral("VERSION_ID"),
+                                             QStringLiteral("hw-release"));
+        }
+
         if (versionBuffer[1].isEmpty()) {
             QFile file(QStringLiteral("/proc/sys/kernel/osrelease"));
             if (file.open(QIODevice::ReadOnly)) {
