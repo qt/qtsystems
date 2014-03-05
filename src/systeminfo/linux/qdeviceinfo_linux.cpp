@@ -309,7 +309,10 @@ QString QDeviceInfoPrivate::manufacturer()
 QString QDeviceInfoPrivate::model()
 {
     if (modelBuffer.isEmpty()) {
-        // for dmi enabled kernels
+        modelBuffer = findInRelease(QStringLiteral("NAME"),QStringLiteral("hw-release"));
+    }
+    // for dmi enabled kernels
+    if (modelBuffer.isEmpty()) {
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_name"));
         if (file.open(QIODevice::ReadOnly))
             modelBuffer = QString::fromLocal8Bit(file.readAll().simplified().data());
@@ -327,8 +330,8 @@ QString QDeviceInfoPrivate::model()
                     line = stream.readLine();
                     //                 this seems to be mer specific
                     if (line.startsWith(QStringLiteral("BUILD"))) {
-                      modelBuffer = line.split(QStringLiteral(":")).at(1).split(QStringLiteral("-")).at(3);
-                      break;
+                        modelBuffer = line.split(QStringLiteral(":")).at(1).split(QStringLiteral("-")).at(3);
+                        break;
                     }
                 } while (!line.isNull());
                 release.close();
