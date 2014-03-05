@@ -128,7 +128,7 @@ private:
 #if !defined(QT_NO_OFONO)
     QOfonoWrapper *ofonoWrapper;
 #endif // QT_NO_OFONO
-    QString findInRelease(const QString &searchTerm);
+    QString findInRelease(const QString &searchTerm, const QString &file = QString());
 
     bool connectedBtPower;
     bool btPowered;

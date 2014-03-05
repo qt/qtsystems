@@ -476,11 +476,17 @@ QString QDeviceInfoPrivate::boardName()
     return boardNameString;
 }
 
-QString QDeviceInfoPrivate::findInRelease(const QString &searchTerm)
+QString QDeviceInfoPrivate::findInRelease(const QString &searchTerm, const QString &file)
 {
     QString result;
-    QStringList releaseFies = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
-    foreach (const QString &file, releaseFies) {
+    QStringList releaseFiles;
+    if (file.isEmpty()) {
+        releaseFiles = QDir(QStringLiteral("/etc/")).entryList(QStringList() << QStringLiteral("*-release"));
+    } else {
+        releaseFiles.append(file);
+    }
+
+    foreach (const QString &file, releaseFiles) {
         if (!result.isEmpty())
             continue;
         QFile release(QStringLiteral("/etc/") + file);
