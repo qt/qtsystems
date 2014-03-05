@@ -50,6 +50,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qprocess.h>
+#include <QtCore/qregularexpression.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qstandardpaths.h>
@@ -490,6 +491,8 @@ QString QDeviceInfoPrivate::findInRelease(const QString &searchTerm)
                 line = stream.readLine();
                 if (line.left(searchTerm.size()) == searchTerm) {
                   result = line.split(QStringLiteral("=")).at(1).simplified();
+                  // Remove optional quotation marks.
+                  result.remove(QRegularExpression(QStringLiteral("^\"|\"$")));
                   break;
                 }
             } while (!line.isNull());
