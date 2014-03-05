@@ -129,6 +129,7 @@ private:
     QOfonoWrapper *ofonoWrapper;
 #endif // QT_NO_OFONO
     QString findInRelease(const QString &searchTerm, const QString &file = QString());
+    bool isUuid(const QString &id);
 
     bool connectedBtPower;
     bool btPowered;

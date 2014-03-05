@@ -46,6 +46,7 @@
 #endif // QT_NO_OFONO
 
 #include "qscreensaver_linux_p.h"
+#include <QNetworkInfo>
 
 #include <QtCore/qdir.h>
 #include <QtCore/qmetaobject.h>
@@ -61,6 +62,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <QUuid>
+#include <QCryptographicHash>
 
 #if !defined(QT_NO_DBUS)
 #include <QtDBus/QDBusInterface>
@@ -367,44 +369,80 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/product_uuid"));
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
-            if (id.length() == 36)
+            if (id.length() == 36) {
+                if (isUuid(id)) {
+                    uniqueDeviceIDBuffer = id;
+                }
+            }
+        }
+    }
+
+    if (uniqueDeviceIDBuffer.isEmpty()) { //try wifi mac address
+        QNetworkInfo netinfo;
+        QString macaddy;
+        macaddy = netinfo.macAddress(QNetworkInfo::WlanMode,0);
+        if (macaddy.isEmpty())
+            macaddy = netinfo.macAddress(QNetworkInfo::EthernetMode,0);
+        if (!macaddy.isEmpty()) {
+            QCryptographicHash hash2(QCryptographicHash::Sha1);
+            hash2.addData(macaddy.toLocal8Bit());
+
+            QString id = hash2.result().toHex();
+
+            id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+            if (isUuid(id))
                 uniqueDeviceIDBuffer = id;
         }
     }
-    if (uniqueDeviceIDBuffer.isEmpty()) {
 
-        QFile file(QStringLiteral("/etc/machine-id"));
+    if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QStringLiteral("/var/lib/dbus/machine-id"));
+
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
-            if (id.length() == 32)
-                uniqueDeviceIDBuffer = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+            if (id.length() == 32) {
+                id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+                if (isUuid(id)) {
+                    uniqueDeviceIDBuffer = id;
+                }
+            }
             file.close();
         }
     }
     if (uniqueDeviceIDBuffer.isEmpty()) {
-        QFile file(QStringLiteral("/etc/unique-id"));
+        QFile file(QStringLiteral("/etc/machine-id"));
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
-            if (id.length() == 32)
-                uniqueDeviceIDBuffer = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+            if (id.length() == 32) {
+                id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+                if (isUuid(id)) {
+                    uniqueDeviceIDBuffer = id;
+                }
+            }
             file.close();
         }
     }
     //last ditch effort
     if (uniqueDeviceIDBuffer.isEmpty()) {
-        QFile file(QStringLiteral("/var/lib/dbus/machine-id"));
+        QFile file(QStringLiteral("/etc/unique-id"));
         if (file.open(QIODevice::ReadOnly)) {
             QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
             if (id.length() == 32) {
-                uniqueDeviceIDBuffer = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+                id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+                if (isUuid(id)) {
+                    uniqueDeviceIDBuffer = id;
+                }
                 file.close();
             }
         }
     }
-    QUuid uid(uniqueDeviceIDBuffer); //make sure this can be made into a valid QUUid
-    if (uid.isNull())
-        uniqueDeviceIDBuffer = QString();
     return uniqueDeviceIDBuffer;
+}
+
+bool QDeviceInfoPrivate::isUuid(const QString &id)
+{
+    QUuid uid(id); //make sure this can be made into a valid QUUid
+    return !uid.isNull();
 }
 
 QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
