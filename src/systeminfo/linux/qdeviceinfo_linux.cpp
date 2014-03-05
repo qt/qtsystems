@@ -494,6 +494,9 @@ QString QDeviceInfoPrivate::version(QDeviceInfo::Version type)
 QString QDeviceInfoPrivate::operatingSystemName()
 {
     if (osName.isEmpty()) {
+        osName = findInRelease(QStringLiteral("NAME="), QStringLiteral("os-release"));
+    }
+    if (osName.isEmpty()) {
         osName = findInRelease(QStringLiteral("NAME="));
     }
 
