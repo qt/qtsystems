@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-!without-serviceframework: SUBDIRS = servicefw sfwlisten
+!macx:!without-serviceframework: SUBDIRS = servicefw sfwlisten

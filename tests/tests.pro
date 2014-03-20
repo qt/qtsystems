@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 SUBDIRS += auto
-SUBDIRS += manual/sysinfo-tester
+!macx:SUBDIRS += manual/sysinfo-tester
 

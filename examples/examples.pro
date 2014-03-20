@@ -3,7 +3,7 @@ TEMPLATE = subdirs
 #!without-sericeframework: SUBDIRS += serviceframework
 
 #!without-publishsubscribe: SUBDIRS += publishsubscribe
-!without-systeminfo: SUBDIRS += systeminfo
+!macx:!without-systeminfo: SUBDIRS += systeminfo
 
 
 # install
