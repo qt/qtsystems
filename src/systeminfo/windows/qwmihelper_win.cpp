@@ -46,9 +46,9 @@
 #include "qwmihelper_win_p.h"
 
 #include <QDebug>
-#include <ObjBase.h>
-#include <Wbemidl.h>
-#include <Oleauto.h>
+#include <objbase.h>
+#include <wbemidl.h>
+#include <oleauto.h>
 #include <QStringList>
 #include <QUuid>
 #include <comutil.h>

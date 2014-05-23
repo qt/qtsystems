@@ -50,8 +50,8 @@
 #include <vfw.h>
 #if !defined(Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
 #  include <ws2bth.h>
-#  include <Bthsdpdef.h>
-#  include <BluetoothAPIs.h>
+#  include <bthsdpdef.h>
+#  include <bluetoothapis.h>
 #endif
 
 QT_BEGIN_NAMESPACE

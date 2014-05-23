@@ -44,13 +44,10 @@ win32: !simulator: {
                windows/qwmihelper_win.cpp
 
        LIBS += \
-            -lOle32 \
-            -lUser32 \
-            -lGdi32 \
-            -lIphlpapi \
-            -lOleaut32 \
-            -lPowrProf \
-            -lSetupapi
+            -lole32 \
+            -liphlpapi \
+            -loleaut32 \
+            -lsetupapi
 
   win32-g++: {
         LIBS += -luser32 -lgdi32

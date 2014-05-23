@@ -48,7 +48,7 @@
 #include <setupapi.h>
 
 #if !defined (Q_CC_MINGW) || defined(__MINGW64_VERSION_MAJOR)
-#  include <BatClass.h>
+#  include <batclass.h>
 #endif
 
 #include <QtCore/qmetaobject.h>
