@@ -87,7 +87,7 @@ private:
     QServiceReplyPrivate *d;
 };
 
-class QServiceReply : public QServiceReplyBase
+class Q_SERVICEFW_EXPORT QServiceReply : public QServiceReplyBase
 {
     Q_OBJECT
     public:
