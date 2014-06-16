@@ -45,6 +45,10 @@
 #include "qofonowrapper_p.h"
 #endif // QT_NO_OFONO
 
+#if defined(QT_USE_SSU)
+#include <ssudeviceinfo.h>
+#endif // QT_USE_SSU
+
 #include "qscreensaver_linux_p.h"
 #include <QNetworkInfo>
 
@@ -275,6 +279,11 @@ QString QDeviceInfoPrivate::imei(int interfaceNumber)
 
 QString QDeviceInfoPrivate::manufacturer()
 {
+#if defined(QT_USE_SSU)
+    if (manufacturerBuffer.isEmpty()) {
+        manufacturerBuffer = SsuDeviceInfo().displayName(Ssu::DeviceManufacturer);
+    }
+#endif
     if (manufacturerBuffer.isEmpty()) {
         // for dmi enabled kernels
         QFile file(QStringLiteral("/sys/devices/virtual/dmi/id/sys_vendor"));
@@ -310,6 +319,11 @@ QString QDeviceInfoPrivate::manufacturer()
 
 QString QDeviceInfoPrivate::model()
 {
+#if defined(QT_USE_SSU)
+    if (modelBuffer.isEmpty()) {
+        modelBuffer = SsuDeviceInfo().displayName(Ssu::DeviceModel);
+    }
+#endif
     if (modelBuffer.isEmpty()) {
         modelBuffer = findInRelease(QStringLiteral("NAME"),QStringLiteral("hw-release"));
     }
@@ -345,6 +359,12 @@ QString QDeviceInfoPrivate::model()
 
 QString QDeviceInfoPrivate::productName()
 {
+#if defined(QT_USE_SSU)
+    if (productNameBuffer.isEmpty()) {
+        productNameBuffer = SsuDeviceInfo().displayName(Ssu::DeviceDesignation);
+    }
+#endif
+
     if (productNameBuffer.isEmpty()) {
         productNameBuffer = findInRelease(QStringLiteral("PRETTY_NAME")).remove(QStringLiteral("\""));
     }

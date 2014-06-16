@@ -110,6 +110,12 @@ linux-*: !simulator: {
             DEFINES += QT_NO_UPOWER
         }
 
+        # SSU tool for Nemo Mobile, see https://github.com/nemomobile/ssu
+        contains(CONFIG,ssu): {
+            LIBS += -lssu
+            DEFINES += QT_USE_SSU
+        }
+
     } else {
         DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_UPOWER
         HEADERS += linux/qbatteryinfo_linux_p.h
