@@ -101,12 +101,11 @@ public:
     qint64 timeToFull();
     QString nativePath();
 
-    QVariantMap getProperties();
+    QVariantMap getProperties() { return pMap; }
 
 Q_SIGNALS:
     void changed();
     void propertyChanged(QString,QVariant);
-//    void getPropertiesFinished(const QVariantMap &properties);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
@@ -118,8 +117,7 @@ private:
 
 private Q_SLOTS:
     void propChanged();
-    //void propertiesFinished(QDBusPendingCallWatcher *watch);
-
+    void propRequestFinished(QDBusPendingCallWatcher *call);
 };
 
 

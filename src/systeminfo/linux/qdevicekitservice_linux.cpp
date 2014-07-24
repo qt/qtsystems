@@ -140,15 +140,7 @@ QUPowerDeviceInterface::QUPowerDeviceInterface(const QString &dbusPathName, QObj
     , QDBusConnection::systemBus()
     , parent)
 {
-    pMap = getProperties();
-}
-
-QUPowerDeviceInterface::~QUPowerDeviceInterface()
-{
-}
-
-QVariantMap QUPowerDeviceInterface::getProperties()
-{
+    // We make a synchronous properties request here so we have a valid state
     QDBusMessage propGetMsg = QDBusMessage::createMethodCall(UPOWER_SERVICE, path(), QStringLiteral("org.freedesktop.DBus.Properties"), QLatin1String("GetAll"));
     QList<QVariant> arguments;
     arguments << QLatin1String("org.freedesktop.UPower.Device");
@@ -156,9 +148,8 @@ QVariantMap QUPowerDeviceInterface::getProperties()
     QDBusMessage propReply = QDBusConnection::systemBus().call(propGetMsg);
 
     if (propReply.type() == QDBusMessage::ErrorMessage) {
-        // don't throw away the existing map if the call fails
         qWarning() << "QUPowerDeviceInterface: error getting properties: " << propReply.errorMessage();
-        return pMap;
+        return;
     }
 
     QList<QVariant> args = propReply.arguments();
@@ -166,11 +157,14 @@ QVariantMap QUPowerDeviceInterface::getProperties()
     if (!args.length()) {
         qWarning() << "QUPowerDeviceInterface: Got an empty property reply";
         pMap = QVariantMap();
-        return pMap;
+        return;
     }
 
     pMap = args[0].toMap();
-    return pMap;
+}
+
+QUPowerDeviceInterface::~QUPowerDeviceInterface()
+{
 }
 
 QVariant QUPowerDeviceInterface::getProperty(const QString &property)
@@ -275,8 +269,28 @@ void QUPowerDeviceInterface::disconnectNotify(const QMetaMethod &signal)
 
 void QUPowerDeviceInterface::propChanged()
 {
-    QVariantMap map = pMap;
-    QMapIterator<QString, QVariant> i(getProperties());
+    QDBusMessage propGetMsg = QDBusMessage::createMethodCall(UPOWER_SERVICE, path(), QStringLiteral("org.freedesktop.DBus.Properties"), QLatin1String("GetAll"));
+    QList<QVariant> arguments;
+    arguments << QLatin1String("org.freedesktop.UPower.Device");
+    propGetMsg.setArguments(arguments);
+    QDBusPendingCall asyncPropReply = QDBusConnection::systemBus().asyncCall(propGetMsg);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(asyncPropReply, this);
+
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, &QUPowerDeviceInterface::propRequestFinished);
+}
+
+void QUPowerDeviceInterface::propRequestFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QVariantMap> reply = *call;
+    if (!reply.isValid()) {
+        // don't throw away the existing map if the call fails
+        qWarning() << "QUPowerDeviceInterface: fetching properties failed: " << reply.error();
+        return;
+    }
+
+    QVariantMap map = pMap; // copy to compare
+    pMap = reply.value();
+    QMapIterator<QString, QVariant> i(reply.value());
 
     while (i.hasNext()) {
         i.next();
