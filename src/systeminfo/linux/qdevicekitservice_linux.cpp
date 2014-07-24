@@ -167,59 +167,54 @@ QUPowerDeviceInterface::~QUPowerDeviceInterface()
 {
 }
 
-QVariant QUPowerDeviceInterface::getProperty(const QString &property)
-{
-    return pMap.value(property);
-}
-
 quint16 QUPowerDeviceInterface::type()
 {
-    return getProperty(QStringLiteral("Type")).toUInt();
+    return pMap.value(QStringLiteral("Type")).toUInt();
 }
 
 bool QUPowerDeviceInterface::isPowerSupply()
 {
-    return getProperty(QStringLiteral("PowerSupply")).toBool();
+    return pMap.value(QStringLiteral("PowerSupply")).toBool();
 }
 
 bool QUPowerDeviceInterface::isOnline()
 {
-    return getProperty(QStringLiteral("Online")).toBool();
+    return pMap.value(QStringLiteral("Online")).toBool();
 }
 
 double QUPowerDeviceInterface::currentEnergy()
 {
-    return getProperty(QStringLiteral("Energy")).toDouble();
+    return pMap.value(QStringLiteral("Energy")).toDouble();
 }
 
 double QUPowerDeviceInterface::energyWhenFull()
 {
-    return getProperty(QStringLiteral("EnergyFull")).toDouble();
+    return pMap.value(QStringLiteral("EnergyFull")).toDouble();
 }
 
 double QUPowerDeviceInterface::energyDischargeRate()
 {
-    return getProperty(QStringLiteral("EnergyRate")).toDouble();
+    return pMap.value(QStringLiteral("EnergyRate")).toDouble();
 }
 
 double QUPowerDeviceInterface::voltage()
 {
-    return getProperty(QStringLiteral("Voltage")).toDouble();
+    return pMap.value(QStringLiteral("Voltage")).toDouble();
 }
 
 qint64 QUPowerDeviceInterface::timeToFull()
 {
-    return getProperty(QStringLiteral("TimeToFull")).toUInt();
+    return pMap.value(QStringLiteral("TimeToFull")).toUInt();
 }
 
 double QUPowerDeviceInterface::percentLeft()
 {
-    return getProperty(QStringLiteral("Percentage")).toDouble();
+    return pMap.value(QStringLiteral("Percentage")).toDouble();
 }
 
 quint16 QUPowerDeviceInterface::state()
 {
-    return getProperty(QStringLiteral("State")).toUInt();
+    return pMap.value(QStringLiteral("State")).toUInt();
 }
 
 void QUPowerDeviceInterface::connectNotify(const QMetaMethod &signal)
@@ -302,7 +297,7 @@ void QUPowerDeviceInterface::propRequestFinished(QDBusPendingCallWatcher *call)
 
 QString QUPowerDeviceInterface::nativePath()
 {
-    return getProperty(QStringLiteral("NativePath")).toString();
+    return pMap.value(QStringLiteral("NativePath")).toString();
 }
 
 QT_END_NAMESPACE

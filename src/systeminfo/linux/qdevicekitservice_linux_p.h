@@ -112,7 +112,6 @@ protected:
     void disconnectNotify(const QMetaMethod &signal);
 
 private:
-    QVariant getProperty(const QString &);
     QVariantMap pMap;
 
 private Q_SLOTS:
