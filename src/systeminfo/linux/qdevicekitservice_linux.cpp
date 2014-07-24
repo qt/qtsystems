@@ -140,9 +140,6 @@ QUPowerDeviceInterface::QUPowerDeviceInterface(const QString &dbusPathName, QObj
     , QDBusConnection::systemBus()
     , parent)
 {
-    propertiesInterface = new QDBusInterface(QStringLiteral(UPOWER_SERVICE), path(),
-                                             QStringLiteral("org.freedesktop.DBus.Properties"),
-                                             QDBusConnection::systemBus());
     pMap = getProperties();
 }
 
@@ -152,27 +149,29 @@ QUPowerDeviceInterface::~QUPowerDeviceInterface()
 
 QVariantMap QUPowerDeviceInterface::getProperties()
 {
-    QDBusPendingReply<QVariantMap> reply = propertiesInterface->call(QLatin1String("GetAll"),
-                                                              QLatin1String("org.freedesktop.UPower.Device"));
-    reply.waitForFinished();
-    if (!reply.isValid())
-        qDebug() << reply.error();
+    QDBusMessage propGetMsg = QDBusMessage::createMethodCall(UPOWER_SERVICE, path(), QStringLiteral("org.freedesktop.DBus.Properties"), QLatin1String("GetAll"));
+    QList<QVariant> arguments;
+    arguments << QLatin1String("org.freedesktop.UPower.Device");
+    propGetMsg.setArguments(arguments);
+    QDBusMessage propReply = QDBusConnection::systemBus().call(propGetMsg);
 
-    pMap = reply.value();
+    if (propReply.type() == QDBusMessage::ErrorMessage) {
+        // don't throw away the existing map if the call fails
+        qWarning() << "QUPowerDeviceInterface: error getting properties: " << propReply.errorMessage();
+        return pMap;
+    }
+
+    QList<QVariant> args = propReply.arguments();
+
+    if (!args.length()) {
+        qWarning() << "QUPowerDeviceInterface: Got an empty property reply";
+        pMap = QVariantMap();
+        return pMap;
+    }
+
+    pMap = args[0].toMap();
     return pMap;
-    //    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-    //    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-    //            SLOT(propertiesFinished(QDBusPendingCallWatcher*)));
 }
-
-//void QUPowerDeviceInterface::propertiesFinished(QDBusPendingCallWatcher *watch)
-//{
-//    QDBusPendingReply<QVariantMap> reply = *watch;
-//    if (reply.isError()) {
-//        qDebug() << Q_FUNC_INFO << reply.error();
-//    }
-//    Q_EMIT getPropertiesFinished(reply.value());
-//}
 
 QVariant QUPowerDeviceInterface::getProperty(const QString &property)
 {

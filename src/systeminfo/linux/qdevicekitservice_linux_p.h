@@ -114,7 +114,6 @@ protected:
 
 private:
     QVariant getProperty(const QString &);
-    QDBusInterface *propertiesInterface;
     QVariantMap pMap;
 
 private Q_SLOTS:
