@@ -70,34 +70,11 @@ QList<QDBusObjectPath> QUPowerInterface::enumerateDevices()
     return reply.value();
 }
 
-QVariant QUPowerInterface::getProperty(const QString &property)
-{
-    QVariant var;
-    QDBusInterface *interface = new QDBusInterface(QStringLiteral(UPOWER_SERVICE),
-                                                   QStringLiteral(UPOWER_PATH),
-                                             QStringLiteral("org.freedesktop.DBus.Properties"),
-                                             QDBusConnection::systemBus());
-    if (interface && interface->isValid()) {
-        QDBusReply<QVariant> r = interface->call(QStringLiteral("Get"), QStringLiteral(UPOWER_PATH), property);
-        var = r.value();
-    }
-    return var;
-}
-
 void QUPowerInterface::connectNotify(const QMetaMethod &signal)
 {
-    static const QMetaMethod changedSignal = QMetaMethod::fromSignal(&QUPowerInterface::changed);
     static const QMetaMethod addedSignal = QMetaMethod::fromSignal(&QUPowerInterface::deviceAdded);
     static const QMetaMethod removedSignal = QMetaMethod::fromSignal(&QUPowerInterface::deviceRemoved);
-    if (signal == changedSignal) {
-        if (!connection().connect(QStringLiteral(UPOWER_SERVICE),
-                                  QStringLiteral(UPOWER_PATH),
-                                  QStringLiteral(UPOWER_SERVICE),
-                                  QStringLiteral("Changed"),
-                                  this, SIGNAL(changed()))) {
-            qDebug() << "Error"<<connection().lastError().message();
-        }
-    }
+
     if (signal == addedSignal) {
         if (!connection().connect(QStringLiteral(UPOWER_SERVICE),
                                   QStringLiteral(UPOWER_PATH),
@@ -121,18 +98,9 @@ void QUPowerInterface::connectNotify(const QMetaMethod &signal)
 
 void QUPowerInterface::disconnectNotify(const QMetaMethod &signal)
 {
-    static const QMetaMethod changedSignal = QMetaMethod::fromSignal(&QUPowerInterface::changed);
     static const QMetaMethod addedSignal = QMetaMethod::fromSignal(&QUPowerInterface::deviceAdded);
     static const QMetaMethod removedSignal = QMetaMethod::fromSignal(&QUPowerInterface::deviceRemoved);
-    if (signal == changedSignal) {
-        if (!connection().disconnect(QStringLiteral(UPOWER_SERVICE),
-                                     QStringLiteral(UPOWER_PATH),
-                                     QStringLiteral(UPOWER_SERVICE),
-                                     QStringLiteral("Changed"),
-                                     this, SIGNAL(changed()))) {
-            qDebug() << "Error"<<connection().lastError().message();
-        }
-    }
+
     if (signal == addedSignal) {
         if (!connection().disconnect(QStringLiteral(UPOWER_SERVICE),
                                   QStringLiteral(UPOWER_PATH),
@@ -153,11 +121,6 @@ void QUPowerInterface::disconnectNotify(const QMetaMethod &signal)
         }
     }
 
-}
-
-bool QUPowerInterface::onBattery()
-{
-    return getProperty(QStringLiteral("OnBattery")).toBool();
 }
 
 void QUPowerInterface::onDeviceAdded(const QDBusObjectPath &path)

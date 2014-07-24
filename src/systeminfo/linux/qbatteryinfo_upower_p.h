@@ -123,7 +123,6 @@ protected:
     QBatteryInfo::ChargingState cState;
 private Q_SLOTS:
     void upowerDeviceChanged();
-    void upowerChanged();
     void uPowerBatteryPropertyChanged(const QString & prop, const QVariant &v);
     void getBatteryStats();
     void deviceAdded(const QString &path);

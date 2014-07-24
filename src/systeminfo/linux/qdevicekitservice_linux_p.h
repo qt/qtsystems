@@ -66,21 +66,15 @@ public:
     QUPowerInterface(QObject *parent = 0);
     ~QUPowerInterface();
 
-    bool onBattery();
-
     QList<QDBusObjectPath> enumerateDevices();
 
 Q_SIGNALS:
-    void changed();
     void deviceAdded(const QString &path);
     void deviceRemoved(const QString &path);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
     void disconnectNotify(const QMetaMethod &signal);
-
-private:
-    QVariant getProperty(const QString &property);
 
 private Q_SLOTS:
     void onDeviceAdded(const QDBusObjectPath &path);

@@ -353,48 +353,6 @@ float QBatteryInfoPrivate::temperature()
     return temperature(index);
 }
 
-void QBatteryInfoPrivate::upowerChanged()
-{
-//    QUPowerInterface *uPower = qobject_cast<QUPowerInterface*>(sender());
-//    if (uPower->onBattery()) {
-//        chargerTypeChanged();
-//    }
-////    if (uPowerAvailable()) {
-//        QBatteryInfo::ChargingState pState = QBatteryInfo::UnknownChargingState;
-
-//        QUPowerInterface power(this);
-//        foreach (const QDBusObjectPath &objpath, power.enumerateDevices()) {
-//            QUPowerDeviceInterface powerDevice(objpath.path(),this);
-//            if (powerDevice.getType() == 2) {
-//                switch (powerDevice.getState()) {
-//                case 0:
-//                    break;
-//                case 1:
-//                case 5:
-//                    pState = QBatteryInfo::Charging;
-//                    break;
-//                case 2:
-//                case 6:
-//                    pState = QBatteryInfo::Discharging;
-//                    break;
-//                case 4:
-//                    pState = QBatteryInfo::IdleChargingState;
-//                    break;
-//                default:
-//                    pState = QBatteryInfo::UnknownChargingState;
-//                };
-//            }
-//        }
-//        if (!power.onBattery() && pState == QBatteryInfo::UnknownChargingState)
-//            pState = QBatteryInfo::IdleChargingState;
-//        if (curPowerState != pState) {
-//            curPowerState = pState;
-//            Q_EMIT powerStateChanged(pState);
-//        }
-//        return pState;
- //   }
-}
-
 void QBatteryInfoPrivate::upowerDeviceChanged()
 {
     QUPowerDeviceInterface *uPowerDevice = qobject_cast<QUPowerDeviceInterface*>(sender());
@@ -539,8 +497,6 @@ void QBatteryInfoPrivate::getBatteryStats()
     QUPowerInterface *power;
     power = new QUPowerInterface(this);
 
-    connect(power,SIGNAL(changed()),
-            this,SLOT(upowerChanged()));
     connect(power,SIGNAL(deviceAdded(QString)),
             this,SLOT(deviceAdded(QString)));
     connect(power,SIGNAL(deviceRemoved(QString)),
