@@ -145,22 +145,14 @@ QUPowerDeviceInterface::QUPowerDeviceInterface(const QString &dbusPathName, QObj
     QList<QVariant> arguments;
     arguments << QLatin1String("org.freedesktop.UPower.Device");
     propGetMsg.setArguments(arguments);
-    QDBusMessage propReply = QDBusConnection::systemBus().call(propGetMsg);
+    QDBusReply<QVariantMap> propReply = QDBusConnection::systemBus().call(propGetMsg);
 
-    if (propReply.type() == QDBusMessage::ErrorMessage) {
-        qWarning() << "QUPowerDeviceInterface: error getting properties: " << propReply.errorMessage();
+    if (!propReply.isValid()) {
+        qWarning() << "QUPowerDeviceInterface: error getting properties: " << propReply.error();
         return;
     }
 
-    QList<QVariant> args = propReply.arguments();
-
-    if (!args.length()) {
-        qWarning() << "QUPowerDeviceInterface: Got an empty property reply";
-        pMap = QVariantMap();
-        return;
-    }
-
-    pMap = args[0].toMap();
+    pMap = propReply.value();
 }
 
 QUPowerDeviceInterface::~QUPowerDeviceInterface()
