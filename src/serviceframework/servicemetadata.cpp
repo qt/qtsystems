@@ -41,6 +41,7 @@
 
 #include "servicemetadata_p.h"
 #include <QFile>
+#include <QDataStream>
 #include <QDebug>
 #include "qserviceinterfacedescriptor_p.h"
 
