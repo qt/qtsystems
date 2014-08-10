@@ -41,15 +41,12 @@
 
 #include <QValueSpaceSubscriber>
 #include <QServiceInterfaceDescriptor>
-#include <QStorageInfo>
 
 int main(int argc, char **argv)
 {
     QValueSpaceSubscriber valueSpaceSubscriber;
 
     QServiceInterfaceDescriptor serviceInterfaceDescriptor;
-
-    QStorageInfo storageInfo;
 
     return 0;
 }

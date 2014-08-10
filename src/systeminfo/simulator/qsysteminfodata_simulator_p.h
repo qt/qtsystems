@@ -58,7 +58,6 @@
 #include <qnetworkinfo.h>
 #include <qdeviceinfo.h>
 #include <qbatteryinfo.h>
-#include <qstorageinfo.h>
 #include <qscreensaver.h>
 
 #include <QHash>
@@ -147,18 +146,6 @@ struct QDeviceInfoData
     QMap<QDeviceInfo::Version, QString> versionList;
 };
 
-struct QStorageInfoData
-{
-    struct DriveInfo
-    {
-      qint64 totalSpace;
-      qint64 availableSpace;
-      QString uri;
-      QStorageInfo::DriveType type;
-    };
-    QHash<QString, DriveInfo> drives;
-};
-
 struct QScreenSaverData
 {
     bool screenSaverEnabled;
@@ -168,7 +155,6 @@ struct QScreenSaverData
 Q_DECLARE_METATYPE(QNetworkInfoData)
 Q_DECLARE_METATYPE(QDeviceInfoData)
 Q_DECLARE_METATYPE(QBatteryInfoData)
-Q_DECLARE_METATYPE(QStorageInfoData)
 Q_DECLARE_METATYPE(QScreenSaverData)
 
 void qt_registerSystemInfoTypes();
@@ -193,10 +179,6 @@ QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Version s);
 QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s);
 QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
 QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
-QDataStream &operator<<(QDataStream &out, const QStorageInfoData &s);
-QDataStream &operator>>(QDataStream &in, QStorageInfoData &s);
-QDataStream &operator<<(QDataStream &out, const QStorageInfoData::DriveInfo &s);
-QDataStream &operator>>(QDataStream &in, QStorageInfoData::DriveInfo &s);
 QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s);
 QDataStream &operator>>(QDataStream &in, QScreenSaverData &s);
 

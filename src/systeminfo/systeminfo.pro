@@ -4,13 +4,11 @@ QPRO_PWD = $PWD
 QT = core network
 PUBLIC_HEADERS = qsysteminfoglobal.h \
                  qdeviceinfo.h \
-                 qstorageinfo.h \
                  qscreensaver.h \
                  qbatteryinfo.h \
                  qnetworkinfo.h
 
 SOURCES += qdeviceinfo.cpp \
-           qstorageinfo.cpp \
            qscreensaver.cpp \
            qbatteryinfo.cpp \
            qnetworkinfo.cpp
@@ -34,7 +32,6 @@ win32: !simulator: {
 
     PRIVATE_HEADERS += windows/qscreensaver_win_p.h \
                        windows/qdeviceinfo_win_p.h \
-                       windows/qstorageinfo_win_p.h \
                        windows/qbatteryinfo_win_p.h \
                        windows/qnetworkinfo_win_p.h \
                        windows/qwmihelper_win_p.h \
@@ -42,7 +39,6 @@ win32: !simulator: {
 
     SOURCES += windows/qscreensaver_win.cpp \
                windows/qdeviceinfo_win.cpp \
-               windows/qstorageinfo_win.cpp \
                windows/qbatteryinfo_win.cpp \
                windows/qnetworkinfo_win.cpp \
                windows/qwmihelper_win.cpp
@@ -61,12 +57,10 @@ win32: !simulator: {
 
 linux-*: !simulator: {
     PRIVATE_HEADERS += linux/qdeviceinfo_linux_p.h \
-                       linux/qstorageinfo_linux_p.h \
                        linux/qnetworkinfo_linux_p.h \
                        linux/qscreensaver_linux_p.h
 
     SOURCES += linux/qdeviceinfo_linux.cpp \
-               linux/qstorageinfo_linux.cpp \
                linux/qnetworkinfo_linux.cpp \
                linux/qscreensaver_linux.cpp
 
@@ -139,14 +133,12 @@ QT += core-private
          OBJECTIVE_SOURCES += mac/qbatteryinfo_mac.mm \
                   mac/qdeviceinfo_mac.mm \
                   mac/qnetworkinfo_mac.mm \
-                  mac/qscreensaver_mac.mm \
-                  mac/qstorageinfo_mac.mm
+                  mac/qscreensaver_mac.mm
 
          PRIVATE_HEADERS += mac/qbatteryinfo_mac_p.h \
                   mac/qdeviceinfo_mac_p.h \
                   mac/qnetworkinfo_mac_p.h \
-                  mac/qscreensaver_mac_p.h \
-                  mac/qstorageinfo_mac_p.h
+                  mac/qscreensaver_mac_p.h
 
          LIBS += -framework SystemConfiguration \
                 -framework Foundation \
@@ -179,12 +171,10 @@ simulator {
 
     linux-*: {
         PRIVATE_HEADERS += \
-                           linux/qscreensaver_linux_p.h \
-                           linux/qstorageinfo_linux_p.h
+                           linux/qscreensaver_linux_p.h
 
         SOURCES += \
-                   linux/qscreensaver_linux.cpp \
-                   linux/qstorageinfo_linux.cpp
+                   linux/qscreensaver_linux.cpp
 
         x11|config_x11 {
             CONFIG += link_pkgconfig

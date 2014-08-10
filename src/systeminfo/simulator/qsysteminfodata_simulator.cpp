@@ -55,8 +55,6 @@ void qt_registerSystemInfoTypes()
     qRegisterMetaTypeStreamOperators<QNetworkInfoData::BluetoothInfo>("QNetworkInfoData::BluetoothInfo");
     qRegisterMetaTypeStreamOperators<QDeviceInfoData>("QDeviceInfoData");
     qRegisterMetaTypeStreamOperators<QBatteryInfoData>("QBatteryInfoData");
-    qRegisterMetaTypeStreamOperators<QStorageInfoData>("QStorageInfoData");
-    qRegisterMetaTypeStreamOperators<QStorageInfoData::DriveInfo>("QStorageInfoData::DriveInfo");
     qRegisterMetaTypeStreamOperators<QScreenSaverData>("QScreenSaverData");
 }
 
@@ -254,38 +252,6 @@ QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s)
     s.remainingCapacity = remainingCapacity;
     s.remainingChargingTime = remainingChargingTime;
     s.voltage = voltage;
-
-    return in;
-}
-
-QDataStream &operator<<(QDataStream &out, const QStorageInfoData &s)
-{
-    out << s.drives;
-    return out;
-}
-
-QDataStream &operator>>(QDataStream &in, QStorageInfoData &s)
-{
-    in >> s.drives;
-    return in;
-}
-
-QDataStream &operator<<(QDataStream &out, const QStorageInfoData::DriveInfo &s)
-{
-    out << s.totalSpace << s.availableSpace;
-    out << s.uri;
-    out << static_cast<qint32>(s.type);
-
-    return out;
-}
-
-QDataStream &operator>>(QDataStream &in, QStorageInfoData::DriveInfo &s)
-{
-    in >> s.totalSpace >> s.availableSpace;
-    in >> s.uri;
-    qint32 type;
-    in >> type;
-    s.type = static_cast<QStorageInfo::DriveType>(type);
 
     return in;
 }

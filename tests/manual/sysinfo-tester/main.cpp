@@ -48,7 +48,6 @@
 #include "qbatteryinfo.h"
 #include "qdeviceinfo.h"
 #include "qnetworkinfo.h"
-#include "qstorageinfo.h"
 //#include "qscreensaverinfo.h"
 
 
@@ -217,65 +216,6 @@ static void test_deviceinfo(void)
 }
 
 /* ------------------------------------------------------------------------- *
- * test_systemstorageinfo
- * ------------------------------------------------------------------------- */
-
-static const char *human_size(qlonglong n)
-{
-  if (n == 0) return "0B";
-
-  static char buf[256];
-  char *pos = buf;
-  char *end = buf + sizeof buf;
-
-  int b = n & 1023; n >>= 10;
-  int k = n & 1023; n >>= 10;
-  int m = n & 1023; n >>= 10;
-  int g = n & 1023; n >>= 10;
-
-  *pos = 0;
-#if defined(Q_OS_WIN)
-  if (g) _snprintf_s(pos, sizeof(pos), end-pos,"%s%dGB", *buf?" ":"", g), pos = strchr(pos,0);
-  if (m) _snprintf_s(pos, sizeof(pos), end-pos,"%s%dMB", *buf?" ":"", m), pos = strchr(pos,0);
-  if (k) _snprintf_s(pos, sizeof(pos), end-pos,"%s%dkB", *buf?" ":"", k), pos = strchr(pos,0);
-  if (b) _snprintf_s(pos, sizeof(pos), end-pos,"%s%dB",  *buf?" ":"", b), pos = strchr(pos,0);
-#else
-  if (g) snprintf(pos, end-pos, "%s%dGB", *buf?" ":"", g), pos = strchr(pos,0);
-  if (m) snprintf(pos, end-pos, "%s%dMB", *buf?" ":"", m), pos = strchr(pos,0);
-  if (k) snprintf(pos, end-pos, "%s%dkB", *buf?" ":"", k), pos = strchr(pos,0);
-  if (b) snprintf(pos, end-pos, "%s%dB",  *buf?" ":"", b), pos = strchr(pos,0);
-#endif
-  return buf;
-}
-
-static void test_storageinfo(void)
-{
-  QStorageInfo storageinfo;
-
-  QStringList lst = storageinfo.allLogicalDrives();
-
-  qDebug() << "storageinfo.logicalDrives ->" << lst;
-
-  for (int i = 0; i < lst.size(); ++i) {
-    const QString &drv = lst.at(i);
-
-    qDebug() << "Logical drive:" << drv;
-
-    qlonglong avail = storageinfo.availableDiskSpace(drv);
-    qDebug() << "  storageinfo.availableDiskSpace() ->" << human_size(avail);
-
-    qlonglong total = storageinfo.totalDiskSpace(drv);
-    qDebug() << "  storageinfo.totalDiskSpace() ->" << human_size(total);
-
-    QStorageInfo::DriveType dtype = storageinfo.driveType(drv);
-    qDebug() << "  storageinfo.typeForDrive() ->" << dtype;
-
-    QString duri = storageinfo.uriForDrive(drv);
-    qDebug() << "  storageinfo.uriForDrive() ->" << duri;
-  }
-}
-
-/* ------------------------------------------------------------------------- *
  * test_systemnetworkinfo
  * ------------------------------------------------------------------------- */
 
@@ -368,7 +308,6 @@ struct dummy_t
 #define ADD(x) {#x, test_##x }
 //  ADD(systeminfo),
   ADD(deviceinfo),
-  ADD(storageinfo),
   ADD(networkinfo),
 //  ADD(screensaver),
   ADD(batteryinfo),
