@@ -42,6 +42,17 @@
 #ifndef QSERVICE_PACKAGE_H
 #define QSERVICE_PACKAGE_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qserviceframeworkglobal.h"
 #include <QExplicitlySharedDataPointer>
 #include <QSharedData>
@@ -130,4 +141,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif
+#endif //QSERVICE_PACKAGE_H

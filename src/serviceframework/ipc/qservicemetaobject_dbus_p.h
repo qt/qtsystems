@@ -42,6 +42,17 @@
 #ifndef QSERVICE_METAOBJECT_DBUS_H
 #define QSERVICE_METAOBJECT_DBUS_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qserviceframeworkglobal.h"
 #include "objectendpoint_dbus_p.h"
 #include <QObject>

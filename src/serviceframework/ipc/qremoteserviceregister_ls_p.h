@@ -42,6 +42,17 @@
 #ifndef QREMOTESERVICEREGISTER_LS_P_H
 #define QREMOTESERVICEREGISTER_LS_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qremoteserviceregister.h"
 #include "instancemanager_p.h"
 #include "qserviceinterfacedescriptor.h"
@@ -74,4 +85,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif
+#endif //QREMOTESERVICEREGISTER_LS_P_H
