@@ -269,6 +269,8 @@ void QUPowerDeviceInterface::propChanged()
 void QUPowerDeviceInterface::propRequestFinished(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<QVariantMap> reply = *call;
+    call->deleteLater();
+
     if (!reply.isValid()) {
         // don't throw away the existing map if the call fails
         qWarning() << "QUPowerDeviceInterface: fetching properties failed: " << reply.error();
