@@ -72,8 +72,8 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, NETWORK_SYSFS_PATH, (QLatin1String("/sys/class/net/")))
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, WLAN_MASK, (QStringList() << QLatin1String("wlan*")))
-Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, ETHERNET_MASK, (QStringList() << QLatin1String("eth*") << QLatin1String("usb*")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, WLAN_MASK, (QStringList() << QLatin1String("wlan*") << QLatin1String("wlp*")))
+Q_GLOBAL_STATIC_WITH_ARGS(const QStringList, ETHERNET_MASK, (QStringList() << QLatin1String("eth*") << QLatin1String("usb*") << QLatin1String("enp*")))
 
 QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     : QObject(parent)
@@ -579,14 +579,16 @@ void QNetworkInfoPrivate::onUdevChanged()
 
     QString sysname(QString::fromLocal8Bit(udev_device_get_sysname(udevDevice)));
     if (watchNetworkInterfaceCount) {
-        if (sysname.startsWith(QString(QStringLiteral("eth"))) || sysname.startsWith(QString(QStringLiteral("usb")))) {
+        if (sysname.startsWith(QLatin1String("eth"))
+                || sysname.startsWith(QLatin1String("usb"))
+                || sysname.startsWith(QLatin1String("enp"))) {
             if (0 == strcmp(udev_device_get_action(udevDevice), "add"))
                 ++networkInterfaceCounts[QNetworkInfo::EthernetMode];
             else if (0 == strcmp(udev_device_get_action(udevDevice), "remove"))
                 --networkInterfaceCounts[QNetworkInfo::EthernetMode];
             emit networkInterfaceCountChanged(QNetworkInfo::EthernetMode,
                                                 networkInterfaceCounts[QNetworkInfo::EthernetMode]);
-        } else if (sysname.startsWith(QString(QStringLiteral("wlan")))) {
+        } else if (sysname.startsWith(QLatin1String("wlan")) || sysname.startsWith(QLatin1String("wlp"))) {
             if (0 == strcmp(udev_device_get_action(udevDevice), "add"))
                 ++networkInterfaceCounts[QNetworkInfo::WlanMode];
             else if (0 == strcmp(udev_device_get_action(udevDevice), "remove"))
@@ -861,10 +863,8 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
 {
     switch (mode) {
     case QNetworkInfo::WlanMode: {
-       if (interface < networkInterfaceCount(QNetworkInfo::WlanMode)) {
-            QString fileName = (*WLAN_MASK()).at(0);
-            fileName.chop(1);
-            fileName.append(QString::number(interface));
+        if (interface < networkInterfaceCount(QNetworkInfo::WlanMode)) {
+            const QString fileName = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK()).at(interface);
             QFile carrier(*NETWORK_SYSFS_PATH() + fileName + QStringLiteral("/carrier"));
             if (carrier.open(QIODevice::ReadOnly)) {
                 char state;
@@ -879,16 +879,12 @@ QNetworkInfo::NetworkStatus QNetworkInfoPrivate::getNetworkStatus(QNetworkInfo::
 
     case QNetworkInfo::EthernetMode: {
         if (interface < networkInterfaceCount(QNetworkInfo::EthernetMode)) {
-            for (int i = 0; i < (*ETHERNET_MASK()).length(); i++) {
-                QString fileName = (*ETHERNET_MASK()).at(i);
-                fileName.chop(1);
-                fileName.append(QString::number(interface));
-                QFile carrier(*NETWORK_SYSFS_PATH() + fileName + QStringLiteral("/carrier"));
-                if (carrier.open(QIODevice::ReadOnly)) {
-                    char state;
-                    if ((carrier.read(&state, 1) == 1) && (state == '1'))
-                        return QNetworkInfo::HomeNetwork;
-                }
+            const QString fileName = QDir(*NETWORK_SYSFS_PATH()).entryList(*ETHERNET_MASK()).at(interface);
+            QFile carrier(*NETWORK_SYSFS_PATH() + fileName + QStringLiteral("/carrier"));
+            if (carrier.open(QIODevice::ReadOnly)) {
+                char state;
+                if ((carrier.read(&state, 1) == 1) && (state == '1'))
+                    return QNetworkInfo::HomeNetwork;
             }
         }
         return QNetworkInfo::NoNetworkAvailable;
@@ -965,16 +961,19 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
                 iwInfo.u.essid.pointer = (caddr_t)&buffer;
                 iwInfo.u.essid.length = IW_ESSID_MAX_SIZE + 1;
                 iwInfo.u.essid.flags = 0;
-                QString fileName = (*WLAN_MASK()).at(0);
-                fileName.chop(1);
-                fileName.append(QString::number(interface));
-                strncpy(iwInfo.ifr_name, fileName.toLocal8Bit().constData(), IFNAMSIZ);
-                if (ioctl(sock, SIOCGIWESSID, &iwInfo) == 0) {
-                    close(sock);
-                    return QString::fromLatin1((const char *)iwInfo.u.essid.pointer);
-                }
+                for (int i = 0; i < WLAN_MASK()->count(); i++) {
+                    const QString fileName = QDir(*NETWORK_SYSFS_PATH()).entryList(*WLAN_MASK()).at(interface);
+                    strncpy(iwInfo.ifr_name, fileName.toLocal8Bit().constData(), IFNAMSIZ);
+                    if (ioctl(sock, SIOCGIWESSID, &iwInfo) == 0) {
+                        close(sock);
+                        return QString::fromLatin1((const char *)iwInfo.u.essid.pointer);
+                    } else {
+                        qDebug() << "ioctl failed";
+                    }
 
-                close(sock);
+                    close(sock);
+
+                }
             }
         }
         break;
@@ -986,6 +985,8 @@ QString QNetworkInfoPrivate::getNetworkName(QNetworkInfo::NetworkMode mode, int 
         if (getdomainname(domainName, 64) == 0) {
             if (strcmp(domainName, "(none)") != 0)
                 return QString::fromLatin1(domainName);
+            else
+                return QStringLiteral("Unknown");
         }
         break;
     }
