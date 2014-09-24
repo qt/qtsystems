@@ -472,50 +472,6 @@ Module {
         }
     }
     Component {
-        name: "QDeclarativeStorageInfo"
-        prototype: "QObject"
-        exports: ["QtSystemInfo/StorageInfo 5.0"]
-        exportMetaObjectRevisions: [0]
-        Enum {
-            name: "DriveType"
-            values: {
-                "UnknownDrive": 0,
-                "InternalDrive": 1,
-                "RemovableDrive": 2,
-                "RemoteDrive": 3,
-                "CdromDrive": 4,
-                "RamDrive": 5
-            }
-        }
-        Property { name: "allLogicalDrives"; type: "QStringList"; isReadonly: true }
-        Property { name: "monitorAllLogicalDrives"; type: "bool" }
-        Signal {
-            name: "logicalDriveChanged"
-            Parameter { name: "drive"; type: "string" }
-            Parameter { name: "added"; type: "bool" }
-        }
-        Method {
-            name: "availableDiskSpace"
-            type: "qlonglong"
-            Parameter { name: "drive"; type: "string" }
-        }
-        Method {
-            name: "totalDiskSpace"
-            type: "qlonglong"
-            Parameter { name: "drive"; type: "string" }
-        }
-        Method {
-            name: "uriForDrive"
-            type: "string"
-            Parameter { name: "drive"; type: "string" }
-        }
-        Method {
-            name: "driveType"
-            type: "int"
-            Parameter { name: "drive"; type: "string" }
-        }
-    }
-    Component {
         name: "QScreenSaver"
         prototype: "QObject"
         exports: ["QtSystemInfo/ScreenSaver 5.0"]
