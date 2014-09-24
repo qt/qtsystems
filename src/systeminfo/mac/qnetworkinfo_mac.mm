@@ -322,6 +322,7 @@ QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
     [pool release];
 #endif
     rssiTimer = new QTimer(this);
+    runloopThread = NULL;
 
     if (!self)
         self = this;
@@ -333,7 +334,7 @@ QNetworkInfoPrivate::QNetworkInfoPrivate(QNetworkInfo *parent)
 QNetworkInfoPrivate::~QNetworkInfoPrivate()
 {
 #ifndef MAC_SDK_10_5
-    if (hasWifi && networkThreadOk && runloopThread->keepRunning) {
+    if (runloopThread && hasWifi && networkThreadOk && runloopThread->keepRunning) {
         runloopThread->stop();
         delete runloopThread;
     }
