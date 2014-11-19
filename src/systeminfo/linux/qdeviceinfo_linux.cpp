@@ -407,11 +407,9 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
             QCryptographicHash hash2(QCryptographicHash::Sha1);
             hash2.addData(macaddy.toLocal8Bit());
 
-            QString id = hash2.result().toHex();
-
-            id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
-            if (isUuid(id))
-                uniqueDeviceIDBuffer = id;
+            QUuid id = QUuid::fromRfc4122(hash2.result().left(16));
+            if (!id.isNull())
+                uniqueDeviceIDBuffer = id.toString();
         }
     }
 
