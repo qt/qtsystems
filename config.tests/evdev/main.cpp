@@ -31,35 +31,9 @@
 **
 ****************************************************************************/
 
-#ifndef QSCREENSAVER_H
-#define QSCREENSAVER_H
+#include <libevdev/libevdev.h>
 
-#include "qsysteminfoglobal.h"
-#include <QtCore/qobject.h>
-
-QT_BEGIN_NAMESPACE
-
-class QScreenSaverPrivate;
-
-class Q_SYSTEMINFO_EXPORT QScreenSaver : public QObject
+int main()
 {
-    Q_OBJECT
-
-    Q_PROPERTY(bool screenSaverEnabled READ screenSaverEnabled WRITE setScreenSaverEnabled)
-
-public:
-    explicit QScreenSaver(QObject *parent = Q_NULLPTR);
-    virtual ~QScreenSaver();
-
-    bool screenSaverEnabled() const;
-    void setScreenSaverEnabled(bool enabled);
-
-private:
-    Q_DISABLE_COPY(QScreenSaver)
-    QScreenSaverPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QScreenSaver)
-};
-
-QT_END_NAMESPACE
-
-#endif // QSCREENSAVER_H
+    return 0;
+}

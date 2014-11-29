@@ -34,7 +34,7 @@
 #ifndef QNETWORKINFO_H
 #define QNETWORKINFO_H
 
-#include <QtSystemInfo/qsysteminfoglobal.h>
+#include "qsysteminfoglobal.h"
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkinterface.h>
 

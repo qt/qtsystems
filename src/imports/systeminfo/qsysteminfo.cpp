@@ -37,7 +37,11 @@
 #include "qbatteryinfo.h"
 #include "qdeclarativedeviceinfo_p.h"
 #include "qdeclarativenetworkinfo_p.h"
+#if defined(Q_OS_LINUX)
+#include "qdeclarativeinputdevicemodel_p.h"
+#endif
 #include <qscreensaver.h>
+#include "qinputinfo.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -57,6 +61,13 @@ public:
         qmlRegisterType<QDeclarativeDeviceInfo>(uri, major, minor, "DeviceInfo");
         qmlRegisterType<QDeclarativeNetworkInfo>(uri, major, minor, "NetworkInfo");
         qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");
+
+#if defined(Q_OS_LINUX)
+        minor = 5;
+        qmlRegisterType<QInputInfoManager>(uri, major, minor, "InputDeviceManager");
+        qmlRegisterType<QDeclarativeInputDeviceModel>(uri, major, minor, "InputDeviceModel");
+        qmlRegisterType<QInputDevice>(uri, major, minor, "InputInfo");
+#endif
     }
 };
 

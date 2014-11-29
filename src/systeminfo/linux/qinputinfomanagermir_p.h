@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd and/or its subsidiary(-ies).
+** Copyright (C) 2016 Canonical, Ltd. and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -31,35 +31,30 @@
 **
 ****************************************************************************/
 
-#ifndef QSCREENSAVER_H
-#define QSCREENSAVER_H
+#ifndef QINPUTINFOMANAGER_MIR_P_H
+#define QINPUTINFOMANAGER_MIR_P_H
 
-#include "qsysteminfoglobal.h"
-#include <QtCore/qobject.h>
+#include "qinputinfomanager_p.h"
+#include <mir_toolkit/client_types.h>
+#include <mir_toolkit/mir_connection.h>
+#include <mir_toolkit/mir_input_device.h>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
-class QScreenSaverPrivate;
-
-class Q_SYSTEMINFO_EXPORT QScreenSaver : public QObject
+class QInputInfoManagerMir : public QInputInfoManagerPrivate
 {
-    Q_OBJECT
-
-    Q_PROPERTY(bool screenSaverEnabled READ screenSaverEnabled WRITE setScreenSaverEnabled)
-
 public:
-    explicit QScreenSaver(QObject *parent = Q_NULLPTR);
-    virtual ~QScreenSaver();
-
-    bool screenSaverEnabled() const;
-    void setScreenSaverEnabled(bool enabled);
+    QInputInfoManagerMir(MirConnection *con, QObject *parent = NULL);
 
 private:
-    Q_DISABLE_COPY(QScreenSaver)
-    QScreenSaverPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QScreenSaver)
+    void update_devices();
+    MirConnection *connection;
+    using MirInputConfigPtr = std::unique_ptr<MirInputConfig const,void (*)(MirInputConfig const*)>;
+    MirInputConfigPtr config;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSCREENSAVER_H
+#endif // QINPUTINFOMANAGER_MIR_P_H

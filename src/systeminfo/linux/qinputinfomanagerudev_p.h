@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2016 Canonical, Ltd. and/or its subsidiary(-ies).
 ** Copyright (C) 2015 The Qt Company Ltd and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -31,35 +32,39 @@
 **
 ****************************************************************************/
 
-#ifndef QSCREENSAVER_H
-#define QSCREENSAVER_H
+#ifndef QINPUTDEVICEMANAGER_UDEV_P_H
+#define QINPUTDEVICEMANAGER_UDEV_P_H
 
-#include "qsysteminfoglobal.h"
-#include <QtCore/qobject.h>
+#include "qinputinfomanager_p.h"
+#include <libudev.h>
 
 QT_BEGIN_NAMESPACE
 
-class QScreenSaverPrivate;
-
-class Q_SYSTEMINFO_EXPORT QScreenSaver : public QObject
+class QInputInfoManagerUdev : public QInputInfoManagerPrivate
 {
     Q_OBJECT
-
-    Q_PROPERTY(bool screenSaverEnabled READ screenSaverEnabled WRITE setScreenSaverEnabled)
-
 public:
-    explicit QScreenSaver(QObject *parent = Q_NULLPTR);
-    virtual ~QScreenSaver();
-
-    bool screenSaverEnabled() const;
-    void setScreenSaverEnabled(bool enabled);
+    explicit QInputInfoManagerUdev(QObject *parent = 0);
+    ~QInputInfoManagerUdev();
 
 private:
-    Q_DISABLE_COPY(QScreenSaver)
-    QScreenSaverPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QScreenSaver)
+    QInputDevice *addDevice(struct udev_device *udev);
+    QInputDevice *addUdevDevice(struct udev_device *);
+
+    QInputDevice *addDevice(const QString &path);
+    void removeDevice(const QString &path);
+    QSocketNotifier *notifier;
+    int notifierFd;
+    struct udev_monitor *udevMonitor;
+    QInputDevice::InputTypeFlags getInputTypeFlags(struct udev_device *);
+    struct udev *udevice;
+    void addDetails(struct udev_device *);
+
+private Q_SLOTS:
+    void onUDevChanges();
+    void init();
 };
 
 QT_END_NAMESPACE
 
-#endif // QSCREENSAVER_H
+#endif // QINPUTDEVICEMANAGER_UDEV_P_H

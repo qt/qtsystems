@@ -34,8 +34,8 @@ win32: !simulator: {
                        windows/qdeviceinfo_win_p.h \
                        windows/qbatteryinfo_win_p.h \
                        windows/qnetworkinfo_win_p.h \
-                       windows/qwmihelper_win_p.h \
-                       windows/qsysteminfoglobal_p.h
+                       windows/qwmihelper_win_p.h
+#                       windows/qsysteminfoglobal_p.h
 
     SOURCES += windows/qscreensaver_win.cpp \
                windows/qdeviceinfo_win.cpp \
@@ -52,16 +52,21 @@ win32: !simulator: {
   win32-g++: {
         LIBS += -luser32 -lgdi32
     }
-
 }
 
 linux-*: !simulator: {
     PRIVATE_HEADERS += linux/qdeviceinfo_linux_p.h \
                        linux/qnetworkinfo_linux_p.h
 
+    SOURCES += \
+           qinputinfo.cpp \
+           linux/qdeviceinfo_linux.cpp \
+           linux/qnetworkinfo_linux.cpp \
+           linux/qinputinfomanager.cpp
+   HEADERS += \
+         qinputinfo.h \
+         linux/qinputinfomanager_p.h
 
-    SOURCES += linux/qdeviceinfo_linux.cpp \
-               linux/qnetworkinfo_linux.cpp
     contains(QT_CONFIG, mirclient) {
         DEFINES += QT_UNITY8
         PRIVATE_HEADERS += linux/qscreensaver_mir_p.h
@@ -122,12 +127,32 @@ linux-*: !simulator: {
         SOURCES += linux/qbatteryinfo_linux.cpp
     }
 
+    config_mir {
+        QT += gui gui-private
+        CONFIG += link_pkgconfig
+        PKGCONFIG += mirclient
+        LIBS += -lmirclient
+        SOURCES += linux/qinputinfomanagermir.cpp
+        PRIVATE_HEADERS += linux/qinputinfomanagermir_p.h
+    } else {
+        DEFINES += QT_NO_MIR
+    }
+
     config_udev {
         CONFIG += link_pkgconfig
         PKGCONFIG += udev
         LIBS += -ludev
-        PRIVATE_HEADERS += linux/qudevwrapper_p.h
-        SOURCES += linux/qudevwrapper.cpp
+
+        config_evdev {
+            PKGCONFIG += libevdev
+            LIBS +=  -levdev
+        } else {
+            DEFINES += QT_NO_EVDEV
+        }
+        PRIVATE_HEADERS += linux/qudevwrapper_p.h \
+            linux/qinputinfomanagerudev_p.h
+        SOURCES += linux/qudevwrapper.cpp \
+                   linux/qinputinfomanagerudev.cpp
     } else {
         DEFINES += QT_NO_UDEV
     }
@@ -216,12 +241,15 @@ simulator {
             DEFINES += QT_NO_OFONO QT_NO_UDISKS
         }
 
+        DEFINES += QT_NO_MIR
+
         config_udev {
             CONFIG += link_pkgconfig
             PKGCONFIG += udev
             LIBS += -ludev
             PRIVATE_HEADERS += linux/qudevwrapper_p.h
-            SOURCES += linux/qudevwrapper.cpp
+            SOURCES += linux/qudevwrapper.cpp \
+                       linux/qinputdeviceinfo_udev.cpp
         } else {
             DEFINES += QT_NO_UDEV
         }
@@ -239,4 +267,7 @@ config_bluez {
     # bluetooth.h is not standards compliant
     CONFIG -= strict_c++
 }
+
+OTHER_FILES += \
+    notes.txt
 

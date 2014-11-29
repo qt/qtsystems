@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd and/or its subsidiary(-ies).
+** Copyright (C) 2016 Canonical, Ltd. and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSystems module of the Qt Toolkit.
@@ -31,35 +31,44 @@
 **
 ****************************************************************************/
 
-#ifndef QSCREENSAVER_H
-#define QSCREENSAVER_H
+#ifndef QINPUTDEVICEINFO_LINUX_P_H
+#define QINPUTDEVICEINFO_LINUX_P_H
 
-#include "qsysteminfoglobal.h"
-#include <QtCore/qobject.h>
+#include <QObject>
+#include "qinputinfo.h"
 
 QT_BEGIN_NAMESPACE
 
-class QScreenSaverPrivate;
-
-class Q_SYSTEMINFO_EXPORT QScreenSaver : public QObject
+class QInputDevicePrivate : public QObject
 {
     Q_OBJECT
-
-    Q_PROPERTY(bool screenSaverEnabled READ screenSaverEnabled WRITE setScreenSaverEnabled)
-
 public:
-    explicit QScreenSaver(QObject *parent = Q_NULLPTR);
-    virtual ~QScreenSaver();
+    explicit QInputDevicePrivate(QObject *parent = 0);
 
-    bool screenSaverEnabled() const;
-    void setScreenSaverEnabled(bool enabled);
+    QString name;
+    QString identifier;
+    QList <int> buttons; //keys
+    QList <int> switches;
+    QList <int> relativeAxes;
+    QList <int> absoluteAxes;
+    QInputDevice::InputTypeFlags type;
+};
 
-private:
-    Q_DISABLE_COPY(QScreenSaver)
-    QScreenSaverPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QScreenSaver)
+class QInputInfoManagerPrivate : public QObject
+{
+    Q_OBJECT
+public:
+    explicit QInputInfoManagerPrivate(QObject *parent = 0);
+    QVector <QInputDevice *> deviceList;
+    QMap <QString, QInputDevice *> deviceMap;
+    static QInputInfoManagerPrivate * instance();
+
+signals:
+    void deviceAdded( QInputDevice *inputDevice);
+    void deviceRemoved(const QString &deviceId);
+    void ready();
 };
 
 QT_END_NAMESPACE
 
-#endif // QSCREENSAVER_H
+#endif // QINPUTDEVICEINFO_LINUX_P_H

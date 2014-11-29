@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2016 Canonical, Ltd. and/or its subsidiary(-ies).
 ** Copyright (C) 2015 The Qt Company Ltd and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
