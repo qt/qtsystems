@@ -100,6 +100,7 @@ public:
     quint16 type();
     qint64 timeToFull();
     QString nativePath();
+    quint16 technology();
 
     QVariantMap getProperties() { return pMap; }
 

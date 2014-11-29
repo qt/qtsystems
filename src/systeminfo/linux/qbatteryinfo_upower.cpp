@@ -310,6 +310,7 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::chargingState()
 QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus(int battery)
 {
     QBatteryInfo::LevelStatus stat = QBatteryInfo::LevelUnknown;
+
     if (batteryMap.count() >= battery) {
         int level = batteryMap.value(battery).value(QStringLiteral("Percentage")).toInt();
         if (level < 3)
@@ -331,9 +332,16 @@ QBatteryInfo::LevelStatus QBatteryInfoPrivate::levelStatus()
 
 QBatteryInfo::Health QBatteryInfoPrivate::health(int battery)
 {
-    Q_UNUSED(battery)
-
-    return QBatteryInfo::HealthUnknown;
+    QBatteryInfo::Health health = QBatteryInfo::HealthUnknown;
+    if (batteryMap.count() >= battery) {
+        int percent = (batteryMap.value(battery).value(QStringLiteral("EnergyFull")).toInt() *100)
+                / (float)( batteryMap.value(battery).value(QStringLiteral("EnergyFullDesign")).toInt());
+        if (percent < 65)
+            health = QBatteryInfo::HealthBad;
+        else
+            health = QBatteryInfo::HealthOk;
+    }
+    return health;
 }
 
 QBatteryInfo::Health QBatteryInfoPrivate::health()
@@ -353,38 +361,25 @@ float QBatteryInfoPrivate::temperature()
     return temperature(index);
 }
 
-void QBatteryInfoPrivate::upowerDeviceChanged()
-{
-    QUPowerDeviceInterface *uPowerDevice = qobject_cast<QUPowerDeviceInterface*>(sender());
-
-    if (uPowerDevice->type() == 1) {
-//line power
-        if (uPowerDevice->nativePath().contains(QStringLiteral("usb")))
-            Q_EMIT chargerTypeChanged(QBatteryInfo::USBCharger);
-        else
-            Q_EMIT chargerTypeChanged(QBatteryInfo::WallCharger);
-    }
-    if (uPowerDevice->type() == 2) {
-//battery
-    }
-}
 void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, const QVariant &v)
 {
     QUPowerDeviceInterface *uPowerDevice = qobject_cast<QUPowerDeviceInterface*>(sender());
-
     int foundBattery = 0;
-    QMapIterator<int, QVariantMap> i(batteryMap);
-    while (i.hasNext()) {
-        i.next();
-        if (i.value().value(QStringLiteral("NativePath")).toString() == uPowerDevice->nativePath()) {
-            foundBattery = i.key();
-            break;
-        }
-    }
 
-    QVariantMap foundMap = batteryMap.value(foundBattery);
-    foundMap.insert(prop,v);
-    batteryMap.insert(foundBattery,foundMap);
+    if (uPowerDevice->type() == 2) {
+        QMapIterator<int, QVariantMap> i(batteryMap);
+        while (i.hasNext()) {
+            i.next();
+            if (i.value().value(QStringLiteral("NativePath")).toString() == uPowerDevice->nativePath()) {
+                foundBattery = i.key();
+                break;
+            }
+        }
+
+        QVariantMap foundMap = batteryMap.value(foundBattery);
+        foundMap.insert(prop,v);
+        batteryMap.insert(foundBattery,foundMap);
+    }
 
     if (prop == QLatin1String("Energy")) {
         if (foundBattery == index)
@@ -396,7 +391,6 @@ void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, cons
 
     } else if (prop == QLatin1String("Percentage")) {
         int level = v.toInt();
-        //  Q_EMIT remainingCapacityChanged(foundBattery, level);
 
         QBatteryInfo::LevelStatus stat = QBatteryInfo::LevelUnknown;
 
@@ -409,10 +403,8 @@ void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, cons
         else
             stat = QBatteryInfo::LevelFull;
 
-        //   if (batteryMap.value(foundBattery).value(QStringLiteral("Percentage")).toInt() != stat) {
         if (foundBattery == index)
             Q_EMIT levelStatusChanged(stat);
-        //   }
 
     } else if (prop == QLatin1String("Voltage")) {
         if (foundBattery == index)
@@ -427,34 +419,37 @@ void QBatteryInfoPrivate::uPowerBatteryPropertyChanged(const QString &prop, cons
             if (foundBattery == index)
                 Q_EMIT chargingStateChanged(curChargeState);
         }
+    } else if (prop == QLatin1String("Capacity")) {
+        QBatteryInfo::Health newHealth = health(index);
+        if (newHealth != healthList.value(index)) {
+            healthList.insert(index,newHealth);
+            Q_EMIT healthChanged(newHealth);
+        }
 
-        } else if (prop == QLatin1String("Capacity")) {
-        qDebug() << "Your battery just got less capacity";
     } else if (prop == QLatin1String("TimeToFull")) {
         if (foundBattery == index)
             Q_EMIT remainingChargingTimeChanged(v.toInt());
-
-    } else if (prop == QLatin1String("Type")) {
-        if (uPowerDevice->isOnline()) {
-            QBatteryInfo::ChargerType curCharger = getChargerType(uPowerDevice->nativePath());
-            if (curCharger != cType) {
-                cType = curCharger;
-                Q_EMIT chargerTypeChanged(cType);
-            }
+    } else if (prop == QLatin1String("Online")) {
+        QBatteryInfo::ChargerType curCharger = QBatteryInfo::UnknownCharger;
+        if (v.toBool()) {
+            curCharger = getChargerType(uPowerDevice->nativePath());
+        }
+        if (curCharger != cType) {
+            cType = curCharger;
+            Q_EMIT chargerTypeChanged(cType);
         }
     }
 }
 
 QBatteryInfo::ChargerType QBatteryInfoPrivate::getChargerType(const QString &path)
 {
-    QFile charger;
     QBatteryInfo::ChargerType chargerType = QBatteryInfo::UnknownCharger;
-    charger.setFileName(path + QStringLiteral("/type"));
+    QFile charger;
+    charger.setFileName(QStringLiteral("/sys/class/power_supply/") + path + QStringLiteral("/type"));
     if (charger.open(QIODevice::ReadOnly)) {
         QString line = QString::fromLocal8Bit(charger.readAll().simplified());
         if (line  == QStringLiteral("USB")) {
             chargerType = QBatteryInfo::USBCharger;
-
         } else if (line == QStringLiteral("Mains")) {
             chargerType = QBatteryInfo::WallCharger;
         }
@@ -492,7 +487,6 @@ QBatteryInfo::ChargingState QBatteryInfoPrivate::getCurrentChargingState(int sta
 
 void QBatteryInfoPrivate::getBatteryStats()
 {
-    int batteryNumber = 0;
     batteryMap.clear();
     QUPowerInterface *power;
     power = new QUPowerInterface(this);
@@ -503,25 +497,94 @@ void QBatteryInfoPrivate::getBatteryStats()
             this,SLOT(deviceRemoved(QString)));
 
     foreach (const QDBusObjectPath &objpath, power->enumerateDevices()) {
-        QUPowerDeviceInterface *battery;
-        battery = new QUPowerDeviceInterface(objpath.path(),this);
+        QUPowerDeviceInterface *uPowerDevice;
+        uPowerDevice = new QUPowerDeviceInterface(objpath.path(),this);
+        connect(uPowerDevice,SIGNAL(propertyChanged(QString,QVariant)),
+                this,SLOT(uPowerBatteryPropertyChanged(QString,QVariant)));
 
-        if (!battery->isPowerSupply())
-            continue;
-        if (battery->type() == 1) { //line power
-            cType = getChargerType(battery->nativePath());
+
+        QMapIterator<QString, QVariant> i(uPowerDevice->getProperties());
+        while (i.hasNext()) {
+            i.next();
+            QString prop = i.key();
+            QVariant v = i.value();
+
+            int foundBattery = 0;
+            if (uPowerDevice->type() == 2) {
+
+                QMapIterator<int, QVariantMap> i(batteryMap);
+                while (i.hasNext()) {
+                    i.next();
+                    if (i.value().value(QStringLiteral("NativePath")).toString() == uPowerDevice->nativePath()) {
+                        foundBattery = i.key();
+                        break;
+                    }
+                }
+
+                QVariantMap foundMap = batteryMap.value(foundBattery);
+                foundMap.insert(prop,v);
+                batteryMap.insert(foundBattery,foundMap);
+            }
+
+            if (prop == QLatin1String("Energy")) {
+                if (foundBattery == index)
+                    Q_EMIT remainingCapacityChanged(v.toDouble() * 1000);
+            } else if (prop == QLatin1String("EnergyFullDesign")) {
+
+            } else if (prop == QLatin1String("EnergyRate")) {
+                if (foundBattery == index)
+                    Q_EMIT currentFlowChanged(v.toDouble() / (uPowerDevice->voltage() * 1000));
+
+            } else if (prop == QLatin1String("Percentage")) {
+                int level = v.toInt();
+
+                QBatteryInfo::LevelStatus stat = QBatteryInfo::LevelUnknown;
+
+                if (level < 3)
+                    stat = QBatteryInfo::LevelEmpty;
+                else if (level < 11)
+                    stat = QBatteryInfo::LevelLow;
+                else if (level < 99)
+                    stat = QBatteryInfo::LevelOk;
+                else
+                    stat = QBatteryInfo::LevelFull;
+
+                if (foundBattery == index)
+                    Q_EMIT levelStatusChanged(stat);
+
+            } else if (prop == QLatin1String("Voltage")) {
+                if (foundBattery == index)
+                    Q_EMIT voltageChanged(v.toDouble() * 1000 );
+
+            } else if (prop == QLatin1String("State")) {
+
+                QBatteryInfo::ChargingState curChargeState = getCurrentChargingState(v.toInt());
+
+                if (curChargeState != cState) {
+                    cState = curChargeState;
+                    if (foundBattery == index)
+                        Q_EMIT chargingStateChanged(curChargeState);
+                }
+
+            } else if (prop == QLatin1String("Capacity")) {
+
+                QBatteryInfo::Health newHealth = health(index);
+                healthList.insert(index,newHealth);
+                Q_EMIT healthChanged(newHealth);
+
+            } else if (prop == QLatin1String("TimeToFull")) {
+                Q_EMIT remainingChargingTimeChanged(v.toInt());
+            } else if (prop == QLatin1String("Online")) {
+                QBatteryInfo::ChargerType curCharger = QBatteryInfo::UnknownCharger;
+                if (v.toBool()) {
+                    curCharger = getChargerType(uPowerDevice->nativePath());
+                    if (curCharger != cType) {
+                        cType = curCharger;
+                        Q_EMIT chargerTypeChanged(cType);
+                    }
+                }
+            }
         }
-        if (battery->type() == 2) { //battery power
-
-            batteryMap.insert(batteryNumber++,battery->getProperties());
-
-            connect(battery,SIGNAL(changed()),this,SLOT(upowerDeviceChanged()));
-            connect(battery,SIGNAL(propertyChanged(QString,QVariant)),
-                    this,SLOT(uPowerBatteryPropertyChanged(QString,QVariant)));
-
-            cState = getCurrentChargingState(battery->state());
-
-        } //end enumerateDevices
     }
 }
 
@@ -530,13 +593,11 @@ void QBatteryInfoPrivate::deviceAdded(const QString &path)
     QUPowerDeviceInterface *battery;
     battery = new QUPowerDeviceInterface(path,this);
     int batteryNumber = batteryCount();
+    connect(battery,SIGNAL(propertyChanged(QString,QVariant)),
+            this,SLOT(uPowerBatteryPropertyChanged(QString,QVariant)));
 
     if (battery->type() == 2) {
         batteryMap.insert(++batteryNumber,battery->getProperties());
-        connect(battery,SIGNAL(changed()),this,SLOT(upowerDeviceChanged()));
-        connect(battery,SIGNAL(propertyChanged(QString,QVariant)),
-                this,SLOT(uPowerBatteryPropertyChanged(QString,QVariant)));
-
     }
 }
 
@@ -557,11 +618,10 @@ void QBatteryInfoPrivate::deviceRemoved(const QString &path)
      }
 
     bool validBefore = isValid();
+    disconnect(battery,SIGNAL(propertyChanged(QString,QVariant)),
+            this,SLOT(uPowerBatteryPropertyChanged(QString,QVariant)));
     if (battery->type() == 2) {
         batteryMap.remove(foundBattery);
-        disconnect(battery,SIGNAL(changed()),this,SLOT(upowerDeviceChanged()));
-        disconnect(battery,SIGNAL(propertyChanged(QString,QVariant)),
-                this,SLOT(uPowerBatteryPropertyChanged(QString,QVariant)));
     }
     bool validNow = isValid();
     if (validBefore != validNow)

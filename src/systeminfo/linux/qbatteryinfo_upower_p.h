@@ -60,6 +60,7 @@
 #include <QtCore/QVariantMap>
 #include <QtCore/QMap>
 #include <QtDBus/QDBusServiceWatcher>
+#include "qdevicekitservice_linux_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -121,8 +122,8 @@ protected:
     QMap <int,QVariantMap> batteryMap;
     QBatteryInfo::ChargerType cType;
     QBatteryInfo::ChargingState cState;
+    QList <QBatteryInfo::Health> healthList;
 private Q_SLOTS:
-    void upowerDeviceChanged();
     void uPowerBatteryPropertyChanged(const QString & prop, const QVariant &v);
     void getBatteryStats();
     void deviceAdded(const QString &path);
@@ -139,7 +140,6 @@ private:
     void initialize();
     QBatteryInfo::ChargingState getCurrentChargingState(int);
     QBatteryInfo::ChargerType getChargerType(const QString &path);
-
 };
 
 QT_END_NAMESPACE

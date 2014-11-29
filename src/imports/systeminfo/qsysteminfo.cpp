@@ -42,6 +42,7 @@
 #include <QtQml/qqmlextensionplugin.h>
 #include <QtQml/qqml.h>
 
+#include "qbatteryinfo.h"
 #include "qdeclarativedeviceinfo_p.h"
 #include "qdeclarativenetworkinfo_p.h"
 #include <qscreensaver.h>
@@ -60,6 +61,7 @@ public:
 
         int major = 5;
         int minor = 0;
+        qmlRegisterType<QBatteryInfo>(uri, major, minor, "BatteryInfo");
         qmlRegisterType<QDeclarativeDeviceInfo>(uri, major, minor, "DeviceInfo");
         qmlRegisterType<QDeclarativeNetworkInfo>(uri, major, minor, "NetworkInfo");
         qmlRegisterType<QScreenSaver>(uri, major, minor, "ScreenSaver");

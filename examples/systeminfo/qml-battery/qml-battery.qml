@@ -44,8 +44,8 @@ import QtSystemInfo 5.0
 import QtQuick.Window 2.0
 
 Rectangle {
-    width: Screen.width
-    height: Screen.height
+    width: 640
+    height: 640
 
     MouseArea {
         anchors.fill: parent
@@ -57,20 +57,12 @@ Rectangle {
         BatteryInfo {
             id: batinfo
 
-            monitorChargerType: true
-            monitorCurrentFlow: true
-            monitorRemainingCapacity: true
-            monitorRemainingChargingTime: true
-            monitorVoltage: true
-            monitorChargingState: true
-            monitorBatteryStatus: true
-
             onChargerTypeChanged: {
-                if (type == 1) {
+                if (type == BatteryInfo.WallCharger) {
                     chargertype.text = "Wall Charger"
-                } else if (type == 2) {
+                } else if (type == BatteryInfo.USBCharger) {
                     chargertype.text = "USB Charger"
-                } else if (type == 3) {
+                } else if (type == BatteryInfo.VariableCurrentCharger) {
                     chargertype.text = "Variable Current Charger"
                 } else {
                     chargertype.text = "Unknown Charger"
@@ -78,79 +70,71 @@ Rectangle {
             }
 
             onCurrentFlowChanged: {
-                /* battery parameter skipped */
                 currentflow.text = flow + " mA"
             }
 
             onRemainingCapacityChanged: {
-                /* battery parameter skipped */
-                remainingcapacity.text = capacity + getEnergyUnit()
+                remainingcapacity.text = capacity
                 updateBatteryLevel()
             }
 
             onRemainingChargingTimeChanged: {
-                /* battery parameter skipped */
                 remainingchargingtime.text = seconds + " s"
             }
 
             onVoltageChanged: {
-                /* battery parameter skipped */
                 voltagetext.text = voltage + " mV"
             }
 
             onChargingStateChanged: {
-                /* battery parameter skipped */
-                if (state == 1) {
-                    chargeState.text = "Not Charging"
-                } else if (state == 2) {
+                if (state == BatteryInfo.Charging) {
                     chargeState.text = "Charging"
-                } else if (state == 3) {
-                chargeState.text = "Discharging"
+                } else if (state == BatteryInfo.IdleChargingState) {
+                    chargeState.text = "Idle Charging"
+                } else if (state == BatteryInfo.Discharging) {
+                    chargeState.text = "Discharging"
                 } else {
                     chargeState.text = "Unknown"
                 }
             }
 
-            onBatteryStatusChanged: {
-                /* battery parameter skipped */
-                if (status == 1) {
+            onLevelStatusChanged: {
+                if (levelStatus == BatteryInfo.LevelEmpty) {
                     batStat.text = "Empty"
-                } else if (status == 2) {
+                } else if (levelStatus == BatteryInfo.LevelLow) {
                     batStat.text = "Low"
-                } else if (status == 3) {
+                } else if (levelStatus == BatteryInfo.LevelOk) {
                     batStat.text = "Ok"
-                } else if (status == 4) {
+                } else if (levelStatus == BatteryInfo.LevelFull) {
                     batStat.text = "Full"
                 } else {
                     batStat.text = "Unknown"
                 }
             }
 
-            function getEnergyUnit() {
-                              if (energyUnit == 1) {
-                                  return " mAh"
-                              } else if (energyUnit == 2) {
-                                  return " mWh"
-                            } else {
-                                  return " ???"
-                            }
+            onHealthChanged: {
+                if (health == BatteryInfo.HealthOk)
+                    healthState.text = "Ok"
+                else if (health == BatteryInfo.HealthBad)
+                    healthState.text = "Bad"
+                else
+                    healthState.text = "Unknown"
             }
 
             function updateBatteryLevel() {
-                var battery = 0
-                level.text = (100/batinfo.maximumCapacity(battery)*batinfo.remainingCapacity(battery)).toFixed(1) + "%"
+                level.text = (100 / batinfo.maximumCapacity * batinfo.remainingCapacity).toFixed(1) + "%"
             }
 
             Component.onCompleted: {
-                var battery = 0
-                onChargerTypeChanged(chargerType)
-                onCurrentFlowChanged(battery, currentFlow(battery))
-                onRemainingCapacityChanged(battery, remainingCapacity(battery))
-                onRemainingChargingTimeChanged(battery, remainingChargingTime(battery))
-                onVoltageChanged(battery, voltage(battery))
-                onChargingStateChanged(battery, chargingState(battery))
-                onBatteryStatusChanged(battery, batteryStatus(battery))
-                maximum.text = maximumCapacity(battery) + getEnergyUnit()
+                onChargerTypeChanged(batinfo.chargerType)
+                onCurrentFlowChanged(batinfo.currentFlow)
+                onRemainingCapacityChanged(batinfo.remainingCapacity)
+                onRemainingChargingTimeChanged(batinfo.remainingChargingTime)
+                onVoltageChanged(batinfo.voltage)
+                onChargingStateChanged(batinfo.chargingState)
+                onLevelStatusChanged(batinfo.levelStatus)
+                maximum.text = batinfo.maximumCapacity
+                onHealthChanged(batinfo.health)
             }
         }
 
@@ -159,11 +143,13 @@ Rectangle {
               Text { text: "Current flow:" }
               Text { text: "Maximum capacity:" }
               Text { text: "Remaining capacity:" }
-              Text { text: "Battery state:" }
+              Text { text: "Level status:" }
               Text { text: "Remaining charging time:" }
               Text { text: "Voltage:" }
               Text { text: "Charge state:" }
               Text { text: "Charger type:" }
+              Text { text: "Health:" }
+
           }
           Column {
               Text { id: level }
@@ -175,6 +161,7 @@ Rectangle {
               Text { id: voltagetext }
               Text { id: chargeState }
               Text { id: chargertype }
+              Text { id: healthState }
           }
     }
 }

@@ -294,4 +294,9 @@ QString QUPowerDeviceInterface::nativePath()
     return pMap.value(QStringLiteral("NativePath")).toString();
 }
 
+quint16 QUPowerDeviceInterface::technology()
+{
+    return pMap.value(QStringLiteral("Technology")).toUInt();
+}
+
 QT_END_NAMESPACE
