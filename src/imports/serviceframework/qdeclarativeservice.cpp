@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The ServiceLoader element holds an instance of a service object.
     \inherits QObject
-    \inqmlmodule QtServiceFramework 5
+    \inqmlmodule QtServiceFramework
     \ingroup qml-serviceframework
 
     The ServiceLoader element is part of the Qt ServiceFramework API and
