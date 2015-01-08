@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "registrylayer_win_p.h"
+#include <QtCore/qdatastream.h>
 
 #if defined(Q_OS_WIN)
 
