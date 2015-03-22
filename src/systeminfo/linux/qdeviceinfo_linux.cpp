@@ -389,6 +389,20 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
         }
     }
 
+    if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QStringLiteral("/etc/unique-id"));
+        if (file.open(QIODevice::ReadOnly)) {
+            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
+            if (id.length() == 32) {
+                id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+                if (isUuid(id)) {
+                    uniqueDeviceIDBuffer = id;
+                }
+                file.close();
+            }
+        }
+    }
+
     if (uniqueDeviceIDBuffer.isEmpty()) { //try wifi mac address
         QNetworkInfo netinfo;
         QString macaddy;
@@ -404,7 +418,21 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
                 uniqueDeviceIDBuffer = id.toString();
         }
     }
+    if (uniqueDeviceIDBuffer.isEmpty()) {
+        QFile file(QStringLiteral("/etc/machine-id"));
+        if (file.open(QIODevice::ReadOnly)) {
+            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
+            if (id.length() == 32) {
+                id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
+                if (isUuid(id)) {
+                    uniqueDeviceIDBuffer = id;
+                }
+            }
+            file.close();
+        }
+    }
 
+//last ditch effort
     if (uniqueDeviceIDBuffer.isEmpty()) {
         QFile file(QStringLiteral("/var/lib/dbus/machine-id"));
 
@@ -419,33 +447,8 @@ QString QDeviceInfoPrivate::uniqueDeviceID()
             file.close();
         }
     }
-    if (uniqueDeviceIDBuffer.isEmpty()) {
-        QFile file(QStringLiteral("/etc/machine-id"));
-        if (file.open(QIODevice::ReadOnly)) {
-            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
-            if (id.length() == 32) {
-                id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
-                if (isUuid(id)) {
-                    uniqueDeviceIDBuffer = id;
-                }
-            }
-            file.close();
-        }
-    }
-    //last ditch effort
-    if (uniqueDeviceIDBuffer.isEmpty()) {
-        QFile file(QStringLiteral("/etc/unique-id"));
-        if (file.open(QIODevice::ReadOnly)) {
-            QString id = QString::fromLocal8Bit(file.readAll().simplified().data());
-            if (id.length() == 32) {
-                id = id.insert(8,'-').insert(13,'-').insert(18,'-').insert(23,'-');
-                if (isUuid(id)) {
-                    uniqueDeviceIDBuffer = id;
-                }
-                file.close();
-            }
-        }
-    }
+
+
     return uniqueDeviceIDBuffer;
 }
 
