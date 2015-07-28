@@ -34,7 +34,7 @@
 #ifndef QVALUESPACEPUBLISHER_H
 #define QVALUESPACEPUBLISHER_H
 
-#include <qvaluespace.h>
+#include <QtPublishSubscribe/qvaluespace.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>

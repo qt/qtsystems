@@ -34,7 +34,7 @@
 #ifndef QVALUESPACE_H
 #define QVALUESPACE_H
 
-#include <qpublishsubscribeglobal.h>
+#include <QtPublishSubscribe/qpublishsubscribeglobal.h>
 
 #include <QtCore/qlist.h>
 #include <QtCore/quuid.h>

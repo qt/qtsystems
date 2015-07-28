@@ -34,7 +34,7 @@
 #ifndef QVALUESPACESUBSCRIBER_H
 #define QVALUESPACESUBSCRIBER_H
 
-#include <qvaluespace.h>
+#include <QtPublishSubscribe/qvaluespace.h>
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>

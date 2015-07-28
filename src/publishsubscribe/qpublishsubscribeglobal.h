@@ -47,6 +47,7 @@
 
 #include <QtCore/qglobal.h>
 
+QT_BEGIN_NAMESPACE
 #ifndef QT_STATIC
 #    if defined(QT_BUILD_PUBLISHSUBSCRIBE_LIB)
 #      define Q_PUBLISHSUBSCRIBE_EXPORT Q_DECL_EXPORT
@@ -56,6 +57,6 @@
 #else
 #    define Q_PUBLISHSUBSCRIBE_EXPORT
 #endif
-
+QT_END_NAMESPACE
 #endif // QPUBLISHSUBSCRIBEGLOBAL_H
 
