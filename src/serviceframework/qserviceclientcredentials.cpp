@@ -65,6 +65,15 @@ QServiceClientCredentials::QServiceClientCredentials(const QServiceClientCredent
 /*!
     \internal
 */
+QServiceClientCredentials &QServiceClientCredentials::operator=(const QServiceClientCredentials &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*!
+    \internal
+*/
 QServiceClientCredentials::~QServiceClientCredentials()
 {
 }

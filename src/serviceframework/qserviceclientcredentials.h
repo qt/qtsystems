@@ -49,6 +49,7 @@ public:
     virtual ~QServiceClientCredentials();
 
     QServiceClientCredentials(const QServiceClientCredentials &other);
+    QServiceClientCredentials &operator=(const QServiceClientCredentials &other);
 
     qintptr getProcessIdentifier() const;
     qintptr getUserIdentifier() const;
