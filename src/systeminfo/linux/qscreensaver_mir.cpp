@@ -31,75 +31,42 @@
 **
 ****************************************************************************/
 
-#include "qscreensaver.h"
+#include "qscreensaver_mir_p.h"
 
-#if defined(Q_OS_LINUX)
-#  if defined(QT_UNITY8)
-#    include "linux/qscreensaver_mir_p.h"
-#  else
-#    include "linux/qscreensaver_linux_p.h"
-#  endif
-#elif defined(Q_OS_WIN)
-#  include "windows/qscreensaver_win_p.h"
-#elif defined(Q_OS_MAC)
-#  include "mac/qscreensaver_mac_p.h"
-#else
-QT_BEGIN_NAMESPACE
-class QScreenSaverPrivate
-{
-public:
-    QScreenSaverPrivate(QScreenSaver *) {}
-
-    bool screenSaverEnabled() { return false; }
-    void setScreenSaverEnabled(bool) {}
-};
-QT_END_NAMESPACE
-#endif
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusPendingCall>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QScreenSaver
-    \inmodule QtSystemInfo
-    \brief The QScreenSaver class provides various information about the screen saver.
-
-    \ingroup systeminfo
-*/
-
-/*!
-    Constructs a QScreenSaver object with the given \a parent.
-*/
-QScreenSaver::QScreenSaver(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QScreenSaverPrivate(this))
+QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
+    : q_ptr(parent)
+    , m_keepDisplayOnRequestId(-1)
+    , m_iface("com.canonical.Unity.Screen", "/com/canonical/Unity/Screen", "com.canonical.Unity.Screen", QDBusConnection::systemBus())
 {
 }
 
-/*!
-    Destroys the object
-*/
-QScreenSaver::~QScreenSaver()
+bool QScreenSaverPrivate::screenSaverEnabled()
 {
-    delete d_ptr;
+    return m_keepDisplayOnRequestId == -1;
 }
 
-/*!
-    \property QScreenSaver::screenSaverEnabled
-    \brief The state of the screen saver.
-
-    Returns if the screen saver is enabled.
-*/
-bool QScreenSaver::screenSaverEnabled() const
+void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 {
-    return d_ptr->screenSaverEnabled();
-}
+    if (!m_iface.isValid())
+        return;
 
-/*!
-    Sets the screen saver to be \a enabled.
-*/
-void QScreenSaver::setScreenSaverEnabled(bool enabled)
-{
-    d_ptr->setScreenSaverEnabled(enabled);
+    if (m_keepDisplayOnRequestId == -1 && !enabled) {
+        // set request
+        QDBusMessage reply = m_iface.call("keepDisplayOn");
+        if (reply.arguments().count() > 0)
+            m_keepDisplayOnRequestId = reply.arguments().first().toInt();
+    } else if (m_keepDisplayOnRequestId != -1 && enabled) {
+        // clear request
+        m_iface.asyncCall("removeDisplayOnRequest", m_keepDisplayOnRequestId);
+        m_keepDisplayOnRequestId = -1;
+    }
 }
 
 QT_END_NAMESPACE
+

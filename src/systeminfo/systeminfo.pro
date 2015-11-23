@@ -57,12 +57,19 @@ win32: !simulator: {
 
 linux-*: !simulator: {
     PRIVATE_HEADERS += linux/qdeviceinfo_linux_p.h \
-                       linux/qnetworkinfo_linux_p.h \
-                       linux/qscreensaver_linux_p.h
+                       linux/qnetworkinfo_linux_p.h
+
 
     SOURCES += linux/qdeviceinfo_linux.cpp \
-               linux/qnetworkinfo_linux.cpp \
-               linux/qscreensaver_linux.cpp
+               linux/qnetworkinfo_linux.cpp
+    contains(QT_CONFIG, mirclient) {
+        DEFINES += QT_UNITY8
+        PRIVATE_HEADERS += linux/qscreensaver_mir_p.h
+        SOURCES += linux/qscreensaver_mir.cpp
+    } else {
+        PRIVATE_HEADERS += linux/qscreensaver_linux_p.h
+        SOURCES += linux/qscreensaver_linux.cpp
+    }
 
     x11|config_x11: !contains(CONFIG,nox11option) {
         CONFIG += link_pkgconfig
@@ -109,7 +116,6 @@ linux-*: !simulator: {
             LIBS += -lssu
             DEFINES += QT_USE_SSU
         }
-
     } else {
         DEFINES += QT_NO_OFONO QT_NO_UDISKS QT_NO_UPOWER
         HEADERS += linux/qbatteryinfo_linux_p.h
