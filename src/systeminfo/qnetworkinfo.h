@@ -88,34 +88,34 @@ public:
     virtual ~QNetworkInfo();
 
     int networkInterfaceCount(QNetworkInfo::NetworkMode mode) const;
-    int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface) const;
-    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface) const;
+    int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interfaceDevice) const;
+    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interfaceDevice) const;
     QNetworkInfo::NetworkMode currentNetworkMode() const;
-    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface) const;
+    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interfaceDevice) const;
 #ifndef QT_NO_NETWORKINTERFACE
-    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface) const;
+    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interfaceDevice) const;
 #endif // QT_NO_NETWORKINTERFACE
-    QString cellId(int interface) const;
-    QString currentMobileCountryCode(int interface) const;
-    QString currentMobileNetworkCode(int interface) const;
-    QString homeMobileCountryCode(int interface) const;
-    QString homeMobileNetworkCode(int interface) const;
-    QString imsi(int interface) const;
-    QString locationAreaCode(int interface) const;
-    QString macAddress(QNetworkInfo::NetworkMode mode, int interface) const;
-    QString networkName(QNetworkInfo::NetworkMode mode, int interface) const;
+    QString cellId(int interfaceDevice) const;
+    QString currentMobileCountryCode(int interfaceDevice) const;
+    QString currentMobileNetworkCode(int interfaceDevice) const;
+    QString homeMobileCountryCode(int interfaceDevice) const;
+    QString homeMobileNetworkCode(int interfaceDevice) const;
+    QString imsi(int interfaceDevice) const;
+    QString locationAreaCode(int interfaceDevice) const;
+    QString macAddress(QNetworkInfo::NetworkMode mode, int interfaceDevice) const;
+    QString networkName(QNetworkInfo::NetworkMode mode, int interfaceDevice) const;
 
 Q_SIGNALS:
-    void cellIdChanged(int interface, const QString &id);
-    void currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);
-    void currentMobileCountryCodeChanged(int interface, const QString &mcc);
-    void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
+    void cellIdChanged(int interfaceDevice, const QString &id);
+    void currentCellDataTechnologyChanged(int interfaceDevice, QNetworkInfo::CellDataTechnology tech);
+    void currentMobileCountryCodeChanged(int interfaceDevice, const QString &mcc);
+    void currentMobileNetworkCodeChanged(int interfaceDevice, const QString &mnc);
     void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
-    void locationAreaCodeChanged(int interface, const QString &lac);
+    void locationAreaCodeChanged(int interfaceDevice, const QString &lac);
     void networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
-    void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
-    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
-    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
+    void networkNameChanged(QNetworkInfo::NetworkMode mode, int interfaceDevice, const QString &name);
+    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interfaceDevice, int strength);
+    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interfaceDevice, QNetworkInfo::NetworkStatus status);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
