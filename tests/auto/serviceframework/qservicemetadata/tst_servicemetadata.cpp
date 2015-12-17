@@ -44,9 +44,7 @@
 #endif
 #define IGNORE_SERVICEMETADATA_EXPORT
 #include "private/servicemetadata_p.h"
-#if !defined(Q_CC_MINGW)
-    #include "../../../../src/serviceframework/servicemetadata.cpp"
-#endif
+#include "../../../../src/serviceframework/servicemetadata.cpp"
 
 QT_USE_NAMESPACE
 class ServiceMetadataTest: public QObject
