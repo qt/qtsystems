@@ -63,7 +63,7 @@ private:
     QScreenSaver * const q_ptr;
     Q_DECLARE_PUBLIC(QScreenSaver)
 
-    int m_keepDisplayOnRequest;
+    int m_keepDisplayOnRequestId;
     QDBusInterface m_iface;
 };
 
