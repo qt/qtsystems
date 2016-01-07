@@ -42,7 +42,10 @@ QT_BEGIN_NAMESPACE
 QScreenSaverPrivate::QScreenSaverPrivate(QScreenSaver *parent)
     : q_ptr(parent)
     , m_keepDisplayOnRequestId(-1)
-    , m_iface("com.canonical.Unity.Screen", "/com/canonical/Unity/Screen", "com.canonical.Unity.Screen", QDBusConnection::systemBus())
+    , m_iface(QLatin1String("com.canonical.Unity.Screen"),
+              QLatin1String("/com/canonical/Unity/Screen"),
+              QLatin1String("com.canonical.Unity.Screen"),
+              QDBusConnection::systemBus())
 {
 }
 
@@ -58,12 +61,12 @@ void QScreenSaverPrivate::setScreenSaverEnabled(bool enabled)
 
     if (m_keepDisplayOnRequestId == -1 && !enabled) {
         // set request
-        QDBusMessage reply = m_iface.call("keepDisplayOn");
+        QDBusMessage reply = m_iface.call(QLatin1String("keepDisplayOn"));
         if (reply.arguments().count() > 0)
             m_keepDisplayOnRequestId = reply.arguments().first().toInt();
     } else if (m_keepDisplayOnRequestId != -1 && enabled) {
         // clear request
-        m_iface.asyncCall("removeDisplayOnRequest", m_keepDisplayOnRequestId);
+        m_iface.asyncCall(QLatin1String("removeDisplayOnRequest"), m_keepDisplayOnRequestId);
         m_keepDisplayOnRequestId = -1;
     }
 }
