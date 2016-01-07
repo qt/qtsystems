@@ -47,6 +47,8 @@
 
 #include <QtCore/qglobal.h>
 
+QT_BEGIN_NAMESPACE
+
 #ifndef QT_STATIC
 #    if defined(QT_BUILD_SYSTEMINFO_LIB)
 #      define Q_SYSTEMINFO_EXPORT Q_DECL_EXPORT
@@ -56,5 +58,7 @@
 #else
 #    define Q_SYSTEMINFO_EXPORT
 #endif
+
+QT_END_NAMESPACE
 
 #endif // QSYSTEMINFOGLOBAL_H
