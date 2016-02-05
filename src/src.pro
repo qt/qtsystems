@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 
-!android: !ios: !blackberry {
+!android: !ios: !blackberry: !wince {
     !without-publishsubscribe: SUBDIRS += publishsubscribe
     !macx:!without-serviceframework: SUBDIRS += serviceframework
     !macx:!without-systeminfo: SUBDIRS += systeminfo
