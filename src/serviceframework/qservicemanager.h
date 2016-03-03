@@ -148,7 +148,7 @@ Q_OUTOFLINE_TEMPLATE T* QServiceManager::loadLocalTypedInterface(const QServiceI
         //TODO this should really be
         //instance = qobject_cast<T *>(loadInterface(descriptor, context, session));
         //check why qobject_cast fails
-        const char* templateClassName = static_cast<T *>(Q_NULLPTR)->staticMetaObject.className();
+        const char* templateClassName = T::staticMetaObject.className();
         const QMetaObject* source = obj->metaObject();
         do {
             if (strcmp(templateClassName,source->className())==0) {
