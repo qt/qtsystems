@@ -48,7 +48,7 @@ class Q_SERVICEFW_EXPORT QServiceReplyBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit QServiceReplyBase(QObject *parent = 0);
+    explicit QServiceReplyBase(QObject *parent = Q_NULLPTR);
     virtual ~QServiceReplyBase();
 
     bool isFinished() const;
@@ -83,9 +83,9 @@ class Q_SERVICEFW_EXPORT QServiceReply : public QServiceReplyBase
 {
     Q_OBJECT
     public:
-    QServiceReply(QObject *p = 0)
+    QServiceReply(QObject *p = Q_NULLPTR)
         : QServiceReplyBase(p),
-          m_proxyObject(0)
+          m_proxyObject(Q_NULLPTR)
     {
         // nothing to do
     }

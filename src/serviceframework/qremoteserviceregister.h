@@ -109,7 +109,7 @@ public:
 #endif
     };
 
-    QRemoteServiceRegister(QObject* parent = 0);
+    QRemoteServiceRegister(QObject* parent = Q_NULLPTR);
     ~QRemoteServiceRegister();
 
     template <typename T>

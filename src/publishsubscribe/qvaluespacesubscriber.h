@@ -51,10 +51,10 @@ class Q_PUBLISHSUBSCRIBE_EXPORT QValueSpaceSubscriber : public QObject
     Q_PROPERTY(QVariant value READ valuex NOTIFY contentsChanged)
 
 public:
-    explicit QValueSpaceSubscriber(QObject *parent = 0);
-    explicit QValueSpaceSubscriber(const QString &path, QObject *parent = 0);
-    QValueSpaceSubscriber(QValueSpace::LayerOptions filter, const QString &path, QObject *parent = 0);
-    QValueSpaceSubscriber(const QUuid &uuid, const QString &path, QObject *parent = 0);
+    explicit QValueSpaceSubscriber(QObject *parent = Q_NULLPTR);
+    explicit QValueSpaceSubscriber(const QString &path, QObject *parent = Q_NULLPTR);
+    QValueSpaceSubscriber(QValueSpace::LayerOptions filter, const QString &path, QObject *parent = Q_NULLPTR);
+    QValueSpaceSubscriber(const QUuid &uuid, const QString &path, QObject *parent = Q_NULLPTR);
     virtual ~QValueSpaceSubscriber();
 
     bool isConnected() const;

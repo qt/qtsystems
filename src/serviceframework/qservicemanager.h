@@ -71,8 +71,8 @@ public:
         UnknownError = 100
     };
 
-    explicit QServiceManager(QObject *parent = 0);
-    explicit QServiceManager(QService::Scope scope, QObject *parent = 0);
+    explicit QServiceManager(QObject *parent = Q_NULLPTR);
+    explicit QServiceManager(QService::Scope scope, QObject *parent = Q_NULLPTR);
     ~QServiceManager();
 
     QService::Scope scope() const;
@@ -140,15 +140,15 @@ Q_INLINE_TEMPLATE T* QServiceManager::loadLocalTypedInterface(const QString& int
 template <class T>
 Q_OUTOFLINE_TEMPLATE T* QServiceManager::loadLocalTypedInterface(const QServiceInterfaceDescriptor& descriptor)
 {
-    T* instance = 0;
+    T* instance = Q_NULLPTR;
     if (descriptor.isValid()) {
         QObject* obj = loadInterface(descriptor);
-        if (!obj) return 0;
+        if (!obj) return Q_NULLPTR;
 
         //TODO this should really be
         //instance = qobject_cast<T *>(loadInterface(descriptor, context, session));
         //check why qobject_cast fails
-        const char* templateClassName = reinterpret_cast<T *>(0)->staticMetaObject.className();
+        const char* templateClassName = static_cast<T *>(Q_NULLPTR)->staticMetaObject.className();
         const QMetaObject* source = obj->metaObject();
         do {
             if (strcmp(templateClassName,source->className())==0) {
@@ -156,7 +156,7 @@ Q_OUTOFLINE_TEMPLATE T* QServiceManager::loadLocalTypedInterface(const QServiceI
                 break;
             }
             source = source->superClass();
-        } while (source != 0);
+        } while (source);
         if (!instance)
             delete obj;
     }

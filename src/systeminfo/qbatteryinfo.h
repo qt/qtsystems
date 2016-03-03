@@ -100,8 +100,8 @@ public:
         HealthBad
     };
 
-    QBatteryInfo(QObject *parent = 0);
-    QBatteryInfo(int batteryIndex, QObject *parent = 0);
+    QBatteryInfo(QObject *parent = Q_NULLPTR);
+    QBatteryInfo(int batteryIndex, QObject *parent = Q_NULLPTR);
     virtual ~QBatteryInfo();
 
     int batteryCount() const;
