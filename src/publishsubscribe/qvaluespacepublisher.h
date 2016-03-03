@@ -49,8 +49,8 @@ class Q_PUBLISHSUBSCRIBE_EXPORT QValueSpacePublisher : public QObject
 
 public:
     explicit QValueSpacePublisher(const QString &path, QObject *parent = Q_NULLPTR);
-    QValueSpacePublisher(QValueSpace::LayerOptions filter, const QString &path, QObject *parent = Q_NULLPTR);
-    QValueSpacePublisher(const QUuid &uuid, const QString &path, QObject *parent = Q_NULLPTR);
+    explicit QValueSpacePublisher(QValueSpace::LayerOptions filter, const QString &path, QObject *parent = Q_NULLPTR);
+    explicit QValueSpacePublisher(const QUuid &uuid, const QString &path, QObject *parent = Q_NULLPTR);
     virtual ~QValueSpacePublisher();
 
     bool isConnected() const;

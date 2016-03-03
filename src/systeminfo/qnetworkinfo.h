@@ -84,7 +84,7 @@ public:
         // ,Connected //desktop
     };
 
-    QNetworkInfo(QObject *parent = Q_NULLPTR);
+    explicit QNetworkInfo(QObject *parent = Q_NULLPTR);
     virtual ~QNetworkInfo();
 
     int networkInterfaceCount(QNetworkInfo::NetworkMode mode) const;

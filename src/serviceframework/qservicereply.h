@@ -83,7 +83,7 @@ class Q_SERVICEFW_EXPORT QServiceReply : public QServiceReplyBase
 {
     Q_OBJECT
     public:
-    QServiceReply(QObject *p = Q_NULLPTR)
+    explicit QServiceReply(QObject *p = Q_NULLPTR)
         : QServiceReplyBase(p),
           m_proxyObject(Q_NULLPTR)
     {
