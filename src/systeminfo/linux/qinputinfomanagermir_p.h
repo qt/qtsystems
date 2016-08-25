@@ -45,14 +45,20 @@ QT_BEGIN_NAMESPACE
 
 class QInputInfoManagerMir : public QInputInfoManagerPrivate
 {
+    Q_OBJECT
 public:
-    QInputInfoManagerMir(MirConnection *con, QObject *parent = NULL);
+    using MirConnectionPtr = std::unique_ptr<MirConnection,void (*)(MirConnection*)>;
+    explicit QInputInfoManagerMir(MirConnectionPtr connection, QObject *parent = NULL);
+    ~QInputInfoManagerMir();
 
 private:
     void update_devices();
-    MirConnection *connection;
+    MirConnectionPtr connection;
     using MirInputConfigPtr = std::unique_ptr<MirInputConfig const,void (*)(MirInputConfig const*)>;
     MirInputConfigPtr config;
+
+private Q_SLOTS:
+    void init();
 };
 
 QT_END_NAMESPACE

@@ -34,14 +34,28 @@
 
 #include "qinputinfomanagermir_p.h"
 #include "linux/input-event-codes.h"
+#include <QTimer>
 
-QInputInfoManagerMir::QInputInfoManagerMir(MirConnection *con, QObject *parent)
-    : QInputInfoManagerPrivate(parent), connection{con}, config{mir_connection_create_input_config(con), mir_input_config_destroy}
+static void no_input_config_yet(MirInputConfig const*) {}
+
+QInputInfoManagerMir::QInputInfoManagerMir(MirConnectionPtr con, QObject *parent)
+    : QInputInfoManagerPrivate(parent), connection{std::move(con)}, config{nullptr, &no_input_config_yet}
 {
+    if (connection && mir_connection_is_valid(connection.get()))
+        QTimer::singleShot(250,this,SLOT(init()));
+}
+
+QInputInfoManagerMir::~QInputInfoManagerMir()
+{
+}
+
+void QInputInfoManagerMir::init()
+{
+    config = MirInputConfigPtr{mir_connection_create_input_config(connection.get()), mir_input_config_destroy};
+
     mir_connection_set_input_config_change_callback(
-        connection,
-        [](MirConnection* con, void* context)
-        {
+        connection.get(),
+        [](MirConnection* con, void* context) {
             QInputInfoManagerMir *this_ = static_cast<QInputInfoManagerMir*>(context);
             this_->config = MirInputConfigPtr{mir_connection_create_input_config(con), mir_input_config_destroy};
             this_->update_devices();
@@ -76,12 +90,9 @@ void QInputInfoManagerMir::update_devices()
                 nDevice->addButton(BTN_MOUSE);
                 nDevice->addButton(BTN_RIGHT);
                 nDevice->addButton(BTN_MIDDLE);
-                if (caps & mir_input_device_capability_touchpad)
-                {
+                if (caps & mir_input_device_capability_touchpad) {
                     flags |= QInputDevice::TouchPad;
-                }
-                else
-                {
+                } else {
                     flags |= QInputDevice::Mouse;
                     nDevice->addButton(BTN_SIDE);
                     nDevice->addButton(BTN_EXTRA);
@@ -91,13 +102,11 @@ void QInputInfoManagerMir::update_devices()
                 }
             }
 
-            if (caps & mir_input_device_capability_keyboard)
-            {
+            if (caps & mir_input_device_capability_keyboard) {
                 flags |= QInputDevice::Button;
 
                 // keyboard with enough keys for text entry
-                if (caps & mir_input_device_capability_alpha_numeric)
-                {
+                if (caps & mir_input_device_capability_alpha_numeric) {
                     flags |= QInputDevice::Keyboard;
                     for (int i = KEY_1; i != KEY_SLASH; ++i)
                         nDevice->addButton(i);
@@ -110,16 +119,13 @@ void QInputInfoManagerMir::update_devices()
             deviceList.push_back(nDevice);
 
             Q_EMIT deviceAdded(nDevice);
-        }
-        else
-        {
+        } else {
             deletedDevices.removeOne(id);
         }
     }
 
     for (QList<QString>::const_iterator it = deletedDevices.begin(), e = deletedDevices.end();
-         it != e ; ++it)
-    {
+         it != e ; ++it) {
         QInputDevice * device = deviceMap.take(*it);
         deviceList.removeOne(device);
         Q_EMIT deviceRemoved(*it);

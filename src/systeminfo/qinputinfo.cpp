@@ -51,9 +51,24 @@
 Q_GLOBAL_STATIC(QInputInfoManagerUdev, inputDeviceManagerUdev)
 #endif
 #if !defined(QT_NO_MIR)
-Q_GLOBAL_STATIC_WITH_ARGS(QInputInfoManagerMir,
-                          inputDeviceManagerMir,
-                          (static_cast<MirConnection*>(QGuiApplication::platformNativeInterface()->nativeResourceForIntegration("mirconnection"))))
+static void not_owning_connection(MirConnection*) {}
+QInputInfoManagerMir::MirConnectionPtr attempt_to_connect_to_mir()
+{
+    auto nativeInterface = QGuiApplication::platformNativeInterface();
+
+    if (nativeInterface) {
+        auto connection = static_cast<MirConnection*>(nativeInterface->nativeResourceForIntegration("mirconnection"));
+        return QInputInfoManagerMir::MirConnectionPtr{connection, &not_owning_connection};
+    } else {
+        auto connection = mir_connect_sync(NULL, "qtsystems-plugin");
+        if (mir_connection_is_valid(connection))
+            return QInputInfoManagerMir::MirConnectionPtr{connection, &mir_connection_release};
+        else
+            return QInputInfoManagerMir::MirConnectionPtr{connection, &not_owning_connection};
+    }
+}
+
+Q_GLOBAL_STATIC_WITH_ARGS(QInputInfoManagerMir, inputDeviceManagerMir, (attempt_to_connect_to_mir()))
 #endif
 #endif
 
@@ -65,8 +80,15 @@ QT_BEGIN_NAMESPACE
 QInputInfoManagerPrivate * QInputInfoManagerPrivate::instance()
 {
 #ifndef QT_NO_MIR
-    if (QGuiApplication::platformNativeInterface()->nativeResourceForIntegration("mirconnection"))
+    if (inputDeviceManagerMir.exists()) {
         return inputDeviceManagerMir();
+    } else {
+        auto connection_attempt = attempt_to_connect_to_mir();
+        if (connection_attempt && mir_connection_is_valid(connection_attempt.get())) {
+            connection_attempt.reset();
+            return inputDeviceManagerMir();
+        }
+    }
 #endif
 #ifndef QT_NO_UDEV
     return inputDeviceManagerUdev();

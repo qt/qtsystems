@@ -46,6 +46,7 @@
 #define QSCREENSAVER_MIR_P_H
 
 #include <qscreensaver.h>
+#include <QDBusInterface>
 
 QT_BEGIN_NAMESPACE
 

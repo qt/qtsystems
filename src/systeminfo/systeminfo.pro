@@ -67,7 +67,7 @@ linux-*: !simulator: {
          qinputinfo.h \
          linux/qinputinfomanager_p.h
 
-    contains(QT_CONFIG, mirclient) {
+    config_mir {
         DEFINES += QT_UNITY8
         PRIVATE_HEADERS += linux/qscreensaver_mir_p.h
         SOURCES += linux/qscreensaver_mir.cpp
