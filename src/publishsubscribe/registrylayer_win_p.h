@@ -59,7 +59,9 @@
 #if defined(Q_OS_WIN)
 
 // Define win32 version to pull in RegisterWaitForSingleObject and UnregisterWait.
-#define _WIN32_WINNT 0x0500
+#ifndef _WIN32_WINNT
+  #define _WIN32_WINNT 0x0500
+#endif
 #include <windows.h>
 
 #define RegistryCallback WAITORTIMERCALLBACK
