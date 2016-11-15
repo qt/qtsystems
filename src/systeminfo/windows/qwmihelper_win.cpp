@@ -135,8 +135,11 @@ QVariant WMIHelper::getWMIData(const QString &wmiNamespace, const QString &class
 
     bstrQuery = ::SysAllocString(oleStr);
 
-    hres = wbemServices->ExecQuery(L"WQL", bstrQuery,
+    BSTR wql = SysAllocString(L"WQL");
+    hres = wbemServices->ExecQuery(wql, bstrQuery,
             WBEM_FLAG_BIDIRECTIONAL | WBEM_FLAG_RETURN_IMMEDIATELY,0,&wbemEnumerator);
+
+    SysFreeString(wql);
 
     if (hres != WBEM_S_NO_ERROR){
         qWarning() << "WMI Query failed.";
@@ -289,12 +292,16 @@ void WMIHelper::setupNotfication(const QString &wmiNamespace,const QString &clas
 
      bstrQuery = ::SysAllocString(oleStr);
 
+     BSTR wql = SysAllocString(L"WQL");
+
      hres = wbemServices->ExecNotificationQueryAsync(
-         L"WQL",
+         wql,
          bstrQuery,
          WBEM_FLAG_SEND_STATUS,
          NULL,
          pStubSink);
+
+     SysFreeString(wql);
 
      if (FAILED(hres)) {
          printf("ExecNotificationQueryAsync failed "
