@@ -439,12 +439,16 @@ void QNetworkInfoPrivate::connectNotify(const QMetaMethod &signal)
         if (!udevHandle) {
             udevHandle = udev_new();
             udevMonitor = udev_monitor_new_from_netlink(udevHandle, "udev");
-            udev_monitor_filter_add_match_subsystem_devtype(udevMonitor, "net", NULL);
-            udev_monitor_enable_receiving(udevMonitor);
-            udevNotifier = new QSocketNotifier(udev_monitor_get_fd(udevMonitor), QSocketNotifier::Read, this);
-            connect(udevNotifier, SIGNAL(activated(int)), this, SLOT(onUdevChanged()));
+            if (udevMonitor) {
+                udev_monitor_filter_add_match_subsystem_devtype(udevMonitor, "net", NULL);
+                udev_monitor_enable_receiving(udevMonitor);
+                udevNotifier = new QSocketNotifier(udev_monitor_get_fd(udevMonitor), QSocketNotifier::Read, this);
+                connect(udevNotifier, SIGNAL(activated(int)), this, SLOT(onUdevChanged()));
+            }
         }
-        udevNotifier->setEnabled(true);
+        if (udevNotifier) {
+            udevNotifier->setEnabled(true);
+        }
 
 #endif // QT_NO_UDEV
         watchNetworkInterfaceCount = true;
@@ -538,7 +542,9 @@ void QNetworkInfoPrivate::disconnectNotify(const QMetaMethod &signal)
     if (signal == networkInterfaceCountChangedSignal
             && !watchNetworkStatus && !watchNetworkName && !watchNetworkSignalStrength ) {
 #if !defined(QT_NO_UDEV)
-        udevNotifier->setEnabled(false);
+        if (udevNotifier) {
+            udevNotifier->setEnabled(false);
+        }
         watchNetworkInterfaceCount = false;
         return;
 #endif // QT_NO_UDEV

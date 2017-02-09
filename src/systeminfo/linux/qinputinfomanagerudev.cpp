@@ -72,33 +72,35 @@ void QInputInfoManagerUdev::init()
     if (udevice) {
 
         udevMonitor = udev_monitor_new_from_netlink(udevice, "udev");
-        udev_monitor_filter_add_match_subsystem_devtype(udevMonitor, subsystem.toLatin1(), NULL);
-        enumerate = udev_enumerate_new(udevice);
-        udev_enumerate_add_match_subsystem(enumerate, subsystem.toLatin1());
+        if (udevMonitor) {
+            udev_monitor_filter_add_match_subsystem_devtype(udevMonitor, subsystem.toLatin1(), NULL);
+            enumerate = udev_enumerate_new(udevice);
+            udev_enumerate_add_match_subsystem(enumerate, subsystem.toLatin1());
 
-        udev_monitor_enable_receiving(udevMonitor);
-        notifierFd = udev_monitor_get_fd(udevMonitor);
+            udev_monitor_enable_receiving(udevMonitor);
+            notifierFd = udev_monitor_get_fd(udevMonitor);
 
-        notifier = new QSocketNotifier(notifierFd, QSocketNotifier::Read, this);
-        connect(notifier, SIGNAL(activated(int)), this, SLOT(onUDevChanges()));
+            notifier = new QSocketNotifier(notifierFd, QSocketNotifier::Read, this);
+            connect(notifier, SIGNAL(activated(int)), this, SLOT(onUDevChanges()));
 
-        udev_enumerate_scan_devices(enumerate);
-        devices = udev_enumerate_get_list_entry(enumerate);
+            udev_enumerate_scan_devices(enumerate);
+            devices = udev_enumerate_get_list_entry(enumerate);
 
-        udev_list_entry_foreach(dev_list_entry, devices) {
-            const char *path;
-            path = udev_list_entry_get_name(dev_list_entry);
+            udev_list_entry_foreach(dev_list_entry, devices) {
+                const char *path;
+                path = udev_list_entry_get_name(dev_list_entry);
 
-            dev = udev_device_new_from_syspath(udevice, path);
-            if (qstrcmp(udev_device_get_subsystem(dev), "input") == 0 ) {
-                QInputDevice *iDevice = addDevice(dev);
-                if (iDevice && !iDevice->identifier().isEmpty()) {
-                    deviceMap.insert(iDevice->identifier(),iDevice);
+                dev = udev_device_new_from_syspath(udevice, path);
+                if (qstrcmp(udev_device_get_subsystem(dev), "input") == 0 ) {
+                    QInputDevice *iDevice = addDevice(dev);
+                    if (iDevice && !iDevice->identifier().isEmpty()) {
+                        deviceMap.insert(iDevice->identifier(),iDevice);
+                    }
                 }
+                udev_device_unref(dev);
             }
-            udev_device_unref(dev);
+            udev_enumerate_unref(enumerate);
         }
-        udev_enumerate_unref(enumerate);
     }
  //   udev_unref(udevice);
     Q_FOREACH (const QString &devicePath, deviceMap.keys()) {
