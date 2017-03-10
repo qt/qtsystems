@@ -96,7 +96,7 @@ QString QDeclarativeValueSpaceSubscriber::path() const
     if (d_ptr)
         return d_ptr->path();
     else
-        return QString::null;
+        return QString();
 }
 
 /*!

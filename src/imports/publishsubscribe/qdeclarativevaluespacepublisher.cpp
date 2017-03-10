@@ -112,7 +112,7 @@ QString QDeclarativeValueSpacePublisher::path() const
     if (publisher)
         return publisher->path();
     else
-        return QString::null;
+        return QString();
 }
 
 void QDeclarativeValueSpacePublisher::setPath(const QString &path)
@@ -134,7 +134,7 @@ void QDeclarativeValueSpacePublisher::setPath(const QString &path)
 void QDeclarativeValueSpacePublisher::setValue(const QVariant &value)
 {
     if (publisher)
-        publisher->setValue(QString::null, value);
+        publisher->setValue(QString(), value);
 }
 
 QVariant QDeclarativeValueSpacePublisher::dummyValue() const
