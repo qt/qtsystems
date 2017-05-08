@@ -17,6 +17,7 @@ win32: !simulator: {
     # Wbemidl.h violates C/C++ strict strings
     QMAKE_CXXFLAGS -= -Zc:strictStrings
     QMAKE_CXXFLAGS_RELEASE -= -Zc:strictStrings
+    QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO -= -Zc:strictStrings
 
     contains(CONFIG, release) {
        CONFIG -= console
