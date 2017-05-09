@@ -264,8 +264,9 @@ HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 load(qt_module)
 
 # This must be done after loading qt_module.prf
-config_bluez {
-    # bluetooth.h is not standards compliant
+config_bluez | win32 {
+    # bluez: bluetooth.h is not standards compliant
+    # win32: Wbemidl.h violates C/C++ strict strings
     CONFIG -= strict_c++
 }
 
