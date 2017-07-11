@@ -74,8 +74,6 @@ private:
 private Q_SLOTS:
     void initialSystemInfoDataSent();
     void setBatteryInfoData(const QBatteryInfoData &data);
-    void setDeviceInfoData(const QDeviceInfoData &data);
-    void setNetworkInfoData(const QNetworkInfoData &data);
 
 Q_SIGNALS:
     void initialDataReceived();

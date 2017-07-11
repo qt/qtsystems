@@ -47,63 +47,11 @@
 // We mean it.
 //
 
-#include <qnetworkinfo.h>
-#include <qdeviceinfo.h>
 #include <qbatteryinfo.h>
-#include <qscreensaver.h>
 
-#include <QHash>
-#include <QVector>
-#include <QString>
 #include <QMetaType>
 
 QT_BEGIN_NAMESPACE
-
-struct QNetworkInfoData
-{
-    struct BasicNetworkInfo {
-        QString name;
-        int signalStrength;
-        QNetworkInfo::NetworkMode mode;
-        QNetworkInfo::NetworkStatus status;
-    };
-
-    struct EthernetInfo
-    {
-        BasicNetworkInfo basicNetworkInfo;
-        QString macAddress;
-    };
-
-    struct WLanInfo
-    {
-        BasicNetworkInfo basicNetworkInfo;
-        QString macAddress;
-    };
-
-    struct CellularInfo {
-        BasicNetworkInfo basicNetworkInfo;
-
-        QString imsi;
-        QString cellId;
-        QString locationAreaCode;
-
-        QString currentMobileCountryCode;
-        QString currentMobileNetworkCode;
-        QString homeMobileCountryCode;
-        QString homeMobileNetworkCode;
-        QNetworkInfo::CellDataTechnology cellData;
-    };
-
-    struct BluetoothInfo {
-        BasicNetworkInfo basicNetworkInfo;
-        QString btAddress;
-    };
-
-    QVector<EthernetInfo> ethernetInfo;
-    QVector<WLanInfo> wLanInfo;
-    QVector<CellularInfo> cellularInfo;
-    QVector<BluetoothInfo> bluetoothInfo;
-};
 
 struct QBatteryInfoData
 {
@@ -122,57 +70,12 @@ struct QBatteryInfoData
     float temperature;
 };
 
-struct QDeviceInfoData
-{
-    QString manufacturer;
-    QString model;
-    QString productName;
-    QString uniqueDeviceID;
-
-    QDeviceInfo::LockTypeFlags enabledLocks;
-    QDeviceInfo::LockTypeFlags activatedLocks;
-    QDeviceInfo::ThermalState currentThermalState;
-
-    QHash<QDeviceInfo::Feature, bool> featureList;
-    QList<QString> imeiList;
-    QMap<QDeviceInfo::Version, QString> versionList;
-};
-
-struct QScreenSaverData
-{
-    bool screenSaverEnabled;
-};
-
-
-Q_DECLARE_METATYPE(QNetworkInfoData)
-Q_DECLARE_METATYPE(QDeviceInfoData)
 Q_DECLARE_METATYPE(QBatteryInfoData)
-Q_DECLARE_METATYPE(QScreenSaverData)
 
 void qt_registerSystemInfoTypes();
 
-QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BasicNetworkInfo &s);
-QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BasicNetworkInfo &s);
-QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::EthernetInfo &s);
-QDataStream &operator>>(QDataStream &in, QNetworkInfoData::EthernetInfo &s);
-QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::WLanInfo &s);
-QDataStream &operator>>(QDataStream &in, QNetworkInfoData::WLanInfo &s);
-QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::BluetoothInfo &s);
-QDataStream &operator>>(QDataStream &in, QNetworkInfoData::BluetoothInfo &s);
-QDataStream &operator<<(QDataStream &out, const QNetworkInfoData::CellularInfo &s);
-QDataStream &operator>>(QDataStream &in, QNetworkInfoData::CellularInfo &s);
-QDataStream &operator<<(QDataStream &out, const QNetworkInfoData &s);
-QDataStream &operator>>(QDataStream &in, QNetworkInfoData &s);
-QDataStream &operator<<(QDataStream &out, const QDeviceInfoData &s);
-QDataStream &operator>>(QDataStream &in, QDeviceInfoData &s);
-QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Feature s);
-QDataStream &operator>>(QDataStream &in, QDeviceInfo::Feature &s);
-QDataStream &operator<<(QDataStream &out, const QDeviceInfo::Version s);
-QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s);
 QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
 QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
-QDataStream &operator<<(QDataStream &out, const QScreenSaverData &s);
-QDataStream &operator>>(QDataStream &in, QScreenSaverData &s);
 
 QT_END_NAMESPACE
 

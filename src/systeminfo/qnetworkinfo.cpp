@@ -33,9 +33,7 @@
 
 #include "qnetworkinfo.h"
 
-#if defined(QT_SIMULATOR)
-#  include "simulator/qsysteminfo_simulator_p.h"
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 #  include "linux/qnetworkinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
 #  include "windows/qnetworkinfo_win_p.h"
@@ -194,11 +192,7 @@ QT_BEGIN_NAMESPACE
 */
 QNetworkInfo::QNetworkInfo(QObject *parent)
     : QObject(parent)
-#if !defined(QT_SIMULATOR)
     , d_ptr(new QNetworkInfoPrivate(this))
-#else
-    , d_ptr(new QNetworkInfoSimulator(this))
-#endif // QT_SIMULATOR
 {
 }
 
@@ -354,7 +348,7 @@ extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 */
 void QNetworkInfo::connectNotify(const QMetaMethod &signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR) || defined(Q_OS_MAC)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
     QMetaMethod sourceSignal = proxyToSourceSignal(signal, d_ptr);
     connect(d_ptr, sourceSignal, this, signal, Qt::UniqueConnection);
 #else
@@ -367,7 +361,7 @@ void QNetworkInfo::connectNotify(const QMetaMethod &signal)
 */
 void QNetworkInfo::disconnectNotify(const QMetaMethod &signal)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR) || defined(Q_OS_MAC)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)  || defined(Q_OS_MAC)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (isSignalConnected(signal))
         return;

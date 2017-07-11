@@ -40,11 +40,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_SIMULATOR)
 class QNetworkInfoPrivate;
-#else
-class QNetworkInfoSimulator;
-#endif // QT_SIMULATOR
 
 class Q_SYSTEMINFO_EXPORT QNetworkInfo : public QObject
 {
@@ -123,12 +119,8 @@ protected:
 
 private:
     Q_DISABLE_COPY(QNetworkInfo)
-#if !defined(QT_SIMULATOR)
     QNetworkInfoPrivate * const d_ptr;
     Q_DECLARE_PRIVATE(QNetworkInfo)
-#else
-    QNetworkInfoSimulator * const d_ptr;
-#endif // QT_SIMULATOR
 };
 
 QT_END_NAMESPACE

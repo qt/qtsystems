@@ -48,18 +48,10 @@
 //
 
 #include <qbatteryinfo.h>
-#include <qdeviceinfo.h>
-#include <qnetworkinfo.h>
 
 QT_BEGIN_NAMESPACE
 
 class QBatteryInfoSimulatorBackend;
-class QDeviceInfoSimulatorBackend;
-class QNetworkInfoSimulatorBackend;
-
-#if !defined(QT_NO_OFONO)
-class QNetworkInfoPrivate;
-#endif
 
 class QBatteryInfoSimulator : public QObject
 {
@@ -118,106 +110,6 @@ private:
     Q_DECLARE_PUBLIC(QBatteryInfo)
 
     QBatteryInfoSimulatorBackend *batteryInfoSimulatorBackend;
-};
-
-class QDeviceInfoSimulator : public QObject
-{
-    Q_OBJECT
-
-public:
-    QDeviceInfoSimulator(QDeviceInfo *parent);
-    ~QDeviceInfoSimulator();
-
-    bool hasFeature(QDeviceInfo::Feature feature);
-    int imeiCount();
-    QDeviceInfo::LockTypeFlags activatedLocks();
-    QDeviceInfo::LockTypeFlags enabledLocks();
-    QDeviceInfo::ThermalState thermalState();
-    QString imei(int interface);
-    QString manufacturer();
-    QString model();
-    QString productName();
-    QString uniqueDeviceID();
-    QString version(QDeviceInfo::Version type);
-    QString operatingSystemName();
-    QString boardName();
-    bool currentBluetoothPowerState();
-
-Q_SIGNALS:
-    void activatedLocksChanged(QDeviceInfo::LockTypeFlags types);
-    void enabledLocksChanged(QDeviceInfo::LockTypeFlags types);
-    void thermalStateChanged(QDeviceInfo::ThermalState state);
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-
-private:
-    QDeviceInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QDeviceInfo)
-
-    QDeviceInfoSimulatorBackend *deviceInfoSimulatorBackend;
-};
-
-class QNetworkInfoSimulator : public QObject
-{
-    Q_OBJECT
-
-public:
-    QNetworkInfoSimulator(QNetworkInfo *parent);
-    ~QNetworkInfoSimulator();
-
-    int networkInterfaceCount(QNetworkInfo::NetworkMode mode);
-    int networkSignalStrength(QNetworkInfo::NetworkMode mode, int interface);
-    QNetworkInfo::CellDataTechnology currentCellDataTechnology(int interface);
-    QNetworkInfo::NetworkMode currentNetworkMode();
-    QNetworkInfo::NetworkStatus networkStatus(QNetworkInfo::NetworkMode mode, int interface);
-#ifndef QT_NO_NETWORKINTERFACE
-    QNetworkInterface interfaceForMode(QNetworkInfo::NetworkMode mode, int interface);
-#endif // QT_NO_NETWORKINTERFACE
-    QString cellId(int interface);
-    QString currentMobileCountryCode(int interface);
-    QString currentMobileNetworkCode(int interface);
-    QString homeMobileCountryCode(int interface);
-    QString homeMobileNetworkCode(int interface);
-    QString imsi(int interface);
-    QString locationAreaCode(int interface);
-    QString macAddress(QNetworkInfo::NetworkMode mode, int interface);
-    QString networkName(QNetworkInfo::NetworkMode mode, int interface);
-
-Q_SIGNALS:
-    void cellIdChanged(int interface, const QString &id);
-    void currentCellDataTechnologyChanged(int interface, QNetworkInfo::CellDataTechnology tech);
-    void currentMobileCountryCodeChanged(int interface, const QString &mcc);
-    void currentMobileNetworkCodeChanged(int interface, const QString &mnc);
-    void currentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
-    void locationAreaCodeChanged(int interface, const QString &lac);
-    void networkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
-    void networkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
-    void networkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
-    void networkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-
-private:
-    QNetworkInfo * const q_ptr;
-    Q_DECLARE_PUBLIC(QNetworkInfo)
-
-    QNetworkInfoSimulatorBackend *networkInfoSimulatorBackend;
-
-#if !defined(QT_NO_OFONO)
-    QNetworkInfoPrivate * const d_ptr;
-    Q_DECLARE_PRIVATE(QNetworkInfo)
-
-public Q_SLOTS:
-    void onCurrentNetworkModeChanged(QNetworkInfo::NetworkMode mode);
-    void onNetworkInterfaceCountChanged(QNetworkInfo::NetworkMode mode, int count);
-    void onNetworkNameChanged(QNetworkInfo::NetworkMode mode, int interface, const QString &name);
-    void onNetworkSignalStrengthChanged(QNetworkInfo::NetworkMode mode, int interface, int strength);
-    void onNetworkStatusChanged(QNetworkInfo::NetworkMode mode, int interface, QNetworkInfo::NetworkStatus status);
-#endif
 };
 
 QT_END_NAMESPACE

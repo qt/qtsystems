@@ -33,9 +33,7 @@
 
 #include "qdeviceinfo.h"
 
-#if defined(QT_SIMULATOR)
-#  include "simulator/qsysteminfo_simulator_p.h"
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 #  include "linux/qdeviceinfo_linux_p.h"
 #elif defined(Q_OS_WIN)
 #  include "windows/qdeviceinfo_win_p.h"
@@ -152,11 +150,7 @@ QT_BEGIN_NAMESPACE
 */
 QDeviceInfo::QDeviceInfo(QObject *parent)
     : QObject(parent)
-#if !defined(QT_SIMULATOR)
     , d_ptr(new QDeviceInfoPrivate(this))
-#else
-    , d_ptr(new QDeviceInfoSimulator(this))
-#endif // QT_SIMULATOR
 {
 }
 
@@ -309,7 +303,7 @@ extern QMetaMethod proxyToSourceSignal(const QMetaMethod &, QObject *);
 */
 void QDeviceInfo::connectNotify(const QMetaMethod &signalSig)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR) || defined(Q_OS_MAC)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
     QMetaMethod sourceSignal = proxyToSourceSignal(signalSig, reinterpret_cast<QObject *>(d_ptr));
     connect(reinterpret_cast<QObject *>(d_ptr), sourceSignal, this, signalSig, Qt::UniqueConnection);
 #else
@@ -322,7 +316,7 @@ void QDeviceInfo::connectNotify(const QMetaMethod &signalSig)
 */
 void QDeviceInfo::disconnectNotify(const QMetaMethod &signalSig)
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(QT_SIMULATOR) || defined(Q_OS_MAC)
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
     // We can only disconnect with the private implementation, when there is no receivers for the signal.
     if (isSignalConnected(signalSig))
         return;
