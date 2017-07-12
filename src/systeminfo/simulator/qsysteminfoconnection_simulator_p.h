@@ -50,12 +50,8 @@
 
 #include <QObject>
 
-namespace Simulator
-{
-    class Connection;
-    class ConnectionWorker;
-    class Version;
-}
+class QSimulatorConnection;
+class QSimulatorConnectionWorker;
 
 class SystemInfoConnection : public QObject
 {
@@ -69,23 +65,15 @@ private:
     SystemInfoConnection(QObject *parent = 0);
     Q_DISABLE_COPY(SystemInfoConnection)
 
-    bool save() const { return mInitialDataSent; }
-
 private Q_SLOTS:
-    void initialSystemInfoDataSent();
     void setBatteryInfoData(const QBatteryInfoData &data);
 
 Q_SIGNALS:
-    void initialDataReceived();
+    void dataReceived();
 
 private:
-    Simulator::Connection *mConnection;
-    Simulator::ConnectionWorker *mWorker;
-    bool mInitialDataSent;
-
-    static const QString SERVERNAME;
-    static const int PORT;
-    static const Simulator::Version VERSION;
+    QSimulatorConnection *mConnection;
+    QSimulatorConnectionWorker *mWorker;
 };
 
 #endif // QSYSTEMINFOCONNECTION_SIMULATOR_P_H

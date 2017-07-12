@@ -35,39 +35,35 @@
 #include "qsysteminfoconnection_simulator_p.h"
 #include "qsysteminfobackend_simulator_p.h"
 
-#include <QtSimulator/connection.h>
-#include <QtSimulator/version.h>
-#include <QtSimulator/connectionworker.h>
 #include <QtSimulator/QtSimulator>
 
 #include <QTimer>
 #include <QEventLoop>
 #include <QMutex>
+#include <QVersionNumber>
 
 QT_BEGIN_NAMESPACE
 
-using namespace Simulator;
-
-const QString SystemInfoConnection::SERVERNAME(QStringLiteral("QtSimulator_Mobility_ServerName1.3.0.0"));
-const int SystemInfoConnection::PORT(0xbeef+1);
-const Simulator::Version SystemInfoConnection::VERSION(1,3,0,0);
+const QString SERVERNAME(QStringLiteral("SystemInfo.Battery"));
+const int PORT(0xbeef);
+const QVersionNumber VERSION(1, 0, 0);
 
 SystemInfoConnection::SystemInfoConnection(QObject *parent)
     : QObject(parent)
-    , mInitialDataSent(false)
 {
     qt_registerSystemInfoTypes();
-    mConnection = new Connection(Connection::Client, SERVERNAME, PORT, VERSION, this);
-    mWorker = mConnection->connectToServer(Connection::simulatorHostName(true), PORT);
+    mConnection = new QSimulatorConnection(SERVERNAME, VERSION);
+    mConnection->addPeerInfo(QLatin1String("name"), QLatin1String("systeminfo battery backend"));
+    mConnection->addPeerInfo(QLatin1String("version"), QLatin1String("1.0.0"));
+    mWorker = mConnection->connectToHost(QSimulatorConnection::simulatorHostName(true), PORT);
     if (mWorker) {
         mWorker->addReceiver(this);
-        mWorker->call("setRequestsSystemInfo");
 
         // wait until initial data is received
         QTimer timer;
         QEventLoop loop;
-        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-        connect(this, SIGNAL(initialDataReceived()), &loop, SLOT(quit()));
+        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        connect(this, &SystemInfoConnection::dataReceived, &loop, &QEventLoop::quit);
         timer.start(1000);
         loop.exec();
         timer.stop();
@@ -89,12 +85,6 @@ void SystemInfoConnection::ensureSimulatorConnection()
     mutex.unlock();
 }
 
-void SystemInfoConnection::initialSystemInfoDataSent()
-{
-    mInitialDataSent = true;
-    emit initialDataReceived();
-}
-
 void SystemInfoConnection::setBatteryInfoData(const QBatteryInfoData &data)
 {
     QBatteryInfoSimulatorBackend *batteryInfoBackend = QBatteryInfoSimulatorBackend::getSimulatorBackend();
@@ -110,6 +100,7 @@ void SystemInfoConnection::setBatteryInfoData(const QBatteryInfoData &data)
     batteryInfoBackend->setLevelStatus(data.levelStatus);
     batteryInfoBackend->setHealth(data.health);
     batteryInfoBackend->setTemperature(data.temperature);
+    emit dataReceived();
 }
 
 QT_END_NAMESPACE
