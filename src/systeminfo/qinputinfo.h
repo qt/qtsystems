@@ -160,10 +160,8 @@ private Q_SLOTS:
 private:
 
     Q_DISABLE_COPY(QInputInfoManager)
-#if !defined(QT_SIMULATOR)
     QInputInfoManagerPrivate *const d_ptr;
     Q_DECLARE_PRIVATE(QInputInfoManager)
-#endif
     QInputDevice::InputTypeFlags currentFilter;
     QMap <QString, QInputDevice *> currentFilteredMap;
     int filteredCount;
