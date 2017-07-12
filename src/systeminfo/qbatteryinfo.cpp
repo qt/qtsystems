@@ -156,7 +156,7 @@ QBatteryInfo::QBatteryInfo(int batteryIndex, QObject *parent)
 #if !defined(QT_SIMULATOR)
     , d_ptr(new QBatteryInfoPrivate(batteryIndex, this))
 #else
-    , d_ptr(new QBatteryInfoSimulator(this))
+    , d_ptr(new QBatteryInfoSimulator(batteryIndex, this))
 #endif // QT_SIMULATOR
 
 {
