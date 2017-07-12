@@ -223,8 +223,8 @@ simulator {
         }
 
         qtHaveModule(dbus) {
-            config_ofono: {
             QT += dbus
+            config_ofono: {
             PRIVATE_HEADERS += linux/qofonowrapper_p.h \
                                linux/qnetworkinfo_linux_p.h
 
@@ -248,13 +248,20 @@ simulator {
             CONFIG += link_pkgconfig
             PKGCONFIG += udev
             LIBS += -ludev
-            PRIVATE_HEADERS += linux/qudevwrapper_p.h
+
+            config_evdev {
+                PKGCONFIG += libevdev
+                LIBS +=  -levdev
+            } else {
+                DEFINES += QT_NO_EVDEV
+            }
+            PRIVATE_HEADERS += linux/qudevwrapper_p.h \
+                linux/qinputinfomanagerudev_p.h
             SOURCES += linux/qudevwrapper.cpp \
-                       linux/qinputdeviceinfo_udev.cpp
+                       linux/qinputinfomanagerudev.cpp
         } else {
             DEFINES += QT_NO_UDEV
         }
-
     }
 }
 

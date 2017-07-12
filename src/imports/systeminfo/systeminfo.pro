@@ -10,7 +10,7 @@ SOURCES += \
     qdeclarativenetworkinfo.cpp \
     qsysteminfo.cpp
 
-linux-*: !simulator: {
+linux-*: {
     HEADERS += \
         qdeclarativeinputdevicemodel_p.h
     SOURCES += \
