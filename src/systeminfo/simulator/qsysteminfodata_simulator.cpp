@@ -218,7 +218,7 @@ QDataStream &operator>>(QDataStream &in, QDeviceInfo::Version &s)
 QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s)
 {
     out << static_cast<qint32>(s.chargingState) << static_cast<qint32>(s.chargerType)
-        << static_cast<qint32>(s.levelStatus) << static_cast<qint32>(s.levelStatus);;
+        << static_cast<qint32>(s.levelStatus);
 
     out << static_cast<qint32>(s.currentFlow) << static_cast<qint32>(s.maximumCapacity)
         << static_cast<qint32>(s.remainingCapacity) << static_cast<qint32>(s.remainingChargingTime)
