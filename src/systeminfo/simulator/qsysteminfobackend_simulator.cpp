@@ -55,6 +55,7 @@ QBatteryInfoSimulatorBackend::QBatteryInfoSimulatorBackend(QObject *parent)
     data.chargingState = QBatteryInfo::UnknownChargingState;
     data.chargerType = QBatteryInfo::UnknownCharger;
     data.levelStatus = QBatteryInfo::LevelUnknown;
+    data.health = QBatteryInfo::HealthUnknown;
 }
 
 QBatteryInfoSimulatorBackend::~QBatteryInfoSimulatorBackend()

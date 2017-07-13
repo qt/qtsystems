@@ -234,6 +234,8 @@ void QBatteryInfoSimulator::connectNotify(const QMetaMethod &signal)
     static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::remainingChargingTimeChanged);
     static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::voltageChanged);
     static const QMetaMethod levelStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::levelStatusChanged);
+    static const QMetaMethod healthChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::healthChanged);
+    static const QMetaMethod temperatureChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::temperatureChanged);
 
     if (batteryInfoSimulatorBackend && (signal == batteryCountChangedSignal
                                         || signal == currentFlowChangedSignal
@@ -242,7 +244,9 @@ void QBatteryInfoSimulator::connectNotify(const QMetaMethod &signal)
                                         || signal == remainingChargingTimeChangedSignal
                                         || signal == chargerTypeChangedSignal
                                         || signal == chargingStateChangedSignal
-                                        || signal == levelStatusChangedSignal)) {
+                                        || signal == levelStatusChangedSignal
+                                        || signal == healthChangedSignal
+                                        || signal == temperatureChangedSignal)) {
         QMetaMethod sourceSignal = proxyToSourceSignal(signal, batteryInfoSimulatorBackend);
         connect(batteryInfoSimulatorBackend, sourceSignal, this, signal);
     }
@@ -258,6 +262,8 @@ void QBatteryInfoSimulator::disconnectNotify(const QMetaMethod &signal)
     static const QMetaMethod remainingChargingTimeChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::remainingChargingTimeChanged);
     static const QMetaMethod voltageChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::voltageChanged);
     static const QMetaMethod levelStatusChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::levelStatusChanged);
+    static const QMetaMethod healthChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::healthChanged);
+    static const QMetaMethod temperatureChangedSignal = QMetaMethod::fromSignal(&QBatteryInfoSimulator::temperatureChanged);
 
     if (batteryInfoSimulatorBackend && (signal == batteryCountChangedSignal
                                         || signal == currentFlowChangedSignal
@@ -266,7 +272,9 @@ void QBatteryInfoSimulator::disconnectNotify(const QMetaMethod &signal)
                                         || signal == remainingChargingTimeChangedSignal
                                         || signal == chargerTypeChangedSignal
                                         || signal == chargingStateChangedSignal
-                                        || signal == levelStatusChangedSignal)) {
+                                        || signal == levelStatusChangedSignal
+                                        || signal == healthChangedSignal
+                                        || signal == temperatureChangedSignal)) {
         QMetaMethod sourceSignal = proxyToSourceSignal(signal, batteryInfoSimulatorBackend);
         disconnect(batteryInfoSimulatorBackend, sourceSignal, this, signal);
     }

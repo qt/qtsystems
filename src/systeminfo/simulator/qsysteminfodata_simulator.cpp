@@ -47,6 +47,9 @@ QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s)
     out << static_cast<qint32>(s.chargingState) << static_cast<qint32>(s.chargerType)
         << static_cast<qint32>(s.levelStatus);
 
+    out << static_cast<qint32>(s.health);
+    out << s.temperature;
+
     out << static_cast<qint32>(s.currentFlow) << static_cast<qint32>(s.maximumCapacity)
         << static_cast<qint32>(s.remainingCapacity) << static_cast<qint32>(s.remainingChargingTime)
         << static_cast<qint32>(s.voltage);
@@ -62,6 +65,12 @@ QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s)
     s.chargingState = static_cast<QBatteryInfo::ChargingState>(chargingState);
     s.chargerType = static_cast<QBatteryInfo::ChargerType>(chargerType);
     s.levelStatus = static_cast<QBatteryInfo::LevelStatus>(batteryStatus);
+
+    qint32 health;
+    in >> health;
+    s.health = static_cast<QBatteryInfo::Health>(health);
+
+    in >> s.temperature;
 
     qint32 currentFlow, maximumCapacity, remainingCapacity, remainingChargingTime, voltage;
     in >> currentFlow >> maximumCapacity >> remainingCapacity >> remainingChargingTime >> voltage;

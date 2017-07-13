@@ -100,6 +100,8 @@ Q_SIGNALS:
     void remainingChargingTimeChanged(int seconds);
     void voltageChanged(int voltage);
     void levelStatusChanged(QBatteryInfo::LevelStatus levelStatus);
+    void healthChanged(QBatteryInfo::Health health);
+    void temperatureChanged(float temperature);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
