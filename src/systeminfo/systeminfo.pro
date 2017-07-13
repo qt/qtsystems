@@ -189,7 +189,10 @@ QT += core-private
 simulator {
     QT_PRIVATE += simulator
     DEFINES += QT_SIMULATOR
-    PRIVATE_HEADERS += simulator/qsysteminfodata_simulator_p.h \
+
+    HEADERS += simulator/qsysteminfodata_simulator_p.h
+
+    PRIVATE_HEADERS += \
                        linux/qdeviceinfo_linux_p.h \
                        linux/qnetworkinfo_linux_p.h \
                        simulator/qsysteminfobackend_simulator_p.h \

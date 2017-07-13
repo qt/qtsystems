@@ -47,6 +47,7 @@
 // We mean it.
 //
 
+#include "private/qsysteminfoglobal_p.h"
 #include <qbatteryinfo.h>
 
 #include <QMetaType>
@@ -72,10 +73,10 @@ struct QBatteryInfoData
 
 Q_DECLARE_METATYPE(QBatteryInfoData)
 
-void qt_registerSystemInfoTypes();
+Q_SYSTEMINFO_PRIVATE_EXPORT void qt_registerSystemInfoTypes();
 
-QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
-QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
+Q_SYSTEMINFO_PRIVATE_EXPORT QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
+Q_SYSTEMINFO_PRIVATE_EXPORT QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
 
 QT_END_NAMESPACE
 
