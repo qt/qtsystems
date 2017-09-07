@@ -13,7 +13,7 @@ SOURCES += qdeviceinfo.cpp \
            qbatteryinfo.cpp \
            qnetworkinfo.cpp
 
-win32: !simulator: {
+win32 {
     # Wbemidl.h violates C/C++ strict strings
     QMAKE_CXXFLAGS -= -Zc:strictStrings
     QMAKE_CXXFLAGS_RELEASE -= -Zc:strictStrings
@@ -53,6 +53,8 @@ win32: !simulator: {
   win32-g++: {
         LIBS += -luser32 -lgdi32
     }
+
+    DEFINES += QT_NO_MIR QT_NO_UDEV
 }
 
 linux-*: !simulator: {
@@ -194,8 +196,6 @@ simulator {
 
     PRIVATE_HEADERS += \
                        qinputinfomanager_p.h \
-                       linux/qdeviceinfo_linux_p.h \
-                       linux/qnetworkinfo_linux_p.h \
                        simulator/qsysteminfobackend_simulator_p.h \
                        simulator/qsysteminfoconnection_simulator_p.h \
                        simulator/qsysteminfo_simulator_p.h
@@ -203,8 +203,6 @@ simulator {
 
     SOURCES += simulator/qsysteminfodata_simulator.cpp \
                qinputinfo.cpp \
-               linux/qdeviceinfo_linux.cpp \
-               linux/qnetworkinfo_linux.cpp \
                qinputinfomanager.cpp \
                simulator/qsysteminfobackend_simulator.cpp \
                simulator/qsysteminfoconnection_simulator.cpp \
@@ -215,9 +213,13 @@ simulator {
 
     linux-*: {
         PRIVATE_HEADERS += \
+                           linux/qdeviceinfo_linux_p.h \
+                           linux/qnetworkinfo_linux_p.h \
                            linux/qscreensaver_linux_p.h
 
         SOURCES += \
+                   linux/qdeviceinfo_linux.cpp \
+                   linux/qnetworkinfo_linux.cpp \
                    linux/qscreensaver_linux.cpp
 
         x11|config_x11 {
