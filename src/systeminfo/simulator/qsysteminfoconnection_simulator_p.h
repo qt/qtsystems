@@ -50,6 +50,8 @@
 
 #include <QObject>
 
+QT_BEGIN_NAMESPACE
+
 class QSimulatorConnection;
 class QSimulatorConnectionWorker;
 
@@ -75,5 +77,7 @@ private:
     QSimulatorConnection *mConnection;
     QSimulatorConnectionWorker *mWorker;
 };
+
+QT_END_NAMESPACE
 
 #endif // QSYSTEMINFOCONNECTION_SIMULATOR_P_H

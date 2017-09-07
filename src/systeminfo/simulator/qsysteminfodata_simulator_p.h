@@ -71,13 +71,13 @@ struct QBatteryInfoData
     float temperature;
 };
 
-Q_DECLARE_METATYPE(QBatteryInfoData)
-
 Q_SYSTEMINFO_PRIVATE_EXPORT void qt_registerSystemInfoTypes();
 
 Q_SYSTEMINFO_PRIVATE_EXPORT QDataStream &operator<<(QDataStream &out, const QBatteryInfoData &s);
 Q_SYSTEMINFO_PRIVATE_EXPORT QDataStream &operator>>(QDataStream &in, QBatteryInfoData &s);
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QBatteryInfoData)
 
 #endif // QSYSTEMINFODATA_SIMULATOR_P_H
