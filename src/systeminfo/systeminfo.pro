@@ -63,10 +63,10 @@ linux-*: !simulator: {
            qinputinfo.cpp \
            linux/qdeviceinfo_linux.cpp \
            linux/qnetworkinfo_linux.cpp \
-           linux/qinputinfomanager.cpp
+           qinputinfomanager.cpp
    HEADERS += \
          qinputinfo.h \
-         linux/qinputinfomanager_p.h
+         qinputinfomanager_p.h
 
     config_mir {
         DEFINES += QT_UNITY8
@@ -193,6 +193,7 @@ simulator {
     HEADERS += simulator/qsysteminfodata_simulator_p.h
 
     PRIVATE_HEADERS += \
+                       qinputinfomanager_p.h \
                        linux/qdeviceinfo_linux_p.h \
                        linux/qnetworkinfo_linux_p.h \
                        simulator/qsysteminfobackend_simulator_p.h \
@@ -204,14 +205,13 @@ simulator {
                qinputinfo.cpp \
                linux/qdeviceinfo_linux.cpp \
                linux/qnetworkinfo_linux.cpp \
-               linux/qinputinfomanager.cpp \
+               qinputinfomanager.cpp \
                simulator/qsysteminfobackend_simulator.cpp \
                simulator/qsysteminfoconnection_simulator.cpp \
                simulator/qsysteminfo_simulator.cpp
 
-   HEADERS += \
-         qinputinfo.h \
-         linux/qinputinfomanager_p.h
+    HEADERS += \
+         qinputinfo.h
 
     linux-*: {
         PRIVATE_HEADERS += \

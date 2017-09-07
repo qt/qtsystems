@@ -34,9 +34,11 @@
 
 #include "qinputinfo.h"
 
-#if defined(Q_OS_LINUX)
-#include "linux/qinputinfomanager_p.h"
+#include "qinputinfomanager_p.h"
 
+Q_GLOBAL_STATIC(QInputInfoManagerPrivate, inputDeviceManagerPrivate)
+
+#if defined(Q_OS_LINUX)
 #if !defined(QT_NO_UDEV)
 #include "linux/qinputinfomanagerudev_p.h"
 #endif
@@ -93,6 +95,7 @@ QInputInfoManagerPrivate * QInputInfoManagerPrivate::instance()
 #ifndef QT_NO_UDEV
     return inputDeviceManagerUdev();
 #endif
+    return inputDeviceManagerPrivate();
 }
 
 /*!
