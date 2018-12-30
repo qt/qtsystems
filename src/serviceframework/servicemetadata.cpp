@@ -41,6 +41,7 @@
 #include <QFile>
 #include <QDataStream>
 #include <QDebug>
+#include <QRegularExpression>
 #include "qserviceinterfacedescriptor_p.h"
 
 //XML tags and attributes
@@ -673,12 +674,13 @@ bool ServiceMetaData::greaterThan(const QString &v1, const QString &v2) const
 bool ServiceMetaData::checkVersion(const QString &version) const
 {
     //match x.y as version format
-    QRegExp rx(QLatin1String("^([1-9][0-9]*)\\.(0+|[1-9][0-9]*)$"));
-    int pos = rx.indexIn(version);
-    QStringList list = rx.capturedTexts();
+    QRegularExpression rx(QLatin1String("^([1-9][0-9]*)\\.(0+|[1-9][0-9]*)$"));
+    QRegularExpressionMatch match = rx.match(version);
+    int pos = match.capturedStart();
+    QStringList list = match.capturedTexts();
     bool success = false;
     if (pos == 0 && list.count() == 3
-            && rx.matchedLength() == version.length() )
+            && match.capturedLength() == version.length() )
     {
         list[1].toInt(&success);
         if ( success ) {
@@ -696,9 +698,9 @@ void ServiceMetaData::transformVersion(const QString &version, int *major, int *
         *major = -1;
         *minor = -1;
     } else {
-        QRegExp rx(QLatin1String("^([1-9][0-9]*)\\.(0+|[1-9][0-9]*)$"));
-        rx.indexIn(version);
-        QStringList list = rx.capturedTexts();
+        QRegularExpression rx(QLatin1String("^([1-9][0-9]*)\\.(0+|[1-9][0-9]*)$"));
+        QRegularExpressionMatch match = rx.match(version);
+        QStringList list = match.capturedTexts();
         Q_ASSERT(list.count() == 3);
         *major = list[1].toInt();
         *minor = list[2].toInt();

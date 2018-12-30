@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QDebug>
 #ifndef QT_NO_DATASTREAM
@@ -256,14 +256,15 @@ void QServiceFilter::setInterface(const QString &interfaceName, const QString& v
     // Match x.y as version format.
     // This differs from regex in servicemetadata in that 0.x versions are
     // accepted for the search filter.
-    QRegExp rx(QLatin1String("^(0+|[1-9][0-9]*)\\.(0+|[1-9][0-9]*)$"));
-    int pos = rx.indexIn(version);
-    QStringList list = rx.capturedTexts();
+    QRegularExpression rx(QLatin1String("^(0+|[1-9][0-9]*)\\.(0+|[1-9][0-9]*)$"));
+    QRegularExpressionMatch match = rx.match(version);
+    int pos = match.capturedStart();
+    QStringList list = match.capturedTexts();
     bool success = false;
     int temp_major = -1;
     int temp_minor = -1;
     if (pos == 0 && list.count() == 3
-            && rx.matchedLength() == version.length() )
+            && match.capturedLength() == version.length() )
     {
         temp_major = list[1].toInt(&success);
         if ( success ) {
