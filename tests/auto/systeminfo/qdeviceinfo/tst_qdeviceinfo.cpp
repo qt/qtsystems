@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qregularexpression.h>
 #include <QtTest/qtest.h>
 #include "qdeviceinfo.h"
 
@@ -34,6 +35,9 @@ QT_USE_NAMESPACE
 class tst_QDeviceInfo : public QObject
 {
     Q_OBJECT
+
+private:
+    bool hasExactMatch(const QString& needle, const QString& haystack);
 
 private slots:
     void initTestCase();
@@ -54,6 +58,12 @@ private:
 
 };
 
+bool tst_QDeviceInfo::hasExactMatch(const QString& needle, const QString& haystack)
+{
+    QRegularExpression pattern(QRegularExpression::anchoredPattern(needle));
+    return pattern.match(haystack).hasMatch();
+}
+
 void tst_QDeviceInfo::initTestCase()
 {
     deviceInfo = new QDeviceInfo();
@@ -72,9 +82,9 @@ void tst_QDeviceInfo::tst_imei()
     QVERIFY(deviceInfo->imei(-1).isEmpty());
     QVERIFY(deviceInfo->imei(imeiCount).isEmpty());
 
-    QRegExp imeiPattern("(\\d{0,0}|\\d{15,15})");
+    QRegularExpression imeiPattern(QRegularExpression::anchoredPattern("(\\d{0,0}|\\d{15,15})"));
     for (int i = 0; i < imeiCount; ++i)
-        QVERIFY(imeiPattern.exactMatch(deviceInfo->imei(i)));
+        QVERIFY(imeiPattern.match(deviceInfo->imei(i)).hasMatch());
 }
 
 void tst_QDeviceInfo::tst_lockTypes()
@@ -87,35 +97,36 @@ void tst_QDeviceInfo::tst_lockTypes()
 
 void tst_QDeviceInfo::tst_version()
 {
-    QRegExp osversion(QString::fromLatin1("(\\d+(\\.\\d+)*)?"));
-    QVERIFY(osversion.exactMatch(deviceInfo->version(QDeviceInfo::Os)));
+    QVERIFY(hasExactMatch(QString::fromLatin1("(\\d+(\\.\\d+)*)?"),
+                          deviceInfo->version(QDeviceInfo::Os)));
 
-    QRegExp firmwareversion(QString::fromLatin1(".*"));
-    QVERIFY(firmwareversion.exactMatch(deviceInfo->version(QDeviceInfo::Firmware)));
+    QVERIFY(hasExactMatch(QString::fromLatin1(".*"),
+                          deviceInfo->version(QDeviceInfo::Firmware)));
 }
 
 void tst_QDeviceInfo::tst_manufacturer()
 {
-    QRegExp manufacturer(".*");
-    QVERIFY(manufacturer.exactMatch(deviceInfo->manufacturer()));
+    QVERIFY(hasExactMatch(QString::fromLatin1(".*"),
+            deviceInfo->manufacturer()));
 }
 
 void tst_QDeviceInfo::tst_model()
 {
-    QRegExp model(".*");
-    QVERIFY(model.exactMatch(deviceInfo->model()));
+    QVERIFY(hasExactMatch(QString::fromLatin1(".*"),
+            deviceInfo->model()));
 }
 
 void tst_QDeviceInfo::tst_productName()
 {
-    QRegExp productName(".*");
-    QVERIFY(productName.exactMatch(deviceInfo->productName()));
+    QVERIFY(hasExactMatch(QString::fromLatin1(".*"),
+            deviceInfo->productName()));
+
 }
 
 void tst_QDeviceInfo::tst_uniqueDeviceID()
 {
-    QRegExp uniqueId("[A-Fa-f\\d-]*");
-    QVERIFY(uniqueId.exactMatch(deviceInfo->uniqueDeviceID()));
+    QVERIFY(hasExactMatch(QString::fromLatin1("[A-Fa-f\\d-]*"),
+            deviceInfo->uniqueDeviceID()));
 }
 
 void tst_QDeviceInfo::tst_hasFeature()
