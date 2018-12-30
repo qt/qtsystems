@@ -39,7 +39,7 @@
 
 #include "qdeclarativevaluespacepublisher_p.h"
 #include "qdeclarativevaluespacepublishermetaobject_p.h"
-#include <QtCore/qregexp.h>
+#include <QtCore/qregularexpression.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -170,7 +170,7 @@ bool QDeclarativeValueSpacePublisher::hasSubscribers() const
 void QDeclarativeValueSpacePublisher::setKeys(const QStringList &keys)
 {
     foreach (const QString &key, keys) {
-        if (key.contains(QRegExp(QString(QStringLiteral("[^a-zA-Z0-9]"))))
+        if (key.contains(QRegularExpression(QStringLiteral("[^a-zA-Z0-9]")))
             || key == QString(QStringLiteral("value"))
             || key == QString(QStringLiteral("path"))
             || key == QString(QStringLiteral("keys"))
