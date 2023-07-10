@@ -29,7 +29,6 @@
     \group publishsubscribe-examples
     \title PublishSubscribe Examples
     \brief Examples for the QtSystems - Publish Subscribe sub-module
-    \ingroup all-examples
     \ingroup qtsystems
 
     These are the Publish and Subscribe examples.

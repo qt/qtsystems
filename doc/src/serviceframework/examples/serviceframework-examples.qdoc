@@ -29,7 +29,6 @@
     \group serviceframework-examples
     \title ServiceFramework Examples
     \brief Examples for the QtSystems - Service Framework sub-module
-    \ingroup all-examples
     \ingroup qtsystems
 
     These are the Service Framework examples.
